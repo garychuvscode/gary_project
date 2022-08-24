@@ -1080,6 +1080,9 @@ def build_file(extra_name):
     global wb_res
     global result_book_trace
     # global sh_main
+    # 220824: sh_main is not global here, sh_main will be back to
+    # eff_inst after this subprogram is finished
+    # to recover, just return the global command
     global sh_org_tab
     global sh_org_tab2
     global sh_org_tab3
