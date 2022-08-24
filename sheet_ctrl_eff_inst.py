@@ -42,6 +42,9 @@ file_count = 3
 
 sub_sh_count = 0
 
+# 220824 eff_done related control
+eff_done_sh = 0
+
 # ======== excel book and sheet operation
 # control book loading => new book creation => default parameter loading
 
@@ -139,6 +142,9 @@ program_exit = sh_main.range('B12').value
 # result_book_trace = excel_trace + new_file_name + str(extra_name) + '.xlsx'
 result_book_trace = ''
 full_result_name = ''
+
+# 220824 reset the eff_done_sh
+sh_main.range('C13').value = 0
 
 # # save the result book and turn off the control book
 # # 220324 move to build file
@@ -542,6 +548,7 @@ c_pulse = sh_org_tab.range('E1').value
 c_i2c = sh_org_tab3.range('B1').value
 c_i2c_g = sh_org_tab3.range('D1').value
 c_avdd_single = sh_org_tab.range('G1').value
+c_avdd_pulse = sh_org_tab.range('H1').value
 # avdd single is single channel current setting for AVDD (1-channel testing)
 # using c_pulse or c_i2c is depend on the sw_i2c_select
 
@@ -1108,6 +1115,7 @@ def build_file(extra_name):
 
     # assign both sheet to the new sheets in result book
     sh_main = wb_res.sheets('main')
+    print(sh_main)
     sh_org_tab = wb_res.sheets('V_I_com')
     sh_org_tab2 = wb_res.sheets(result_sheet_name)
     sh_org_tab3 = wb_res.sheets('I2C_ctrl')
@@ -1310,6 +1318,26 @@ def ideal_v_table(c_swire):
     return ideal_v_res
 # this sub is to look for ideal Vin setting for the efficiency testing
 # just littlebit faster XD
+
+# add the efficiency re-run sub-prog
+
+
+def eff_rerun():
+    global eff_done_sh
+    # this program check the status of the excel file eff_re-run block
+    # and update the eff_done to restart efficienct testing
+    # from the main, this sub will run if eff_done is already 1
+    eff_reset_temp = sh_main.range('B13').value
+
+    if eff_reset_temp == 1:
+        eff_done_sh = 0
+        # reset to 0 if eff sheet is ready to re-run
+        pass
+    else:
+        # no need for the action of changing the reset status
+        pass
+
+    pass
 
 
 # below part is the testing for this py file, only operating when this py

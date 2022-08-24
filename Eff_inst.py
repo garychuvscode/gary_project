@@ -89,9 +89,9 @@ bypass_measurement_flag = 0
 value_i_offset1 = 0
 value_i_offset2 = 0
 
-sim_real = 1
+sim_real = 0
 # 1 => real mode, 0=> simulation(program debug) mode
-sim_mcu = 1
+sim_mcu = 0
 # this is only used for MCU com port test simuation
 # when setting (sim_real, sim_mcu) = (0, 1)
 # enable MCU testing when GPIC disable
@@ -181,6 +181,8 @@ def check_inst_update():
     # 0522 add this part to keep update the control parameter
     # when every time call the sub program
     sh.program_exit = sh.sh_main.range('B12').value
+    # program exit will check every loop finished and break until stop if set ot 0
+
     sh.inst_auto_selection = sh.sh_main.range('B11').value
 
     # pwr refresh
@@ -1136,7 +1138,15 @@ while (sh.program_exit > 0):
     sh.program_exit = sh.sh_main.range('B12').value
     sh.inst_auto_selection = sh.sh_main.range('B11').value
 
-    if sh.inst_auto_selection == 1 or eff_done == 1:
+    # check if the eff_done need to reset before the loop
+    # eff_done can only be reset when it's already be 1 to prevent error
+    if eff_done == 1:
+        sh.eff_rerun()
+        eff_done = sh.eff_done_sh
+
+    if sh.inst_auto_selection == 1:
+        # 220824 change the condition to prevent stuck in check instrument when running efficiency testing
+
         # the setting of only instrument control
         check_inst_update()
         # call the update function and refresh the settings
@@ -1144,7 +1154,9 @@ while (sh.program_exit > 0):
         # give some delay between each refresh (call subprogram)
 
         pass
-    elif sh.inst_auto_selection == 0 or sh.inst_auto_selection == 2:
+    elif (sh.inst_auto_selection == 0 or sh.inst_auto_selection == 2) and eff_done == 0:
+        # 220824 change the condition to prevent stuck in check instrument when running efficiency testing
+
         # here is the original eff testing program
         # in the deepest loop, will check if auto selection is 0 or 2
         # for 2 it will also call the check instrument and control
@@ -1221,11 +1233,18 @@ while (sh.program_exit > 0):
 
         # selection for the SWIRE(1) or I2C(2)
         if sh.sw_i2c_select == 1:
-            c_sw_i2c = sh.c_pulse
+            if sh.channel_mode == 1:
+                # if the setting is avdd only ,need to map the counter to AVDD pulse number
+                c_sw_i2c = sh.c_avdd_pulse
+            elif sh.channel_mode == 0 or sh.channel_mode == 2:
+                c_sw_i2c = sh.c_pulse
         elif sh.sw_i2c_select == 2:
             c_sw_i2c = sh.c_i2c
             # i2c group counter setting
             c_i2c_group = sh.c_i2c_g
+
+        # 220823 consider to add the AVDD measurement for both I2C and normal(SWIRE mode)
+        # but maybe no need for the
 
         # error handling can be consider in future, but now should be ok to prevent
         # all the error from knowing the system operating rule and bug
@@ -1244,10 +1263,18 @@ while (sh.program_exit > 0):
             if sh.sw_i2c_select == 1:
                 # SWIRE control loop
                 # setup the related 2 pulse
-                pulse1 = sh.sh_org_tab.range((3 + x_sw_i2c, 5)).value
-                pulse2 = sh.sh_org_tab.range((3 + x_sw_i2c, 6)).value
+                if sh.channel_mode == 1:
+                    # if the setting is avdd only ,need to map the pulse to AVDD pulse
+                    pulse1 = sh.sh_org_tab.range((3 + x_sw_i2c, 8)).value
+                    pulse2 = pulse1
+                    extra_file_name = 'SWIRE_AVDD_'
+                elif sh.channel_mode == 0 or sh.channel_mode == 2:
+                    # for the SWIRE pulse, need 2 pulse for ELVDD and ELVSS
+                    pulse1 = sh.sh_org_tab.range((3 + x_sw_i2c, 5)).value
+                    pulse2 = sh.sh_org_tab.range((3 + x_sw_i2c, 6)).value
+                    extra_file_name = 'SWIRE_EL_'
                 print('pulse1: ' + str(pulse1) +
-                      '; and pulse2: ' + str(pulse2))
+                      '; and pulse2: ' + str(pulse2) + 'under mode ' + str(sh.channel_mode))
                 # send the pulse out through MCU
                 if sim_mcu == 1:
                     mcu_write('swire')
@@ -1256,12 +1283,12 @@ while (sh.program_exit > 0):
 
                 # call the build file to build new file to save result
                 # for the SWIRE pulse control
-                extra_file_name = 'SWIRE_' + \
+                extra_file_name = extra_file_name + \
                     str(int(pulse1)) + '_' + str(int(pulse2))
                 sw_i2c_status = str(int(pulse1)) + '_' + str(int(pulse2))
-                sh.build_file(str(extra_file_name))
-                pro_status_str = 'file built'
-                program_status(pro_status_str)
+                # sh.build_file(str(extra_file_name))
+                # pro_status_str = 'file built'
+                # program_status(pro_status_str)
 
             elif sh.sw_i2c_select == 2:
                 # setup i2C group counter
@@ -1291,9 +1318,12 @@ while (sh.program_exit > 0):
                     x_i2c_group = x_i2c_group + 1
 
                 # extra_file_name = 'SWIRE_' + str(pulse1) + '_' + str(pulse2)
-                sh.build_file(str(extra_file_name))
-                pro_status_str = 'file built'
-                program_status(pro_status_str)
+            sh.build_file(str(extra_file_name))
+            pro_status_str = 'file built'
+            program_status(pro_status_str)
+            print(sh.sh_main)
+            print('')
+            # 220823 change the file build code to outer loop and save the few lines before
 
             # finished the swire or i2c command and ready to enter next loop
 
@@ -1784,6 +1814,8 @@ while (sh.program_exit > 0):
                                     value_i_offset2 = 0
 
                             # ==== loader offset end point
+                            print(sh.sh_main)
+                            pass
 
                             # 220329: for the new version of inst_pkg_a, add the A remove function in
                             # the sub-program operation
@@ -1949,10 +1981,13 @@ while (sh.program_exit > 0):
                                 data_latch('von', str(sim_v_data_temp))
 
                             # the simulation mode for result generation
+                            print(sh.sh_main)
+                            print('')
 
                         # before x_iload increase, need to checck inst status based on insturment control
                         # 220522 add the check inst sub program
-                        check_inst_update()
+                        if sh.inst_auto_selection == 2:
+                            check_inst_update()
                         if sh.program_exit == 0:
                             # exit the program
                             break
@@ -2011,6 +2046,8 @@ while (sh.program_exit > 0):
                                              v_cnt, i_cnt, sheet_n, book_n, y_raw_start, x_raw_start)
 
                 sh.wb_res.save(sh.result_book_trace)
+                print(sh.sh_main)
+                print('')
                 # save the result after plot is finished
 
                 # the plot request is finished and jump another window to remind
@@ -2041,8 +2078,14 @@ while (sh.program_exit > 0):
                 load_src.load_off()
 
         eff_done = 1
-        # eff done is set afte one cycle of efficiency measurement
+        # eff done is set after one cycle of efficiency measurement
         # efficiency measurement will need to reset
+        # change the eff_done status on the main sheet
+        sh.eff_done_sh = 1
+        sh.sh_main.range('C13').value = 1
+        print(sh.sh_main)
+        print('')
+
 
 # turn off all the instrument
 pwr1.inst_close()
