@@ -145,6 +145,13 @@ full_result_name = ''
 
 # 220824 reset the eff_done_sh
 sh_main.range('C13').value = 0
+# 220824 add the turn off control of finished sheet
+sheet_off_finished = sh_main.range('C63').value
+# plot pause control (1 is enable, 0 is disable)
+en_plot_waring = sh_main.range('C64').value
+en_fully_auto = sh_main.range('C65').value
+en_start_up_check = sh_main.range('C65').value
+
 
 # # save the result book and turn off the control book
 # # 220324 move to build file
@@ -1327,14 +1334,35 @@ def ideal_v_table(c_swire):
 
 def eff_rerun():
     global eff_done_sh
+    global sh_org_tab
+    global sh_org_tab2
+    global sh_org_tab3
+    global sh_inst_ctrl
     # this program check the status of the excel file eff_re-run block
     # and update the eff_done to restart efficienct testing
     # from the main, this sub will run if eff_done is already 1
     eff_reset_temp = sh_main.range('B13').value
+    print('wait for re-run, update command and setup then set re-run to 1')
+    print('the program will start again')
 
     if eff_reset_temp == 1:
         eff_done_sh = 0
         # reset to 0 if eff sheet is ready to re-run
+        # also need to set te input blank back to 0
+        sh_main.range('B13').value = 0
+        # other wise there will be infinite loop
+
+        # also need to re-assign the mapping sheet to Eff_inst
+        # the sheet assignment is gone after finished one round
+        wb = xw.books('Eff_inst.xlsm')
+        result_sheet_name = 'raw_out'
+        # sh_main = wb.sheets('main')
+        # sheet main is already assign and keep for Eff_inst => main
+        sh_org_tab = wb.sheets('V_I_com')
+        sh_org_tab2 = wb.sheets(result_sheet_name)
+        sh_org_tab3 = wb.sheets('I2C_ctrl')
+        sh_inst_ctrl = wb.sheets('inst_ctrl')
+
         pass
     else:
         # no need for the action of changing the reset status
@@ -1342,6 +1370,25 @@ def eff_rerun():
 
     pass
 
+def fully_auto_start():
+    # this sub is going to choose to skip all he pop up
+    # window or follow the single settings
+    # if set to 1 bypass all the pop out function
+    global en_plot_waring
+    global en_start_up_check
+    global en_plot_waring
+
+    # prepare for the
+    if en_fully_auto == 1 :
+        en_plot_waring = 0
+        en_start_up_check = 0
+
+    pass
+    print('fully auto mode enable')
+
+def fully_auto_end():
+    # function TBD, not sure if needed or not
+    pass
 
 # below part is the testing for this py file, only operating when this py
 # is used for main program

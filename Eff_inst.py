@@ -1187,8 +1187,9 @@ while (sh.program_exit > 0):
 
                 print('also turn all load off')
 
-                msg_res = win32api.MessageBox(
-                    0, 'press enter if hardware configuration is correct', 'Pre-power on for system test under Vin= ' + str(sh.pre_vin) + 'Iin= ' + str(sh.pre_sup_iout))
+                if sh.en_start_up_check == 1:
+                    msg_res = win32api.MessageBox(
+                        0, 'press enter if hardware configuration is correct', 'Pre-power on for system test under Vin= ' + str(sh.pre_vin) + 'Iin= ' + str(sh.pre_sup_iout))
 
             # the power will change from initial state directly, not turn off between transition
 
@@ -1210,12 +1211,12 @@ while (sh.program_exit > 0):
             if sh.pre_test_en == 1:
                 # pwr1.chg_out(sh.pre_vin, sh.pre_sup_iout, sh.inst_pwr_ch3, 'on')
                 print('pre-power on here')
-
-                msg_res = win32api.MessageBox(0, 'press enter if hardware configuration is correct',
-                                              'Pre-power on for system test under Vin= ' + str(sh.pre_vin) + 'Iin= ' + str(sh.pre_sup_iout))
+                if sh.en_start_up_check == 1:
+                    msg_res = win32api.MessageBox(0, 'press enter if hardware configuration is correct',
+                                                  'Pre-power on for system test under Vin= ' + str(sh.pre_vin) + 'Iin= ' + str(sh.pre_sup_iout))
 
             print('pre-power on state finished and ready for next')
-            input()
+            # input()
             # can used any input for pre-power on finished test ing on excel
             program_status('test mode power on ok')
 
@@ -2018,9 +2019,9 @@ while (sh.program_exit > 0):
                 # need to have message remind user to release control of excel
                 # so there will not be the error from the plot
                 # remind the operation can keep going after the plot is finished
-
-                msg_res = win32api.MessageBox(
-                    0, 'Release the control of excel, change the window to auto file now, and press enter, remind again when the plot is finished', 'Plot request from python')
+                if sh.en_plot_waring == 1:
+                    msg_res = win32api.MessageBox(
+                        0, 'Release the control of excel, change the window to auto file now, and press enter, remind again when the plot is finished', 'Plot request from python')
 
                 # plot for efficiency
                 sheet_n = eff_temp
@@ -2051,8 +2052,9 @@ while (sh.program_exit > 0):
                 # save the result after plot is finished
 
                 # the plot request is finished and jump another window to remind
-                msg_res = win32api.MessageBox(
-                    0, 'You can start to operate the computer again', 'Plot request finished ')
+                if sh.en_plot_waring == 1:
+                    msg_res = win32api.MessageBox(
+                        0, 'You can start to operate the computer again', 'Plot request finished ')
 
                 if sh.program_exit == 0:
                     # exit the program
@@ -2086,13 +2088,32 @@ while (sh.program_exit > 0):
         print(sh.sh_main)
         print('')
 
+        # 220824 add the exit action for save and turn off the excel
+        if sh.sheet_off_finished == 1:
+            sh.wb_res.save(sh.result_book_trace)
+            sh.wb_res.close()
+        else:
+            pass
+        # to preven the issue of re-run (same file opening and crash)
 
-# turn off all the instrument
-pwr1.inst_close()
-load1.inst_close()
 
-if sh.source_meter_channel == 1 or sh.source_meter_channel == 2:
-    load_src.inst_close()
+# simulation mode error => need to add the
+if sim_real == 1:
+    # turn off all the instrument
+    pwr1.inst_close()
+    load1.inst_close()
+    if sh.source_meter_channel == 1 or sh.source_meter_channel == 2:
+        load_src.inst_close()
+
+else:
+    print('now is going to turn off the instrument')
+    print('this is the end of simulation mode ')
+
+if sh.en_fully_auto == 1:
+    print('fully auto mode enable~going to turn off')
+    # close the control book when testing finished
+    sh.wb.clsoe()
+    time.sleep(3)
 
 
 print('finsihed and goodbye')
