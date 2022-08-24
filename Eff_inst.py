@@ -1852,19 +1852,32 @@ while (sh.program_exit > 0):
                             elif sh.channel_mode == 0:
                                 # only turn the EL on
                                 # load1.chg_out(iload_target, sh.loa_ch_set, 'off')
-                                load1.chg_out(0, sh.loa_ch_set, 'on')
+                                if sh.source_meter_channel == 1 or sh.source_meter_channel == 2:
+                                # load_src.load_off()
+                                # change to turn off at each voltage cycle for loadr and source meter
+                                    load_src.change_I(0, 'on')
+                                else:
+                                    load1.chg_out(0, sh.loa_ch_set, 'on')
                             elif sh.channel_mode == 1:
                                 # only turn the AVDD on
                                 # load1.chg_out(iload_target, sh.loa_ch2_set, 'off')
-                                load1.chg_out(0, sh.loa_ch2_set, 'on')
+                                if sh.source_meter_channel == 1 or sh.source_meter_channel == 2:
+                                # load_src.load_off()
+                                # change to turn off at each voltage cycle for loadr and source meter
+                                    load_src.change_I(0, 'on')
+                                else:
+                                    load1.chg_out(0, sh.loa_ch2_set, 'on')
 
                             # 20220429 since release the load and set to turn off is ok,
                             # no specific setting for the chroma load selection here
                             # source meter is also turn off directly
-                            if sh.source_meter_channel == 1 or sh.source_meter_channel == 2:
-                                # load_src.load_off()
-                                # change to turn off at each voltage cycle for loadr and source meter
-                                load_src.change_I(0, 'on')
+
+                            # 220824 to prevent the wrong turning off of the E-load when using source meter for sngle channel operation
+                            # need to change this source meter turn off into loader turn off
+                            # if sh.source_meter_channel == 1 or sh.source_meter_channel == 2:
+                            #     # load_src.load_off()
+                            #     # change to turn off at each voltage cycle for loadr and source meter
+                            #     load_src.change_I(0, 'on')
 
                             # after the result fix in the data saving excel, calculate the efficiency
                             value_eff = ((value_elvdd - value_elvss) * value_iel +
