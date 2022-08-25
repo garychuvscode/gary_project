@@ -970,7 +970,7 @@ class chamber_su242:
 
         temp_string = self.query_write(
             self.temp_read_str + self.end_str)
-        time.sleep(0.01)
+        time.sleep(0.1)
         # this delay is to prevent crash, not sure why
         self.state_o_value = []
         self.state_o_value = [float(i) for i in temp_string.split(',')]
@@ -1429,7 +1429,7 @@ if __name__ == '__main__':
         float_list = [float(i) for i in temp_string.split(',')]
         print(float_list)
 
-        cham = chamber_su242(25, 15, 'off', -45, 185)
+        cham = chamber_su242(25, 15, 'off', -45, 185, 0)
         cham.sim_mode_out()
 
         input()
