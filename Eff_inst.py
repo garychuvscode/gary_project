@@ -47,6 +47,9 @@ eff_temp = ''
 pos_temp = ''
 neg_temp = ''
 raw_temp = ''
+# 220825 add for vout and von regulation
+pos_pre_temp = ''
+neg_pre_temp = ''
 
 y_raw_start = sh.raw_y_position_start
 x_raw_start = sh.raw_x_position_start
@@ -155,6 +158,10 @@ raw_active = ''
 vout_p_active = ''
 # for ELVDD, or AVDD
 vout_n_active = ''
+# for ELVSS
+vout_p_pre_active = ''
+# for ELVDD, or AVDD
+vout_n_pre_active = ''
 # for ELVSS
 
 
@@ -900,11 +907,15 @@ def data_latch(data_name, mea_res):
         # vop record in the raw data
         raw_active.range((19 + raw_gap * x_vin, 3 + x_iload)
                          ).value = lo.atof(mea_res)
+        vout_p_pre_active.range((25 + x_iload, 3 + x_vin)
+                                ).value = lo.atof(mea_res)
 
     elif data_name == 'von':
         # von record in the raw data
         raw_active.range((20 + raw_gap * x_vin, 3 + x_iload)
                          ).value = lo.atof(mea_res)
+        vout_n_pre_active.range((25 + x_iload, 3 + x_vin)
+                                ).value = lo.atof(mea_res)
 
     # clear the bypass flag every time enter data latch function
     bypass_measurement_flag = 0
@@ -1405,6 +1416,25 @@ while (sh.program_exit > 0):
                     sh.sheet_arry[sh.sub_sh_count * x_avdd + 2])
                 pos_temp = str(sh.sheet_arry[sh.sub_sh_count * x_avdd + 2])
                 # add the string save sheet name for the usage of plot
+                # vout_p_active => is the active sheet (sheet boject)
+                # pos_temp is th string of sheet name which used as the reference
+                # for plotting function
+                # 220825 AVDD and ELVDD is sharing the same sheet assignment since
+                # it won't be record at the same time
+
+                if sh.channel_mode == 1:
+                    vout_p_pre_active = sh.wb_res.sheets(
+                        sh.sheet_arry[sh.sub_sh_count * x_avdd + 3])
+                    pos_pre_temp = str(
+                        sh.sheet_arry[sh.sub_sh_count * x_avdd + 3])
+
+                elif sh.channel_mode == 0 or sh.channel_mode == 2:
+                    vout_p_pre_active = sh.wb_res.sheets(
+                        sh.sheet_arry[sh.sub_sh_count * x_avdd + 4])
+                    pos_pre_temp = str(
+                        sh.sheet_arry[sh.sub_sh_count * x_avdd + 4])
+
+                # 220825 add the sheet mapping for Vout and Von
 
                 if sh.channel_mode == 0 or sh.channel_mode == 2:
                     # only assign the sheet if there are negative output used in the measurement
@@ -1412,6 +1442,11 @@ while (sh.program_exit > 0):
                         sh.sheet_arry[sh.sub_sh_count * x_avdd + 3])
                     neg_temp = str(sh.sheet_arry[sh.sub_sh_count * x_avdd + 3])
                     # add the string save sheet name for the usage of plot
+
+                    vout_n_pre_active = sh.wb_res.sheets(
+                        sh.sheet_arry[sh.sub_sh_count * x_avdd + 5])
+                    neg_pre_temp = str(
+                        sh.sheet_arry[sh.sub_sh_count * x_avdd + 5])
 
                 # ====================
                 #  this portion seems not a must have portion in the system
@@ -1465,9 +1500,17 @@ while (sh.program_exit > 0):
                         # ELVDD and ELVSS have regulation sheet
                         vout_p_active.range((24, 3 + x_vin)).value = v_target
                         vout_n_active.range((24, 3 + x_vin)).value = v_target
+                        # 220825 add the V setting for Vop and Von sheet
+                        vout_p_pre_active.range(
+                            (24, 3 + x_vin)).value = v_target
+                        vout_n_pre_active.range(
+                            (24, 3 + x_vin)).value = v_target
                     else:
                         # AVDD have regulation sheet
                         vout_p_active.range((24, 3 + x_vin)).value = v_target
+                        # 220825 add the V setting for Vop and Von sheet
+                        vout_p_pre_active.range(
+                            (24, 3 + x_vin)).value = v_target
 
                     # for the raw data sheet index
                     raw_active.range((11 + raw_gap * x_vin, 2)).value = 'Vin'
@@ -1540,9 +1583,17 @@ while (sh.program_exit > 0):
                                     (25 + x_iload, 2)).value = iload_target
                                 vout_n_active.range(
                                     (25 + x_iload, 2)).value = iload_target
+                                # 220825 add the Vop and Von
+                                vout_p_pre_active.range(
+                                    (25 + x_iload, 2)).value = iload_target
+                                vout_n_pre_active.range(
+                                    (25 + x_iload, 2)).value = iload_target
                             else:
                                 # AVDD have regulation sheet
                                 vout_p_active.range(
+                                    (25 + x_iload, 2)).value = iload_target
+                                # 220825 add the Vop and Von
+                                vout_p_pre_active.range(
                                     (25 + x_iload, 2)).value = iload_target
                             pro_status_str = 'give index to regulation sheet'
                             print(pro_status_str)
@@ -1853,8 +1904,8 @@ while (sh.program_exit > 0):
                                 # only turn the EL on
                                 # load1.chg_out(iload_target, sh.loa_ch_set, 'off')
                                 if sh.source_meter_channel == 1 or sh.source_meter_channel == 2:
-                                # load_src.load_off()
-                                # change to turn off at each voltage cycle for loadr and source meter
+                                    # load_src.load_off()
+                                    # change to turn off at each voltage cycle for loadr and source meter
                                     load_src.change_I(0, 'on')
                                 else:
                                     load1.chg_out(0, sh.loa_ch_set, 'on')
@@ -1862,8 +1913,8 @@ while (sh.program_exit > 0):
                                 # only turn the AVDD on
                                 # load1.chg_out(iload_target, sh.loa_ch2_set, 'off')
                                 if sh.source_meter_channel == 1 or sh.source_meter_channel == 2:
-                                # load_src.load_off()
-                                # change to turn off at each voltage cycle for loadr and source meter
+                                    # load_src.load_off()
+                                    # change to turn off at each voltage cycle for loadr and source meter
                                     load_src.change_I(0, 'on')
                                 else:
                                     load1.chg_out(0, sh.loa_ch2_set, 'on')
@@ -2052,10 +2103,25 @@ while (sh.program_exit > 0):
                     sheet_n = neg_temp
                     sh.excel.Application.Run("EFF_inst.xlsm!gary_chart",
                                              v_cnt, i_cnt, sheet_n, book_n, y_raw_start, x_raw_start)
+
+                    # plot for Vout
+                    sheet_n = pos_pre_temp
+                    sh.excel.Application.Run("EFF_inst.xlsm!gary_chart",
+                                             v_cnt, i_cnt, sheet_n, book_n, y_raw_start, x_raw_start)
+
+                    # plot for Von
+                    sheet_n = neg_pre_temp
+                    sh.excel.Application.Run("EFF_inst.xlsm!gary_chart",
+                                             v_cnt, i_cnt, sheet_n, book_n, y_raw_start, x_raw_start)
                 else:
 
                     # plot for AVDD
                     sheet_n = pos_temp
+                    sh.excel.Application.Run("EFF_inst.xlsm!gary_chart",
+                                             v_cnt, i_cnt, sheet_n, book_n, y_raw_start, x_raw_start)
+
+                    # plot for Vout
+                    sheet_n = pos_pre_temp
                     sh.excel.Application.Run("EFF_inst.xlsm!gary_chart",
                                              v_cnt, i_cnt, sheet_n, book_n, y_raw_start, x_raw_start)
 

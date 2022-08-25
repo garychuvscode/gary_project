@@ -1165,15 +1165,16 @@ def build_file(extra_name):
         # both only EL or only AVDD just one time
         c_sheet_copy = 1
         if channel_mode == 1:
-            sub_sh_count = 3
-            # eff + raw + AVDD regulation
-        elif channel_mode == 0:
             sub_sh_count = 4
-            # eff + raw + ELVDD regulation + ELVSS regulation
+            # eff + raw + AVDD regulation + Vout regulation
+            # 220825 add vout sheet
+        elif channel_mode == 0:
+            sub_sh_count = 6
+            # eff + raw + ELVDD regulation + ELVSS regulation + Vout regulation + Von regulation
     elif channel_mode == 2:
         c_sheet_copy = c_avdd_load
-        sub_sh_count = 4
-        # eff + raw + ELVDD regulation + ELVSS regulation
+        sub_sh_count = 6
+        # eff + raw + ELVDD regulation + ELVSS regulation + Vout regulation + Von regulation
 
     x_sheet_copy = 0
     sh_temp = sh_org_tab2
@@ -1223,6 +1224,11 @@ def build_file(extra_name):
             sheet_arry[sub_sh_count * x_sheet_copy + 1] = sheet_temp
             wb_res.sheets.add(sheet_temp)
             # =======
+            # 220825 explanation added: since the sheet of raw data doesn't have specific
+            # format and input needed, add the sheet directly, no need to copy
+            # this is the reason why it's different with other sheet generation
+            # to add the Vout and Von load regulation, use the format in excel raw_out
+            # and it's general format for the regulation and plot function in VBA
 
             # =======
             # add another sheet for the ELVDD data of each AVDD current
@@ -1268,6 +1274,50 @@ def build_file(extra_name):
             sh_org_tab2.name = sheet_temp
             # =======
 
+            # =======
+            sh_temp.copy(sh_ref)
+            sh_org_tab2 = wb_res.sheets(result_sheet_name + ' (2)')
+            # here is to open a new sheet for data saving
+            if channel_mode == 2:
+                # 3-ch operation
+                sheet_temp = 'Vop_I_AVDD=' + excel_temp + 'A'
+                # assign the AVDD settting to blue blank of the sheet
+                sh_org_tab2.range(21, 3).value = sh_org_tab.range(
+                    3 + x_sheet_copy, 4).value
+            else:
+                # EL operation
+                sheet_temp = 'Vop'
+                # assign the AVDD settting to blue blank of the sheet
+                sh_org_tab2.range(21, 3).value = '0'
+                # no AVDD current, but channel turn on in this operation
+            # save the sheet name into the array for loading
+            sheet_arry[sub_sh_count * x_sheet_copy + 4] = sheet_temp
+            sh_org_tab2.name = sheet_temp
+
+            # =======
+
+            # =======
+            sh_temp.copy(sh_ref)
+            sh_org_tab2 = wb_res.sheets(result_sheet_name + ' (2)')
+            # here is to open a new sheet for data saving
+            if channel_mode == 2:
+                # 3-ch operation
+                sheet_temp = 'Von_I_AVDD=' + excel_temp + 'A'
+                # assign the AVDD settting to blue blank of the sheet
+                sh_org_tab2.range(21, 3).value = sh_org_tab.range(
+                    3 + x_sheet_copy, 4).value
+            else:
+                # EL operation
+                sheet_temp = 'Von'
+                # assign the AVDD settting to blue blank of the sheet
+                sh_org_tab2.range(21, 3).value = '0'
+                # no AVDD current, but channel turn on in this operation
+            # save the sheet name into the array for loading
+            sheet_arry[sub_sh_count * x_sheet_copy + 5] = sheet_temp
+            sh_org_tab2.name = sheet_temp
+
+            # =======
+
         elif channel_mode == 1:
             # sheet build up for only AVDD
 
@@ -1307,6 +1357,22 @@ def build_file(extra_name):
             # here is for AVDD eff
             # save the sheet name into the array for loading
             sheet_arry[sub_sh_count * x_sheet_copy + 2] = sheet_temp
+            sh_org_tab2.name = sheet_temp
+
+            # =======
+
+            # =======
+            sh_temp.copy(sh_ref)
+            sh_org_tab2 = wb_res.sheets(result_sheet_name + ' (2)')
+            # here is to open a new sheet for data saving
+
+            # AVDD operation
+            sheet_temp = 'Vout'
+            # assign the AVDD settting to blue blank of the sheet
+            sh_org_tab2.range(21, 3).value = 'NA'
+            # here is for AVDD eff
+            # save the sheet name into the array for loading
+            sheet_arry[sub_sh_count * x_sheet_copy + 3] = sheet_temp
             sh_org_tab2.name = sheet_temp
 
             # =======
@@ -1370,6 +1436,7 @@ def eff_rerun():
 
     pass
 
+
 def fully_auto_start():
     # this sub is going to choose to skip all he pop up
     # window or follow the single settings
@@ -1379,16 +1446,18 @@ def fully_auto_start():
     global en_plot_waring
 
     # prepare for the
-    if en_fully_auto == 1 :
+    if en_fully_auto == 1:
         en_plot_waring = 0
         en_start_up_check = 0
 
     pass
     print('fully auto mode enable')
 
+
 def fully_auto_end():
     # function TBD, not sure if needed or not
     pass
+
 
 # below part is the testing for this py file, only operating when this py
 # is used for main program
