@@ -26,7 +26,7 @@ import xlwings as xw
 # soul of excel related control, record, parameter loading
 import sheet_ctrl_eff_inst as sh
 # loading of information of contorol book and parameter
-import inst_pkg_c as inst
+import inst_pkg_d as inst
 # loading for instrument object ()
 # controlled by simulation mode variable
 
@@ -1110,6 +1110,12 @@ if sim_real == 1:
         pass
     # loader channel mapping: ch1 is for EL_power and ch2 is for AVDD
 
+    if sh.en_chamber_mea == 1:
+        # initial the chamber setting if need to used chamber
+        # setting refer to the control sheet
+        cham1 = inst.chamber_su242(sh.chamber_default_tset, sh.temp_chamber_addr,
+                                   'off', sh.chamber_L_limt, sh.chamber_H_limt, sh.chamber_error)
+
     # turn on the GPIB connection of instrument
     pwr1.open_inst()
     met1.open_instr()
@@ -1122,6 +1128,9 @@ if sim_real == 1:
     else:
         # there is no source meter needed for the output
         pass
+
+    if sh.en_chamber_mea == 1:
+        cham1.open_inst()
 
     # # load the name to related blank in result book
     # sh.sh_main.range('D27').value = pwr1.inst_name()
@@ -1139,6 +1148,10 @@ if sim_real == 1:
         # there is no source meter needed for the output
         pass
     pass
+
+    if sh.en_chamber_mea == 1:
+        sh.inst_name_sheet('chamber', cham1.inst_name())
+
 elif sim_real == 0:
     print('initialization of instrument finished')
     pass
@@ -1202,6 +1215,10 @@ while (sh.program_exit > 0):
                     msg_res = win32api.MessageBox(
                         0, 'press enter if hardware configuration is correct', 'Pre-power on for system test under Vin= ' + str(sh.pre_vin) + 'Iin= ' + str(sh.pre_sup_iout))
 
+                if sh.en_chamber_mea == 1:
+                    # chamber turn on with default setting, using default temperature
+                    cham1.chamber_set(sh.chamber_default_tset)
+
             # the power will change from initial state directly, not turn off between transition
 
             # should not need the extra Vin in the change
@@ -1235,917 +1252,968 @@ while (sh.program_exit > 0):
 
             # pre-power on test finished here
 
-        # efficiency testing program starts from heere
+        # add the while loop outside of SWIRE or I2C loop
+        x_temperature = 0
+        count_temperature = sh.c_tempature
+        if sh.en_chamber_mea == 0:
+            # cancel the temperature counter if en_chamber is disable
+            count_temperature = 1
+        while x_temperature < count_temperature:
+            # update temperature setting every time the loop is start
+            tset_now = sh.sh_org_tab.range(
+                (3 + x_temperature, 9)).value
+            if sh.en_chamber_mea == 1:
+                if sim_real == 1:
+                    cham1.chamber_set(tset_now)
 
-        # 1st loop is the selection of I2C and SWIRE pulse control
+            else:
+                tset_now = 25
+                # the temperature without chamber are all assume to be 25C
 
-        # selection for the loop control variable
-        x_sw_i2c = 0
-        c_sw_i2c = 0
+            # efficiency testing program starts from heere
 
-        # selection for the SWIRE(1) or I2C(2)
-        if sh.sw_i2c_select == 1:
-            if sh.channel_mode == 1:
-                # if the setting is avdd only ,need to map the counter to AVDD pulse number
-                c_sw_i2c = sh.c_avdd_pulse
-            elif sh.channel_mode == 0 or sh.channel_mode == 2:
-                c_sw_i2c = sh.c_pulse
-        elif sh.sw_i2c_select == 2:
-            c_sw_i2c = sh.c_i2c
-            # i2c group counter setting
-            c_i2c_group = sh.c_i2c_g
+            # 1st loop is the selection of I2C and SWIRE pulse control
 
-        # 220823 consider to add the AVDD measurement for both I2C and normal(SWIRE mode)
-        # but maybe no need for the
+            # selection for the loop control variable
+            x_sw_i2c = 0
+            c_sw_i2c = 0
 
-        # error handling can be consider in future, but now should be ok to prevent
-        # all the error from knowing the system operating rule and bug
-
-        # # error handling for counter = 0 after data refresh
-        # if c_sw_i2c == 0 :
-        #     c_sw_i2c = 1
-        #     c_single = 1
-
-        while x_sw_i2c < c_sw_i2c:
-            # need to set up specific SWIRE pulse setting (2-pulse version) or give the I2C command at this stage
-            # before the stage of next loop
-            # loaded the SWIRE or I2C command from the control sheet
-            # send it out from MCU to testing EVM board
-
+            # selection for the SWIRE(1) or I2C(2)
             if sh.sw_i2c_select == 1:
-                # SWIRE control loop
-                # setup the related 2 pulse
                 if sh.channel_mode == 1:
-                    # if the setting is avdd only ,need to map the pulse to AVDD pulse
-                    pulse1 = sh.sh_org_tab.range((3 + x_sw_i2c, 8)).value
-                    pulse2 = pulse1
-                    extra_file_name = 'SWIRE_AVDD_'
+                    # if the setting is avdd only ,need to map the counter to AVDD pulse number
+                    c_sw_i2c = sh.c_avdd_pulse
                 elif sh.channel_mode == 0 or sh.channel_mode == 2:
-                    # for the SWIRE pulse, need 2 pulse for ELVDD and ELVSS
-                    pulse1 = sh.sh_org_tab.range((3 + x_sw_i2c, 5)).value
-                    pulse2 = sh.sh_org_tab.range((3 + x_sw_i2c, 6)).value
-                    extra_file_name = 'SWIRE_EL_'
-                print('pulse1: ' + str(pulse1) +
-                      '; and pulse2: ' + str(pulse2) + 'under mode ' + str(sh.channel_mode))
-                # send the pulse out through MCU
-                if sim_mcu == 1:
-                    mcu_write('swire')
-                else:
-                    print('MCU output function called')
-
-                # call the build file to build new file to save result
-                # for the SWIRE pulse control
-                extra_file_name = extra_file_name + \
-                    str(int(pulse1)) + '_' + str(int(pulse2))
-                sw_i2c_status = str(int(pulse1)) + '_' + str(int(pulse2))
-                # sh.build_file(str(extra_file_name))
-                # pro_status_str = 'file built'
-                # program_status(pro_status_str)
-
+                    c_sw_i2c = sh.c_pulse
             elif sh.sw_i2c_select == 2:
-                # setup i2C group counter
-                x_i2c_group = 0
+                c_sw_i2c = sh.c_i2c
+                # i2c group counter setting
+                c_i2c_group = sh.c_i2c_g
 
-                # modify the i2c str before the loop to get all change (register:data)
-                # initial the extra_file_name before the loop start
-                extra_file_name = 'i2c'
-                while x_i2c_group < c_i2c_group:
-                    # I2C control loop
-                    # set up the i2c related data
-                    reg_i2c = sh.sh_org_tab3.range(
-                        (3 + c_i2c_group * x_sw_i2c + x_i2c_group, 2)).value
-                    data_i2c = sh.sh_org_tab3.range(
-                        (3 + c_i2c_group * x_sw_i2c + x_i2c_group, 3)).value
-                    print('register: ' + reg_i2c)
-                    print('data: ' + data_i2c)
+            # 220823 consider to add the AVDD measurement for both I2C and normal(SWIRE mode)
+            # but maybe no need for the
+
+            # error handling can be consider in future, but now should be ok to prevent
+            # all the error from knowing the system operating rule and bug
+
+            # # error handling for counter = 0 after data refresh
+            # if c_sw_i2c == 0 :
+            #     c_sw_i2c = 1
+            #     c_single = 1
+
+            while x_sw_i2c < c_sw_i2c:
+                # need to set up specific SWIRE pulse setting (2-pulse version) or give the I2C command at this stage
+                # before the stage of next loop
+                # loaded the SWIRE or I2C command from the control sheet
+                # send it out from MCU to testing EVM board
+
+                if sh.sw_i2c_select == 1:
+                    # SWIRE control loop
+                    # setup the related 2 pulse
+                    if sh.channel_mode == 1:
+                        # if the setting is avdd only ,need to map the pulse to AVDD pulse
+                        pulse1 = sh.sh_org_tab.range((3 + x_sw_i2c, 8)).value
+                        pulse2 = pulse1
+                        extra_file_name = 't' + \
+                            str(tset_now) + 'C_' + 'SWIRE_AVDD_'
+                    elif sh.channel_mode == 0 or sh.channel_mode == 2:
+                        # for the SWIRE pulse, need 2 pulse for ELVDD and ELVSS
+                        pulse1 = sh.sh_org_tab.range((3 + x_sw_i2c, 5)).value
+                        pulse2 = sh.sh_org_tab.range((3 + x_sw_i2c, 6)).value
+                        extra_file_name = 't' + \
+                            str(tset_now) + 'C_' + 'SWIRE_EL_'
+                    print('pulse1: ' + str(pulse1) +
+                          '; and pulse2: ' + str(pulse2) + 'under mode ' + str(sh.channel_mode))
+                    # send the pulse out through MCU
                     if sim_mcu == 1:
-                        mcu_write('i2c')
+                        mcu_write('swire')
                     else:
                         print('MCU output function called')
 
-                    # after write to the MCU, update the extra name for the file
-                    extra_file_name = extra_file_name + '_' + \
-                        str(reg_i2c) + '-' + str(data_i2c)
-                    sw_i2c_status = str(reg_i2c) + '-' + str(data_i2c)
-                    x_i2c_group = x_i2c_group + 1
+                    # call the build file to build new file to save result
+                    # for the SWIRE pulse control
+                    extra_file_name = extra_file_name + \
+                        str(int(pulse1)) + '_' + str(int(pulse2))
+                    sw_i2c_status = str(int(pulse1)) + '_' + str(int(pulse2))
+                    # sh.build_file(str(extra_file_name))
+                    # pro_status_str = 'file built'
+                    # program_status(pro_status_str)
 
-                # extra_file_name = 'SWIRE_' + str(pulse1) + '_' + str(pulse2)
-            sh.build_file(str(extra_file_name))
-            pro_status_str = 'file built'
-            program_status(pro_status_str)
-            print(sh.sh_main)
-            print('')
-            # 220823 change the file build code to outer loop and save the few lines before
+                elif sh.sw_i2c_select == 2:
+                    # setup i2C group counter
+                    x_i2c_group = 0
 
-            # finished the swire or i2c command and ready to enter next loop
+                    # modify the i2c str before the loop to get all change (register:data)
+                    # initial the extra_file_name before the loop start
+                    extra_file_name = 't' + str(tset_now) + 'C_' + 'i2c'
+                    while x_i2c_group < c_i2c_group:
+                        # I2C control loop
+                        # set up the i2c related data
+                        reg_i2c = sh.sh_org_tab3.range(
+                            (3 + c_i2c_group * x_sw_i2c + x_i2c_group, 2)).value
+                        data_i2c = sh.sh_org_tab3.range(
+                            (3 + c_i2c_group * x_sw_i2c + x_i2c_group, 3)).value
+                        print('register: ' + reg_i2c)
+                        print('data: ' + data_i2c)
+                        if sim_mcu == 1:
+                            mcu_write('i2c')
+                        else:
+                            print('MCU output function called')
 
-            # # call the build file to build new file to save result
-            # sh.build_file(str(x_sw_i2c))
+                        # after write to the MCU, update the extra name for the file
+                        extra_file_name = extra_file_name + '_' + \
+                            str(reg_i2c) + '-' + str(data_i2c)
+                        sw_i2c_status = str(reg_i2c) + '-' + str(data_i2c)
+                        x_i2c_group = x_i2c_group + 1
 
-            x_avdd = 0
-            # counter avdd current setting
-            # when in channel_mode 0 or 1, there is not option of AVDD current
-            # need to add the error handling of AVDD current counter in the loop
-            # need to set the aVDD current counter to 1 to pevent of overflow in the sheet array
-            c_avdd = 0
-            if sh.channel_mode == 0 or sh.channel_mode == 1:
-                # for the 1 or 2 channel operation, only used c_avdd once
-                # there are no extra loop at this stage
-                c_avdd = 1
-            else:
-                # this is 3-channel operatoion
-                c_avdd = sh.c_avdd_load
-
-            while x_avdd < c_avdd:
-
-                # define AVDD current
-                curr_avdd = sh.sh_org_tab.range((3 + x_avdd, 4)).value
-                print('AVDD current is set to: ' + str(curr_avdd) + ' A')
-                if sh.channel_mode == 2 or sh.channel_mode == 0:
-                    i_avdd_status = str(curr_avdd)
-                    # 20220509 => need to add the (EN, SW) mode setting to the MCU status
-                    # since the i2c don't have the mode selection function, don't care
-                    # about the PMIC status, need to be config in the register command in
-                    # i2c mode
-                    if sim_mcu == 1:
-                        pmic_mode = 4
-                        # set the PMIC to normal mode
-                        # and update the MCU write commanad
-                        mcu_write('en_sw')
-                    else:
-                        print('MCU mode is set to (EN, SW) = (1, 1)')
-                else:
-                    i_avdd_status = 0
-                    # since the i2c don't have the mode selection function, don't care
-                    # about the PMIC status, need to be config in the register command in
-                    # i2c mode
-                    if sim_mcu == 1:
-                        # 0511: to have better discharge result for PMIC, add the shut down mode between
-                        # and then start from AOD mode only
-                        pmic_mode = 1
-                        mcu_write('en_sw')
-                        print('PMIC shut down for EL power discharge')
-                        # turn off the PMIC and wait for other channel to discharge
-                        time.sleep(wait_small)
-
-                        pmic_mode = 3
-                        # set the PMIC to AOD mode
-                        # and update the MCU write commanad
-                        mcu_write('en_sw')
-                    else:
-                        print('MCU mode is set to (EN, SW) = (1, 0)')
-                pro_status_str = 'AVDD current : ' + str(curr_avdd)
+                    # extra_file_name = 'SWIRE_' + str(pulse1) + '_' + str(pulse2)
+                sh.build_file(str(extra_file_name))
+                pro_status_str = 'file built'
                 program_status(pro_status_str)
-                # please note that AVDD current need to set to 0 if not using 3-ch mode
+                print(sh.sh_main)
+                print('')
+                # 220823 change the file build code to outer loop and save the few lines before
 
-                # after generate the related file, should be able to have array for active raw and sheet
-                # and the mapping sheet name is change with AVDD current, so it's in AVDD_current loop
+                # finished the swire or i2c command and ready to enter next loop
 
-                sheet_active = sh.wb_res.sheets(
-                    sh.sheet_arry[sh.sub_sh_count * x_avdd])
-                eff_temp = str(sh.sheet_arry[sh.sub_sh_count * x_avdd])
-                # add the string save sheet name for the usage of plot
+                # # call the build file to build new file to save result
+                # sh.build_file(str(x_sw_i2c))
 
-                raw_active = sh.wb_res.sheets(
-                    sh.sheet_arry[sh.sub_sh_count * x_avdd + 1])
-                raw_temp = str(
-                    str(sh.sheet_arry[sh.sub_sh_count * x_avdd + 1]))
-                # add the string save sheet name for the usage of plot
+                x_avdd = 0
+                # counter avdd current setting
+                # when in channel_mode 0 or 1, there is not option of AVDD current
+                # need to add the error handling of AVDD current counter in the loop
+                # need to set the aVDD current counter to 1 to pevent of overflow in the sheet array
+                c_avdd = 0
+                if sh.channel_mode == 0 or sh.channel_mode == 1:
+                    # for the 1 or 2 channel operation, only used c_avdd once
+                    # there are no extra loop at this stage
+                    c_avdd = 1
+                else:
+                    # this is 3-channel operatoion
+                    c_avdd = sh.c_avdd_load
 
-                vout_p_active = sh.wb_res.sheets(
-                    sh.sheet_arry[sh.sub_sh_count * x_avdd + 2])
-                pos_temp = str(sh.sheet_arry[sh.sub_sh_count * x_avdd + 2])
-                # add the string save sheet name for the usage of plot
-                # vout_p_active => is the active sheet (sheet boject)
-                # pos_temp is th string of sheet name which used as the reference
-                # for plotting function
-                # 220825 AVDD and ELVDD is sharing the same sheet assignment since
-                # it won't be record at the same time
+                while x_avdd < c_avdd:
 
-                if sh.channel_mode == 1:
-                    vout_p_pre_active = sh.wb_res.sheets(
-                        sh.sheet_arry[sh.sub_sh_count * x_avdd + 3])
-                    pos_pre_temp = str(
-                        sh.sheet_arry[sh.sub_sh_count * x_avdd + 3])
+                    # define AVDD current
+                    curr_avdd = sh.sh_org_tab.range((3 + x_avdd, 4)).value
+                    print('AVDD current is set to: ' + str(curr_avdd) + ' A')
+                    if sh.channel_mode == 2 or sh.channel_mode == 0:
+                        i_avdd_status = str(curr_avdd)
+                        # 20220509 => need to add the (EN, SW) mode setting to the MCU status
+                        # since the i2c don't have the mode selection function, don't care
+                        # about the PMIC status, need to be config in the register command in
+                        # i2c mode
+                        if sim_mcu == 1:
+                            pmic_mode = 4
+                            # set the PMIC to normal mode
+                            # and update the MCU write commanad
+                            mcu_write('en_sw')
+                        else:
+                            print('MCU mode is set to (EN, SW) = (1, 1)')
+                    else:
+                        i_avdd_status = 0
+                        # since the i2c don't have the mode selection function, don't care
+                        # about the PMIC status, need to be config in the register command in
+                        # i2c mode
+                        if sim_mcu == 1:
+                            # 0511: to have better discharge result for PMIC, add the shut down mode between
+                            # and then start from AOD mode only
+                            pmic_mode = 1
+                            mcu_write('en_sw')
+                            print('PMIC shut down for EL power discharge')
+                            # turn off the PMIC and wait for other channel to discharge
+                            time.sleep(wait_small)
 
-                elif sh.channel_mode == 0 or sh.channel_mode == 2:
-                    vout_p_pre_active = sh.wb_res.sheets(
-                        sh.sheet_arry[sh.sub_sh_count * x_avdd + 4])
-                    pos_pre_temp = str(
-                        sh.sheet_arry[sh.sub_sh_count * x_avdd + 4])
+                            pmic_mode = 3
+                            # set the PMIC to AOD mode
+                            # and update the MCU write commanad
+                            mcu_write('en_sw')
+                        else:
+                            print('MCU mode is set to (EN, SW) = (1, 0)')
+                    pro_status_str = 'AVDD current : ' + str(curr_avdd)
+                    program_status(pro_status_str)
+                    # please note that AVDD current need to set to 0 if not using 3-ch mode
 
-                # 220825 add the sheet mapping for Vout and Von
+                    # after generate the related file, should be able to have array for active raw and sheet
+                    # and the mapping sheet name is change with AVDD current, so it's in AVDD_current loop
 
-                if sh.channel_mode == 0 or sh.channel_mode == 2:
-                    # only assign the sheet if there are negative output used in the measurement
-                    vout_n_active = sh.wb_res.sheets(
-                        sh.sheet_arry[sh.sub_sh_count * x_avdd + 3])
-                    neg_temp = str(sh.sheet_arry[sh.sub_sh_count * x_avdd + 3])
+                    sheet_active = sh.wb_res.sheets(
+                        sh.sheet_arry[sh.sub_sh_count * x_avdd])
+                    eff_temp = str(sh.sheet_arry[sh.sub_sh_count * x_avdd])
                     # add the string save sheet name for the usage of plot
 
-                    vout_n_pre_active = sh.wb_res.sheets(
-                        sh.sheet_arry[sh.sub_sh_count * x_avdd + 5])
-                    neg_pre_temp = str(
-                        sh.sheet_arry[sh.sub_sh_count * x_avdd + 5])
+                    raw_active = sh.wb_res.sheets(
+                        sh.sheet_arry[sh.sub_sh_count * x_avdd + 1])
+                    raw_temp = str(
+                        str(sh.sheet_arry[sh.sub_sh_count * x_avdd + 1]))
+                    # add the string save sheet name for the usage of plot
 
-                # ====================
-                #  this portion seems not a must have portion in the system
-                # if sh.channel_mode == 0 or sh.channel_mode == 2 :
-                #     # EL only or 3-ch operation
-                #     sheet_active = sh.wb_res.sheets(
-                #         sh.sheet_arry[sh.sub_sh_count * x_avdd])
-                #     raw_active = sh.wb_res.sheets(
-                #         sh.sheet_arry[sh.sub_sh_count * x_avdd + 1])
-                #     vout_p_active = sh.wb_res.sheets(
-                #         sh.sheet_arry[sh.sub_sh_count * x_avdd + 2])
-                #     vout_p_active = sh.wb_res.sheets(
-                #         sh.sheet_arry[sh.sub_sh_count * x_avdd + 3])
-                # else :
-                #     # AVDD only
-                #     sheet_active = sh.wb_res.sheets(
-                #         sh.sheet_arry[sh.sub_sh_count * x_avdd])
-                #     raw_active = sh.wb_res.sheets(
-                #         sh.sheet_arry[sh.sub_sh_count * x_avdd + 1])
-                #     vout_p_active = sh.wb_res.sheets(
-                #         sh.sheet_arry[sh.sub_sh_count * x_avdd + 2])
-                # ====================
+                    vout_p_active = sh.wb_res.sheets(
+                        sh.sheet_arry[sh.sub_sh_count * x_avdd + 2])
+                    pos_temp = str(sh.sheet_arry[sh.sub_sh_count * x_avdd + 2])
+                    # add the string save sheet name for the usage of plot
+                    # vout_p_active => is the active sheet (sheet boject)
+                    # pos_temp is th string of sheet name which used as the reference
+                    # for plotting function
+                    # 220825 AVDD and ELVDD is sharing the same sheet assignment since
+                    # it won't be record at the same time
 
-                # not to turn load on here, Vin haven't change yet, only update the
-                # AVDD load current here
-
-                # if sim_real == 1 :
-                #     load1.chg_out(curr_avdd, sh.loa_ch2_set, 'on')
-                #     # turn the load of AVDD on when after load the current
-                # else:
-                #     print('finished set the current and turn load on')
-                #     # input()
-
-                # Vin loop start point
-                # counter for the Vin setting
-
-                x_vin = 0
-                while x_vin < sh.c_vin:
-
-                    v_target = sh.sh_org_tab.range((3 + x_vin, 2)).value
-                    pro_status_str = 'Vin:' + str(v_target)
-                    vin_status = str(v_target)
-                    program_status(pro_status_str)
-                    # update the target Vin to the program status
-
-                    # add the related Vin(ideal) setting at the result sheet
-                    sheet_active.range((24, 3 + x_vin)).value = v_target
-
-                    # 220325: regulation sheet also need to have current index
-                    if sh.channel_mode == 0 or sh.channel_mode == 2:
-                        # ELVDD and ELVSS have regulation sheet
-                        vout_p_active.range((24, 3 + x_vin)).value = v_target
-                        vout_n_active.range((24, 3 + x_vin)).value = v_target
-                        # 220825 add the V setting for Vop and Von sheet
-                        vout_p_pre_active.range(
-                            (24, 3 + x_vin)).value = v_target
-                        vout_n_pre_active.range(
-                            (24, 3 + x_vin)).value = v_target
-                    else:
-                        # AVDD have regulation sheet
-                        vout_p_active.range((24, 3 + x_vin)).value = v_target
-                        # 220825 add the V setting for Vop and Von sheet
-                        vout_p_pre_active.range(
-                            (24, 3 + x_vin)).value = v_target
-
-                    # for the raw data sheet index
-                    raw_active.range((11 + raw_gap * x_vin, 2)).value = 'Vin'
-                    raw_active.range((12 + raw_gap * x_vin, 2)).value = 'Iin'
-                    raw_active.range((13 + raw_gap * x_vin, 2)).value = 'ELVDD'
-                    raw_active.range((14 + raw_gap * x_vin, 2)).value = 'ELVSS'
-                    raw_active.range((15 + raw_gap * x_vin, 2)).value = 'I_EL'
-                    raw_active.range((16 + raw_gap * x_vin, 2)).value = 'AVDD'
-                    raw_active.range((17 + raw_gap * x_vin, 2)
-                                     ).value = 'I_AVDD'
-                    raw_active.range((18 + raw_gap * x_vin, 2)).value = 'Eff'
-                    raw_active.range((19 + raw_gap * x_vin, 2)).value = 'VOP'
-                    raw_active.range((20 + raw_gap * x_vin, 2)).value = 'VON'
-
-                    if sim_real == 1:
-                        # adjust the vin voltage
-                        pwr1.chg_out(v_target, sh.pre_imax,
-                                     sh.inst_pwr_ch3, 'on')
-                        time.sleep(wait_small)
-                    else:
-                        # simulation mode change bias settings
-                        print('vin setting change: ' + str(v_target))
-
-                    # current loop start point
-                    # counter of current setting
-                    x_iload = 0
-                    # here means I_EL
-
-                    # selection for current counter based on the channel setting
-                    # when testing for AVDD single channel, need to use AVDD current mapping column
-                    # for the loop counter
-                    c_load_curr = 0
                     if sh.channel_mode == 1:
-                        # channel mode: 0-EL, 1-AVDD, 2-EL+AVDD
-                        c_load_curr = sh.c_avdd_single
-                    else:
-                        c_load_curr = sh.c_iload
+                        vout_p_pre_active = sh.wb_res.sheets(
+                            sh.sheet_arry[sh.sub_sh_count * x_avdd + 3])
+                        pos_pre_temp = str(
+                            sh.sheet_arry[sh.sub_sh_count * x_avdd + 3])
 
-                    # for each loop of iload, need to define a new offset
-                    value_i_offset1 = 0
-                    value_i_offset2 = 0
-                    while x_iload < c_load_curr:
-                        # because different mode need to measure different channel,
-                        # rebuild the selection part for items below ... wait for continue (0325)
+                    elif sh.channel_mode == 0 or sh.channel_mode == 2:
+                        vout_p_pre_active = sh.wb_res.sheets(
+                            sh.sheet_arry[sh.sub_sh_count * x_avdd + 4])
+                        pos_pre_temp = str(
+                            sh.sheet_arry[sh.sub_sh_count * x_avdd + 4])
 
-                        if sh.channel_mode == 0 or sh.channel_mode == 2:
-                            # for EL only or 3-ch, load target is for EL power
-                            iload_target = sh.sh_org_tab.range(
-                                (3 + x_iload, 3)).value
-                        else:
-                            # if only AVDD efficiency, assign the load target to AVDD_1ch column
-                            iload_target = sh.sh_org_tab.range(
-                                (3 + x_iload, 7)).value
+                    # 220825 add the sheet mapping for Vout and Von
 
-                        # all i_load target must start from 0 mA for calibration
+                    if sh.channel_mode == 0 or sh.channel_mode == 2:
+                        # only assign the sheet if there are negative output used in the measurement
+                        vout_n_active = sh.wb_res.sheets(
+                            sh.sheet_arry[sh.sub_sh_count * x_avdd + 3])
+                        neg_temp = str(
+                            sh.sheet_arry[sh.sub_sh_count * x_avdd + 3])
+                        # add the string save sheet name for the usage of plot
 
-                        pro_status_str = 'setting iload_target current'
-                        i_el_status = str(iload_target)
-                        print(pro_status_str)
+                        vout_n_pre_active = sh.wb_res.sheets(
+                            sh.sheet_arry[sh.sub_sh_count * x_avdd + 5])
+                        neg_pre_temp = str(
+                            sh.sheet_arry[sh.sub_sh_count * x_avdd + 5])
+
+                    # ====================
+                    #  this portion seems not a must have portion in the system
+                    # if sh.channel_mode == 0 or sh.channel_mode == 2 :
+                    #     # EL only or 3-ch operation
+                    #     sheet_active = sh.wb_res.sheets(
+                    #         sh.sheet_arry[sh.sub_sh_count * x_avdd])
+                    #     raw_active = sh.wb_res.sheets(
+                    #         sh.sheet_arry[sh.sub_sh_count * x_avdd + 1])
+                    #     vout_p_active = sh.wb_res.sheets(
+                    #         sh.sheet_arry[sh.sub_sh_count * x_avdd + 2])
+                    #     vout_p_active = sh.wb_res.sheets(
+                    #         sh.sheet_arry[sh.sub_sh_count * x_avdd + 3])
+                    # else :
+                    #     # AVDD only
+                    #     sheet_active = sh.wb_res.sheets(
+                    #         sh.sheet_arry[sh.sub_sh_count * x_avdd])
+                    #     raw_active = sh.wb_res.sheets(
+                    #         sh.sheet_arry[sh.sub_sh_count * x_avdd + 1])
+                    #     vout_p_active = sh.wb_res.sheets(
+                    #         sh.sheet_arry[sh.sub_sh_count * x_avdd + 2])
+                    # ====================
+
+                    # not to turn load on here, Vin haven't change yet, only update the
+                    # AVDD load current here
+
+                    # if sim_real == 1 :
+                    #     load1.chg_out(curr_avdd, sh.loa_ch2_set, 'on')
+                    #     # turn the load of AVDD on when after load the current
+                    # else:
+                    #     print('finished set the current and turn load on')
+                    #     # input()
+
+                    # Vin loop start point
+                    # counter for the Vin setting
+
+                    x_vin = 0
+                    while x_vin < sh.c_vin:
+
+                        v_target = sh.sh_org_tab.range((3 + x_vin, 2)).value
+                        pro_status_str = 'Vin:' + str(v_target)
+                        vin_status = str(v_target)
                         program_status(pro_status_str)
+                        # update the target Vin to the program status
 
-                        if x_vin == 0:
-                            sheet_active.range(
-                                (25 + x_iload, 2)).value = iload_target
-                            # only process once for the current index at the result sheet
-                            # 220325: regulation sheet also need to have current index
+                        # add the related Vin(ideal) setting at the result sheet
+                        sheet_active.range((24, 3 + x_vin)).value = v_target
+
+                        # 220325: regulation sheet also need to have current index
+                        if sh.channel_mode == 0 or sh.channel_mode == 2:
+                            # ELVDD and ELVSS have regulation sheet
+                            vout_p_active.range(
+                                (24, 3 + x_vin)).value = v_target
+                            vout_n_active.range(
+                                (24, 3 + x_vin)).value = v_target
+                            # 220825 add the V setting for Vop and Von sheet
+                            vout_p_pre_active.range(
+                                (24, 3 + x_vin)).value = v_target
+                            vout_n_pre_active.range(
+                                (24, 3 + x_vin)).value = v_target
+                        else:
+                            # AVDD have regulation sheet
+                            vout_p_active.range(
+                                (24, 3 + x_vin)).value = v_target
+                            # 220825 add the V setting for Vop and Von sheet
+                            vout_p_pre_active.range(
+                                (24, 3 + x_vin)).value = v_target
+
+                        # for the raw data sheet index
+                        raw_active.range(
+                            (11 + raw_gap * x_vin, 2)).value = 'Vin'
+                        raw_active.range(
+                            (12 + raw_gap * x_vin, 2)).value = 'Iin'
+                        raw_active.range(
+                            (13 + raw_gap * x_vin, 2)).value = 'ELVDD'
+                        raw_active.range(
+                            (14 + raw_gap * x_vin, 2)).value = 'ELVSS'
+                        raw_active.range(
+                            (15 + raw_gap * x_vin, 2)).value = 'I_EL'
+                        raw_active.range(
+                            (16 + raw_gap * x_vin, 2)).value = 'AVDD'
+                        raw_active.range((17 + raw_gap * x_vin, 2)
+                                         ).value = 'I_AVDD'
+                        raw_active.range(
+                            (18 + raw_gap * x_vin, 2)).value = 'Eff'
+                        raw_active.range(
+                            (19 + raw_gap * x_vin, 2)).value = 'VOP'
+                        raw_active.range(
+                            (20 + raw_gap * x_vin, 2)).value = 'VON'
+
+                        if sim_real == 1:
+                            # adjust the vin voltage
+                            pwr1.chg_out(v_target, sh.pre_imax,
+                                         sh.inst_pwr_ch3, 'on')
+                            time.sleep(wait_small)
+                        else:
+                            # simulation mode change bias settings
+                            print('vin setting change: ' + str(v_target))
+
+                        # current loop start point
+                        # counter of current setting
+                        x_iload = 0
+                        # here means I_EL
+
+                        # selection for current counter based on the channel setting
+                        # when testing for AVDD single channel, need to use AVDD current mapping column
+                        # for the loop counter
+                        c_load_curr = 0
+                        if sh.channel_mode == 1:
+                            # channel mode: 0-EL, 1-AVDD, 2-EL+AVDD
+                            c_load_curr = sh.c_avdd_single
+                        else:
+                            c_load_curr = sh.c_iload
+
+                        # for each loop of iload, need to define a new offset
+                        value_i_offset1 = 0
+                        value_i_offset2 = 0
+                        while x_iload < c_load_curr:
+                            # because different mode need to measure different channel,
+                            # rebuild the selection part for items below ... wait for continue (0325)
+
                             if sh.channel_mode == 0 or sh.channel_mode == 2:
-                                # ELVDD and ELVSS have regulation sheet
-                                vout_p_active.range(
-                                    (25 + x_iload, 2)).value = iload_target
-                                vout_n_active.range(
-                                    (25 + x_iload, 2)).value = iload_target
-                                # 220825 add the Vop and Von
-                                vout_p_pre_active.range(
-                                    (25 + x_iload, 2)).value = iload_target
-                                vout_n_pre_active.range(
-                                    (25 + x_iload, 2)).value = iload_target
+                                # for EL only or 3-ch, load target is for EL power
+                                iload_target = sh.sh_org_tab.range(
+                                    (3 + x_iload, 3)).value
                             else:
-                                # AVDD have regulation sheet
-                                vout_p_active.range(
-                                    (25 + x_iload, 2)).value = iload_target
-                                # 220825 add the Vop and Von
-                                vout_p_pre_active.range(
-                                    (25 + x_iload, 2)).value = iload_target
-                            pro_status_str = 'give index to regulation sheet'
+                                # if only AVDD efficiency, assign the load target to AVDD_1ch column
+                                iload_target = sh.sh_org_tab.range(
+                                    (3 + x_iload, 7)).value
+
+                            # all i_load target must start from 0 mA for calibration
+
+                            pro_status_str = 'setting iload_target current'
+                            i_el_status = str(iload_target)
                             print(pro_status_str)
                             program_status(pro_status_str)
 
-                        if sim_mcu == 1:
-                            # setting up for the relay channel
-
-                            # uart_cmd_str = (chr(mcu_mode_8_bit_IO) +
-                            #                 mcu_cmd_arry[int(meter_ch_ctrl)])
-                            # print(uart_cmd_str)
-                            # mcu_com.write(uart_cmd_str)
-                            # 220328: reset the relay channel to initial state(Vin stage)
-                            meter_ch_ctrl = 0
-                            mcu_write('relay')
-                            time.sleep(wait_small)
-                            # input()
-                            # finished adjust relay channel
-
-                            # note that the meter_ch_ctrl will change through the measurement channel change
-                            # so the the start point of meter should be Vin(calibration)
-                        else:
-                            print(
-                                'change the relay channel without MCU for calibration')
-                            # setting up for the relay channel
-                            uart_cmd_str = (chr(mcu_mode_8_bit_IO) +
-                                            mcu_cmd_arry[int(meter_ch_ctrl)])
-                            print(uart_cmd_str)
-                            # mcu_com.write(uart_cmd_str)
-                            meter_ch_ctrl = 0
-                            time.sleep(wait_small)
-
-                        if sim_real == 1:
-                            # setting up for the instrument control
-                            time.sleep(wait_small)
-
-                            # initialization the temp saving parameter for the efficiency calculation
-                            # clear result for each round of the current loop
-                            value_elvdd = 0
-                            value_elvss = 0
-                            value_avdd = 0
-                            value_iin = 0
-                            value_vin = 0
-                            value_iel = 0
-                            value_iavdd = 0
-                            value_eff = 0
-                            if x_iload > 0:
-                                # turn the load on to setting i_load (when x > 0)
-
-                                # 20220429 method to assign source meter for the PMIC measurement
-                                # only single AVDD efficiency need to use source meter at the AVDD
-                                # other is mainly for EL-power
-                                # make the selection easier in this applicaation
-
-                                if sh.channel_mode == 2:
-                                    # 3 channel mode, only EL powere will have source meter
-                                    # selection only at the iload_target but not curr_avdd
-
-                                    # turn on AVDD load channel, must be chroma
-                                    load1.chg_out(curr_avdd,
-                                                  sh.loa_ch2_set, 'on')
-
-                                    # choose the source meter or the chroma load
-                                    if sh.source_meter_channel == 1:
-                                        load_src.change_I(iload_target, 'on')
-                                        # or you can use 'keep' to replace 'on' and call the load turn at other point
-
-                                    else:
-                                        # not using source meter for EL, it's chroma loader
-                                        load1.chg_out(
-                                            iload_target, sh.loa_ch_set, 'on')
-
-                                elif sh.channel_mode == 0:
-                                    # only turn the EL on
-                                    # choose the source meter or the chroma load
-                                    if sh.source_meter_channel == 1:
-                                        load_src.change_I(iload_target, 'on')
-                                        # or you can use 'keep' to replace 'on' and call the load turn at other point
-
-                                    else:
-                                        # not using source meter for EL, it's chroma loader
-                                        load1.chg_out(
-                                            iload_target, sh.loa_ch_set, 'on')
-                                elif sh.channel_mode == 1:
-                                    # only turn the AVDD on
-                                    # choose the source meter or the chroma load
-                                    if sh.source_meter_channel == 2:
-                                        load_src.change_I(iload_target, 'on')
-                                        # or you can use 'keep' to replace 'on' and call the load turn at other point
-
-                                    else:
-                                        # not using source meter for EL, it's chroma loader
-                                        load1.chg_out(
-                                            iload_target, sh.loa_ch2_set, 'on')
-
-                            # need to set muc_sim to 1 before using calibration
-                            vin_clibrate_singal_met(vin_ch, v_target)
-                            # record Vin after calibration finished
-                            time.sleep(wait_time)
-                            data_latch('vin', v_res_temp)
-
-                            # all the channel change with original sequence
-                            # but bypass result to 'NA' with related mode of settings
-                            # 0 is bypass and 1 is enable
-
-                            # =====
-                            meter_ch_ctrl = meter_ch_ctrl + 1
-                            # change relay to AVDD
-                            if sh.channel_mode == 3:
-                                # bypass AVDD measurement result if only check EL efficiency
-                                bypass_measurement_flag = 1
-                            else:
-                                # only change relay and measurement voltage if needed
-                                mcu_write('relay')
-                                v_res_temp = met1.mea_v()
-                                time.sleep(wait_time)
-                            # for the data latch, bypass flag will decide to use the result or not
-                            data_latch('avdd', v_res_temp)
-
-                            # =====
-
-                            # =====
-                            meter_ch_ctrl = meter_ch_ctrl + 1
-                            # change relay to ELVDD
-                            if sh.channel_mode == 3:
-                                # bypass ELVDD measurement result (AVDD only)
-                                bypass_measurement_flag = 1
-                            else:
-                                # only change relay and measurement voltage if needed
-                                mcu_write('relay')
-                                v_res_temp = met1.mea_v()
-                                time.sleep(wait_time)
-                            # for the data latch, bypass flag will decide to use the result or not
-                            data_latch('elvdd', v_res_temp)
-
-                            # =====
-
-                            # =====
-                            meter_ch_ctrl = meter_ch_ctrl + 1
-                            # change relay to ELVSS
-                            if sh.channel_mode == 3:
-                                # bypass ELVSS measurement result (AVDD only)
-                                bypass_measurement_flag = 1
-                            else:
-                                # only change relay and measurement voltage if needed
-                                mcu_write('relay')
-                                v_res_temp = met1.mea_v()
-                                time.sleep(wait_time)
-                            # for the data latch, bypass flag will decide to use the result or not
-                            data_latch('elvss', v_res_temp)
-
-                            # =====
-
-                            # =====
-                            meter_ch_ctrl = meter_ch_ctrl + 1
-                            # change relay to VOP
-                            if sh.channel_mode == 3:
-                                # record in all condition
-                                bypass_measurement_flag = 1
-                            else:
-                                # only change relay and measurement voltage if needed
-                                mcu_write('relay')
-                                v_res_temp = met1.mea_v()
-                                time.sleep(wait_time)
-                            # for the data latch, bypass flag will decide to use the result or not
-                            data_latch('vop', v_res_temp)
-
-                            # =====
-
-                            # =====
-                            meter_ch_ctrl = meter_ch_ctrl + 1
-                            # change relay to VON
-                            if sh.channel_mode == 3:
-                                # bypass VON measurement result (AVDD only)
-                                bypass_measurement_flag = 1
-                            else:
-                                # only change relay and measurement voltage if needed
-                                mcu_write('relay')
-                                v_res_temp = met1.mea_v()
-                                time.sleep(wait_time)
-                            # for the data latch, bypass flag will decide to use the result or not
-                            data_latch('von', v_res_temp)
-
-                            # =====
-
-                            # # this is the power supply method, not the meter method
-                            # v_res_temp = pwr1.read_iout()
-                            # # for current reading, need to remove A in the end of string
-                            # v_res_temp = v_res_temp.replace('A', '')
-                            # # this part can also consider to move to the next ints_pkg file
-                            # # can help to improve the complexity
-
-                            # adjust the Iin measurement from power supply to meter
-                            v_res_temp = met2.mea_i()
-                            data_latch('iin', v_res_temp)
-                            time.sleep(wait_time)
-                            # different mode need different Iout => read all Iout but only keep the good one
-
-                            # 20220429 read I function: read all the channel, but choose to latch or not,
-                            # get the I read result from both chroma channel, choose different way to latch data
-                            # based on the channel mode from control sheet
-                            if sh.source_meter_channel == 0:
-                                v_res_temp = load1.read_iout(sh.loa_ch_set)
+                            if x_vin == 0:
+                                sheet_active.range(
+                                    (25 + x_iload, 2)).value = iload_target
+                                # only process once for the current index at the result sheet
+                                # 220325: regulation sheet also need to have current index
                                 if sh.channel_mode == 0 or sh.channel_mode == 2:
-                                    data_latch('i_el', v_res_temp)
-                                    if sh.channel_mode == 0:
-                                        # give the i_avdd blank to 0 for result
-                                        data_latch(
-                                            'i_avdd', str(value_i_offset2))
-                                        # 0511 to preven calibration settings cause error
-                                        # pass the calibration parameter into data_latch to
-                                        # cancel the result adjustment
-                                v_res_temp = load1.read_iout(sh.loa_ch2_set)
-                                if sh.channel_mode == 1 or sh.channel_mode == 2:
-                                    data_latch('i_avdd', v_res_temp)
-                                    if sh.channel_mode == 1:
-                                        # give the i_el blank to 0 for result
-                                        data_latch('i_el', '0')
-                                        data_latch(
-                                            'i_el', str(value_i_offset1))
-                                        # 0511 to preven calibration settings cause error
-                                        # pass the calibration parameter into data_latch to
-                                        # cancel the result adjustment
-                            elif sh.source_meter_channel == 1:
-                                v_res_temp = load_src.read('CURR')
-                                data_latch('i_el', v_res_temp)
-                                if sh.channel_mode == 2 or sh.channel_mode == 0:
-                                    # if now is 3-channel mode, also need to latch the current at AVDD
+                                    # ELVDD and ELVSS have regulation sheet
+                                    vout_p_active.range(
+                                        (25 + x_iload, 2)).value = iload_target
+                                    vout_n_active.range(
+                                        (25 + x_iload, 2)).value = iload_target
+                                    # 220825 add the Vop and Von
+                                    vout_p_pre_active.range(
+                                        (25 + x_iload, 2)).value = iload_target
+                                    vout_n_pre_active.range(
+                                        (25 + x_iload, 2)).value = iload_target
+                                else:
+                                    # AVDD have regulation sheet
+                                    vout_p_active.range(
+                                        (25 + x_iload, 2)).value = iload_target
+                                    # 220825 add the Vop and Von
+                                    vout_p_pre_active.range(
+                                        (25 + x_iload, 2)).value = iload_target
+                                pro_status_str = 'give index to regulation sheet'
+                                print(pro_status_str)
+                                program_status(pro_status_str)
+
+                            if sim_mcu == 1:
+                                # setting up for the relay channel
+
+                                # uart_cmd_str = (chr(mcu_mode_8_bit_IO) +
+                                #                 mcu_cmd_arry[int(meter_ch_ctrl)])
+                                # print(uart_cmd_str)
+                                # mcu_com.write(uart_cmd_str)
+                                # 220328: reset the relay channel to initial state(Vin stage)
+                                meter_ch_ctrl = 0
+                                mcu_write('relay')
+                                time.sleep(wait_small)
+                                # input()
+                                # finished adjust relay channel
+
+                                # note that the meter_ch_ctrl will change through the measurement channel change
+                                # so the the start point of meter should be Vin(calibration)
+                            else:
+                                print(
+                                    'change the relay channel without MCU for calibration')
+                                # setting up for the relay channel
+                                uart_cmd_str = (chr(mcu_mode_8_bit_IO) +
+                                                mcu_cmd_arry[int(meter_ch_ctrl)])
+                                print(uart_cmd_str)
+                                # mcu_com.write(uart_cmd_str)
+                                meter_ch_ctrl = 0
+                                time.sleep(wait_small)
+
+                            if sim_real == 1:
+                                # setting up for the instrument control
+                                time.sleep(wait_small)
+
+                                # initialization the temp saving parameter for the efficiency calculation
+                                # clear result for each round of the current loop
+                                value_elvdd = 0
+                                value_elvss = 0
+                                value_avdd = 0
+                                value_iin = 0
+                                value_vin = 0
+                                value_iel = 0
+                                value_iavdd = 0
+                                value_eff = 0
+                                if x_iload > 0:
+                                    # turn the load on to setting i_load (when x > 0)
+
+                                    # 20220429 method to assign source meter for the PMIC measurement
+                                    # only single AVDD efficiency need to use source meter at the AVDD
+                                    # other is mainly for EL-power
+                                    # make the selection easier in this applicaation
+
+                                    if sh.channel_mode == 2:
+                                        # 3 channel mode, only EL powere will have source meter
+                                        # selection only at the iload_target but not curr_avdd
+
+                                        # turn on AVDD load channel, must be chroma
+                                        load1.chg_out(curr_avdd,
+                                                      sh.loa_ch2_set, 'on')
+
+                                        # choose the source meter or the chroma load
+                                        if sh.source_meter_channel == 1:
+                                            load_src.change_I(
+                                                iload_target, 'on')
+                                            # or you can use 'keep' to replace 'on' and call the load turn at other point
+
+                                        else:
+                                            # not using source meter for EL, it's chroma loader
+                                            load1.chg_out(
+                                                iload_target, sh.loa_ch_set, 'on')
+
+                                    elif sh.channel_mode == 0:
+                                        # only turn the EL on
+                                        # choose the source meter or the chroma load
+                                        if sh.source_meter_channel == 1:
+                                            load_src.change_I(
+                                                iload_target, 'on')
+                                            # or you can use 'keep' to replace 'on' and call the load turn at other point
+
+                                        else:
+                                            # not using source meter for EL, it's chroma loader
+                                            load1.chg_out(
+                                                iload_target, sh.loa_ch_set, 'on')
+                                    elif sh.channel_mode == 1:
+                                        # only turn the AVDD on
+                                        # choose the source meter or the chroma load
+                                        if sh.source_meter_channel == 2:
+                                            load_src.change_I(
+                                                iload_target, 'on')
+                                            # or you can use 'keep' to replace 'on' and call the load turn at other point
+
+                                        else:
+                                            # not using source meter for EL, it's chroma loader
+                                            load1.chg_out(
+                                                iload_target, sh.loa_ch2_set, 'on')
+
+                                # need to set muc_sim to 1 before using calibration
+                                vin_clibrate_singal_met(vin_ch, v_target)
+                                # record Vin after calibration finished
+                                time.sleep(wait_time)
+                                data_latch('vin', v_res_temp)
+
+                                # all the channel change with original sequence
+                                # but bypass result to 'NA' with related mode of settings
+                                # 0 is bypass and 1 is enable
+
+                                # =====
+                                meter_ch_ctrl = meter_ch_ctrl + 1
+                                # change relay to AVDD
+                                if sh.channel_mode == 3:
+                                    # bypass AVDD measurement result if only check EL efficiency
+                                    bypass_measurement_flag = 1
+                                else:
+                                    # only change relay and measurement voltage if needed
+                                    mcu_write('relay')
+                                    v_res_temp = met1.mea_v()
+                                    time.sleep(wait_time)
+                                # for the data latch, bypass flag will decide to use the result or not
+                                data_latch('avdd', v_res_temp)
+
+                                # =====
+
+                                # =====
+                                meter_ch_ctrl = meter_ch_ctrl + 1
+                                # change relay to ELVDD
+                                if sh.channel_mode == 3:
+                                    # bypass ELVDD measurement result (AVDD only)
+                                    bypass_measurement_flag = 1
+                                else:
+                                    # only change relay and measurement voltage if needed
+                                    mcu_write('relay')
+                                    v_res_temp = met1.mea_v()
+                                    time.sleep(wait_time)
+                                # for the data latch, bypass flag will decide to use the result or not
+                                data_latch('elvdd', v_res_temp)
+
+                                # =====
+
+                                # =====
+                                meter_ch_ctrl = meter_ch_ctrl + 1
+                                # change relay to ELVSS
+                                if sh.channel_mode == 3:
+                                    # bypass ELVSS measurement result (AVDD only)
+                                    bypass_measurement_flag = 1
+                                else:
+                                    # only change relay and measurement voltage if needed
+                                    mcu_write('relay')
+                                    v_res_temp = met1.mea_v()
+                                    time.sleep(wait_time)
+                                # for the data latch, bypass flag will decide to use the result or not
+                                data_latch('elvss', v_res_temp)
+
+                                # =====
+
+                                # =====
+                                meter_ch_ctrl = meter_ch_ctrl + 1
+                                # change relay to VOP
+                                if sh.channel_mode == 3:
+                                    # record in all condition
+                                    bypass_measurement_flag = 1
+                                else:
+                                    # only change relay and measurement voltage if needed
+                                    mcu_write('relay')
+                                    v_res_temp = met1.mea_v()
+                                    time.sleep(wait_time)
+                                # for the data latch, bypass flag will decide to use the result or not
+                                data_latch('vop', v_res_temp)
+
+                                # =====
+
+                                # =====
+                                meter_ch_ctrl = meter_ch_ctrl + 1
+                                # change relay to VON
+                                if sh.channel_mode == 3:
+                                    # bypass VON measurement result (AVDD only)
+                                    bypass_measurement_flag = 1
+                                else:
+                                    # only change relay and measurement voltage if needed
+                                    mcu_write('relay')
+                                    v_res_temp = met1.mea_v()
+                                    time.sleep(wait_time)
+                                # for the data latch, bypass flag will decide to use the result or not
+                                data_latch('von', v_res_temp)
+
+                                # =====
+
+                                # # this is the power supply method, not the meter method
+                                # v_res_temp = pwr1.read_iout()
+                                # # for current reading, need to remove A in the end of string
+                                # v_res_temp = v_res_temp.replace('A', '')
+                                # # this part can also consider to move to the next ints_pkg file
+                                # # can help to improve the complexity
+
+                                # adjust the Iin measurement from power supply to meter
+                                v_res_temp = met2.mea_i()
+                                data_latch('iin', v_res_temp)
+                                time.sleep(wait_time)
+                                # different mode need different Iout => read all Iout but only keep the good one
+
+                                # 20220429 read I function: read all the channel, but choose to latch or not,
+                                # get the I read result from both chroma channel, choose different way to latch data
+                                # based on the channel mode from control sheet
+                                if sh.source_meter_channel == 0:
+                                    v_res_temp = load1.read_iout(sh.loa_ch_set)
+                                    if sh.channel_mode == 0 or sh.channel_mode == 2:
+                                        data_latch('i_el', v_res_temp)
+                                        if sh.channel_mode == 0:
+                                            # give the i_avdd blank to 0 for result
+                                            data_latch(
+                                                'i_avdd', str(value_i_offset2))
+                                            # 0511 to preven calibration settings cause error
+                                            # pass the calibration parameter into data_latch to
+                                            # cancel the result adjustment
                                     v_res_temp = load1.read_iout(
                                         sh.loa_ch2_set)
-                                    data_latch('i_avdd', v_res_temp)
-                            elif sh.source_meter_channel == 2:
-                                # since we already assume there is no EL power measurement
-                                # for using source meter for AVDD, EL power will be latch to 0
-                                v_res_temp = load_src.read('CURR')
-                                data_latch('i_avdd', v_res_temp)
-                                # give the i_el blank to 0 for result
-                                data_latch('i_el', '0')
-
-                            # ==== loader offset configuration
-                            # add the calibration factor to iload_target
-                            if x_iload == 0:
-
-                                if sh.loader_cal_mode == 2:
-                                    # when the calibration mode is 2, use no load case for the offset adjustment
-                                    if sh.channel_mode == 0 or sh.channel_mode == 2:
-                                        value_i_offset1 = value_iel
-                                        if sh.channel_mode == 2:
-                                            value_i_offset2 = value_iavdd
-                                    elif sh.channel_mode == 1:
-                                        value_i_offset2 = value_iavdd
-                                elif sh.loader_cal_mode == 1:
-                                    # when the calibration mode is 1, constant offset adjustment
-                                    if sh.channel_mode == 0 or sh.channel_mode == 2:
-                                        value_i_offset1 = sh.loader_cal_off1
-                                        if sh.channel_mode == 2:
-                                            value_i_offset2 = sh.loader_cal_off2
-                                    elif sh.channel_mode == 1:
-                                        value_i_offset2 = sh.loader_cal_off2
-                                else:
-                                    # the case don't need offset
-                                    value_i_offset1 = 0
-                                    value_i_offset2 = 0
-
-                                if sh.source_meter_channel == 1:
-                                    # if the channel 1=> EL power, 2=> AVDD, 0=> not use source meter
-                                    value_i_offset1 = 0
-                                    # remove the offset if using source meter
+                                    if sh.channel_mode == 1 or sh.channel_mode == 2:
+                                        data_latch('i_avdd', v_res_temp)
+                                        if sh.channel_mode == 1:
+                                            # give the i_el blank to 0 for result
+                                            data_latch('i_el', '0')
+                                            data_latch(
+                                                'i_el', str(value_i_offset1))
+                                            # 0511 to preven calibration settings cause error
+                                            # pass the calibration parameter into data_latch to
+                                            # cancel the result adjustment
+                                elif sh.source_meter_channel == 1:
+                                    v_res_temp = load_src.read('CURR')
+                                    data_latch('i_el', v_res_temp)
+                                    if sh.channel_mode == 2 or sh.channel_mode == 0:
+                                        # if now is 3-channel mode, also need to latch the current at AVDD
+                                        v_res_temp = load1.read_iout(
+                                            sh.loa_ch2_set)
+                                        data_latch('i_avdd', v_res_temp)
                                 elif sh.source_meter_channel == 2:
-                                    value_i_offset2 = 0
+                                    # since we already assume there is no EL power measurement
+                                    # for using source meter for AVDD, EL power will be latch to 0
+                                    v_res_temp = load_src.read('CURR')
+                                    data_latch('i_avdd', v_res_temp)
+                                    # give the i_el blank to 0 for result
+                                    data_latch('i_el', '0')
 
-                            # ==== loader offset end point
-                            print(sh.sh_main)
-                            pass
+                                # ==== loader offset configuration
+                                # add the calibration factor to iload_target
+                                if x_iload == 0:
 
-                            # 220329: for the new version of inst_pkg_a, add the A remove function in
-                            # the sub-program operation
-                            # # for current reading, need to remove A in the end of string
-                            # v_res_temp = v_res_temp.replace('A', '')
-                            # data_latch('iout', v_res_temp)
-                            time.sleep(wait_time)
-                            # record iin and iout for from the source and load
-                            # meter channel shift, when the cycle end, reset the channel
-                            # selection for the next round
-                            meter_ch_ctrl = 0
-                            mcu_write('relay')
-                            # after setting the meter channel, also give MCU command back to initial
-                            # get ready for the next cycle
+                                    if sh.loader_cal_mode == 2:
+                                        # when the calibration mode is 2, use no load case for the offset adjustment
+                                        if sh.channel_mode == 0 or sh.channel_mode == 2:
+                                            value_i_offset1 = value_iel
+                                            if sh.channel_mode == 2:
+                                                value_i_offset2 = value_iavdd
+                                        elif sh.channel_mode == 1:
+                                            value_i_offset2 = value_iavdd
+                                    elif sh.loader_cal_mode == 1:
+                                        # when the calibration mode is 1, constant offset adjustment
+                                        if sh.channel_mode == 0 or sh.channel_mode == 2:
+                                            value_i_offset1 = sh.loader_cal_off1
+                                            if sh.channel_mode == 2:
+                                                value_i_offset2 = sh.loader_cal_off2
+                                        elif sh.channel_mode == 1:
+                                            value_i_offset2 = sh.loader_cal_off2
+                                    else:
+                                        # the case don't need offset
+                                        value_i_offset1 = 0
+                                        value_i_offset2 = 0
 
-                            # measure Vout
-                            # measure Iin (power supply or meter)
-                            # mrasure I out (loader or meter)
+                                    if sh.source_meter_channel == 1:
+                                        # if the channel 1=> EL power, 2=> AVDD, 0=> not use source meter
+                                        value_i_offset1 = 0
+                                        # remove the offset if using source meter
+                                    elif sh.source_meter_channel == 2:
+                                        value_i_offset2 = 0
 
-                            # to prevent overspec of the votlage input, need to change the Vin back to
-                            # intital target before loading release
-                            pwr1.chg_out(v_target, sh.pre_sup_iout,
-                                         sh.inst_pwr_ch3, 'on')
-                            print('V_target return to normal')
+                                # ==== loader offset end point
+                                print(sh.sh_main)
+                                pass
 
-                            # release loading
-                            # turn the load off after measurement
-                            if sh.channel_mode == 2:
-                                # load1.chg_out(curr_avdd, sh.loa_ch2_set, 'off')
-                                # load1.chg_out(iload_target, sh.loa_ch_set, 'off')
-                                load1.chg_out(0, sh.loa_ch2_set, 'on')
-                                load1.chg_out(0, sh.loa_ch_set, 'on')
-                            elif sh.channel_mode == 0:
-                                # only turn the EL on
-                                # load1.chg_out(iload_target, sh.loa_ch_set, 'off')
-                                if sh.source_meter_channel == 1 or sh.source_meter_channel == 2:
-                                    # load_src.load_off()
-                                    # change to turn off at each voltage cycle for loadr and source meter
-                                    load_src.change_I(0, 'on')
-                                else:
-                                    load1.chg_out(0, sh.loa_ch_set, 'on')
-                            elif sh.channel_mode == 1:
-                                # only turn the AVDD on
-                                # load1.chg_out(iload_target, sh.loa_ch2_set, 'off')
-                                if sh.source_meter_channel == 1 or sh.source_meter_channel == 2:
-                                    # load_src.load_off()
-                                    # change to turn off at each voltage cycle for loadr and source meter
-                                    load_src.change_I(0, 'on')
-                                else:
+                                # 220329: for the new version of inst_pkg_a, add the A remove function in
+                                # the sub-program operation
+                                # # for current reading, need to remove A in the end of string
+                                # v_res_temp = v_res_temp.replace('A', '')
+                                # data_latch('iout', v_res_temp)
+                                time.sleep(wait_time)
+                                # record iin and iout for from the source and load
+                                # meter channel shift, when the cycle end, reset the channel
+                                # selection for the next round
+                                meter_ch_ctrl = 0
+                                mcu_write('relay')
+                                # after setting the meter channel, also give MCU command back to initial
+                                # get ready for the next cycle
+
+                                # measure Vout
+                                # measure Iin (power supply or meter)
+                                # mrasure I out (loader or meter)
+
+                                # to prevent overspec of the votlage input, need to change the Vin back to
+                                # intital target before loading release
+                                pwr1.chg_out(v_target, sh.pre_sup_iout,
+                                             sh.inst_pwr_ch3, 'on')
+                                print('V_target return to normal')
+
+                                # release loading
+                                # turn the load off after measurement
+                                if sh.channel_mode == 2:
+                                    # load1.chg_out(curr_avdd, sh.loa_ch2_set, 'off')
+                                    # load1.chg_out(iload_target, sh.loa_ch_set, 'off')
                                     load1.chg_out(0, sh.loa_ch2_set, 'on')
+                                    load1.chg_out(0, sh.loa_ch_set, 'on')
+                                elif sh.channel_mode == 0:
+                                    # only turn the EL on
+                                    # load1.chg_out(iload_target, sh.loa_ch_set, 'off')
+                                    if sh.source_meter_channel == 1 or sh.source_meter_channel == 2:
+                                        # load_src.load_off()
+                                        # change to turn off at each voltage cycle for loadr and source meter
+                                        load_src.change_I(0, 'on')
+                                    else:
+                                        load1.chg_out(0, sh.loa_ch_set, 'on')
+                                elif sh.channel_mode == 1:
+                                    # only turn the AVDD on
+                                    # load1.chg_out(iload_target, sh.loa_ch2_set, 'off')
+                                    if sh.source_meter_channel == 1 or sh.source_meter_channel == 2:
+                                        # load_src.load_off()
+                                        # change to turn off at each voltage cycle for loadr and source meter
+                                        load_src.change_I(0, 'on')
+                                    else:
+                                        load1.chg_out(0, sh.loa_ch2_set, 'on')
 
-                            # 20220429 since release the load and set to turn off is ok,
-                            # no specific setting for the chroma load selection here
-                            # source meter is also turn off directly
+                                # 20220429 since release the load and set to turn off is ok,
+                                # no specific setting for the chroma load selection here
+                                # source meter is also turn off directly
 
-                            # 220824 to prevent the wrong turning off of the E-load when using source meter for sngle channel operation
-                            # need to change this source meter turn off into loader turn off
-                            # if sh.source_meter_channel == 1 or sh.source_meter_channel == 2:
-                            #     # load_src.load_off()
-                            #     # change to turn off at each voltage cycle for loadr and source meter
-                            #     load_src.change_I(0, 'on')
+                                # 220824 to prevent the wrong turning off of the E-load when using source meter for sngle channel operation
+                                # need to change this source meter turn off into loader turn off
+                                # if sh.source_meter_channel == 1 or sh.source_meter_channel == 2:
+                                #     # load_src.load_off()
+                                #     # change to turn off at each voltage cycle for loadr and source meter
+                                #     load_src.change_I(0, 'on')
 
-                            # after the result fix in the data saving excel, calculate the efficiency
-                            value_eff = ((value_elvdd - value_elvss) * value_iel +
-                                         value_avdd * value_iavdd) / (value_vin * value_iin)
-                            data_latch('eff', str(value_eff))
-                            # latch and locked down the efficiency result
+                                # after the result fix in the data saving excel, calculate the efficiency
+                                value_eff = ((value_elvdd - value_elvss) * value_iel +
+                                             value_avdd * value_iavdd) / (value_vin * value_iin)
+                                data_latch('eff', str(value_eff))
+                                # latch and locked down the efficiency result
 
-                            # prepare for the next round
+                                # prepare for the next round
 
-                            # save the result after each counter finished
-                        else:
-                            # comments for the simulation mode
-                            # by using different digit of the floating number to know
-                            # the mapping of variable and settings
-                            # checking if the result saving is correct or not
-                            v_res_temp = v_res_temp + 1
-                            sim_v_data_temp = v_res_temp + v_target
-                            # add one variable call sim_v_data is because not to effect the v_res counter
-                            # during saving different result mapping and
-                            # and also know the program still going forward
-
-                            # MCU testing command
-                            if sim_mcu == 1:
-                                # initial by the previous code
-                                mcu_write('relay')
-                                print('change relay, meter channel change to: ' +
-                                      str(meter_ch_ctrl))
-                                print('now is Vin')
-
-                                # testing for the MCU operation independently
-                                meter_ch_ctrl = meter_ch_ctrl + 1
-                                # change relay to Vbias
-                                mcu_write('relay')
-                                print('change relay, meter channel change to: ' +
-                                      str(meter_ch_ctrl))
-                                print('now is AVDD')
-                                # input()
-
-                                # testing for the MCU operation independently
-                                meter_ch_ctrl = meter_ch_ctrl + 1
-                                # change relay to Vbias
-                                mcu_write('relay')
-                                print('change relay, meter channel change to: ' +
-                                      str(meter_ch_ctrl))
-                                print('now is OVDD')
-                                # input()
-
-                                # testing for the MCU operation independently
-                                meter_ch_ctrl = meter_ch_ctrl + 1
-                                # change relay to Vbias
-                                mcu_write('relay')
-                                print('change relay, meter channel change to: ' +
-                                      str(meter_ch_ctrl))
-                                print('now is OVSS')
-                                # input()
-
-                                # testing for the MCU operation independently
-                                meter_ch_ctrl = meter_ch_ctrl + 1
-                                # change relay to Vbias
-                                mcu_write('relay')
-                                print('change relay, meter channel change to: ' +
-                                      str(meter_ch_ctrl))
-                                print('now is VOP')
-                                # input()
-
-                                # testing for the MCU operation independently
-                                meter_ch_ctrl = meter_ch_ctrl + 1
-                                # change relay to Vbias
-                                mcu_write('relay')
-                                print('change relay, meter channel change to: ' +
-                                      str(meter_ch_ctrl))
-                                print('now is VON')
-                                # input()
-
-                            data_latch('vin', str(sim_v_data_temp))
-                            v_res_temp = v_res_temp + 1
-                            sim_v_data_temp = v_res_temp + 0.01
-                            data_latch('iin', str(sim_v_data_temp))
-                            if sh.channel_mode == 0 or sh.channel_mode == 2:
-                                # data_latch only active when using AVDD mode(1) or 3-ch mode(2)
+                                # save the result after each counter finished
+                            else:
+                                # comments for the simulation mode
+                                # by using different digit of the floating number to know
+                                # the mapping of variable and settings
+                                # checking if the result saving is correct or not
                                 v_res_temp = v_res_temp + 1
-                                sim_v_data_temp = v_res_temp + 0.02
-                                data_latch('elvdd', str(sim_v_data_temp))
+                                sim_v_data_temp = v_res_temp + v_target
+                                # add one variable call sim_v_data is because not to effect the v_res counter
+                                # during saving different result mapping and
+                                # and also know the program still going forward
+
+                                # MCU testing command
+                                if sim_mcu == 1:
+                                    # initial by the previous code
+                                    mcu_write('relay')
+                                    print('change relay, meter channel change to: ' +
+                                          str(meter_ch_ctrl))
+                                    print('now is Vin')
+
+                                    # testing for the MCU operation independently
+                                    meter_ch_ctrl = meter_ch_ctrl + 1
+                                    # change relay to Vbias
+                                    mcu_write('relay')
+                                    print('change relay, meter channel change to: ' +
+                                          str(meter_ch_ctrl))
+                                    print('now is AVDD')
+                                    # input()
+
+                                    # testing for the MCU operation independently
+                                    meter_ch_ctrl = meter_ch_ctrl + 1
+                                    # change relay to Vbias
+                                    mcu_write('relay')
+                                    print('change relay, meter channel change to: ' +
+                                          str(meter_ch_ctrl))
+                                    print('now is OVDD')
+                                    # input()
+
+                                    # testing for the MCU operation independently
+                                    meter_ch_ctrl = meter_ch_ctrl + 1
+                                    # change relay to Vbias
+                                    mcu_write('relay')
+                                    print('change relay, meter channel change to: ' +
+                                          str(meter_ch_ctrl))
+                                    print('now is OVSS')
+                                    # input()
+
+                                    # testing for the MCU operation independently
+                                    meter_ch_ctrl = meter_ch_ctrl + 1
+                                    # change relay to Vbias
+                                    mcu_write('relay')
+                                    print('change relay, meter channel change to: ' +
+                                          str(meter_ch_ctrl))
+                                    print('now is VOP')
+                                    # input()
+
+                                    # testing for the MCU operation independently
+                                    meter_ch_ctrl = meter_ch_ctrl + 1
+                                    # change relay to Vbias
+                                    mcu_write('relay')
+                                    print('change relay, meter channel change to: ' +
+                                          str(meter_ch_ctrl))
+                                    print('now is VON')
+                                    # input()
+
+                                data_latch('vin', str(sim_v_data_temp))
                                 v_res_temp = v_res_temp + 1
-                                sim_v_data_temp = v_res_temp + iload_target
-                                data_latch('elvss', str(sim_v_data_temp))
-                            v_res_temp = v_res_temp + 1
-                            sim_v_data_temp = v_res_temp + 0.03
-                            if sh.source_meter_channel == 1:
-                                print('i_el is from the source meter')
+                                sim_v_data_temp = v_res_temp + 0.01
+                                data_latch('iin', str(sim_v_data_temp))
+                                if sh.channel_mode == 0 or sh.channel_mode == 2:
+                                    # data_latch only active when using AVDD mode(1) or 3-ch mode(2)
+                                    v_res_temp = v_res_temp + 1
+                                    sim_v_data_temp = v_res_temp + 0.02
+                                    data_latch('elvdd', str(sim_v_data_temp))
+                                    v_res_temp = v_res_temp + 1
+                                    sim_v_data_temp = v_res_temp + iload_target
+                                    data_latch('elvss', str(sim_v_data_temp))
+                                v_res_temp = v_res_temp + 1
+                                sim_v_data_temp = v_res_temp + 0.03
+                                if sh.source_meter_channel == 1:
+                                    print('i_el is from the source meter')
+                                    print('')
+                                    pass
+                                data_latch('i_el', str(sim_v_data_temp))
+                                if sh.channel_mode == 1 or sh.channel_mode == 2:
+                                    # data_latch only active when using AVDD mode(1) or 3-ch mode(2)
+                                    v_res_temp = v_res_temp + 1
+                                    sim_v_data_temp = v_res_temp + 0.04
+                                    data_latch('avdd', str(sim_v_data_temp))
+                                v_res_temp = v_res_temp + 1
+                                sim_v_data_temp = v_res_temp + 0.05
+                                if sh.source_meter_channel == 2 and sh.channel_mode == 1:
+                                    print('i_avdd is from the source meter')
+                                    print('')
+                                    pass
+                                data_latch('i_avdd', str(sim_v_data_temp))
+                                v_res_temp = v_res_temp + 1
+                                sim_v_data_temp = v_res_temp + 0.06
+                                data_latch('eff', str(sim_v_data_temp))
+                                v_res_temp = v_res_temp + 1
+                                sim_v_data_temp = v_res_temp + 0.07
+                                data_latch('vop', str(sim_v_data_temp))
+                                v_res_temp = v_res_temp + 1
+                                if sh.channel_mode == 0 or sh.channel_mode == 2:
+                                    sim_v_data_temp = v_res_temp + 0.08
+                                    data_latch('von', str(sim_v_data_temp))
+
+                                # the simulation mode for result generation
+                                print(sh.sh_main)
                                 print('')
-                                pass
-                            data_latch('i_el', str(sim_v_data_temp))
-                            if sh.channel_mode == 1 or sh.channel_mode == 2:
-                                # data_latch only active when using AVDD mode(1) or 3-ch mode(2)
-                                v_res_temp = v_res_temp + 1
-                                sim_v_data_temp = v_res_temp + 0.04
-                                data_latch('avdd', str(sim_v_data_temp))
-                            v_res_temp = v_res_temp + 1
-                            sim_v_data_temp = v_res_temp + 0.05
-                            if sh.source_meter_channel == 2 and sh.channel_mode == 1:
-                                print('i_avdd is from the source meter')
-                                print('')
-                                pass
-                            data_latch('i_avdd', str(sim_v_data_temp))
-                            v_res_temp = v_res_temp + 1
-                            sim_v_data_temp = v_res_temp + 0.06
-                            data_latch('eff', str(sim_v_data_temp))
-                            v_res_temp = v_res_temp + 1
-                            sim_v_data_temp = v_res_temp + 0.07
-                            data_latch('vop', str(sim_v_data_temp))
-                            v_res_temp = v_res_temp + 1
-                            if sh.channel_mode == 0 or sh.channel_mode == 2:
-                                sim_v_data_temp = v_res_temp + 0.08
-                                data_latch('von', str(sim_v_data_temp))
 
-                            # the simulation mode for result generation
-                            print(sh.sh_main)
-                            print('')
+                            # before x_iload increase, need to checck inst status based on insturment control
+                            # 220522 add the check inst sub program
+                            if sh.inst_auto_selection == 2:
+                                check_inst_update()
+                            if sh.program_exit == 0:
+                                # exit the program
+                                break
+                            # check every time goes to the loop
 
-                        # before x_iload increase, need to checck inst status based on insturment control
-                        # 220522 add the check inst sub program
-                        if sh.inst_auto_selection == 2:
-                            check_inst_update()
+                            x_iload = x_iload + 1
+                            # end of the 4th loop
+
+                        sh.wb_res.save(sh.result_book_trace)
                         if sh.program_exit == 0:
                             # exit the program
                             break
-                        # check every time goes to the loop
+                        x_vin = x_vin + 1
+                        # end of the 3rd loop
 
-                        x_iload = x_iload + 1
-                        # end of the 4th loop
+                    # sh.wb_res.save(sh.result_book_trace)
+                    # save the file one time after each avdd load current is finished
+
+                    # make the plot for each AVDD current change, since there are one group of the efficiency and regulation data
+                    # start from EL only but need to check all 3 mode of the operation
+                    v_cnt = sh.c_vin
+                    i_cnt = c_load_curr
+
+                    # decide from the sheet need to plot chart
+                    book_n = str(sh.full_result_name) + '.xlsx'
+
+                    # 220524: for the instrument operation, prevent the issue of change windoww,
+                    # need to have message remind user to release control of excel
+                    # so there will not be the error from the plot
+                    # remind the operation can keep going after the plot is finished
+                    if sh.en_plot_waring == 1:
+                        msg_res = win32api.MessageBox(
+                            0, 'Release the control of excel, change the window to auto file now, and press enter, remind again when the plot is finished', 'Plot request from python')
+
+                    # plot for efficiency
+                    sheet_n = eff_temp
+                    sh.excel.Application.Run("EFF_inst.xlsm!gary_chart",
+                                             v_cnt, i_cnt, sheet_n, book_n, y_raw_start, x_raw_start)
+
+                    if sh.channel_mode == 0 or sh.channel_mode == 2:
+
+                        # plot for ELVDD
+                        sheet_n = pos_temp
+                        sh.excel.Application.Run("EFF_inst.xlsm!gary_chart",
+                                                 v_cnt, i_cnt, sheet_n, book_n, y_raw_start, x_raw_start)
+
+                        # plot for ELVSS
+                        sheet_n = neg_temp
+                        sh.excel.Application.Run("EFF_inst.xlsm!gary_chart",
+                                                 v_cnt, i_cnt, sheet_n, book_n, y_raw_start, x_raw_start)
+
+                        # plot for Vout
+                        sheet_n = pos_pre_temp
+                        sh.excel.Application.Run("EFF_inst.xlsm!gary_chart",
+                                                 v_cnt, i_cnt, sheet_n, book_n, y_raw_start, x_raw_start)
+
+                        # plot for Von
+                        sheet_n = neg_pre_temp
+                        sh.excel.Application.Run("EFF_inst.xlsm!gary_chart",
+                                                 v_cnt, i_cnt, sheet_n, book_n, y_raw_start, x_raw_start)
+                    else:
+
+                        # plot for AVDD
+                        sheet_n = pos_temp
+                        sh.excel.Application.Run("EFF_inst.xlsm!gary_chart",
+                                                 v_cnt, i_cnt, sheet_n, book_n, y_raw_start, x_raw_start)
+
+                        # plot for Vout
+                        sheet_n = pos_pre_temp
+                        sh.excel.Application.Run("EFF_inst.xlsm!gary_chart",
+                                                 v_cnt, i_cnt, sheet_n, book_n, y_raw_start, x_raw_start)
 
                     sh.wb_res.save(sh.result_book_trace)
+                    print(sh.sh_main)
+                    print('')
+                    # save the result after plot is finished
+
+                    # the plot request is finished and jump another window to remind
+                    if sh.en_plot_waring == 1:
+                        msg_res = win32api.MessageBox(
+                            0, 'You can start to operate the computer again', 'Plot request finished ')
+
                     if sh.program_exit == 0:
                         # exit the program
                         break
-                    x_vin = x_vin + 1
-                    # end of the 3rd loop
-
-                # sh.wb_res.save(sh.result_book_trace)
-                # save the file one time after each avdd load current is finished
-
-                # make the plot for each AVDD current change, since there are one group of the efficiency and regulation data
-                # start from EL only but need to check all 3 mode of the operation
-                v_cnt = sh.c_vin
-                i_cnt = c_load_curr
-
-                # decide from the sheet need to plot chart
-                book_n = str(sh.full_result_name) + '.xlsx'
-
-                # 220524: for the instrument operation, prevent the issue of change windoww,
-                # need to have message remind user to release control of excel
-                # so there will not be the error from the plot
-                # remind the operation can keep going after the plot is finished
-                if sh.en_plot_waring == 1:
-                    msg_res = win32api.MessageBox(
-                        0, 'Release the control of excel, change the window to auto file now, and press enter, remind again when the plot is finished', 'Plot request from python')
-
-                # plot for efficiency
-                sheet_n = eff_temp
-                sh.excel.Application.Run("EFF_inst.xlsm!gary_chart",
-                                         v_cnt, i_cnt, sheet_n, book_n, y_raw_start, x_raw_start)
-
-                if sh.channel_mode == 0 or sh.channel_mode == 2:
-
-                    # plot for ELVDD
-                    sheet_n = pos_temp
-                    sh.excel.Application.Run("EFF_inst.xlsm!gary_chart",
-                                             v_cnt, i_cnt, sheet_n, book_n, y_raw_start, x_raw_start)
-
-                    # plot for ELVSS
-                    sheet_n = neg_temp
-                    sh.excel.Application.Run("EFF_inst.xlsm!gary_chart",
-                                             v_cnt, i_cnt, sheet_n, book_n, y_raw_start, x_raw_start)
-
-                    # plot for Vout
-                    sheet_n = pos_pre_temp
-                    sh.excel.Application.Run("EFF_inst.xlsm!gary_chart",
-                                             v_cnt, i_cnt, sheet_n, book_n, y_raw_start, x_raw_start)
-
-                    # plot for Von
-                    sheet_n = neg_pre_temp
-                    sh.excel.Application.Run("EFF_inst.xlsm!gary_chart",
-                                             v_cnt, i_cnt, sheet_n, book_n, y_raw_start, x_raw_start)
-                else:
-
-                    # plot for AVDD
-                    sheet_n = pos_temp
-                    sh.excel.Application.Run("EFF_inst.xlsm!gary_chart",
-                                             v_cnt, i_cnt, sheet_n, book_n, y_raw_start, x_raw_start)
-
-                    # plot for Vout
-                    sheet_n = pos_pre_temp
-                    sh.excel.Application.Run("EFF_inst.xlsm!gary_chart",
-                                             v_cnt, i_cnt, sheet_n, book_n, y_raw_start, x_raw_start)
-
-                sh.wb_res.save(sh.result_book_trace)
-                print(sh.sh_main)
-                print('')
-                # save the result after plot is finished
-
-                # the plot request is finished and jump another window to remind
-                if sh.en_plot_waring == 1:
-                    msg_res = win32api.MessageBox(
-                        0, 'You can start to operate the computer again', 'Plot request finished ')
-
+                    x_avdd = x_avdd + 1
+                    # end of the 2nd loop
                 if sh.program_exit == 0:
                     # exit the program
                     break
-                x_avdd = x_avdd + 1
-                # end of the 2nd loop
-            if sh.program_exit == 0:
-                # exit the program
-                break
 
-            x_sw_i2c = x_sw_i2c + 1
-            # end of the 1st loop
+                # 220824 add the exit action for save and turn off the excel
+                if sh.sheet_off_finished == 1:
+                    sh.re_assign_sheet()
+                    # change the position of sheet re-assign,
+                    # prevent issue to load control data from previous sheet
+                    sh.wb_res.save(sh.result_book_trace)
+                    sh.wb_res.close()
+                else:
+                    pass
+                # to preven the issue of re-run (same file opening and crash)
+
+                x_sw_i2c = x_sw_i2c + 1
+                # end of the SWIRE/I2C loop
+
+            x_temperature = x_temperature + 1
+            # end of the temperature loop
 
         # turn off the load and source after the loop is finished
         if sim_real == 1:
@@ -2166,14 +2234,6 @@ while (sh.program_exit > 0):
         sh.sh_main.range('C13').value = 1
         print(sh.sh_main)
         print('')
-
-        # 220824 add the exit action for save and turn off the excel
-        if sh.sheet_off_finished == 1:
-            sh.wb_res.save(sh.result_book_trace)
-            sh.wb_res.close()
-        else:
-            pass
-        # to preven the issue of re-run (same file opening and crash)
 
 
 # simulation mode error => need to add the

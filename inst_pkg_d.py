@@ -844,7 +844,7 @@ class chamber_su242:
     # initialization is just for default parameter input, may not be able to use sub program
     # need to open and change output at other method in this object
 
-    def __init__(self, tset0, GP_addr0, state0, l_limt_0, h_limt_0):
+    def __init__(self, tset0, GP_addr0, state0, l_limt_0, h_limt_0, ready_err0):
         # send value in when define the object
         self.tset_ini = tset0
         # vset is the V_clamp of source meter
@@ -852,6 +852,7 @@ class chamber_su242:
         self.state_ini = state0
         self.temp_L_limt_ini = l_limt_0
         self.temp_H_limt_ini = h_limt_0
+        self.ready_err_ini = ready_err0
 
         self.tset_o = 0
         # the last set temperature
@@ -865,6 +866,7 @@ class chamber_su242:
         # current temperature
         self.temp_L_limt = 0
         self.temp_H_limt = 0
+        self.ready_err = 0
         # string for on or off
         # ---
 
@@ -916,10 +918,28 @@ class chamber_su242:
         # remember to change the state variable so change type won't have error
         self.state_o = 'on'
         self.tset_o = tset0
+        # when the temperature is not ready yet, need to wait for the
+        # temperature to get ready
+        read_temp = self.read('temp_mea')
+        while abs(read_temp - self.tset_o) > self.ready_err:
+            print('temp now: ' + str(read_temp) +
+                  ' and target is ' + str(self.tset_o))
+            print('Gary still heading over heels with Grace XD')
+            # check every 10 seccond
+            time.sleep(10)
+            read_temp = self.read('temp_mea')
+
+        # getting out of the loop after temperature is ready
+        print('temperature ok, go to the next step')
+        print('Just want Grace to be happy :)')
 
     def ini_inst(self):
         self.chamber_off()
+        # loaded the high and low limit to chamber
         self.limt_set(self.temp_H_limt_ini, self.temp_L_limt_ini)
+        # loaded the acceptible error for measurement
+        self.ready_err = self.ready_err_ini
+
         # self.chamber_set(self.tset_ini)
 
         pass
@@ -944,7 +964,7 @@ class chamber_su242:
         time.sleep(wait_samll)
         # when the instrument open, need to get some intitalization
 
-        self.chamber_off()
+        self.ini_inst()
 
     def read(self, index):
 

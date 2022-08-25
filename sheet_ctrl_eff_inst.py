@@ -150,7 +150,12 @@ sheet_off_finished = sh_main.range('C63').value
 # plot pause control (1 is enable, 0 is disable)
 en_plot_waring = sh_main.range('C64').value
 en_fully_auto = sh_main.range('C65').value
-en_start_up_check = sh_main.range('C65').value
+en_start_up_check = sh_main.range('C66').value
+en_chamber_mea = sh_main.range('C67').value
+chamber_default_tset = sh_main.range('C68').value
+chamber_H_limt = sh_main.range('C69').value
+chamber_L_limt = sh_main.range('C70').value
+chamber_error = sh_main.range('C71').value
 
 
 # # save the result book and turn off the control book
@@ -488,6 +493,7 @@ met_vdd_addr = sh_main.range('C28').value
 met_vss_addr = sh_main.range('C29').value
 loa_dts_addr = sh_main.range('C30').value
 loa_src_addr = sh_main.range('C31').value
+temp_chamber_addr = sh_main.range('C32').value
 
 # optional control parameter for instrument
 v_clamp_load = sh_main.range('C37').value
@@ -556,6 +562,7 @@ c_i2c = sh_org_tab3.range('B1').value
 c_i2c_g = sh_org_tab3.range('D1').value
 c_avdd_single = sh_org_tab.range('G1').value
 c_avdd_pulse = sh_org_tab.range('H1').value
+c_tempature = sh_org_tab.range('I1').value
 # avdd single is single channel current setting for AVDD (1-channel testing)
 # using c_pulse or c_i2c is depend on the sw_i2c_select
 
@@ -1069,6 +1076,9 @@ def inst_name_sheet(nick_name, full_name):
     elif nick_name == 'LOADSR':
         sh_main.range('D31').value = full_name
 
+    elif nick_name == 'chamber':
+        sh_main.range('D32').value = full_name
+
 # this sub used to input SWIRE counter and return related ideal V
 
 # ========== the subprogram been used for more then one file needed
@@ -1420,19 +1430,33 @@ def eff_rerun():
 
         # also need to re-assign the mapping sheet to Eff_inst
         # the sheet assignment is gone after finished one round
-        wb = xw.books('Eff_inst.xlsm')
-        result_sheet_name = 'raw_out'
-        # sh_main = wb.sheets('main')
-        # sheet main is already assign and keep for Eff_inst => main
-        sh_org_tab = wb.sheets('V_I_com')
-        sh_org_tab2 = wb.sheets(result_sheet_name)
-        sh_org_tab3 = wb.sheets('I2C_ctrl')
-        sh_inst_ctrl = wb.sheets('inst_ctrl')
+        re_assign_sheet()
 
         pass
     else:
         # no need for the action of changing the reset status
         pass
+
+    pass
+
+
+def re_assign_sheet():
+    # this program is to re-assign sheet to prevent loading the data from previous sheet,
+    # all the setting and parameter should comes from the Eff_inst
+
+    global sh_org_tab
+    global sh_org_tab2
+    global sh_org_tab3
+    global sh_inst_ctrl
+
+    wb = xw.books('Eff_inst.xlsm')
+    result_sheet_name = 'raw_out'
+    # sh_main = wb.sheets('main')
+    # sheet main is already assign and keep for Eff_inst => main
+    sh_org_tab = wb.sheets('V_I_com')
+    sh_org_tab2 = wb.sheets(result_sheet_name)
+    sh_org_tab3 = wb.sheets('I2C_ctrl')
+    sh_inst_ctrl = wb.sheets('inst_ctrl')
 
     pass
 
