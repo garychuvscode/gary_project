@@ -1,3 +1,12 @@
+# # 220829: for the program refactoring, need to define specific object for each function
+# # the object should include
+# # 1. the mapped excel format and control parameter
+# # 2. the parameter loaded and new format gen at the result workbook
+# # 3. think about the input parameter for object
+# # below part is the testing for this py file, only operating when this py
+# # is used for main program
+# if __name__ == '__main__':
+
 # IQ_scan:
 # this program change AVDDEN and SWIRE to check diferent Iin at each Vin and different mode
 
