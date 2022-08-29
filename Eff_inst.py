@@ -2235,6 +2235,11 @@ while (sh.program_exit > 0):
         print(sh.sh_main)
         print('')
 
+        # the eff test is finished, add single function call settings
+    elif sh.inst_auto_selection == 3:
+        # IQ mode for the operation
+        # wait for the re-factory result
+        pass
 
 # simulation mode error => need to add the
 if sim_real == 1:
