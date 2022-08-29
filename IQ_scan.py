@@ -255,4 +255,9 @@ while x_iq < sh.c_iq:
     # save the result after each counter finished
     sh.wb_res.save(sh.result_book_trace)
 
+    # add the command to turn off the power supply after test is finished
+    if sim_real == 1:
+        pwr1.chg_out(0, sh.pre_sup_iout, sh.pwr_ch_set, 'off')
+        # pwr1.inst_close()
+        # since inst_close may turn all the channel, may not be a good command for single function
 print('finsihed and goodbye')
