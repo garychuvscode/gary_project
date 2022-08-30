@@ -58,6 +58,8 @@ class LPS_505N:
         else:
             print('now is open the power supply, in address: ' +
                   str(int(self.GP_addr_ini)))
+            # in simulation mode, inst_obj need to be define for the simuation mode
+            self.inst_obj = 'power supply simulation mode object'
             pass
 
     # should be better to use function directly for setting V and I
@@ -332,6 +334,8 @@ class Met_34460:
         else:
             print('now is open the meter, in address: ' +
                   str(int(self.GP_addr_ini)))
+            # in simulation mode, inst_obj need to be define for the simuation mode
+            self.inst_obj = 'meter simulation mode object'
             pass
 
     def mea_v(self):
@@ -546,8 +550,8 @@ class chroma_63600:
 
         # time.sleep(wait_samll)
         # need to keep this for overy instrument, it's for reading the name of instrument
-        self.cmd_str_name = 0
-        self.in_name = 0
+        self.cmd_str_name = ''
+        self.in_name = ''
 
         # other parameter needed in loader class
         self.v_out = 0
@@ -584,6 +588,8 @@ class chroma_63600:
         else:
             print('now is open the meter, in address: ' +
                   str(int(self.GP_addr_ini)))
+            # in simulation mode, inst_obj need to be define for the simuation mode
+            self.inst_obj = 'loader simulation mode object'
             pass
 
     # should be better to use function directly for setting V and I
@@ -673,11 +679,6 @@ class chroma_63600:
         self.cmd_str_ch_set = "CHAN " + str(int(self.act_ch_o))
         self.cmd_str_V_read = ("MEAS:VOLT?")
 
-        # string write and action
-        self.inst_obj.write(self.cmd_str_ch_set)
-        self.v_out = self.inst_obj.query(self.cmd_str_V_read)
-        time.sleep(wait_samll)
-
         if self.sim_inst == 1:
             # 220830 update for the independent simulation mode
             # string write and action
@@ -691,7 +692,7 @@ class chroma_63600:
             print('loader read the voltage with below GPIB string')
             print(str(self.cmd_str_ch_set))
             print(str(self.cmd_str_V_read))
-            self.v_out = self.v_out + 1
+            self.v_out = 'sim_vout'
             # to show the program had been run through this place
             # the result change after run through
 
@@ -709,11 +710,6 @@ class chroma_63600:
         self.cmd_str_ch_set = "CHAN " + str(int(self.act_ch_o))
         self.cmd_str_V_read = ("MEAS:CURR?")
 
-        # string write and action
-        self.inst_obj.write(self.cmd_str_ch_set)
-        self.i_out = self.inst_obj.query(self.cmd_str_V_read)
-        time.sleep(wait_samll)
-
         if self.sim_inst == 1:
             # 220830 update for the independent simulation mode
             # string write and action
@@ -727,7 +723,7 @@ class chroma_63600:
             print('loader read current with below GPIB string')
             print(str(self.cmd_str_ch_set))
             print(str(self.cmd_str_V_read))
-            self.i_out = + 1
+            self.i_out = 'sim_i_out'
 
             pass
 
@@ -919,7 +915,7 @@ class Keth_2440:
         else:
             # for the simulatiom mode of change output
             print('query write for sub program')
-            return_str = return_str + 1
+            return_str = 'query wirte in simulation mode'
 
             pass
 
@@ -943,7 +939,7 @@ class Keth_2440:
         # turn off the load is independent command,
         # turn on the load is integrated in the change of command
         print('now is going to turn off')
-        self.inst_obj.write(self.turn_off_str)
+        # self.inst_obj.write(self.turn_off_str)
 
         if self.sim_inst == 1:
             # 220830 update for the independent simulation mode
@@ -1014,8 +1010,10 @@ class Keth_2440:
             time.sleep(wait_samll)
             pass
         else:
-            print('now is open the meter, in address: ' +
+            print('now is open the source meter, in address: ' +
                   str(int(self.GP_addr_ini)))
+            # in simulation mode, inst_obj need to be define for the simuation mode
+            self.inst_obj = 'SRC meter simulation mode object'
             pass
         # when the instrument open, need to get some intitalization
 
@@ -1147,7 +1145,8 @@ class Keth_2440:
                 self.only_write(self.read_i_str3)
                 self.read_mode = read_type
 
-            self.read_res = self.inst_obj.query(self.read_str)
+            # self.read_res = self.inst_obj.query(self.read_str)
+            self.read_res = self.query_write(self.read_str)
             time.sleep(wait_samll)
             # after reading the iout from source, remove the A in the string
             self.read_res = self.read_res.replace('A', '')
@@ -1187,9 +1186,18 @@ class Keth_2440:
     def inst_close(self):
         print('to turn off all output and close GPIB device')
         self.load_off()
-        # GPIB device close
-        time.sleep(wait_samll)
-        self.inst_obj.close()
+
+        if self.sim_inst == 1:
+            # GPIB device close
+            time.sleep(wait_samll)
+            self.inst_obj.close()
+
+            pass
+        else:
+            # for the simulatiom mode of change output
+            print('source meter 2440 close now ')
+
+            pass
 
     def inst_name(self):
         # get the insturment name
@@ -1267,7 +1275,7 @@ class chamber_su242:
         else:
             # for the simulatiom mode of change output
             print('query write for sub program')
-            return_str = return_str + 1
+            return_str = 'chamber_sim_mode return query'
 
             pass
 
@@ -1317,6 +1325,10 @@ class chamber_su242:
         # when the temperature is not ready yet, need to wait for the
         # temperature to get ready
         read_temp = self.read('temp_mea')
+
+        # variable used to break the loop in simulation mode
+        # no used in the real operation
+        sim_count = 0
         while abs(read_temp - self.tset_o) > self.ready_err:
             print('temp now: ' + str(read_temp) +
                   ' and target is ' + str(self.tset_o))
@@ -1324,6 +1336,14 @@ class chamber_su242:
             # check every 10 seccond
             time.sleep(10)
             read_temp = self.read('temp_mea')
+
+            # to break the while loop in the simulation mode
+            # setup counter for while to break
+            if self.sim_inst == 0:
+                sim_count = sim_count + 1
+                time.sleep(0.05)
+                if sim_count == 3:
+                    break
 
         # getting out of the loop after temperature is ready
         print('temperature ok, go to the next step')
@@ -1359,8 +1379,10 @@ class chamber_su242:
             time.sleep(wait_samll)
             pass
         else:
-            print('now is open the meter, in address: ' +
+            print('now is open the chamber, in address: ' +
                   str(int(self.GP_addr_ini)))
+            # in simulation mode, inst_obj need to be define for the simuation mode
+            self.inst_obj = 'chamber simulation mode object'
             pass
         # when the instrument open, need to get some intitalization
 
@@ -1371,6 +1393,9 @@ class chamber_su242:
         temp_string = self.query_write(
             self.temp_read_str + self.end_str)
         time.sleep(0.1)
+        if self.sim_inst == 0:
+            # this line is only to prevent the error from the simulation mode
+            temp_string = '36.0,40.0,180.0,-50.0'
         # this delay is to prevent crash, not sure why
         self.state_o_value = []
         self.state_o_value = [float(i) for i in temp_string.split(',')]
@@ -1443,6 +1468,7 @@ if __name__ == '__main__':
     inst_test_ctrl = 4
     # 0 => power supply, LPS505N; 1 => meter, 34460; 2 => chroma 63600
     # 3 => source meter 2440
+    # 4 => chamber su242
 
     # only run the code below when this is main program
     # can used for the testing of import, otherwise it will
@@ -1453,7 +1479,7 @@ if __name__ == '__main__':
         # power supply application
         PWR_supply1 = LPS_505N(0, 0, 1, 1, 'off')
 
-        PWR_supply1.sim_inst = 1
+        PWR_supply1.sim_inst = 0
         # simulation control for the power supply
 
         # open the GPIB device from resource manager, need to add after object is define
@@ -1477,12 +1503,12 @@ if __name__ == '__main__':
         a = input()
         print('')
         print('single change for V and I')
-        PWR_supply1.change_V(3.8)
+        PWR_supply1.change_V(3.8, 3)
         PWR_supply1.sim_mode_out()
 
         a = input()
 
-        PWR_supply1.change_I(2)
+        PWR_supply1.change_I(2, 3)
         PWR_supply1.sim_mode_out()
 
         a = input()
@@ -1495,7 +1521,7 @@ if __name__ == '__main__':
         PWR_supply1.iout_o = 0.5
         PWR_supply1.sim_mode_out()
         # check Iin from power supply: using iout with channel to read related IOUT
-        PWR_supply1.read_iout()
+        PWR_supply1.read_iout(3)
 
         # close the device after experiment is finished
         PWR_supply1.inst_close()
@@ -1505,10 +1531,10 @@ if __name__ == '__main__':
 
         # definition of meter
         M1_v_in = Met_34460(0.0001, 7, 0.000001, 1, 22)
-        M1_v_in.open_inst()
-
-        M1_v_in.sim_inst = 1
+        M1_v_in.sim_inst = 0
         # simulation control for the meter
+
+        M1_v_in.open_inst()
 
         print('the output of the default input')
         M1_v_in.sim_mode_out()
@@ -1561,11 +1587,11 @@ if __name__ == '__main__':
         # object define
         # don't have status settings because all the state is set to 0
 
+        load1.sim_inst = 0
+        # simulation control for the loader
+
         # open the instrument
         load1.open_inst()
-
-        load1.sim_inst = 1
-        # simulation control for the loader
 
         # check default value
         print('default setting of object')
@@ -1623,6 +1649,7 @@ if __name__ == '__main__':
         # to check the voltage, you can compare with the meter output
 
         i_check = load1.read_iout(1)
+
         print('the Iout of ch1 is' + i_check)
         load1.sim_mode_out()
         input()
@@ -1695,7 +1722,7 @@ if __name__ == '__main__':
         # after the initialization, default state ready
         input()
 
-        load_src.sim_inst = 1
+        load_src.sim_inst = 0
         # simulation control for the source meter
 
         load_src.open_inst()
@@ -1863,7 +1890,7 @@ if __name__ == '__main__':
 
         cham = chamber_su242(25, 15, 'off', -45, 185, 0)
         cham.sim_mode_out()
-        cham.sim_inst = 1
+        cham.sim_inst = 0
         # simulation control for the chamber
 
         input()
