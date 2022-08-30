@@ -39,13 +39,26 @@ class LPS_505N:
         self.cmd_str_ovp = ''
         self.cmd_str_ocp = ''
 
+        self.sim_inst = 1
+        # simulation mode for the instrument
+        # default set to high, in real mode, for the simulation mode,
+        # change the control varable to 0
+        # this will be put in each instrument object independently
+        # and you will be able to switch to simulation mode any time you want
+
     def open_inst(self):
         # maybe no need to define rm for global variable
         # global rm
         print('GPIB0::' + str(int(self.GP_addr_ini)) + '::INSTR')
-        self.power = rm.open_resource(
-            'GPIB0::' + str(int(self.GP_addr_ini)) + '::INSTR')
-        time.sleep(wait_samll)
+        if self.sim_inst == 1:
+            self.inst_obj = rm.open_resource(
+                'GPIB0::' + str(int(self.GP_addr_ini)) + '::INSTR')
+            time.sleep(wait_samll)
+            pass
+        else:
+            print('now is open the power supply, in address: ' +
+                  str(int(self.GP_addr_ini)))
+            pass
 
     # should be better to use function directly for setting V and I
 
@@ -74,11 +87,24 @@ class LPS_505N:
 
         # write the command string for change power supply output
 
-        self.power.write(self.cmd_str_out_mode)
-        self.power.write(self.cmd_str_V)
-        self.power.write(self.cmd_str_I)
-        self.power.write(self.cmd_str_out_sw)
-        time.sleep(wait_samll)
+        if self.sim_inst == 1:
+            # 220830 update for the independent simulation mode
+            self.inst_obj.write(self.cmd_str_out_mode)
+            self.inst_obj.write(self.cmd_str_V)
+            self.inst_obj.write(self.cmd_str_I)
+            self.inst_obj.write(self.cmd_str_out_sw)
+            time.sleep(wait_samll)
+
+            pass
+        else:
+            # for the simulatiom mode of change output
+            print('change output now with below GPIB string')
+            print(str(self.cmd_str_out_mode))
+            print(str(self.cmd_str_V))
+            print(str(self.cmd_str_I))
+            print(str(self.cmd_str_out_sw))
+
+            pass
 
     # this function used to fast change voltage setting
 
@@ -88,15 +114,29 @@ class LPS_505N:
         # 20220127, add the channel index for the change_V function
         self.cmd_str_V = ("PROG:VSET" + str(int(self.act_ch_o)) +
                           ":" + str(self.vset_o))
-        # must change both voltage and current together for every update
-        # so the power supply will change output
-        self.power.write(self.cmd_str_V)
-        self.power.write(self.cmd_str_I)
-        # when the source is already on, need to have the turn on command to update the final
-        # setting to output, to prevent wrong behavior of the power supply
-        # (only change the output voltage but not the current)
-        # use another command to update at the same time
-        self.power.write(self.cmd_str_out_sw)
+
+        if self.sim_inst == 1:
+            # must change both voltage and current together for every update
+            # so the power supply will change output
+            self.inst_obj.write(self.cmd_str_V)
+            self.inst_obj.write(self.cmd_str_I)
+            # when the source is already on, need to have the turn on command to update the final
+            # setting to output, to prevent wrong behavior of the power supply
+            # (only change the output voltage but not the current)
+            # use another command to update at the same time
+            self.inst_obj.write(self.cmd_str_out_sw)
+            time.sleep(wait_samll)
+
+            pass
+        else:
+            # for the simulatiom mode of change output
+            print('change V now with below GPIB string')
+            print(str(self.cmd_str_V))
+            print(str(self.cmd_str_I))
+            print(str(self.cmd_str_out_sw))
+
+            pass
+
         time.sleep(wait_samll)
 
     # this function used to fast change current setting
@@ -106,16 +146,28 @@ class LPS_505N:
         self.act_ch_o = channel_i
         self.cmd_str_I = ("PROG:ISET" + str(int(self.act_ch_o)) +
                           ":" + str(self.iset_o))
-        # must change both voltage and current together for every update
-        # so the power supply will change output
-        self.power.write(self.cmd_str_V)
-        self.power.write(self.cmd_str_I)
-        # when the source is already on, need to have the turn on command to update the final
-        # setting to output, to prevent wrong behavior of the power supply
-        # (only change the output voltage but not the current)
-        # use another command to update at the same time
-        self.power.write(self.cmd_str_out_sw)
-        time.sleep(wait_samll)
+
+        if self.sim_inst == 1:
+            # must change both voltage and current together for every update
+            # so the power supply will change output
+            self.inst_obj.write(self.cmd_str_V)
+            self.inst_obj.write(self.cmd_str_I)
+            # when the source is already on, need to have the turn on command to update the final
+            # setting to output, to prevent wrong behavior of the power supply
+            # (only change the output voltage but not the current)
+            # use another command to update at the same time
+            self.inst_obj.write(self.cmd_str_out_sw)
+            time.sleep(wait_samll)
+
+            pass
+        else:
+            # for the simulatiom mode of change output
+            print('change I now with below GPIB string')
+            print(str(self.cmd_str_V))
+            print(str(self.cmd_str_I))
+            print(str(self.cmd_str_out_sw))
+
+            pass
 
     # this function only used to check the simulation mode ouptput
 
@@ -126,10 +178,23 @@ class LPS_505N:
         # this will cause the erase of previous result
         self.cmd_str_iout = 'IOUT' + str(int(self.act_ch_o)) + '?'
 
-        self.iout_o = self.power.query(self.cmd_str_iout)
-        time.sleep(wait_samll)
-        # after reading the iout from source, remove the A in the string
-        self.iout_o = self.iout_o.replace('A', '')
+        if self.sim_inst == 1:
+            self.iout_o = self.inst_obj.query(self.cmd_str_iout)
+            time.sleep(wait_samll)
+            # after reading the iout from source, remove the A in the string
+            self.iout_o = self.iout_o.replace('A', '')
+
+            pass
+        else:
+            # for the simulatiom mode of change output
+            print('change output now with below GPIB string')
+            print(str(self.cmd_str_iout))
+            print('now will retrun the sim current')
+            self.iout_o = self.iout_o + 1
+            print(self.iout_o)
+
+            pass
+
         return self.iout_o
 
     def sim_mode_out(self):
@@ -155,18 +220,56 @@ class LPS_505N:
 
     def inst_close(self):
         print('to turn off all output and close GPIB device')
-        # change all the output to 0V and 0A, for channel 1 to 3
-        self.chg_out(0, 0, 1, 'off')
-        self.chg_out(0, 0, 2, 'off')
-        self.chg_out(0, 0, 3, 'off')
-        # GPIB device close
-        time.sleep(wait_samll)
-        self.power.close()
+
+        if self.sim_inst == 1:
+            # change all the output to 0V and 0A, for channel 1 to 3
+            self.chg_out(0, 0, 1, 'off')
+            self.chg_out(0, 0, 2, 'off')
+            self.chg_out(0, 0, 3, 'off')
+            # GPIB device close
+            time.sleep(wait_samll)
+            self.inst_obj.close()
+
+            pass
+        else:
+            # for the simulatiom mode of change output
+            print('all the channel turn off now')
+
+            pass
+
+    def inst_single_close(self, off_ch):
+        print('to turn off related channel and "not" close GPIB device')
+
+        if self.sim_inst == 1:
+            # change all the output to 0V and 0A, for channel 1 to 3
+            self.chg_out(0, 0, int(off_ch), 'off')
+            print('turn off single channel of the power supply: CH_' + str(off_ch))
+            # GPIB device close
+            time.sleep(wait_samll)
+
+            pass
+        else:
+            # for the simulatiom mode of change output
+            print('simulation mode')
+            print('turn off single channel of the power supply: CH_' + str(off_ch))
+
+            pass
 
     def inst_name(self):
-        self.cmd_str_name = "*IDN?"
-        self.in_name = self.power.query(self.cmd_str_name)
-        time.sleep(wait_samll)
+        # get the insturment name
+        if self.sim_inst == 1:
+            self.cmd_str_name = "*IDN?"
+            self.in_name = self.inst_obj.query(self.cmd_str_name)
+            time.sleep(wait_samll)
+
+            pass
+        else:
+            # for the simulatiom mode of change output
+            print('check the instrument name, sim mode ')
+            print(str(self.cmd_str_name))
+
+            pass
+
         return self.in_name
 
     # LPS 505 have the OVP and OCP can be set for incase
@@ -181,9 +284,19 @@ class LPS_505N:
         print(self.sup_ovp)
         print(self.sup_ocp)
 
-        self.power.write(self.cmd_str_ovp)
-        self.power.write(self.cmd_str_ocp)
-        time.sleep(wait_samll)
+        if self.sim_inst == 1:
+            self.inst_obj.write(self.cmd_str_ovp)
+            self.inst_obj.write(self.cmd_str_ocp)
+            time.sleep(wait_samll)
+
+            pass
+        else:
+            # for the simulatiom mode of change output
+            print('change OCP and OVP in sim mode')
+            print(str(self.cmd_str_ovp))
+            print(str(self.cmd_str_ocp))
+
+            pass
 
 
 class Met_34460:
@@ -202,11 +315,24 @@ class Met_34460:
         self.mea_i_out = 0
         self.cmd_str_name = 0
 
-    def open_instr(self):
+        self.sim_inst = 1
+        # simulation mode for the instrument
+        # default set to high, in real mode, for the simulation mode,
+        # change the control varable to 0
+        # this will be put in each instrument object independently
+        # and you will be able to switch to simulation mode any time you want
+
+    def open_inst(self):
         print('GPIB0::' + str(int(self.GP_addr_ini)) + '::INSTR')
-        self.meter = rm.open_resource(
-            'GPIB0::' + str(int(self.GP_addr_ini)) + '::INSTR')
-        time.sleep(wait_samll)
+        if self.sim_inst == 1:
+            self.inst_obj = rm.open_resource(
+                'GPIB0::' + str(int(self.GP_addr_ini)) + '::INSTR')
+            time.sleep(wait_samll)
+            pass
+        else:
+            print('now is open the meter, in address: ' +
+                  str(int(self.GP_addr_ini)))
+            pass
 
     def mea_v(self):
         # definie the command string and send the command string out to GPIB
@@ -216,8 +342,22 @@ class Met_34460:
         # self.mea_v_out = 0
         # not to set to 0, definition create at the initialization function, so can keep the old result from last measurement
         # self.mea_v_out = self.mea_v_out + 1
-        self.mea_v_out = self.meter.query(self.cmd_str_mea_v)
-        time.sleep(wait_samll)
+
+        if self.sim_inst == 1:
+            # 220830 update for the independent simulation mode
+            self.mea_v_out = self.inst_obj.query(self.cmd_str_mea_v)
+            time.sleep(wait_samll)
+
+            pass
+        else:
+            # for the simulatiom mode of change output
+            print('measure votlage with below GPIB string')
+            print(str(self.cmd_str_mea_v))
+            self.mea_v_out = self.mea_v_out + 1
+            print(self.mea_v_out)
+
+            pass
+
         # return the result back to main program, should be able to access again in this object
         return self.mea_v_out
 
@@ -243,8 +383,20 @@ class Met_34460:
         # self.mea_v_out = 0
         # not to set to 0, definition create at the initialization function, so can keep the old result from last measurement
         # self.mea_v_out = self.mea_v_out + 1
-        self.mea_v_out = self.meter.query(self.cmd_str_mea_v)
-        time.sleep(wait_samll)
+        if self.sim_inst == 1:
+            # 220830 update for the independent simulation mode
+            self.mea_v_out = self.inst_obj.query(self.cmd_str_mea_v)
+            time.sleep(wait_samll)
+
+            pass
+        else:
+            # for the simulatiom mode of change output
+            print('measure votlage with below GPIB string (mea_V2)')
+            print(str(self.cmd_str_mea_v))
+            self.mea_v_out = self.mea_v_out + 1
+            print(self.mea_v_out)
+
+            pass
         # return the result back to main program, should be able to access again in this object
         return self.mea_v_out
 
@@ -256,8 +408,22 @@ class Met_34460:
         # self.mea_i_out = 0
         # not to set to 0, definition create at the initialization function, so can keep the old result from last measurement
         # self.mea_i_out = self.mea_i_out + 1
-        self.mea_i_out = self.meter.query(self.cmd_str_mea_i)
-        time.sleep(wait_samll)
+
+        if self.sim_inst == 1:
+            # 220830 update for the independent simulation mode
+            self.mea_i_out = self.inst_obj.query(self.cmd_str_mea_i)
+            time.sleep(wait_samll)
+
+            pass
+        else:
+            # for the simulatiom mode of change output
+            print('measure current with below GPIB string')
+            print(str(self.cmd_str_mea_i))
+            self.mea_i_out = self.mea_i_out + 1
+            print(self.mea_i_out)
+
+            pass
+
         # return back and save in object
         return self.mea_i_out
 
@@ -283,8 +449,20 @@ class Met_34460:
         # self.mea_i_out = 0
         # not to set to 0, definition create at the initialization function, so can keep the old result from last measurement
         # self.mea_i_out = self.mea_i_out + 1
-        self.mea_i_out = self.meter.query(self.cmd_str_mea_i)
-        time.sleep(wait_samll)
+        if self.sim_inst == 1:
+            # 220830 update for the independent simulation mode
+            self.mea_i_out = self.inst_obj.query(self.cmd_str_mea_i)
+            time.sleep(wait_samll)
+
+            pass
+        else:
+            # for the simulatiom mode of change output
+            print('measure current with below GPIB string (mea_I2)')
+            print(str(self.cmd_str_mea_i))
+            self.mea_i_out = self.mea_i_out + 1
+            print(self.mea_i_out)
+
+            pass
         # return back and save in object
         return self.mea_i_out
 
@@ -296,7 +474,7 @@ class Met_34460:
         print(self.max_mea_i_ini)
         print(self.GP_addr_ini)
         print('')
-        print(self.meter)
+        print(self.inst_obj)
         print(self.cmd_str_mea_v)
         print(self.cmd_str_mea_i)
         print('')
@@ -305,14 +483,33 @@ class Met_34460:
 
     def inst_close(self):
         print('to turn off all output and close GPIB device')
-        time.sleep(wait_samll)
-        # change all the output to 0V and 0A, for channel 1 to 3
-        self.meter.close()
+
+        if self.sim_inst == 1:
+            # 220830 update for the independent simulation mode
+            time.sleep(wait_samll)
+            # change all the output to 0V and 0A, for channel 1 to 3
+            self.inst_obj.close()
+
+            pass
+        else:
+            # for the simulatiom mode of change output
+            print('close the meter ')
+
+            pass
 
     def inst_name(self):
-        self.cmd_str_name = "*IDN?"
-        self.in_name = self.meter.query(self.cmd_str_name)
-        time.sleep(wait_samll)
+        if self.sim_inst == 1:
+            self.cmd_str_name = "*IDN?"
+            self.in_name = self.inst_obj.query(self.cmd_str_name)
+            time.sleep(wait_samll)
+
+            pass
+        else:
+            # for the simulatiom mode of change output
+            print('check the instrument name, sim mode ')
+            print(str(self.cmd_str_name))
+
+            pass
         return self.in_name
 
 
@@ -357,10 +554,17 @@ class chroma_63600:
         self.i_out = 0
 
         # loader object definition
-        self.loader = 0
+        self.inst_obj = 0
         # other definition
         self.errflag = 0
         # error flag indicate => 0 is ok and 1 is error
+
+        self.sim_inst = 1
+        # simulation mode for the instrument
+        # default set to high, in real mode, for the simulation mode,
+        # change the control varable to 0
+        # this will be put in each instrument object independently
+        # and you will be able to switch to simulation mode any time you want
 
     # need to watch out if the power limit, current limit need to be set and config through
     # the different mode of the load setting, to prevent crash of the load during auto testing
@@ -372,9 +576,15 @@ class chroma_63600:
         # here is to define object map to the loader
         # conntect to the related GPIB address
         print('GPIB0::' + str(int(self.GP_addr_ini)) + '::INSTR')
-        self.loader = rm.open_resource(
-            'GPIB0::' + str(int(self.GP_addr_ini)) + '::INSTR')
-        time.sleep(wait_samll)
+        if self.sim_inst == 1:
+            self.inst_obj = rm.open_resource(
+                'GPIB0::' + str(int(self.GP_addr_ini)) + '::INSTR')
+            time.sleep(wait_samll)
+            pass
+        else:
+            print('now is open the meter, in address: ' +
+                  str(int(self.GP_addr_ini)))
+            pass
 
     # should be better to use function directly for setting V and I
 
@@ -426,15 +636,28 @@ class chroma_63600:
         # all command string using self because you can reference after the function is over,
         # it will left in the object, not disappear
 
-        # write the command string for change power supply output
-        # writring sequence: channel => current setting => status update
-        # check if it changes like power supply? need to update status to refresh command
-        self.loader.write(self.cmd_str_ch_set)
-        self.loader.write(self.cmd_str_mode_set)
-        self.loader.write(self.cmd_str_I_load)
-        self.loader.write(self.cmd_str_status)
-        # add the break point here to double if the command update based on the write command of status
-        time.sleep(wait_samll)
+        if self.sim_inst == 1:
+            # 220830 update for the independent simulation mode
+            # write the command string for change power supply output
+            # writring sequence: channel => current setting => status update
+            # check if it changes like power supply? need to update status to refresh command
+            self.inst_obj.write(self.cmd_str_ch_set)
+            self.inst_obj.write(self.cmd_str_mode_set)
+            self.inst_obj.write(self.cmd_str_I_load)
+            self.inst_obj.write(self.cmd_str_status)
+            # add the break point here to double if the command update based on the write command of status
+            time.sleep(wait_samll)
+
+            pass
+        else:
+            # for the simulatiom mode of change output
+            print('change loader output now with below GPIB string')
+            print(str(self.cmd_str_ch_set))
+            print(str(self.cmd_str_mode_set))
+            print(str(self.cmd_str_I_load))
+            print(str(self.cmd_str_status))
+
+            pass
 
         return self.errflag
         # return error when there are load current setting error
@@ -451,9 +674,29 @@ class chroma_63600:
         self.cmd_str_V_read = ("MEAS:VOLT?")
 
         # string write and action
-        self.loader.write(self.cmd_str_ch_set)
-        self.v_out = self.loader.query(self.cmd_str_V_read)
+        self.inst_obj.write(self.cmd_str_ch_set)
+        self.v_out = self.inst_obj.query(self.cmd_str_V_read)
         time.sleep(wait_samll)
+
+        if self.sim_inst == 1:
+            # 220830 update for the independent simulation mode
+            # string write and action
+            self.inst_obj.write(self.cmd_str_ch_set)
+            self.v_out = self.inst_obj.query(self.cmd_str_V_read)
+            time.sleep(wait_samll)
+
+            pass
+        else:
+            # for the simulatiom mode of change output
+            print('loader read the voltage with below GPIB string')
+            print(str(self.cmd_str_ch_set))
+            print(str(self.cmd_str_V_read))
+            self.v_out = self.v_out + 1
+            # to show the program had been run through this place
+            # the result change after run through
+
+            pass
+
         return self.v_out
 
     # this function used to feedback the output current measurement
@@ -467,9 +710,27 @@ class chroma_63600:
         self.cmd_str_V_read = ("MEAS:CURR?")
 
         # string write and action
-        self.loader.write(self.cmd_str_ch_set)
-        self.i_out = self.loader.query(self.cmd_str_V_read)
+        self.inst_obj.write(self.cmd_str_ch_set)
+        self.i_out = self.inst_obj.query(self.cmd_str_V_read)
         time.sleep(wait_samll)
+
+        if self.sim_inst == 1:
+            # 220830 update for the independent simulation mode
+            # string write and action
+            self.inst_obj.write(self.cmd_str_ch_set)
+            self.i_out = self.inst_obj.query(self.cmd_str_V_read)
+            time.sleep(wait_samll)
+
+            pass
+        else:
+            # for the simulatiom mode of change output
+            print('loader read current with below GPIB string')
+            print(str(self.cmd_str_ch_set))
+            print(str(self.cmd_str_V_read))
+            self.i_out = + 1
+
+            pass
+
         # 220330: chroma response don't have A in the string, only the power supply have string
         # # after reading the iout from source, remove the A in the string
         # self.iout_o = self.iout_o.replace('A', '')
@@ -496,7 +757,7 @@ class chroma_63600:
         print(self.v_out)
         print(self.i_out)
         print('')
-        print(self.loader)
+        print(self.inst_obj)
         print(self.errflag)
 
     # consider to add the read V or read I? => but this may only for debugging
@@ -505,20 +766,59 @@ class chroma_63600:
 
     def inst_close(self):
         print('to turn off all output and close GPIB device')
-        # change all the output to 0V and 0A, for channel 1 to 3
-        self.chg_out(0, 1, 'off')
-        self.chg_out(0, 2, 'off')
-        self.chg_out(0, 3, 'off')
-        self.chg_out(0, 4, 'off')
-        # GPIB device close
-        time.sleep(wait_samll)
-        self.loader.close()
+
+        if self.sim_inst == 1:
+            # turn off the 4 channel of loader
+            self.chg_out(0, 1, 'off')
+            self.chg_out(0, 2, 'off')
+            self.chg_out(0, 3, 'off')
+            self.chg_out(0, 4, 'off')
+            # GPIB device close
+            time.sleep(wait_samll)
+            self.inst_obj.close()
+
+            pass
+        else:
+            # for the simulatiom mode of change output
+            print('all the loader channel turn off now')
+
+            pass
+
+    def inst_single_close(self, off_ch):
+        print('to turn off related channel and "not" close GPIB device')
+
+        if self.sim_inst == 1:
+            # change all the output to 0V and 0A, for channel 1 to 3
+            self.chg_out(0, int(off_ch), 'off')
+            print('turn off single channel of the loader: CH_' + str(off_ch))
+            # GPIB device close
+            time.sleep(wait_samll)
+
+            pass
+        else:
+            # for the simulatiom mode of change output
+            print('simulation mode')
+            print('turn off single channel of the power supply: CH_' + str(off_ch))
+
+            pass
 
     # used to get the instrument name and return to main program
+
     def inst_name(self):
-        self.cmd_str_name = "*IDN?"
-        self.in_name = self.loader.query(self.cmd_str_name)
-        time.sleep(wait_samll)
+        # get the insturment name
+        if self.sim_inst == 1:
+            self.cmd_str_name = "*IDN?"
+            self.in_name = self.inst_obj.query(self.cmd_str_name)
+            time.sleep(wait_samll)
+
+            pass
+        else:
+            # for the simulatiom mode of change output
+            print('check the instrument name, sim mode ')
+            print(str(self.cmd_str_name))
+
+            pass
+
         return self.in_name
 
     # used to change output mode
@@ -597,24 +897,65 @@ class Keth_2440:
         self.clamp_VI_o = 0
         self.read_mode = self.source_type_ini
 
+        self.sim_inst = 1
+        # simulation mode for the instrument
+        # default set to high, in real mode, for the simulation mode,
+        # change the control varable to 0
+        # this will be put in each instrument object independently
+        # and you will be able to switch to simulation mode any time you want
+
     # start from the source meter, to get a better efficiency when coding,
     # refresh the query and write to sub program(which include command print)
     # reduce the coding structure
 
     def query_write(self, cmd_str0):
         print(cmd_str0)
-        return_str = self.power.query(cmd_str0)
+
+        if self.sim_inst == 1:
+            # 220830 update for the independent simulation mode
+            return_str = self.inst_obj.query(cmd_str0)
+
+            pass
+        else:
+            # for the simulatiom mode of change output
+            print('query write for sub program')
+            return_str = return_str + 1
+
+            pass
+
         return return_str
 
     def only_write(self, cmd_str1):
         print(cmd_str1)
-        self.power.write(cmd_str1)
+
+        if self.sim_inst == 1:
+            # 220830 update for the independent simulation mode
+            self.inst_obj.write(cmd_str1)
+
+            pass
+        else:
+            # for the simulatiom mode of change output
+            print('only write for sub program')
+
+            pass
 
     def load_off(self):
         # turn off the load is independent command,
         # turn on the load is integrated in the change of command
         print('now is going to turn off')
-        self.power.write(self.turn_off_str)
+        self.inst_obj.write(self.turn_off_str)
+
+        if self.sim_inst == 1:
+            # 220830 update for the independent simulation mode
+            self.inst_obj.write(self.turn_off_str)
+
+            pass
+        else:
+            # for the simulatiom mode of change output
+            print('source meter is going to turn off')
+
+            pass
+
         # remember to change the state variable so change type won't have error
         self.state_o = 'off'
 
@@ -622,7 +963,18 @@ class Keth_2440:
         # turn off the load is independent command,
         # turn on the load is integrated in the change of command
         print('now is going to turn on')
-        self.power.write(self.turn_on_str)
+
+        if self.sim_inst == 1:
+            # 220830 update for the independent simulation mode
+            self.inst_obj.write(self.turn_on_str)
+
+            pass
+        else:
+            # for the simulatiom mode of change output
+            print('source meter is going to turn on')
+
+            pass
+
         # remember to change the state variable so change type won't have error
         self.state_o = 'on'
 
@@ -656,9 +1008,15 @@ class Keth_2440:
         # maybe no need to define rm for global variable
         # global rm
         print('GPIB0::' + str(int(self.GP_addr_ini)) + '::INSTR')
-        self.power = rm.open_resource(
-            'GPIB0::' + str(int(self.GP_addr_ini)) + '::INSTR')
-        time.sleep(wait_samll)
+        if self.sim_inst == 1:
+            self.inst_obj = rm.open_resource(
+                'GPIB0::' + str(int(self.GP_addr_ini)) + '::INSTR')
+            time.sleep(wait_samll)
+            pass
+        else:
+            print('now is open the meter, in address: ' +
+                  str(int(self.GP_addr_ini)))
+            pass
         # when the instrument open, need to get some intitalization
 
         # config source meter as a current(CURR)/voltage(VOLT) source
@@ -789,7 +1147,7 @@ class Keth_2440:
                 self.only_write(self.read_i_str3)
                 self.read_mode = read_type
 
-            self.read_res = self.power.query(self.read_str)
+            self.read_res = self.inst_obj.query(self.read_str)
             time.sleep(wait_samll)
             # after reading the iout from source, remove the A in the string
             self.read_res = self.read_res.replace('A', '')
@@ -831,12 +1189,23 @@ class Keth_2440:
         self.load_off()
         # GPIB device close
         time.sleep(wait_samll)
-        self.power.close()
+        self.inst_obj.close()
 
     def inst_name(self):
-        self.cmd_str_name = "*IDN?"
-        self.in_name = self.power.query(self.cmd_str_name)
-        time.sleep(wait_samll)
+        # get the insturment name
+        if self.sim_inst == 1:
+            self.cmd_str_name = "*IDN?"
+            self.in_name = self.inst_obj.query(self.cmd_str_name)
+            time.sleep(wait_samll)
+
+            pass
+        else:
+            # for the simulatiom mode of change output
+            print('check the instrument name, sim mode ')
+            print(str(self.cmd_str_name))
+
+            pass
+
         return self.in_name
 
 
@@ -880,24 +1249,50 @@ class chamber_su242:
         self.temp_read_str = "TEMP?"
         self.turn_off_str = 'MODE, STANDBY'
 
-    # start from the source meter, to get a better efficiency when coding,
-    # refresh the query and write to sub program(which include command print)
-    # reduce the coding structure
+        self.sim_inst = 1
+        # simulation mode for the instrument
+        # default set to high, in real mode, for the simulation mode,
+        # change the control varable to 0
+        # this will be put in each instrument object independently
+        # and you will be able to switch to simulation mode any time you want
 
     def query_write(self, cmd_str0):
         print(cmd_str0)
-        return_str = self.inst_obj.query(cmd_str0)
+
+        if self.sim_inst == 1:
+            # 220830 update for the independent simulation mode
+            return_str = self.inst_obj.query(cmd_str0)
+
+            pass
+        else:
+            # for the simulatiom mode of change output
+            print('query write for sub program')
+            return_str = return_str + 1
+
+            pass
+
         return return_str
 
     def only_write(self, cmd_str1):
         print(cmd_str1)
-        self.inst_obj.write(cmd_str1)
+
+        if self.sim_inst == 1:
+            # 220830 update for the independent simulation mode
+            self.inst_obj.write(cmd_str1)
+
+            pass
+        else:
+            # for the simulatiom mode of change output
+            print('only write for sub program')
+
+            pass
 
     def chamber_off(self):
         # turn off the load is independent command,
         # turn on the load is integrated in the change of command
         print('now is going to turn off')
-        self.inst_obj.write(self.turn_off_str + self.end_str)
+        # self.inst_obj.write(self.turn_off_str + self.end_str)
+        self.only_write(self.turn_off_str + self.end_str)
         # remember to change the state variable so change type won't have error
         self.state_o = 'off'
 
@@ -912,7 +1307,8 @@ class chamber_su242:
             tset0 = self.temp_L_limt
 
         print('now is going to turn on, tset:' + str(tset0))
-        self.inst_obj.write(self.mode_set_str + self.end_str)
+        # self.inst_obj.write(self.mode_set_str + self.end_str)
+        self.only_write(self.mode_set_str + self.end_str)
         self.only_write(self.temp_set_str +
                         str(round(tset0, 1)) + self.end_str)
         # remember to change the state variable so change type won't have error
@@ -955,13 +1351,17 @@ class chamber_su242:
         pass
 
     def open_inst(self):
-        str_temp = ''
-        # maybe no need to define rm for global variable
-        # global rm
+
         print('GPIB0::' + str(int(self.GP_addr_ini)) + '::INSTR')
-        self.inst_obj = rm.open_resource(
-            'GPIB0::' + str(int(self.GP_addr_ini)) + '::INSTR')
-        time.sleep(wait_samll)
+        if self.sim_inst == 1:
+            self.inst_obj = rm.open_resource(
+                'GPIB0::' + str(int(self.GP_addr_ini)) + '::INSTR')
+            time.sleep(wait_samll)
+            pass
+        else:
+            print('now is open the meter, in address: ' +
+                  str(int(self.GP_addr_ini)))
+            pass
         # when the instrument open, need to get some intitalization
 
         self.ini_inst()
@@ -1008,15 +1408,34 @@ class chamber_su242:
 
         # 220525: ccheck if need other command
 
-        # GPIB device close
-        time.sleep(wait_samll)
-        self.inst_obj.close()
+        if self.sim_inst == 1:
+            # 220830 update for the independent simulation mode
+            # GPIB device close
+            time.sleep(wait_samll)
+            self.inst_obj.close()
+
+            pass
+        else:
+            # for the simulatiom mode of change output
+            print('going to turn of the device')
+
+            pass
 
     def inst_name(self):
         self.cmd_str_name = "*IDN?"
-        self.in_name = self.inst_obj.query(self.cmd_str_name)
+        # self.in_name = self.inst_obj.query(self.cmd_str_name)
+        self.in_name = self.query_write(self.cmd_str_name)
         time.sleep(wait_samll)
         return self.in_name
+
+
+class inst_obj_gen_sub:
+    # this class used to simplify the general used function or
+    # the parameter of the instrument
+
+    # think about how to build... 220830
+
+    pass
 
 
 if __name__ == '__main__':
@@ -1033,6 +1452,10 @@ if __name__ == '__main__':
 
         # power supply application
         PWR_supply1 = LPS_505N(0, 0, 1, 1, 'off')
+
+        PWR_supply1.sim_inst = 1
+        # simulation control for the power supply
+
         # open the GPIB device from resource manager, need to add after object is define
         PWR_supply1.open_inst()
 
@@ -1082,7 +1505,10 @@ if __name__ == '__main__':
 
         # definition of meter
         M1_v_in = Met_34460(0.0001, 7, 0.000001, 1, 22)
-        M1_v_in.open_instr()
+        M1_v_in.open_inst()
+
+        M1_v_in.sim_inst = 1
+        # simulation control for the meter
 
         print('the output of the default input')
         M1_v_in.sim_mode_out()
@@ -1137,6 +1563,9 @@ if __name__ == '__main__':
 
         # open the instrument
         load1.open_inst()
+
+        load1.sim_inst = 1
+        # simulation control for the loader
 
         # check default value
         print('default setting of object')
@@ -1265,6 +1694,9 @@ if __name__ == '__main__':
         print('state1')
         # after the initialization, default state ready
         input()
+
+        load_src.sim_inst = 1
+        # simulation control for the source meter
 
         load_src.open_inst()
         read_res = load_src.inst_name()
@@ -1431,6 +1863,8 @@ if __name__ == '__main__':
 
         cham = chamber_su242(25, 15, 'off', -45, 185, 0)
         cham.sim_mode_out()
+        cham.sim_inst = 1
+        # simulation control for the chamber
 
         input()
         cham.open_inst()
