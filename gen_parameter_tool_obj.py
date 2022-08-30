@@ -4,6 +4,7 @@
 # this may help with the generation of general used data and help for
 # the decouple of entire system
 
+
 import time
 import pyvisa
 rm = pyvisa.ResourceManager()
@@ -91,10 +92,12 @@ class MCU_control ():
             #  if sending the wrong string, gaive the message through terminal
 
         # print the command going to send before write to MCU, used for debug
+        print('the string is at next line')
         print(self.uart_cmd_str)
         if self.sim_mcu == 1:
             # now is real mode, output the MCU command from COM port
             self.mcu_com.write(self.uart_cmd_str)
+            print('command sent')
         else:
             print('now is sending the MCU command with below string:')
             print(str(index))
@@ -120,7 +123,7 @@ class MCU_control ():
         # after the verification is finished, reset all the condition
         # to initial and turn off the communication port
         self.back_to_initial()
-
+        print('the MCU will turn off')
         if self.sim_mcu == 1:
             self.mcu_com.close()
         else:
@@ -134,15 +137,31 @@ class MCU_control ():
 
         #  MCU will be in normal mode (EN, SW) = (1, 1) => 4
         self.pmic_mode(4)
+        print('command accept to reset the MCU')
         pass
 
     def pulse_out(self, pulse_1, pulse_2):
+        # pulse should be within 255 (8bit data limitation)
+        if pulse_1 > 255:
+            pulse_1 = 255
+        if pulse_2 > 255:
+            pulse_2 = 255
+        # pulse = 0 is the issue wait for workaround
+        # need to be change in MCU code
+        if pulse_1 == 0:
+            pulse_1 = 255
+        if pulse_2 == 0:
+            pulse_2 = 255
         self.pulse1 = pulse_1
         self.pulse2 = pulse_2
         self.mcu_write('swire')
         pass
 
     def pmic_mode(self, mode_index):
+        # mode index should be in 1-4
+        if mode_index < 1 or mode_index > 4:
+            mode_index = 1
+            # turn off if error occur
         self.mode_set = mode_index
         self.mcu_write('en_sw')
         pass
@@ -167,5 +186,63 @@ class MCU_control ():
 
 
 if __name__ == '__main__':
+
+    mcu_cmd_arry_I2C_org = ['C3', '1C', 'C5', '05', 'C6', '1B', 'C4', '2B']
+    mcu_cmd_arry_I2C_0p1 = ['C3', '1D', 'C5', '06', 'C6', '1C', 'C4', '2C']
+    select_i2c = 0
+    # select I2C => 0 is org, 1 is 0p1 array
+    mcu = MCU_control(1, 3)
+    mcu.com_open()
+
+    mcu.pulse_out(10, 25)
+    input()
+    mcu.pmic_mode(1)
+    input()
+    mcu.pmic_mode(4)
+    input()
+    mcu.pmic_mode(2)
+    input()
+    mcu.pmic_mode(3)
+    input()
+    mcu.back_to_initial()
+    input()
+    x_relay = 0
+    while x_relay < 8:
+        # relay channel sweep for the test mode
+        mcu.relay_ctrl(x_relay)
+        print(str(mcu.mcu_cmd_arry[x_relay]))
+        time.sleep(0.1)
+        x_relay = x_relay + 1
+
+    input()
+    x_i2c = 0
+    while x_i2c < 4:
+        if select_i2c == 1:
+            # uart_cmd_str = (chr(int(
+            #     mcu.mcu_mode_I2C)) + mcu_cmd_arry_I2C_0p1[2 * x_i2c] + mcu_cmd_arry_I2C_0p1[2 * x_i2c + 1])
+            mcu.i2c_single_write(
+                mcu_cmd_arry_I2C_0p1[2 * x_i2c], mcu_cmd_arry_I2C_0p1[2 * x_i2c + 1])
+            print('register: ' + str(mcu_cmd_arry_I2C_0p1[2 * x_i2c]) + ', date: ' + str(
+                mcu_cmd_arry_I2C_0p1[2 * x_i2c + 1]))
+        else:
+            # choose different array for the I2C command output
+            # uart_cmd_str = (chr(int(
+            #     mcu.mcu_mode_I2C)) + mcu_cmd_arry_I2C_org[2 * x_i2c] + mcu_cmd_arry_I2C_org[2 * x_i2c + 1])
+            mcu.i2c_single_write(
+                mcu_cmd_arry_I2C_org[2 * x_i2c], mcu_cmd_arry_I2C_org[2 * x_i2c + 1])
+            print('register: ' + str(mcu_cmd_arry_I2C_org[2 * x_i2c]) + ', date: ' + str(
+                mcu_cmd_arry_I2C_org[2 * x_i2c + 1]))
+        # print(uart_cmd_str + str(select_i2c))
+
+        time.sleep(mcu.wait_small)
+        print('mcu I2C finished')
+        input()
+
+        x_i2c = x_i2c + 1
+    input()
+    mcu.back_to_initial()
+    print('mcu ready to turn off')
+    input()
+    mcu.com_close()
 
     pass

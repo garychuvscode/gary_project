@@ -7,7 +7,7 @@ uart_cmd_str = 0
 # UART command string
 wait_time = 0.5
 # unit in second
-mcu_com_addr = 5
+mcu_com_addr = 3
 # mcu_com_addr = 3
 # MCU COM port number
 mode = 0
@@ -52,7 +52,7 @@ mcu_com = rm.open_resource(uart_cmd_str)
 # end of support code
 
 # test mode selecton
-test_mode = 5
+test_mode = 3
 test_mode_pat = 0
 # 0 include the start command, 1 only the stop command
 # general testing pattern is to send 3 pattern

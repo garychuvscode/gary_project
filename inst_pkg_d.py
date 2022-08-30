@@ -1459,6 +1459,9 @@ class inst_obj_gen_sub:
     # the parameter of the instrument
 
     # think about how to build... 220830
+    # the next stage of refactoring can be
+    # 1. collect the open_inst, inst_name, query_write, only_write ...
+    # 2. the sharing control variable: GPIB_address, simulation mode ...
 
     pass
 
