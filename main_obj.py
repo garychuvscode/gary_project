@@ -5,57 +5,31 @@
 # 2. program => system loop and sequence arragement, instrument initialization,
 # result sheet saving (after each function)
 
+# === add on import
+# for the excel related operation
 import xlwings as xw
-
-import win32com.client
 # this import is for the VBA function
-
-# the import function
-# ==============
+import win32com.client
 
 
-# ==============
-# excel operating setting
-
-control_book_trace = 'c:\\py_gary\\test_excel\\IQ_scan_ctrl.xlsm'
-# no place to load the trace from excel or program, define by default
-result_book_trace = ''
-# result trace unable to load yet
-
-new_file_name = ''
-# new file name not loaded yet
-
-# ======== excel application related
-# 開啟 Excel 的app
-excel = win32com.client.Dispatch("Excel.Application")
-excel.Visible = True
-# ======== excel application related
-
-excel.Workbooks.Open(
-    Filename=control_book_trace)
-# use excel app to open the control book, so we can call VBA function
-
-
-wb = xw.books('Eff_inst.xlsm')
-# change the open of xlwings to assign the book had been open from the excel app
-# # open control workbook
-# wb = xw.Book(control_book_trace)
-
-# define new result workbook
-wb_res = xw.Book()
-# create reference sheet (for sheet position)
-sh_ref = wb_res.sheets.add('ref_sh')
-# delete the extra sheet from new workbook, difference from version
-wb_res.sheets('工作表1').delete()
-
-# define the sheets in control book
-
-# excel operating setting
-# ==============
+# === other support py import
+# for the instrument objects
+import inst_pkg_d as inst
+# for the excel sheet control
+import main_obj_sheet_control as sh
 
 
 # ==============
 # main program structure
+
+# instrument initialization
+# all the default had beent fix in the program and change directly in definition below
+
+
+# reference sheet delete after all the test finished
+# delete reference after copied
+sh.sh_ref.delete()
+sh.sh_ref_condition.delete()
 
 # main program structure
 # ==============

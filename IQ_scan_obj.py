@@ -38,8 +38,13 @@ class 0_class_name :
 
 
 '''
-#  220829: for the new structure, using object to define each function
+# 220829: for the new structure, using object to define each function
 import xlwings as xw
+
+# testing used temp instrument
+# need to become comment when the OBJ is finished
+import inst_pkg_d as inst
+pwr_temp = inst.LPS_505N(0, 0, 1, 7, 'off')
 
 
 class iq_scan:
@@ -47,7 +52,7 @@ class iq_scan:
     # this class is used to measure IQ from the DUT, based on the I/O setting and different Vin
     # measure the IQ
 
-    def __init__(self, wb_res, pwr, pwr_ch, met_i):
+    def __init__(self, wb_res, pwr, pwr_ch, met_i, mcu):
         # 220831: object format or structure definition
         # 1. parameter: wb_res(the result book), pwr(power supply object), pwr_ch(power supply channel)
         # met_i(current meter)
@@ -60,14 +65,24 @@ class iq_scan:
         self.pwr_main = pwr
         self.pwr_ch_main = pwr_ch
         self.met_i_main = met_i
+        self.mcu_main = mcu
+        # assign the reference sheet generate by the master
 
         self.control_book_trace = 'c:\\py_gary\\test_excel\\IQ_scan_ctrl.xlsm'
         # no place to load the trace from excel or program, define by default
         # every verification function have independent trace setting
         # no result book trace needed since it's been define by the master excel
 
+        # assign the reference sheet for the result generation in the sub function object
+        self.sh_ref = self.wb_res_main.sheets('ref_sh')
+        self.sh_ref_condition = self.wb_res_main.sheets('ref_sh2')
+
         # open sub function control workbook
         self.wb = xw.Book(self.control_book_trace)
+
+        # define the sheets in control book
+        self.sh_main = self.wb.sheets('main')
+        self.sh_result = self.wb.sheets('IQ_measured')
 
         pass
 
@@ -79,6 +94,15 @@ class iq_scan:
         # 3. if plot is needed for this verification, need to integrated the plot in the excel file and call from here
         # 4. not a new file but an add on sheet to the result workbook
 
+        # copy the sheets to new book
+        # for the new sheet generation, located in sheet_gen
+        self.sh_main.copy(self.sh_ref_condition)
+        self.sh_result.copy(self.sh_ref)
+
+        # assign both sheet to the new sheets in result book
+        self.sh_main = self.wb_res_main.sheets('main')
+        self.sh_result = self.wb_res_main.sheets('IQ_measured')
+
         pass
 
     def table_plot(self):
@@ -87,7 +111,7 @@ class iq_scan:
 
         pass
 
-    def run_verification(slef):
+    def run_verification(self):
         #  this function is to run the main item, for all the instrument control and main loop will be in this sub function
-
+        pwr_temp.change_I(1, 1)
         pass

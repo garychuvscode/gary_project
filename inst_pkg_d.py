@@ -1221,7 +1221,7 @@ class chamber_su242:
     # initialization is just for default parameter input, may not be able to use sub program
     # need to open and change output at other method in this object
 
-    def __init__(self, tset0, GP_addr0, state0, l_limt_0, h_limt_0, ready_err0):
+    def __init__(self, tset0, GP_addr0, state0, l_limt_0, h_limt_0):
         # send value in when define the object
         self.tset_ini = tset0
         # vset is the V_clamp of source meter
@@ -1229,7 +1229,6 @@ class chamber_su242:
         self.state_ini = state0
         self.temp_L_limt_ini = l_limt_0
         self.temp_H_limt_ini = h_limt_0
-        self.ready_err_ini = ready_err0
 
         self.tset_o = 0
         # the last set temperature
