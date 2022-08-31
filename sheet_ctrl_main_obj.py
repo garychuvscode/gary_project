@@ -8,7 +8,6 @@ import xlwings as xw
 import win32com.client
 
 
-
 control_book_trace = 'c:\\py_gary\\test_excel\\IQ_scan_ctrl.xlsm'
 # no place to load the trace from excel or program, define by default
 result_book_trace = ''

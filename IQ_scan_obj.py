@@ -39,12 +39,22 @@ class 0_class_name :
 
 '''
 # 220829: for the new structure, using object to define each function
+import inst_pkg_d as inst
 import xlwings as xw
+# for the jump out window
+import win32api
+# also for the jump out window, same group with win32con
+import time
+
+
+import sheet_ctrl_IQ as sh
+
+
+wait_time = sh.wait_time
 
 # testing used temp instrument
 # need to become comment when the OBJ is finished
-import inst_pkg_d as inst
-pwr_temp = inst.LPS_505N(0, 0, 1, 7, 'off')
+pwr1 = inst.LPS_505N(0, 0, 1, 7, 'off')
 
 
 class iq_scan:
@@ -113,5 +123,12 @@ class iq_scan:
 
     def run_verification(self):
         #  this function is to run the main item, for all the instrument control and main loop will be in this sub function
-        pwr_temp.change_I(1, 1)
+        pwr1.chg_out(sh.pre_vin, sh.pre_sup_iout, sh.pwr_ch_set, 'on')
+        print('pre-power on here')
+
+        msg_res = win32api.MessageBox(
+            0, 'press enter if hardware configuration is correct', 'Pre-power on for system test under Vin= ' + str(sh.pre_vin) + 'Iin= ' + str(sh.pre_sup_iout))
+
+        time.sleep(wait_time)
+
         pass

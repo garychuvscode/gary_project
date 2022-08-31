@@ -16,7 +16,7 @@ import win32com.client
 # for the instrument objects
 import inst_pkg_d as inst
 # for the excel sheet control
-import main_obj_sheet_control as sh
+import sheet_ctrl_main_obj as sh
 
 
 # ==============
