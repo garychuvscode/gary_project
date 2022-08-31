@@ -39,19 +39,31 @@ class 0_class_name :
 
 '''
 #  220829: for the new structure, using object to define each function
-class iq_scan :
+import xlwings as xw
+
+
+class iq_scan:
 
     # this class is used to measure IQ from the DUT, based on the I/O setting and different Vin
     # measure the IQ
 
-    def __init__(self, wb_res, pwr, pwr_ch, met_i) :
+    def __init__(self, wb_res, pwr, pwr_ch, met_i):
+        # 220831: object format or structure definition
+        # 1. parameter: wb_res(the result book), pwr(power supply object), pwr_ch(power supply channel)
+        # met_i(current meter)
+        # 2.
         # this is the initialize sub-program for the class and which will operate once class
         # has been defined
 
+        # assign the input information to object variable
+        self.wb_res_main = wb_res
+        self.pwr_main = pwr
+        self.pwr_ch_main = pwr_ch
+        self.met_i_main = met_i
 
         pass
 
-    def sheet_gen(self) :
+    def sheet_gen(self):
         # this function is a must have function to generate the related excel for this verification item
         # this sub must include:
         # 1. loading the parameter needed for the verification, control loop, instrument or others
@@ -61,23 +73,13 @@ class iq_scan :
 
         pass
 
-    def table_plot(self) :
+    def table_plot(self):
         # this function need to build the plot needed for this verification
         # include the VBA function inside the excel
 
         pass
 
-    def run_verification(slef) :
+    def run_verification(slef):
         #  this function is to run the main item, for all the instrument control and main loop will be in this sub function
 
         pass
-
-
-
-
-
-
-
-
-
-
