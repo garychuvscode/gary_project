@@ -61,6 +61,14 @@ class iq_scan:
         self.pwr_ch_main = pwr_ch
         self.met_i_main = met_i
 
+        self.control_book_trace = 'c:\\py_gary\\test_excel\\IQ_scan_ctrl.xlsm'
+        # no place to load the trace from excel or program, define by default
+        # every verification function have independent trace setting
+        # no result book trace needed since it's been define by the master excel
+
+        # open sub function control workbook
+        self.wb = xw.Book(self.control_book_trace)
+
         pass
 
     def sheet_gen(self):
