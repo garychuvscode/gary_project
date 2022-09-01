@@ -50,6 +50,8 @@ class excel_parameter ():
         self.sh_volt_curr_cmd = self.wb.sheets('V_I_com')
         # this is the sheet for I2C command
         self.sh_i2c_cmd = self.wb.sheets('I2C_ctrl')
+        # this is the sheet for IQ scan
+        self.sh_iq_scan = self.wb.sheets('IQ_measured')
 
         # file name from the master excel
         self.new_file_name = str(self.sh_main.range('B8').value)
@@ -240,13 +242,13 @@ class excel_parameter ():
         # sh_ref_condition is for testing condition and setting
         # all the reference sheet will delete after the program finished
         self.sh_ref = self.wb_res.sheets.add('ref_sh')
-        self.sh_ref_condition = self.wb_res.sheets.add('ref_sh2')
+        # self.sh_ref_condition = self.wb_res.sheets.add('ref_sh2')
         # delete the extra sheet from new workbook, difference from version
         self.wb_res.sheets('工作表1').delete()
 
-        # copy the sheets to new book
+        # copy the main sheets to new book
         self.sh_main.copy(self.sh_ref)
-        # assign both sheet to the new sheets in result book
+        # assign sheet to the new sheets in result book
         self.sh_main = self.wb_res.sheets('main')
 
         # for the other sheet rather than main, will decide to copy to result
@@ -271,6 +273,40 @@ class excel_parameter ():
         pass
 
     pass
+
+    def inst_name_sheet(self, nick_name, full_name):
+        # definition of sub program may not need the self, but definition of class will need the self
+        # self is usually used for internal parameter of class
+        # this function will get the nick name and full name from main and update to the sheet
+        # based on the nick name
+
+        # 220902 operate after main is change, and result will be correct
+
+        if nick_name == 'PWR1':
+            self.sh_main.range(
+                (self.index_GPIB_inst + 1, 4)).value = full_name
+
+        elif nick_name == 'MET1':
+            self.sh_main.range(
+                (self.index_GPIB_inst + 2, 4)).value = full_name
+
+        elif nick_name == 'MET2':
+            self.sh_main.range(
+                (self.index_GPIB_inst + 3, 4)).value = full_name
+
+        elif nick_name == 'LOAD1':
+            self.sh_main.range(
+                (self.index_GPIB_inst + 4, 4)).value = full_name
+
+        elif nick_name == 'LOADSR':
+            self.sh_main.range(
+                (self.index_GPIB_inst + 5, 4)).value = full_name
+
+        elif nick_name == 'chamber':
+            self.sh_main.range(
+                (self.index_GPIB_inst + 6, 4)).value = full_name
+
+        pass
 
 
 if __name__ == '__main__':

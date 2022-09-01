@@ -105,6 +105,7 @@ result_book_trace = excel_temp + new_file_name + '.xlsx'
 # close control book
 # wb.close()
 
+
 '''
 # 220901: all the parameter loaded function used the other object for definition
 # import parameter_load_obj and send the book name needed for the parameter

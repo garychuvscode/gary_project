@@ -67,10 +67,7 @@ class iq_scan:
     # measure the IQ
 
     def __init__(self, excel, pwr, pwr_ch, met_i, mcu, single):
-        # 220831: object format or structure definition
-        # 1. parameter: wb_res(the result book), pwr(power supply object), pwr_ch(power supply channel)
-        # met_i(current meter)
-        # 2.
+
         # this is the initialize sub-program for the class and which will operate once class
         # has been defined
 
@@ -81,7 +78,6 @@ class iq_scan:
         self.met_i_main = met_i
         self.mcu_main = mcu
         self.single_main = single
-        # assign the reference sheet generate by the master
 
         # setup extra file name if single verification
         if single == 0:
@@ -104,19 +100,19 @@ class iq_scan:
     def sheet_gen(self):
         # this function is a must have function to generate the related excel for this verification item
         # this sub must include:
-        # 1. loading the parameter needed for the verification, control loop, instrument or others
         # 2. generate the result sheet in the result book, and setup the format
         # 3. if plot is needed for this verification, need to integrated the plot in the excel file and call from here
         # 4. not a new file but an add on sheet to the result workbook
+
+        # copy the rsult sheet to result book
+        excel1.sh_iq_scan.copy(excel1.sh_ref)
+        # assign the sheet to result book
+        excel1.sh_iq_scan = excel1.wb_res.sheets('IQ_measured')
 
         # # copy the sheets to new book
         # # for the new sheet generation, located in sheet_gen
         # self.sh_main.copy(self.sh_ref_condition)
         # self.sh_result.copy(self.sh_ref)
-
-        # assign both sheet to the new sheets in result book
-        self.sh_main = self.wb_res_main.sheets('main')
-        self.sh_result = self.wb_res_main.sheets('IQ_measured')
 
         pass
 
