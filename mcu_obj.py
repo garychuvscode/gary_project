@@ -4,7 +4,6 @@
 # this may help with the generation of general used data and help for
 # the decouple of entire system
 
-
 import time
 import pyvisa
 rm = pyvisa.ResourceManager()
@@ -183,6 +182,7 @@ class MCU_control ():
     pass
 
 #  testing items for the MCU control object
+# 220901 other MCU function wait for added
 
 
 if __name__ == '__main__':

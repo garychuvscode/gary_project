@@ -39,22 +39,26 @@ class 0_class_name :
 
 '''
 # 220829: for the new structure, using object to define each function
-import inst_pkg_d as inst
+
+import parameter_load_obj as par
+import mcu_obj as mcu
 import xlwings as xw
 # for the jump out window
+# # also for the jump out window, same group with win32con
 import win32api
-# also for the jump out window, same group with win32con
+
 import time
 
 
-import sheet_ctrl_IQ as sh
-
-
-wait_time = sh.wait_time
+# items help to program more efficient
 
 # testing used temp instrument
 # need to become comment when the OBJ is finished
+import inst_pkg_d as inst
 pwr1 = inst.LPS_505N(0, 0, 1, 7, 'off')
+met1 = inst.Met_34460(0, 0, 0, 0)
+mcu1 = mcu.MCU_control(1, 0)
+excel1 = par.excel_parameter('test')
 
 
 class iq_scan:
@@ -62,7 +66,7 @@ class iq_scan:
     # this class is used to measure IQ from the DUT, based on the I/O setting and different Vin
     # measure the IQ
 
-    def __init__(self, wb_res, pwr, pwr_ch, met_i, mcu):
+    def __init__(self, excel, pwr, pwr_ch, met_i, mcu, single):
         # 220831: object format or structure definition
         # 1. parameter: wb_res(the result book), pwr(power supply object), pwr_ch(power supply channel)
         # met_i(current meter)
@@ -71,28 +75,29 @@ class iq_scan:
         # has been defined
 
         # assign the input information to object variable
-        self.wb_res_main = wb_res
+        self.excel_main = excel
         self.pwr_main = pwr
         self.pwr_ch_main = pwr_ch
         self.met_i_main = met_i
         self.mcu_main = mcu
+        self.single_main = single
         # assign the reference sheet generate by the master
 
-        self.control_book_trace = 'c:\\py_gary\\test_excel\\IQ_scan_ctrl.xlsm'
-        # no place to load the trace from excel or program, define by default
-        # every verification function have independent trace setting
-        # no result book trace needed since it's been define by the master excel
-
-        # assign the reference sheet for the result generation in the sub function object
-        self.sh_ref = self.wb_res_main.sheets('ref_sh')
-        self.sh_ref_condition = self.wb_res_main.sheets('ref_sh2')
-
-        # open sub function control workbook
-        self.wb = xw.Book(self.control_book_trace)
-
-        # define the sheets in control book
-        self.sh_main = self.wb.sheets('main')
-        self.sh_result = self.wb.sheets('IQ_measured')
+        # setup extra file name if single verification
+        if single == 0:
+            # this is not single item verififcation
+            # and this is not the last item (last ite)
+            pass
+        elif single == 1:
+            # it's single, using it' own file name
+            # item can decide the extra file name is it's the only item
+            excel1.extra_file_name = '_IQ'
+            pass
+        elif single == 2:
+            # this means it's the last test item for the whole test
+            # marked up what is the testing program number of this test
+            # easier to check with the manual sheet
+            self.extra_file_name = '_P' + str(excel1.program_group_index)
 
         pass
 
@@ -104,10 +109,10 @@ class iq_scan:
         # 3. if plot is needed for this verification, need to integrated the plot in the excel file and call from here
         # 4. not a new file but an add on sheet to the result workbook
 
-        # copy the sheets to new book
-        # for the new sheet generation, located in sheet_gen
-        self.sh_main.copy(self.sh_ref_condition)
-        self.sh_result.copy(self.sh_ref)
+        # # copy the sheets to new book
+        # # for the new sheet generation, located in sheet_gen
+        # self.sh_main.copy(self.sh_ref_condition)
+        # self.sh_result.copy(self.sh_ref)
 
         # assign both sheet to the new sheets in result book
         self.sh_main = self.wb_res_main.sheets('main')
@@ -126,7 +131,7 @@ class iq_scan:
         pwr1.chg_out(sh.pre_vin, sh.pre_sup_iout, sh.pwr_ch_set, 'on')
         print('pre-power on here')
 
-        msg_res = win32api.MessageBox(
+        self.msg_res = win32api.MessageBox(
             0, 'press enter if hardware configuration is correct', 'Pre-power on for system test under Vin= ' + str(sh.pre_vin) + 'Iin= ' + str(sh.pre_sup_iout))
 
         time.sleep(wait_time)
