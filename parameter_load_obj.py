@@ -93,6 +93,8 @@ class excel_parameter ():
         # self.index_meter_inst = self.sh_main.range((5, 15)).value
         # self.index_chamber_inst = self.sh_main.range((6, 15)).value
 
+        # index check put at the open result sheet
+
         # base on output format copied from the control book
         # start parameter initialization
         # pre- test condition settings
@@ -215,10 +217,14 @@ class excel_parameter ():
             self.index_general_other + 7, 3).value
         self.en_start_up_check = self.sh_main.range(
             self.index_general_other + 8, 3).value
+        self.wait_small = self.sh_main.range(
+            self.index_general_other + 9, 3).value
+
 
         # verification item: IQ parameter
         self.ISD_range = self.sh_main.range(
             self.index_IQ_scan + 1, 3).value
+
 
         # verification item: eff control parameter
         self.channel_mode = self.sh_main.range(self.index_eff + 1, 3).value
@@ -229,11 +235,35 @@ class excel_parameter ():
         self.source_meter_channel = self.sh_main.range(
             self.index_eff + 3, 3).value
 
+        # add the loop control for each items
+
+        # counteer is usually use c_ in opening
+
+        # EFF_inst used
+        self.c_avdd_load = self.sh_i2c_cmd.range('D1').value
+        self.c_vin = self.sh_i2c_cmd.range('B1').value
+        self.c_iload = self.sh_i2c_cmd.range('C1').value
+        self.c_pulse = self.sh_i2c_cmd.range('E1').value
+        self.c_i2c = self.sh_i2c_cmd.range('B1').value
+        self.c_i2c_g = self.sh_i2c_cmd.range('D1').value
+        self.c_avdd_single = self.sh_i2c_cmd.range('G1').value
+        self.c_avdd_pulse = self.sh_i2c_cmd.range('H1').value
+        self.c_tempature = self.sh_i2c_cmd.range('I1').value
+
+        # counteer is usually use c_ in opening
+        self.c_iq = self.sh_iq_scan.range('C4').value
+        self.iq_scaling = self.sh_iq_scan.range('C5').value
+
+
         print('end of the parameter loaded')
 
         pass
 
     def open_result_book(self):
+
+        # before open thr result book to check index, first check and correct
+        # index (will be update to the obj_main)
+        self.index_check()
 
         # define new result workbook
         self.wb_res = xw.Book()
@@ -307,6 +337,162 @@ class excel_parameter ():
                 (self.index_GPIB_inst + 6, 4)).value = full_name
 
         pass
+    def sheet_reset(self):
+        # this sheet reset the all the sheet variable assignment to the original sheet
+        # in main_obj, which used for the re-run program
+        # just copoy from the sheet assignment
+
+        # after choosing the workbook, define the main sheet to load parameter
+        self.sh_main = self.wb.sheets('main')
+
+        # only the instrument control will be still mapped to the original excel
+        # since inst_ctrl is no needed to copy to the result sheet
+        self.sh_inst_ctrl = self.wb.sheets('inst_ctrl')
+
+        # other way to define sheet:
+        # this is the format for the efficiency result
+        ex_sheet_name = 'raw_out'
+        self.sh_raw_out = self.wb.sheets(ex_sheet_name)
+        # this is the sheet for efficiency testing command
+        self.sh_volt_curr_cmd = self.wb.sheets('V_I_com')
+        # this is the sheet for I2C command
+        self.sh_i2c_cmd = self.wb.sheets('I2C_ctrl')
+        # this is the sheet for IQ scan
+        self.sh_iq_scan = self.wb.sheets('IQ_measured')
+
+        pass
+
+    def index_check(self):
+        # this sub program used to check the index setting for the excel input
+        # prevent logic error of the wrong indexing of program parameter
+        check_str = 'settings'
+        index_correction = 0
+
+        if self.sh_main.range((self.index_par_pre_con, 3)).value == check_str :
+            # index pass if value is loaded as settings
+            print('index_par_pre_con check done')
+            pass
+        else :
+            print('correct value in: (3, 9)')
+            print('the new index number input:')
+            index_correction = input()
+            self.sh_main.range((3, 9)).value = index_correction
+            self.index_par_pre_con = index_correction
+            pass
+
+        if self.sh_main.range((self.index_GPIB_inst, 3)).value == check_str :
+            # index pass if value is loaded as settings
+            print('index_GPIB_inst check done')
+            pass
+        else :
+            print('correct value in: (4, 9)')
+            print('the new index number input:')
+            index_correction = input()
+            self.sh_main.range((4, 9)).value = index_correction
+            self.index_GPIB_inst = index_correction
+            pass
+
+        if self.sh_main.range((self.index_general_other, 3)).value == check_str :
+            # index pass if value is loaded as settings
+            print('index_general_other check done')
+            pass
+        else :
+            print('correct value in: (5, 9)')
+            print('the new index number input:')
+            index_correction = input()
+            self.sh_main.range((5, 9)).value = index_correction
+            self.index_general_other = index_correction
+            pass
+
+        if self.sh_main.range((self.index_pwr_inst, 3)).value == check_str :
+            # index pass if value is loaded as settings
+            print('index_pwr_inst check done')
+            pass
+        else :
+            print('correct value in: (6, 9)')
+            print('the new index number input:')
+            index_correction = input()
+            self.sh_main.range((6, 9)).value = index_correction
+            self.index_pwr_inst = index_correction
+            pass
+
+        if self.sh_main.range((self.index_chroma_inst, 3)).value == check_str :
+            # index pass if value is loaded as settings
+            print('index_chroma_inst check done')
+            pass
+        else :
+            print('correct value in: (3, 12)')
+            print('the new index number input:')
+            index_correction = input()
+            self.sh_main.range((3, 12)).value = index_correction
+            self.index_chroma_inst = index_correction
+            pass
+
+        if self.sh_main.range((self.index_src_inst, 3)).value == check_str :
+            # index pass if value is loaded as settings
+            print('index_src_inst check done')
+            pass
+        else :
+            print('correct value in: (4, 12)')
+            print('the new index number input:')
+            index_correction = input()
+            self.sh_main.range((4, 12)).value = index_correction
+            self.index_src_inst = index_correction
+            pass
+
+        if self.sh_main.range((self.index_meter_inst, 3)).value == check_str :
+            # index pass if value is loaded as settings
+            print('index_meter_inst check done')
+            pass
+        else :
+            print('correct value in: (5, 12)')
+            print('the new index number input:')
+            index_correction = input()
+            self.sh_main.range((5, 12)).value = index_correction
+            self.index_meter_inst = index_correction
+            pass
+
+        if self.sh_main.range((self.index_chamber_inst, 3)).value == check_str :
+            # index pass if value is loaded as settings
+            print('index_chamber_inst check done')
+            pass
+        else :
+            print('correct value in: (6, 12)')
+            print('the new index number input:')
+            index_correction = input()
+            self.sh_main.range((6, 12)).value = index_correction
+            self.index_chamber_inst = index_correction
+            pass
+
+        if self.sh_main.range((self.index_IQ_scan, 3)).value == check_str :
+            # index pass if value is loaded as settings
+            print('index_IQ_scan check done')
+            pass
+        else :
+            print('correct value in: (3, 15)')
+            print('the new index number input:')
+            index_correction = input()
+            self.sh_main.range((3, 15)).value = index_correction
+            self.index_IQ_scan = index_correction
+            pass
+
+        if self.sh_main.range((self.index_eff, 3)).value == check_str :
+            # index pass if value is loaded as settings
+            print('index_eff check done')
+            pass
+        else :
+            print('correct value in: (4, 15)')
+            print('the new index number input:')
+            index_correction = input()
+            self.sh_main.range((4, 15)).value = index_correction
+            self.index_eff = index_correction
+            pass
+
+        print('the index correct finished!')
+
+
+
+
 
 
 if __name__ == '__main__':

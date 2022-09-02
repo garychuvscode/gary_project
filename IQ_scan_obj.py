@@ -46,8 +46,11 @@ import xlwings as xw
 # for the jump out window
 # # also for the jump out window, same group with win32con
 import win32api
-
+from win32con import MB_SYSTEMMODAL
+# for the delay function
 import time
+# include for atof function => transfer string to float
+import locale as lo
 
 
 # items help to program more efficient
@@ -124,12 +127,88 @@ class iq_scan:
 
     def run_verification(self):
         #  this function is to run the main item, for all the instrument control and main loop will be in this sub function
-        pwr1.chg_out(sh.pre_vin, sh.pre_sup_iout, sh.pwr_ch_set, 'on')
+        pwr1.chg_out(excel1.pre_vin, excel1.pre_sup_iout,
+                     excel1.pwr_act_ch, 'on')
         print('pre-power on here')
 
         self.msg_res = win32api.MessageBox(
-            0, 'press enter if hardware configuration is correct', 'Pre-power on for system test under Vin= ' + str(sh.pre_vin) + 'Iin= ' + str(sh.pre_sup_iout))
+            0, 'press enter if hardware configuration is correct', 'Pre-power on for system test under Vin= ' + str(excel1.pre_vin) + 'Iin= ' + str(excel1.pre_sup_iout))
 
-        time.sleep(wait_time)
+        print('pre-power on state finished and ready for next')
+        time.sleep(excel1.wait_time)
+
+        x_iq = 0
+        # counter for SWIRE pulse amount
+        while x_iq < excel1.c_iq:
+            # load the Vin command first
+            ideal_v = excel1.sh_iq_scan.range((7, 4 + x_iq)).value
+
+            # update the vin setting for different vin demand
+            pwr1.chg_out(ideal_v, excel1.pre_sup_iout, excel1.pwr_act_ch, 'on')
+
+            # four different mode in this loop will change
+            x_submode = 0
+            # initialize the counter for differnt state
+            while x_submode < 4:
+                # submode + 1 will be the state command for MCU
+
+                mcu1.pmic_mode(x_submode + 1)
+                # change the mode for IQ measurement
+                time.sleep(excel1.wait_time)
+                if x_submode == 0:
+                    time.sleep(3 * excel1.wait_time)
+                    # extra wait time for the normal mode to shtudown mode transition
+                    # because IQ may not stop change so fast, need to double check
+
+                print('input voltage setting is ' + str(ideal_v))
+                print('the mode is ' + str(x_submode + 1))
+                time.sleep(excel1.wait_time)
+
+                # this part can not be in the simulation mode,
+                # because it need to access the meter object variable
+                if x_submode == 0:
+                    # for the mode of measure ISD, need to have more wait time for stable and
+                    # need to prevend negative result of error result
+
+                    # here used the change of range directly => change variable in inst_pkg
+                    range_temp = met1.max_mea_i_ini
+                    met1.max_mea_i_ini = excel1.ISD_range
+                    time.sleep(5 * excel1.wait_time)
+                else:
+                    met1.max_mea_i_ini = range_temp
+                    # because the counter starts from 0, ini value will save to the temp first and return when the counter
+                    # is not 0
+
+                # measurement start after the AVDDEN and SWIRE is updated
+                time.sleep(excel1.wait_small)
+                v_res_temp = met1.mea_i()
+
+                if x_submode == 0:
+                    while float(v_res_temp) < 0:
+                        # when there is a negative result from the measurement
+                        # we need to re measure to update the result
+                        v_res_temp = met1.mea_i()
+                        time.sleep(excel1.wait_small)
+                        # it should be already stable after the change of GPIO command
+                        # small wait time should be enough
+
+                # when the measurement is finished, update the result to excel table and map to the scaling
+                time.sleep(excel1.wait_small)
+                excel1.sh_iq_scan.range((8 + x_submode, 4 + x_iq)
+                                        ).value = lo.atof(v_res_temp) * excel1.iq_scaling
+                # iq_scaling is decide from the result table (unit is optional)
+                x_submode = x_submode + 1
+
+            # update the counter for different Vin
+            excel1.sh_iq_scan.range((6, 4 + x_iq)).value = ideal_v
+
+            x_iq = x_iq + 1
+        # save the result after each counter finished
+        excel1.wb_res.save(excel1.result_book_trace)
+
+        pwr1.chg_out(0, excel1.pre_sup_iout, excel1.pwr_act_ch, 'off')
+        # pwr1.inst_close()
+        # since inst_close may turn all the channel, may not be a good command for single function
+        print('finsihed and goodbye')
 
         pass
