@@ -99,6 +99,48 @@ def sim_mode_all(main_off_line0):
     pass
 
 
+def sim_mode_independent(pwr, met_v, met_i, loader, src, chamber):
+    # independent setting for instrument simulation mode
+    if pwr == 1:
+        pwr_m.sim_inst = 1
+        pass
+    else:
+        pwr_m.sim_inst = 0
+        pass
+    if met_v == 1:
+        met_v_m.sim_inst = 1
+        pass
+    else:
+        met_v_m.sim_inst = 0
+        pass
+    if met_i == 1:
+        met_i_m.sim_inst = 1
+        pass
+    else:
+        met_i_m.sim_inst = 0
+        pass
+    if loader == 1:
+        loader_chr_m.sim_inst = 1
+        pass
+    else:
+        loader_chr_m.sim_inst = 0
+        pass
+    if src == 1:
+        src_m.sim_inst = 1
+        pass
+    else:
+        src_m.sim_inst = 0
+        pass
+    if chamber == 1:
+        chamber_m.sim_inst = 1
+        pass
+    else:
+        chamber_m.sim_inst = 0
+        pass
+
+    pass
+
+
 def open_inst_and_name():
     # this used to turn all the instrument on after program start
     # setup simulation mode help to prevent error
@@ -144,9 +186,11 @@ excel_m.excel_save()
 # decide by the program_group variable
 if program_group == 0:
     # here is the single test for IQ
-    multi_item = 0
-    # single setting of the object need to be 1
 
+    # single setting of the object need to be 1
+    multi_item = 0
+
+    # definition of experiment object
     iq_test = iq.iq_scan(excel_m, pwr_m, excel_m.pwr_act_ch, met_i_m, mcu_m, 1)
 
     # generate(or copy) the needed sheet to the result book
@@ -159,7 +203,7 @@ if program_group == 0:
     iq_test.run_verification()
 
     # remember that this is only call by main, not by  object
-    excel_m.end_of_test(0)
+    excel_m.end_of_test(multi_item)
 
     print('end of the IQ object testing program')
 
