@@ -269,6 +269,7 @@ class LPS_505N:
             # for the simulatiom mode of change output
             print('check the instrument name, sim mode ')
             print(str(self.cmd_str_name))
+            self.in_name = 'pwr is in sim mode'
 
             pass
 
@@ -512,6 +513,7 @@ class Met_34460:
             # for the simulatiom mode of change output
             print('check the instrument name, sim mode ')
             print(str(self.cmd_str_name))
+            self.in_name = 'met is in sim mode'
 
             pass
         return self.in_name
@@ -812,6 +814,7 @@ class chroma_63600:
             # for the simulatiom mode of change output
             print('check the instrument name, sim mode ')
             print(str(self.cmd_str_name))
+            self.in_name = 'loader is in sim mode'
 
             pass
 
@@ -1211,6 +1214,7 @@ class Keth_2440:
             # for the simulatiom mode of change output
             print('check the instrument name, sim mode ')
             print(str(self.cmd_str_name))
+            self.in_name = 'src is in sim mode'
 
             pass
 
@@ -1221,7 +1225,7 @@ class chamber_su242:
     # initialization is just for default parameter input, may not be able to use sub program
     # need to open and change output at other method in this object
 
-    def __init__(self, tset0, GP_addr0, state0, l_limt_0, h_limt_0):
+    def __init__(self, tset0, GP_addr0, state0, l_limt_0, h_limt_0, ready_err_0):
         # send value in when define the object
         self.tset_ini = tset0
         # vset is the V_clamp of source meter
@@ -1229,6 +1233,7 @@ class chamber_su242:
         self.state_ini = state0
         self.temp_L_limt_ini = l_limt_0
         self.temp_H_limt_ini = h_limt_0
+        self.ready_err_ini = ready_err_0
 
         self.tset_o = 0
         # the last set temperature
@@ -1446,10 +1451,21 @@ class chamber_su242:
             pass
 
     def inst_name(self):
-        self.cmd_str_name = "*IDN?"
-        # self.in_name = self.inst_obj.query(self.cmd_str_name)
-        self.in_name = self.query_write(self.cmd_str_name)
-        time.sleep(wait_samll)
+        # get the insturment name
+        if self.sim_inst == 1:
+            self.cmd_str_name = "*IDN?"
+            self.in_name = self.query_write(self.cmd_str_name)
+            time.sleep(wait_samll)
+
+            pass
+        else:
+            # for the simulatiom mode of change output
+            print('check the instrument name, sim mode ')
+            print(str(self.cmd_str_name))
+            self.in_name = 'chamber is in sim mode'
+
+            pass
+
         return self.in_name
 
 
