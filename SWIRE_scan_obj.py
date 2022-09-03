@@ -104,17 +104,17 @@ class sw_scan:
         time.sleep(self.excel_ini.wait_time)
 
         # the power will change from initial state directly, not turn off between transition
-        pwr1.chg_out(sh.vin1_set, sh.pre_sup_iout, sh.pwr_ch_set, 'on')
+        self.pwr_ini.chg_out(sh.vin1_set, sh.pre_sup_iout, sh.pwr_ch_set, 'on')
 
         # loader channel and current
         # default off, will be turn on and off based on the loop control
 
-        load1.chg_out(sh.iload1_set, sh.loa_ch_set, 'off')
+        self.loader_ini.chg_out(sh.iself.loader_ini_set, sh.loa_ch_set, 'off')
         # load set for EL-power
-        load1.chg_out(sh.iload2_set, sh.loa_ch2_set, 'off')
+        self.loader_ini.chg_out(sh.iload2_set, sh.loa_ch2_set, 'off')
         # load set for AVDD
 
-        time.sleep(wait_time)
+        time.sleep(self.excel_ini.wait_time)
         # AVDD measurement will be independant case, not in the loop
         # keep the loop simple and periodic
 
@@ -126,12 +126,12 @@ class sw_scan:
         # assign to related record
         sh.sh_org_tab.range((10, 9)).value = lo.atof(v_res_temp)
 
-        v_res_temp = met1.mea_v()
-        time.sleep(wait_time)
+        v_res_temp = self.met_v_ini.mea_v()
+        time.sleep(self.excel_ini.wait_time)
         sh.sh_org_tab.range((10, 4)).value = lo.atof(v_res_temp)
 
-        load1.chg_out(sh.iload2_set, sh.loa_ch2_set, 'on')
-        time.sleep(wait_time)
+        self.loader_ini.chg_out(sh.iload2_set, sh.loa_ch2_set, 'on')
+        time.sleep(self.excel_ini.wait_time)
 
         # call vin calibration
         vin_clibrate_singal_met(vin_ch, sh.pre_vin)
@@ -139,10 +139,10 @@ class sw_scan:
         # assign to related record
         sh.sh_org_tab.range((10, 10)).value = lo.atof(v_res_temp)
 
-        v_res_temp = met1.mea_v()
-        time.sleep(wait_time)
+        v_res_temp = self.met_v_ini.mea_v()
+        time.sleep(self.excel_ini.wait_time)
         sh.sh_org_tab.range((10, 6)).value = lo.atof(v_res_temp)
-        load1.chg_out(sh.iload2_set, sh.loa_ch2_set, 'off')
+        self.loader_ini.chg_out(sh.iload2_set, sh.loa_ch2_set, 'off')
 
         # == AVDD measurement end
 
@@ -178,7 +178,7 @@ class sw_scan:
             print(uart_cmd_str)
             mcu_com.write(uart_cmd_str)
             print('the pulse is ' + str(pulse1) + ' ' + str(pulse2))
-            time.sleep(wait_time)
+            time.sleep(self.excel_ini.wait_time)
             # input()
 
             # call vin calibration
@@ -187,14 +187,15 @@ class sw_scan:
             # assign to related record
             sh.sh_org_tab.range((11 + x_swire, 9)).value = lo.atof(v_res_temp)
 
-            time.sleep(wait_time)
+            time.sleep(self.excel_ini.wait_time)
             # measurement start after the SWIRE pulse is set properly
-            v_res_temp = met1.mea_v()
-            time.sleep(wait_time)
+            v_res_temp = self.met_v_ini.mea_v()
+            time.sleep(self.excel_ini.wait_time)
             sh.sh_org_tab.range((11 + x_swire, 4)).value = lo.atof(v_res_temp)
 
-            load1.chg_out(sh.iload1_set, sh.loa_ch_set, 'on')
-            time.sleep(wait_time)
+            self.loader_ini.chg_out(
+                sh.iself.loader_ini_set, sh.loa_ch_set, 'on')
+            time.sleep(self.excel_ini.wait_time)
 
             # call vin calibration
             vin_clibrate_singal_met(vin_ch, sh.pre_vin)
@@ -202,11 +203,12 @@ class sw_scan:
             # assign to related record
             sh.sh_org_tab.range((11 + x_swire, 10)).value = lo.atof(v_res_temp)
 
-            time.sleep(wait_time)
-            v_res_temp = met1.mea_v()
-            time.sleep(wait_time)
+            time.sleep(self.excel_ini.wait_time)
+            v_res_temp = self.met_v_ini.mea_v()
+            time.sleep(self.excel_ini.wait_time)
             sh.sh_org_tab.range((11 + x_swire, 6)).value = lo.atof(v_res_temp)
-            load1.chg_out(sh.iload1_set, sh.loa_ch_set, 'off')
+            self.loader_ini.chg_out(
+                sh.iself.loader_ini_set, sh.loa_ch_set, 'off')
 
             # save the result after each counter finished
             sh.wb_res.save(sh.result_book_trace)
@@ -217,13 +219,13 @@ class sw_scan:
 
         mcu_com.write(chr(5) + '00')
         print(chr(5) + '00')
-        time.sleep(wait_time)
+        time.sleep(self.excel_ini.wait_time)
 
         # turn off load and power supply
-        pwr1.change_V(0)
+        self.pwr_ini.change_V(0)
         # only turn off the power supply channel but not the relay
-        load1.chg_out(0, sh.loa_ch_set, 'off')
-        load1.chg_out(0, sh.loa_ch2_set, 'off')
+        self.loader_ini.chg_out(0, sh.loa_ch_set, 'off')
+        self.loader_ini.chg_out(0, sh.loa_ch2_set, 'off')
 
         print('finsihed and goodbye')
 
