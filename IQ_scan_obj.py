@@ -212,7 +212,7 @@ class iq_scan:
                 x_submode = x_submode + 1
 
             # update the counter for different Vin
-            self.excel_ini.sh_iq_scan.range((6, 4 + x_iq)).value = ideal_v
+            # self.excel_ini.sh_iq_scan.range((6, 4 + x_iq)).value = ideal_v
 
             x_iq = x_iq + 1
             self.excel_ini.excel_save()
@@ -224,6 +224,8 @@ class iq_scan:
 
         self.pwr_ini.chg_out(0, self.excel_ini.pre_sup_iout,
                              self.excel_ini.pwr_act_ch, 'off')
+        print('set the output voltage to 0 but keep the current setting')
+        print('Gary is lucky to meet Grace XD')
         # self.pwr_ini.inst_close()
         # since inst_close may turn all the channel, may not be a good command for single function
         print('finsihed and goodbye')

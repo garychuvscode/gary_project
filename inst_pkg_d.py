@@ -1268,6 +1268,8 @@ class chamber_su242:
         # this will be put in each instrument object independently
         # and you will be able to switch to simulation mode any time you want
 
+        self.cmd_str_name = ''
+
     def query_write(self, cmd_str0):
         print(cmd_str0)
 
