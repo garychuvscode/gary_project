@@ -152,6 +152,7 @@ def open_inst_and_name():
     loader_chr_m.open_inst()
     src_m.open_inst()
     chamber_m.open_inst()
+    mcu_m.com_open()
 
     # for the instrument in simulation mode, name will be set to simulation mode
 
@@ -189,6 +190,10 @@ if program_group == 0:
 
     # single setting of the object need to be 1
     multi_item = 0
+
+    # set simulation for the used instrument
+    # pwr, met_v, met_i, loader, src, chamber
+    sim_mode_independent(1, 0, 1, 0, 0, 0)
 
     # definition of experiment object
     iq_test = iq.iq_scan(excel_m, pwr_m, excel_m.pwr_act_ch, met_i_m, mcu_m, 1)
