@@ -4,6 +4,10 @@
 import xlwings as xw
 # this import is for the VBA function
 import win32com.client
+# application of array
+import numpy as np
+# include for atof function => transfer string to float
+import locale as lo
 
 
 class excel_parameter ():
@@ -71,7 +75,12 @@ class excel_parameter ():
         # default extra file name is call _temp
         # only multi item case will have temp file
         self.extra_file_name = '_temp'
+        # for report contain one or multi testing items
+        # default is single (one verification)
+        # change the name to _pXX for multi program
+        # XX means the program selection number
 
+        # result_book_trace change in the sub_program
         # update the result book trace
         self.result_book_trace = self.excel_temp + \
             self.new_file_name + self.extra_file_name + '.xlsx'
@@ -79,6 +88,17 @@ class excel_parameter ():
         # insturment parameter loading, to load the instrumenet paramenter
         # need to get the index of each item first
         # index need to change if adding new control parameter
+
+        self.index_par_pre_con = 0
+        self.index_GPIB_inst = 0
+        self.index_general_other = 0
+        self.index_pwr_inst = 0
+        self.index_chroma_inst = 0
+        self.index_src_inst = 0
+        self.index_meter_inst = 0
+        self.index_chamber_inst = 0
+        self.index_IQ_scan = 0
+        self.index_eff = 0
 
         self.index_par_pre_con = self.sh_main.range((3, 9)).value
         self.index_GPIB_inst = self.sh_main.range((4, 9)).value
@@ -113,11 +133,11 @@ class excel_parameter ():
         # GPIB instrument list (address loading, name feed back)
         self.pwr_supply_addr = self.sh_main.range(
             (self.index_GPIB_inst + 1, 3)).value
-        # met1 usually for voltage
-        self.meter1_addr = self.sh_main.range(
+        # met1v usually for voltage
+        self.meter1_v_addr = self.sh_main.range(
             (self.index_GPIB_inst + 2, 3)).value
         # met2 usually for current
-        self.meter2_addr = self.sh_main.range(
+        self.meter2_i_addr = self.sh_main.range(
             (self.index_GPIB_inst + 3, 3)).value
         self.loader_addr = self.sh_main.range(
             (self.index_GPIB_inst + 4, 3)).value
@@ -208,7 +228,7 @@ class excel_parameter ():
             self.index_general_other + 3, 3).value
         self.raw_x_position_start = self.sh_main.range(
             self.index_general_other + 4, 3).value
-        self.sheet_off_finished = self.sh_main.range(
+        self.book_off_finished = self.sh_main.range(
             self.index_general_other + 5, 3).value
         # plot pause control (1 is enable, 0 is disable)
         self.en_plot_waring = self.sh_main.range(
@@ -220,11 +240,9 @@ class excel_parameter ():
         self.wait_small = self.sh_main.range(
             self.index_general_other + 9, 3).value
 
-
         # verification item: IQ parameter
         self.ISD_range = self.sh_main.range(
             self.index_IQ_scan + 1, 3).value
-
 
         # verification item: eff control parameter
         self.channel_mode = self.sh_main.range(self.index_eff + 1, 3).value
@@ -253,7 +271,6 @@ class excel_parameter ():
         # counteer is usually use c_ in opening
         self.c_iq = self.sh_iq_scan.range('C4').value
         self.iq_scaling = self.sh_iq_scan.range('C5').value
-
 
         print('end of the parameter loaded')
 
@@ -285,20 +302,30 @@ class excel_parameter ():
         # or not depends on verification item is used or not
         pass
 
-    def end_of_test(self):
+    def end_of_test(self, multi_items):
         # at the end of test, delete the reference sheet and save the file
 
         self.sh_ref.delete()
-        self.sh_ref_condition.delete()
+        # self.sh_ref_condition.delete()
         # update the result book trace
         # extra file name should be update by the last item or the single item
+        if multi_items == 1:
+            # using multi item extra file name
+            self.extra_file_name = '_p' + str(self.program_group_index)
+
         self.result_book_trace = self.excel_temp + \
             self.new_file_name + self.extra_file_name + '.xlsx'
         self.wb_res.save(self.result_book_trace)
+
+        if self.book_off_finished == 1:
+            self.wb_res.close()
+            pass
+
         pass
 
-    def save(self):
-        # save with the name end with temp
+    def excel_save(self):
+        # only save, not change the result book trace
+        # should be only the temp file during program operation
         self.wb_res.save(self.result_book_trace)
         pass
 
@@ -337,6 +364,7 @@ class excel_parameter ():
                 (self.index_GPIB_inst + 6, 4)).value = full_name
 
         pass
+
     def sheet_reset(self):
         # this sheet reset the all the sheet variable assignment to the original sheet
         # in main_obj, which used for the re-run program
@@ -367,132 +395,194 @@ class excel_parameter ():
         # prevent logic error of the wrong indexing of program parameter
         check_str = 'settings'
         index_correction = 0
+        item_array = np.full([10], 1)
+        check_ctrl = self.sum_array(item_array)
 
-        if self.sh_main.range((self.index_par_pre_con, 3)).value == check_str :
-            # index pass if value is loaded as settings
-            print('index_par_pre_con check done')
-            pass
-        else :
-            print('correct value in: (3, 9)')
-            print('the new index number input:')
-            index_correction = input()
-            self.sh_main.range((3, 9)).value = index_correction
-            self.index_par_pre_con = index_correction
+        while(check_ctrl > 0):
+            # while there are items not pass, need to re-run check parameter
+            # porcess
+
+            if self.sh_main.range((int(self.index_par_pre_con), 3)).value == check_str:
+                # index pass if value is loaded as settings
+                print('index_par_pre_con check done')
+                item_array[0] = 0
+                print(item_array)
+                pass
+            else:
+                print('index_par_pre_con check fail')
+                print('correct value in: (3, 9)')
+                print('the new index number input:')
+                index_correction = lo.atof(input())
+                self.sh_main.range((3, 9)).value = index_correction
+                self.index_par_pre_con = index_correction
+                pass
+
+            if self.sh_main.range((int(self.index_GPIB_inst), 3)).value == check_str:
+                # index pass if value is loaded as settings
+                print('index_GPIB_inst check done')
+                item_array[1] = 0
+                print(item_array)
+                pass
+            else:
+                print('index_GPIB_inst check fail')
+                print('correct value in: (4, 9)')
+                print('the new index number input:')
+                index_correction = lo.atof(input())
+                self.sh_main.range((4, 9)).value = index_correction
+                self.index_GPIB_inst = index_correction
+                pass
+
+            if self.sh_main.range((int(self.index_general_other), 3)).value == check_str:
+                # index pass if value is loaded as settings
+                print('index_general_other check done')
+                item_array[2] = 0
+                print(item_array)
+                pass
+            else:
+                print('index_general_other check fail')
+                print('correct value in: (5, 9)')
+                print('the new index number input:')
+                index_correction = lo.atof(input())
+                self.sh_main.range((5, 9)).value = index_correction
+                self.index_general_other = index_correction
+                pass
+
+            if self.sh_main.range((int(self.index_pwr_inst), 3)).value == check_str:
+                # index pass if value is loaded as settings
+                print('index_pwr_inst check done')
+                item_array[3] = 0
+                print(item_array)
+                pass
+            else:
+                print('index_pwr_inst check fail')
+                print('correct value in: (6, 9)')
+                print('the new index number input:')
+                index_correction = lo.atof(input())
+                self.sh_main.range((6, 9)).value = index_correction
+                self.index_pwr_inst = index_correction
+                pass
+
+            if self.sh_main.range((int(self.index_chroma_inst), 3)).value == check_str:
+                # index pass if value is loaded as settings
+                print('index_chroma_inst check done')
+                item_array[4] = 0
+                print(item_array)
+                pass
+            else:
+                print('index_chroma_inst check fail')
+                print('correct value in: (3, 12)')
+                print('the new index number input:')
+                index_correction = lo.atof(input())
+                self.sh_main.range((3, 12)).value = index_correction
+                self.index_chroma_inst = index_correction
+                pass
+
+            if self.sh_main.range((int(self.index_src_inst), 3)).value == check_str:
+                # index pass if value is loaded as settings
+                print('index_src_inst check done')
+                item_array[5] = 0
+                print(item_array)
+                pass
+            else:
+                print('index_src_inst check fail')
+                print('correct value in: (4, 12)')
+                print('the new index number input:')
+                index_correction = lo.atof(input())
+                self.sh_main.range((4, 12)).value = index_correction
+                self.index_src_inst = index_correction
+                pass
+
+            if self.sh_main.range((int(self.index_meter_inst), 3)).value == check_str:
+                # index pass if value is loaded as settings
+                print('index_meter_inst check done')
+                item_array[6] = 0
+                print(item_array)
+                pass
+            else:
+                print('index_meter_inst check fail')
+                print('correct value in: (5, 12)')
+                print('the new index number input:')
+                index_correction = lo.atof(input())
+                self.sh_main.range((5, 12)).value = index_correction
+                self.index_meter_inst = index_correction
+                pass
+
+            if self.sh_main.range((int(self.index_chamber_inst), 3)).value == check_str:
+                # index pass if value is loaded as settings
+                print('index_chamber_inst check done')
+                item_array[7] = 0
+                print(item_array)
+                pass
+            else:
+                print('index_chamber_inst check fail')
+                print('correct value in: (6, 12)')
+                print('the new index number input:')
+                index_correction = lo.atof(input())
+                self.sh_main.range((6, 12)).value = index_correction
+                self.index_chamber_inst = index_correction
+                pass
+
+            if self.sh_main.range((int(self.index_IQ_scan), 3)).value == check_str:
+                # index pass if value is loaded as settings
+                print('index_IQ_scan check done')
+                item_array[8] = 0
+                print(item_array)
+                pass
+            else:
+                print('index_IQ_scan check fail')
+                print('correct value in: (3, 15)')
+                print('the new index number input:')
+                index_correction = lo.atof(input())
+                self.sh_main.range((3, 15)).value = index_correction
+                self.index_IQ_scan = index_correction
+                pass
+
+            if self.sh_main.range((int(self.index_eff), 3)).value == check_str:
+                # index pass if value is loaded as settings
+                print('index_eff check done')
+                item_array[9] = 0
+                print(item_array)
+                pass
+            else:
+                print('index_eff check fail')
+                print('correct value in: (4, 15)')
+                print('the new index number input:')
+                index_correction = lo.atof(input())
+                self.sh_main.range((4, 15)).value = index_correction
+                self.index_eff = index_correction
+                pass
+            # update while loop value
+            check_ctrl = self.sum_array(item_array)
+
             pass
 
-        if self.sh_main.range((self.index_GPIB_inst, 3)).value == check_str :
-            # index pass if value is loaded as settings
-            print('index_GPIB_inst check done')
-            pass
-        else :
-            print('correct value in: (4, 9)')
-            print('the new index number input:')
-            index_correction = input()
-            self.sh_main.range((4, 9)).value = index_correction
-            self.index_GPIB_inst = index_correction
-            pass
+        print('the index correction finished!')
+        # save the wb for the new index correction settings
+        # the wb in excel object is mapped to the obj_main file
+        self.wb.save()
+        pass
 
-        if self.sh_main.range((self.index_general_other, 3)).value == check_str :
-            # index pass if value is loaded as settings
-            print('index_general_other check done')
-            pass
-        else :
-            print('correct value in: (5, 9)')
-            print('the new index number input:')
-            index_correction = input()
-            self.sh_main.range((5, 9)).value = index_correction
-            self.index_general_other = index_correction
-            pass
+    def sum_array(self, arr):
+        # initialize a variable
+        # to store the sum
+        # while iterating through
+        # the array later
+        sum = 0
 
-        if self.sh_main.range((self.index_pwr_inst, 3)).value == check_str :
-            # index pass if value is loaded as settings
-            print('index_pwr_inst check done')
-            pass
-        else :
-            print('correct value in: (6, 9)')
-            print('the new index number input:')
-            index_correction = input()
-            self.sh_main.range((6, 9)).value = index_correction
-            self.index_pwr_inst = index_correction
-            pass
+        # iterate through the array
+        # and add each element to the sum variable
+        # one at a time
+        for i in arr:
+            sum = sum + i
 
-        if self.sh_main.range((self.index_chroma_inst, 3)).value == check_str :
-            # index pass if value is loaded as settings
-            print('index_chroma_inst check done')
-            pass
-        else :
-            print('correct value in: (3, 12)')
-            print('the new index number input:')
-            index_correction = input()
-            self.sh_main.range((3, 12)).value = index_correction
-            self.index_chroma_inst = index_correction
-            pass
+        return(sum)
+        pass
 
-        if self.sh_main.range((self.index_src_inst, 3)).value == check_str :
-            # index pass if value is loaded as settings
-            print('index_src_inst check done')
-            pass
-        else :
-            print('correct value in: (4, 12)')
-            print('the new index number input:')
-            index_correction = input()
-            self.sh_main.range((4, 12)).value = index_correction
-            self.index_src_inst = index_correction
-            pass
-
-        if self.sh_main.range((self.index_meter_inst, 3)).value == check_str :
-            # index pass if value is loaded as settings
-            print('index_meter_inst check done')
-            pass
-        else :
-            print('correct value in: (5, 12)')
-            print('the new index number input:')
-            index_correction = input()
-            self.sh_main.range((5, 12)).value = index_correction
-            self.index_meter_inst = index_correction
-            pass
-
-        if self.sh_main.range((self.index_chamber_inst, 3)).value == check_str :
-            # index pass if value is loaded as settings
-            print('index_chamber_inst check done')
-            pass
-        else :
-            print('correct value in: (6, 12)')
-            print('the new index number input:')
-            index_correction = input()
-            self.sh_main.range((6, 12)).value = index_correction
-            self.index_chamber_inst = index_correction
-            pass
-
-        if self.sh_main.range((self.index_IQ_scan, 3)).value == check_str :
-            # index pass if value is loaded as settings
-            print('index_IQ_scan check done')
-            pass
-        else :
-            print('correct value in: (3, 15)')
-            print('the new index number input:')
-            index_correction = input()
-            self.sh_main.range((3, 15)).value = index_correction
-            self.index_IQ_scan = index_correction
-            pass
-
-        if self.sh_main.range((self.index_eff, 3)).value == check_str :
-            # index pass if value is loaded as settings
-            print('index_eff check done')
-            pass
-        else :
-            print('correct value in: (4, 15)')
-            print('the new index number input:')
-            index_correction = input()
-            self.sh_main.range((4, 15)).value = index_correction
-            self.index_eff = index_correction
-            pass
-
-        print('the index correct finished!')
-
-
-
-
+    def sim_mode_delay(self, wait_time, wait_small):
+        # reduce the delay time for the simulation mode
+        self.wait_time = wait_time
+        self.wait_time = wait_small
+        pass
 
 
 if __name__ == '__main__':

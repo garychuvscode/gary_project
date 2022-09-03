@@ -197,7 +197,7 @@ class LPS_505N:
 
             pass
 
-        return self.iout_o
+        return str(self.iout_o)
 
     def sim_mode_out(self):
         print(self.vset_ini)
@@ -363,7 +363,7 @@ class Met_34460:
             pass
 
         # return the result back to main program, should be able to access again in this object
-        return self.mea_v_out
+        return str(self.mea_v_out)
 
     def mea_v2(self, v_max, v_level):
         # 220520: if input 0, it will be same with the original version
@@ -402,7 +402,7 @@ class Met_34460:
 
             pass
         # return the result back to main program, should be able to access again in this object
-        return self.mea_v_out
+        return str(self.mea_v_out)
 
     def mea_i(self):
         # define command string
@@ -429,7 +429,7 @@ class Met_34460:
             pass
 
         # return back and save in object
-        return self.mea_i_out
+        return str(self.mea_i_out)
 
     def mea_i2(self, i_max, i_level):
 
@@ -468,7 +468,7 @@ class Met_34460:
 
             pass
         # return back and save in object
-        return self.mea_i_out
+        return str(self.mea_i_out)
 
     def sim_mode_out(self):
         # simulation output mode to check result in terminal
@@ -698,7 +698,7 @@ class chroma_63600:
 
             pass
 
-        return self.v_out
+        return str(self.v_out)
 
     # this function used to feedback the output current measurement
 
@@ -730,7 +730,7 @@ class chroma_63600:
         # 220330: chroma response don't have A in the string, only the power supply have string
         # # after reading the iout from source, remove the A in the string
         # self.iout_o = self.iout_o.replace('A', '')
-        return self.i_out
+        return str(self.i_out)
 
     def sim_mode_out(self):
         print(self.act_ch_ini)
