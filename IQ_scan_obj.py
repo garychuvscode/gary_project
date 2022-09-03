@@ -136,6 +136,11 @@ class iq_scan:
 
     def run_verification(self):
         #  this function is to run the main item, for all the instrument control and main loop will be in this sub function
+
+        # power supply OV and OC protection
+        self.pwr_ini.ov_oc_set(self.excel_ini.pre_vin_max,
+                               self.excel_ini.pre_imax)
+
         self.pwr_ini.chg_out(self.excel_ini.pre_vin, self.excel_ini.pre_sup_iout,
                              self.excel_ini.pwr_act_ch, 'on')
         print('pre-power on here')
