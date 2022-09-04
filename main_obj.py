@@ -7,6 +7,7 @@
 
 # === add on import
 # for the excel related operation
+from ast import main
 import xlwings as xw
 # this import is for the VBA function
 import win32com.client
@@ -24,7 +25,7 @@ import parameter_load_obj as para
 
 # import for the verification object
 import IQ_scan_obj as iq
-
+import SWIRE_scan_obj as sw
 
 # off line test, set to 1 set all the instrument to simulation mode
 main_off_line = 1
@@ -191,9 +192,11 @@ if program_group == 0:
     # single setting of the object need to be 1
     multi_item = 0
 
-    # set simulation for the used instrument
-    # pwr, met_v, met_i, loader, src, chamber
-    sim_mode_independent(1, 0, 1, 0, 0, 0)
+    if main_off_line == 0:
+        # set simulation for the used instrument
+        # pwr, met_v, met_i, loader, src, chamber
+        sim_mode_independent(1, 0, 1, 0, 0, 0)
+        pass
 
     # definition of experiment object
     iq_test = iq.iq_scan(excel_m, pwr_m, excel_m.pwr_act_ch, met_i_m, mcu_m, 1)
@@ -215,6 +218,34 @@ if program_group == 0:
     pass
 
 elif program_group == 1:
+    # SWIRE scan single verififcation
+
+    # single setting of the object need to be 1
+    multi_item = 0
+
+    if main_off_line == 0:
+        # set simulation for the used instrument
+        # pwr, met_v, met_i, loader, src, chamber
+        sim_mode_independent(1, 1, 0, 1, 0, 0)
+        pass
+
+    # definition of experiment object
+    sw_test = sw.sw_scan(excel_m, pwr_m, excel_m.pwr_act_ch,
+                         met_v_m, loader_chr_m, mcu_m, 1)
+
+    # generate(or copy) the needed sheet to the result book
+    sw_test.sheet_gen()
+
+    # open instrument and add the name
+    open_inst_and_name()
+
+    # start the testing
+    sw_test.run_verification()
+
+    # remember that this is only call by main, not by  object
+    excel_m.end_of_test(multi_item)
+
+    print('end of the IQ object testing program')
 
     pass
 
