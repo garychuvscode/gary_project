@@ -24,6 +24,7 @@ class MCU_control ():
         self.mcu_cmd_arry = ['01', '02', '04', '08', '10', '20', '40', '80']
         # array mpaaing for the relay control
         self.meter_ch_ctrl = 0
+        self.array_rst = '00'
 
         self.pulse1 = 0
         self.pulse2 = 0
@@ -51,9 +52,9 @@ class MCU_control ():
         # MCU mapping for RA_GPIO control is mode 5
         # both mode 1 and 2 should defined as dual SWIRE, need to send two pulse command at one time
         # need to be build in the control sheet
-
+        self.wait_time = 0.5
         self.wait_small = 0.2
-        #  waiting time duration, can be adjust with MCU C code
+        # waiting time duration, can be adjust with MCU C code
 
         pass
 
@@ -69,25 +70,39 @@ class MCU_control ():
             # for the SWIRE mode of 2553, there are 2 pulse send to the MCU and DUT
             # pulse amount is from 1 to 255, not sure if 0 will have error or not yet
             # 20220121
+            print('2 swire pulse command in MCU')
         elif index == 'en_sw':
             self.uart_cmd_str = (chr(self.mcu_mode_sw_en) +
                                  chr(int(self.mode_set)) + chr(1))
             # for the EN SWIRE control mode, need to handle the recover to normal mode (EN, SW) = (1, 1)
             # at the end of application
             # this mode only care about the first data ( 0-4 )
+            print('mode command in MCU')
         elif index == 'relay':
             self.uart_cmd_str = (
                 chr(self.mcu_mode_8_bit_IO) + self.mcu_cmd_arry[self.meter_ch_ctrl])
             # assign relay to related channel after function called
             # channel index is from golbal variable
+            print('relay command in MCU')
 
         elif index == 'i2c':
             self.uart_cmd_str = (chr(self.mcu_mode_I2C) +
                                  str(self.reg_i2c) + str(self.data_i2c))
+            print('i2C command in MCU')
             # send mapped i2c command out from MCU
-
+        elif index == 'grace':
+            # reserve for the special function of MCU write
+            # reset the relay or the GPIO channel
+            self.uart_cmd_str = (
+                chr(self.mcu_mode_8_bit_IO) + '00')
+            print('call grace in MCU, reset the I/O channel to all low')
+            print('grace is so cute~')
         else:
             print('wrong command on MCU, double check')
+            print('re-send the PMIC mode for instead')
+            self.uart_cmd_str = (chr(self.mcu_mode_sw_en) +
+                                 chr(int(self.mode_set)) + chr(1))
+
             #  if sending the wrong string, gaive the message through terminal
 
         # print the command going to send before write to MCU, used for debug
@@ -131,11 +146,13 @@ class MCU_control ():
         pass
 
     def back_to_initial(self):
-        #  this sub program used to set all the MCU condition to initial
-        #  to change the initial setting, just modify the items from here
+        # this sub program used to set all the MCU condition to initial
+        # to change the initial setting, just modify the items from here
 
-        #  MCU will be in normal mode (EN, SW) = (1, 1) => 4
+        # MCU will be in normal mode (EN, SW) = (1, 1) => 4
         self.pmic_mode(4)
+        # the relay channel also reset to the default
+
         print('command accept to reset the MCU')
         pass
 

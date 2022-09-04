@@ -66,7 +66,7 @@ class iq_scan:
         # import inst_pkg_d as inst
         # # initial the object and set to simulation mode
         # pwr0 = inst.LPS_505N(3.7, 0.5, 3, 1, 'off')
-        # pwr.sim_inst = 0
+        # pwr0.sim_inst = 0
         # # initial the object and set to simulation mode
         # met_i0 = inst.Met_34460(0.0001, 7, 0.000001, 2.5, 21)
         # met_i0.sim_inst = 0

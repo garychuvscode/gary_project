@@ -1,7 +1,14 @@
 from os import supports_bytes_environ
 import pyvisa
+# # also for the jump out window, same group with win32con
+import win32api
+from win32con import MB_SYSTEMMODAL
+# for float operation of string
+import locale as lo
+# for the delay function
 import time
 wait_samll = 0.05
+wait_time = 0.2
 # 100ms of waiting time for the separation of GPIB command
 # maybe the instrument need the delay time
 rm = pyvisa.ResourceManager()
@@ -199,6 +206,126 @@ class LPS_505N:
 
         return str(self.iout_o)
 
+    def vin_clibrate_singal_met(self, vin_ch, vin_target, met_v0, mcu0, excel0):
+
+        # # stuff support coding
+        # import inst_pkg_d as inst
+        # import parameter_load_obj as par
+        # import mcu_obj as mcu_main
+        # mcu0 = mcu_main.MCU_control(0, 4)
+        # # initial the object and set to simulation mode
+        # met_v0 = inst.Met_34460(0.0001, 7, 0.000001, 2.5, 21)
+        # met_v0.sim_inst = 0
+        # excel0 = par.excel_parameter('obj_main')
+
+        # need to return the channel after the calibration is finished
+        temp_mcu_channel = mcu0.meter_ch_ctrl
+        v_res_temp = 0
+        vin_diff = 0
+        v_res_temp_f = 0
+        # 20220103 add the Vin adjustment function
+        # change the measure channel to the Vin channel (No.3)
+        # this part added after the load turned on for better Vin setting
+
+        mcu0.relay_ctrl(vin_ch)
+
+        v_res_temp = met_v0.mea_v()
+        v_res_temp_f = lo.atof(v_res_temp)
+        # enter the calibration with real mode, otherwise pass the test and
+        # go to the result directly
+        if self.sim_inst == 1:
+
+
+            # # measure the first Vin after relay change
+            # if vin_ch == 0:
+            #     v_res_temp = met_v0.mea_v()
+            #     v_res_temp_f = lo.atof(v_res_temp)
+            #     # the Vin calibration starts from here
+            #     pass
+
+            # elif vin_ch == 6:
+            #     v_res_pwr_ch1 = met_v0.mea_v()
+            #     v_res_temp_f = lo.atof(v_res_pwr_ch1)
+            #     # the Vin calibration starts from here
+            #     pass
+
+            # elif vin_ch == 7:
+            #     v_res_pwr_ch2 = met_v0.mea_v()
+            #     v_res_temp_f = lo.atof(v_res_pwr_ch2)
+            #     # the Vin calibration starts from here
+            #     pass
+
+            vin_diff = vin_target - v_res_temp_f
+            vin_new = vin_target
+            while vin_diff > excel0.vin_diff_set or vin_diff < (-1 * excel0.vin_diff_set):
+                vin_new = vin_new + 0.5 * (vin_target - v_res_temp_f)
+                # clamp for the Vin maximum
+                if vin_new > excel0.pre_vin_max:
+                    vin_new = excel0.pre_vin_max
+
+                if vin_ch == 0:
+                    self.change_V(vin_new, excel0.relay0_ch)
+                    # send the new Vin command for the auto testing channel
+                    pass
+
+                elif vin_ch == 6:
+                    self.change_V(vin_new, excel0.relay6_ch)
+                    # change the vsetting of channel 1 (mapped in program)
+                    pass
+
+                elif vin_ch == 7:
+                    self.change_V(vin_new, excel0.relay7_ch)
+                    # change the vsetting of channel 2 (mapped in program)
+                    pass
+
+                time.sleep(wait_time)
+                # # measure the Vin change result
+                # v_res_temp = met_v0.mea_v()
+                # v_res_temp_f = lo.atof(v_res_temp)
+
+                # 220524: update the calibration result to status variable
+
+                v_res_temp = met_v0.mea_v()
+                v_res_temp_f = lo.atof(v_res_temp)
+
+                # if vin_ch == 0:
+                #     v_res_temp = met_v0.mea_v()
+                #     v_res_temp_f = lo.atof(v_res_temp)
+                #     # the Vin calibration starts from here
+                #     pass
+
+                # elif vin_ch == 6:
+                #     v_res_pwr_ch1 = met_v0.mea_v()
+                #     v_res_temp_f = lo.atof(v_res_pwr_ch1)
+                #     # the Vin calibration starts from here
+                #     pass
+
+                # elif vin_ch == 7:
+                #     v_res_pwr_ch2 = met_v0.mea_v()
+                #     v_res_temp_f = lo.atof(v_res_pwr_ch2)
+                #     # the Vin calibration starts from here
+                #     pass
+
+                vin_diff = vin_target - v_res_temp_f
+
+            # after the loop is finished, record the Vin meausred result (for full load) at the end
+            # excel0.sh_org_tab.range((10, 9)).value = lo.atof(v_res_temp)
+            # the Vin calibration ends from here
+
+            # after the Vin calibration is finished, change the measure channel back
+            # mcu0.meter_ch_ctrl = temp_mcu_channel
+            # mcu0.relay_ctrl(mcu0.meter_ch_ctrl)
+            mcu0.relay_ctrl(temp_mcu_channel)
+            time.sleep(wait_time)
+            # finished getting back to the initial state
+        else:
+            v_res_temp = int(v_res_temp)
+            v_res_temp = v_res_temp + 1
+        # need to return the channel after the calibration is finished
+
+        # the last measured value can also find in the meter result
+        return str(v_res_temp)
+
     def sim_mode_out(self):
         print(self.vset_ini)
         print(self.iset_ini)
@@ -351,6 +478,7 @@ class Met_34460:
         if self.sim_inst == 1:
             # 220830 update for the independent simulation mode
             self.mea_v_out = self.inst_obj.query(self.cmd_str_mea_v)
+            print('v measure is: ' + self.mea_v_out)
             time.sleep(wait_samll)
 
             pass
@@ -391,6 +519,7 @@ class Met_34460:
         if self.sim_inst == 1:
             # 220830 update for the independent simulation mode
             self.mea_v_out = self.inst_obj.query(self.cmd_str_mea_v)
+            print('V measure V2 is: ' + self.mea_v_out)
             time.sleep(wait_samll)
 
             pass
@@ -417,6 +546,7 @@ class Met_34460:
         if self.sim_inst == 1:
             # 220830 update for the independent simulation mode
             self.mea_i_out = self.inst_obj.query(self.cmd_str_mea_i)
+            print('i measure is: ' + self.mea_i_out)
             time.sleep(wait_samll)
 
             pass
@@ -457,6 +587,7 @@ class Met_34460:
         if self.sim_inst == 1:
             # 220830 update for the independent simulation mode
             self.mea_i_out = self.inst_obj.query(self.cmd_str_mea_i)
+            print('I measure V2 is: ' + self.mea_i_out)
             time.sleep(wait_samll)
 
             pass
@@ -531,14 +662,20 @@ class chroma_63600:
         self.mode_ini = [mode0, mode0, mode0, mode0]
         # add the initialization of none assign variable as 0, for simulation mode operation
         self.act_ch_o = 1
-        self.i_sel_ch = [0, 0, 0, 0]
         # array of current setting, map number = number -1
+        self.i_sel_ch = [0, 0, 0, 0]
+        # current calibration index for each channel => number -1
+        self.i_cal_ch = [0, 0, 0, 0]
         # self.i_sel_ch1 = 0
         # self.i_sel_ch2 = 0
         # self.i_sel_ch3 = 0
         # self.i_sel_ch4 = 0
         self.mode_o = self.mode_ini
         # only change mode o, not change mode_ini, data loaded from mode o
+
+        # calibration mode setting for loader
+        # default turn off the calibration mode
+        self.cal_mode_en = 0
 
         self.state_o = ['off', 'off', 'off', 'off']
         # status also use array to define
@@ -593,6 +730,8 @@ class chroma_63600:
             # in simulation mode, inst_obj need to be define for the simuation mode
             self.inst_obj = 'loader simulation mode object'
             pass
+
+        pass
 
     # should be better to use function directly for setting V and I
 
@@ -719,6 +858,20 @@ class chroma_63600:
             self.i_out = self.inst_obj.query(self.cmd_str_V_read)
             time.sleep(wait_samll)
 
+            if self.cal_mode_en == 1:
+                # 1 is constant calibration mode
+
+                temp_i_out = lo.atof(self.i_out)
+                print('in cal mode of loader => mode 1 ')
+                print('before:')
+                print(temp_i_out)
+
+                temp_i_out = temp_i_out - self.i_cal_ch[self.act_ch_o - 1]
+                print('after:')
+                print(temp_i_out)
+                self.i_out = str(temp_i_out)
+                print(self.i_out)
+
             pass
         else:
             # for the simulatiom mode of change output
@@ -757,6 +910,23 @@ class chroma_63600:
         print('')
         print(self.inst_obj)
         print(self.errflag)
+        pass
+
+    def chg_state_single(self, channel0, state0):
+        self.act_ch_o = int(channel0)
+        self.state_o[self.act_ch_o - 1] = state0
+        self.chg_out(self.i_sel_ch[self.act_ch_o - 1],
+                     self.act_ch_o, self.state_o[self.act_ch_o - 1])
+
+        pass
+
+    def chg_curr_single(self, channel0, curr0):
+        self.act_ch_o = channel0
+        self.i_sel_ch[self.act_ch_o - 1] = curr0
+        self.chg_out(self.i_sel_ch[self.act_ch_o - 1],
+                     self.act_ch_o, self.state_o[self.act_ch_o - 1])
+
+        pass
 
     # consider to add the read V or read I? => but this may only for debugging
 
@@ -844,6 +1014,73 @@ class chroma_63600:
     def error_clear(self):
         self.errflag = 0
         # this sub is used to clear error flag
+        pass
+
+    def current_calibration(self, met_v0, pwr0, pwr_ch, load_channel):
+        # current calubration function for loader
+        # meed meter(met0) amd power supply(pwr0)
+        # object input for control
+
+        # # stuff support coding
+        # import inst_pkg_d as inst
+        # pwr0 = inst.LPS_505N(3.7, 0.5, 3, 1, 'off')
+        # pwr0.sim_inst = 0
+        # # initial the object and set to simulation mode
+        # met_v0 = inst.Met_34460(0.0001, 7, 0.000001, 2.5, 21)
+        # met_v0.sim_inst = 0
+
+        # read from loader
+        read_i_result = 0
+        # meter result
+        met_i_result = 0
+        # result
+        calibration_result = 0
+        # get 20 times for calibration
+        average = 20
+
+        # first to check setup
+        # pwr - met_i - loader
+        self.act_ch_o = load_channel
+        # disable current calibration during doing calibration
+        cal_mode_temp = self.cal_mode_en
+        self.cal_mode_en = 0
+
+        print('window jump out')
+        self.msg_res = win32api.MessageBox(0, 'press enter if hardware configuration is correct',
+                                           'pwr, met, loader ch_' + str(load_channel) + ' all in series for calibration current')
+
+        # calibration start from here
+
+        pwr0.chg_out(3.7, 0.5, pwr_ch, 'on')
+        self.chg_out(0, load_channel, 'on')
+
+        x_cal = 0
+        result_temp = 0
+        while x_cal < average:
+
+            met_i_result = met_v0.mea_i()
+            time.sleep(wait_samll)
+            read_i_result = self.read_iout(load_channel)
+            time.sleep(wait_samll)
+
+            # measure I(loader) - calibration = measure I(meter)
+            print('measure I(loader) - calibration = measure I(meter)')
+            result_temp = result_temp + read_i_result - met_i_result
+
+            pass
+        calibration_result = result_temp / average
+        self.i_cal_ch[load_channel - 1] = calibration_result
+        print('calibration for ' + str(average) + ' times finished')
+        print('to get along well with lover well, we need to calibrate offtenly')
+
+        pwr0.chg_out(0, 0.5, pwr_ch, 'off')
+        self.chg_out(0, load_channel, 'off')
+
+        # return the mode setting when the calibration is finished
+        self.cal_mode_en = cal_mode_temp
+
+        pass
+
 
 # still on planning
 

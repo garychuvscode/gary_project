@@ -56,6 +56,8 @@ class excel_parameter ():
         self.sh_i2c_cmd = self.wb.sheets('I2C_ctrl')
         # this is the sheet for IQ scan
         self.sh_iq_scan = self.wb.sheets('IQ_measured')
+        # this is the sheet for wire scan
+        self.sh_sw_scan = self.wb.sheets('SWIRE_scan')
 
         # file name from the master excel
         self.new_file_name = str(self.sh_main.range('B8').value)
@@ -268,9 +270,16 @@ class excel_parameter ():
         self.c_avdd_pulse = self.sh_i2c_cmd.range('H1').value
         self.c_tempature = self.sh_i2c_cmd.range('I1').value
 
-        # counteer is usually use c_ in opening
+        # IQ testing related
         self.c_iq = self.sh_iq_scan.range('C4').value
         self.iq_scaling = self.sh_iq_scan.range('C5').value
+
+        # SWIRE_scan  related
+        self.c_swire = self.sh_sw_scan.range('B2').value
+        self.vin_set = self.sh_sw_scan.range('C6').value
+        self.Iin_set = self.sh_sw_scan.range('E6').value
+        self.EL_curr = self.sh_sw_scan.range('C7').value
+        self.VCI_curr = self.sh_sw_scan.range('E7').value
 
         print('end of the parameter loaded')
 
@@ -608,6 +617,13 @@ class excel_parameter ():
         elif nick_name == 'chamber':
             self.sh_main.range('D32').value = full_name
 
+        pass
+
+
+    # SWIRE request sub-program
+    def ideal_v_table(self, c_swire):
+        ideal_v_res = self.sh_sw_scan.range((11 + c_swire, 3)).value
+        return ideal_v_res
 
 if __name__ == '__main__':
     #  the testing code for this file object
