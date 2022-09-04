@@ -57,7 +57,7 @@ class iq_scan:
     # this class is used to measure IQ from the DUT, based on the I/O setting and different Vin
     # measure the IQ
 
-    def __init__(self, excel0, pwr0, pwr_ch0, met_i0, mcu0, single0):
+    def __init__(self, excel0, pwr0, pwr_ch0, met_i0, mcu0):
 
         # # ======== only for object programming
         # # testing used temp instrument
@@ -85,18 +85,19 @@ class iq_scan:
         self.pwr_ch_ini = pwr_ch0
         self.met_i_ini = met_i0
         self.mcu_ini = mcu0
-        self.single_ini = single0
+        # self.single_ini = single0
 
-        # setup extra file name if single verification
-        if self.single_ini == 0:
-            # this is not single item verififcation
-            # and this is not the last item (last item)
-            pass
-        elif self.single_ini == 1:
-            # it's single, using it' own file name
-            # item can decide the extra file name is it's the only item
-            self.excel_ini.extra_file_name = '_IQ'
-            pass
+        # # setup extra file name if single verification
+        # if self.single_ini == 0:
+        #     # this is not single item verififcation
+        #     # and this is not the last item (last item)
+        #     pass
+        # elif self.single_ini == 1:
+        #     # it's single, using it' own file name
+        #     # item can decide the extra file name is it's the only item
+        #     self.excel_ini.extra_file_name = '_IQ'
+        #     pass
+        self.excel_ini.extra_file_name = '_IQ'
         # 220903
         # extra program name for multi-verification change to excel object
         # elif single == 2:
@@ -273,8 +274,9 @@ if __name__ == '__main__':
     # and the different verification method can be call below
 
     # single testing is usuall set single to 1 and one test
+    # 220904 no need for single
     # create one file
-    iq_test = iq_scan(excel1, pwr, 3, met_i, mcu0, 1)
+    iq_test = iq_scan(excel1, pwr, 3, met_i, mcu0)
 
     # generate(or copy) the needed sheet to the result book
     iq_test.sheet_gen()

@@ -18,7 +18,7 @@ class sw_scan:
     # this class is used to measure IQ from the DUT, based on the I/O setting and different Vin
     # measure the IQ
 
-    def __init__(self, excel0, pwr0, pwr_ch0, met_v0, loader_0, mcu0, single0):
+    def __init__(self, excel0, pwr0, pwr_ch0, met_v0, loader_0, mcu0):
 
         # # ======== only for object programming
         # # testing used temp instrument
@@ -48,18 +48,19 @@ class sw_scan:
         self.loader_ini = loader_0
         self.met_v_ini = met_v0
         self.mcu_ini = mcu0
-        self.single_ini = single0
+        # self.single_ini = single0
 
-        # setup extra file name if single verification
-        if self.single_ini == 0:
-            # this is not single item verififcation
-            # and this is not the last item (last item)
-            pass
-        elif self.single_ini == 1:
-            # it's single, using it' own file name
-            # item can decide the extra file name is it's the only item
-            self.excel_ini.extra_file_name = '_SWIRE_pulse'
-            pass
+        # # setup extra file name if single verification
+        # if self.single_ini == 0:
+        #     # this is not single item verififcation
+        #     # and this is not the last item (last item)
+        #     pass
+        # elif self.single_ini == 1:
+        #     # it's single, using it' own file name
+        #     # item can decide the extra file name is it's the only item
+        #     self.excel_ini.extra_file_name = '_SWIRE_pulse'
+        #     pass
+        self.excel_ini.extra_file_name = '_SWIRE_pulse'
 
         pass
 
@@ -156,6 +157,7 @@ class sw_scan:
         # keep the loop simple and periodic
 
         # == AVDD measurement
+        meter_ch_ctrl = 1
 
         # call vin calibration
         v_res_temp = pwr_s.vin_clibrate_singal_met(
@@ -164,6 +166,7 @@ class sw_scan:
         # assign to related record
         res_sheet.range((10, 9)).value = lo.atof(v_res_temp)
 
+        mcu_s.relay_ctrl(meter_ch_ctrl)
         v_res_temp = met_v_s.mea_v()
         time.sleep(wait_time)
         res_sheet.range((10, 4)).value = lo.atof(v_res_temp)
@@ -180,6 +183,7 @@ class sw_scan:
         # assign to related record
         res_sheet.range((10, 10)).value = lo.atof(v_res_temp)
 
+        mcu_s.relay_ctrl(meter_ch_ctrl)
         v_res_temp = self.met_v_ini.mea_v()
         time.sleep(wait_time)
         res_sheet.range((10, 6)).value = lo.atof(v_res_temp)
@@ -320,9 +324,8 @@ if __name__ == '__main__':
 
     # and the different verification method can be call below
 
-    # single testing is usuall set single to 1 and one test
     # create one file
-    sw_test = sw_scan(excel1, pwr_t, 3, met_v_t, load_t, mcu_t, 1)
+    sw_test = sw_scan(excel1, pwr_t, 3, met_v_t, load_t, mcu_t)
 
     # generate(or copy) the needed sheet to the result book
     sw_test.sheet_gen()

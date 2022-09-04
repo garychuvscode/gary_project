@@ -7,7 +7,6 @@
 
 # === add on import
 # for the excel related operation
-from ast import main
 import xlwings as xw
 # this import is for the VBA function
 import win32com.client
@@ -189,7 +188,7 @@ excel_m.excel_save()
 if program_group == 0:
     # here is the single test for IQ
 
-    # single setting of the object need to be 1
+    # single setting of the object need to be 1 => no needed single
     multi_item = 0
 
     if main_off_line == 0:
@@ -199,7 +198,7 @@ if program_group == 0:
         pass
 
     # definition of experiment object
-    iq_test = iq.iq_scan(excel_m, pwr_m, excel_m.pwr_act_ch, met_i_m, mcu_m, 1)
+    iq_test = iq.iq_scan(excel_m, pwr_m, excel_m.pwr_act_ch, met_i_m, mcu_m)
 
     # generate(or copy) the needed sheet to the result book
     iq_test.sheet_gen()
@@ -220,7 +219,7 @@ if program_group == 0:
 elif program_group == 1:
     # SWIRE scan single verififcation
 
-    # single setting of the object need to be 1
+    # single setting of the object need to be 1 => no needed single
     multi_item = 0
 
     if main_off_line == 0:
@@ -231,7 +230,7 @@ elif program_group == 1:
 
     # definition of experiment object
     sw_test = sw.sw_scan(excel_m, pwr_m, excel_m.pwr_act_ch,
-                         met_v_m, loader_chr_m, mcu_m, 1)
+                         met_v_m, loader_chr_m, mcu_m)
 
     # generate(or copy) the needed sheet to the result book
     sw_test.sheet_gen()
@@ -240,6 +239,42 @@ elif program_group == 1:
     open_inst_and_name()
 
     # start the testing
+    sw_test.run_verification()
+
+    # remember that this is only call by main, not by  object
+    excel_m.end_of_test(multi_item)
+
+    print('end of the IQ object testing program')
+
+    pass
+
+elif program_group == 2:
+    # SWIRE scan single verififcation
+
+    # single setting of the object need to be 1 => no needed single
+    multi_item = 1
+
+    if main_off_line == 0:
+        # set simulation for the used instrument
+        # pwr, met_v, met_i, loader, src, chamber
+        sim_mode_independent(1, 1, 1, 1, 0, 0)
+        pass
+
+    # definition of experiment object
+    iq_test = iq.iq_scan(excel_m, pwr_m, excel_m.pwr_act_ch, met_i_m, mcu_m)
+
+    sw_test = sw.sw_scan(excel_m, pwr_m, excel_m.pwr_act_ch,
+                         met_v_m, loader_chr_m, mcu_m)
+
+    # generate(or copy) the needed sheet to the result book
+    sw_test.sheet_gen()
+    iq_test.sheet_gen()
+
+    # open instrument and add the name
+    open_inst_and_name()
+
+    # start the testing
+    iq_test.run_verification()
     sw_test.run_verification()
 
     # remember that this is only call by main, not by  object

@@ -320,7 +320,7 @@ class excel_parameter ():
         # extra file name should be update by the last item or the single item
         if multi_items == 1:
             # using multi item extra file name
-            self.extra_file_name = '_p' + str(self.program_group_index)
+            self.extra_file_name = '_p' + str(int(self.program_group_index))
 
         self.result_book_trace = self.excel_temp + \
             self.new_file_name + self.extra_file_name + '.xlsx'
@@ -591,32 +591,6 @@ class excel_parameter ():
         # reduce the delay time for the simulation mode
         self.wait_time = wait_time
         self.wait_time = wait_small
-        pass
-
-    def inst_name_sheet(self, nick_name, full_name):
-        # definition of sub program may not need the self, but definition of class will need the self
-        # self is usually used for internal parameter of class
-        # this function will get the nick name and full name from main and update to the sheet
-        # based on the nick name
-
-        if nick_name == 'PWR1':
-            self.sh_main.range('D27').value = full_name
-
-        elif nick_name == 'MET1':
-            self.sh_main.range('D28').value = full_name
-
-        elif nick_name == 'MET2':
-            self.sh_main.range('D29').value = full_name
-
-        elif nick_name == 'LOAD1':
-            self.sh_main.range('D30').value = full_name
-
-        elif nick_name == 'LOADSR':
-            self.sh_main.range('D31').value = full_name
-
-        elif nick_name == 'chamber':
-            self.sh_main.range('D32').value = full_name
-
         pass
 
 
