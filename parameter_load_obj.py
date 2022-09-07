@@ -39,6 +39,9 @@ class excel_parameter ():
 
             pass
 
+        # 220907 add the sheet array for eff measurement
+        self.sheet_arry = np.full([200], None)
+
         # after choosing the workbook, define the main sheet to load parameter
         self.sh_main = self.wb.sheets('main')
 
@@ -82,10 +85,15 @@ class excel_parameter ():
         # change the name to _pXX for multi program
         # XX means the program selection number
 
+        # 220907 add another variable call detail name for the
+        # eff or I2C measurement
+        # since save from each round of the eff test file
+        self.detail_name = ''
+
         # result_book_trace change in the sub_program
         # update the result book trace
         self.result_book_trace = self.excel_temp + \
-            self.new_file_name + self.extra_file_name + '.xlsx'
+            self.new_file_name + self.extra_file_name + self.detail_name + '.xlsx'
 
         # insturment parameter loading, to load the instrumenet paramenter
         # need to get the index of each item first
@@ -260,15 +268,15 @@ class excel_parameter ():
         # counteer is usually use c_ in opening
 
         # EFF_inst used
-        self.c_avdd_load = self.sh_i2c_cmd.range('D1').value
-        self.c_vin = self.sh_i2c_cmd.range('B1').value
-        self.c_iload = self.sh_i2c_cmd.range('C1').value
-        self.c_pulse = self.sh_i2c_cmd.range('E1').value
+        self.c_avdd_load = self.sh_volt_curr_cmd.range('D1').value
+        self.c_vin = self.sh_volt_curr_cmd.range('B1').value
+        self.c_iload = self.sh_volt_curr_cmd.range('C1').value
+        self.c_pulse = self.sh_volt_curr_cmd.range('E1').value
         self.c_i2c = self.sh_i2c_cmd.range('B1').value
         self.c_i2c_g = self.sh_i2c_cmd.range('D1').value
-        self.c_avdd_single = self.sh_i2c_cmd.range('G1').value
-        self.c_avdd_pulse = self.sh_i2c_cmd.range('H1').value
-        self.c_tempature = self.sh_i2c_cmd.range('I1').value
+        self.c_avdd_single = self.sh_volt_curr_cmd.range('G1').value
+        self.c_avdd_pulse = self.sh_volt_curr_cmd.range('H1').value
+        self.c_tempature = self.sh_volt_curr_cmd.range('I1').value
 
         # IQ testing related
         self.c_iq = self.sh_iq_scan.range('C4').value
@@ -311,8 +319,10 @@ class excel_parameter ():
         # or not depends on verification item is used or not
         pass
 
-    def end_of_test(self, multi_items):
+    def end_of_file(self, multi_items):
         # at the end of test, delete the reference sheet and save the file
+        # 220907 change name from end_of_test to end_of file, since the operation
+        # to cut file may be needed during single test
 
         self.sh_ref.delete()
         # self.sh_ref_condition.delete()
@@ -323,7 +333,7 @@ class excel_parameter ():
             self.extra_file_name = '_p' + str(int(self.program_group_index))
 
         self.result_book_trace = self.excel_temp + \
-            self.new_file_name + self.extra_file_name + '.xlsx'
+            self.new_file_name + self.extra_file_name + self.detail_name + '.xlsx'
         self.wb_res.save(self.result_book_trace)
 
         if self.book_off_finished == 1:
@@ -593,11 +603,272 @@ class excel_parameter ():
         self.wait_time = wait_small
         pass
 
-
     # SWIRE request sub-program
+
     def ideal_v_table(self, c_swire):
         ideal_v_res = self.sh_sw_scan.range((11 + c_swire, 3)).value
         return ideal_v_res
+
+    def build_file(self):
+
+        # 220907 mapped variable with excel object
+        wb = self.wb
+        wb_res = self.wb_res
+        result_sheet_name = 'raw_out'
+        new_file_name = self.new_file_name
+        excel_trace = self.excel_temp
+        channel_mode = self.channel_mode
+        c_avdd_load = self.c_avdd_load
+        # this sheet mapped to raw out at eff_inst
+        sh_org_tab2 = self.sh_raw_out
+        # this sheet mapped to volage and current command
+        sh_org_tab = self.sh_volt_curr_cmd
+        sh_ref = self.sh_ref
+        sheet_arry = self.sheet_arry
+
+        # cpoy the sheet to the result book, will be set at the eff_obj
+        # 220907: here is only for the book generation, must call the sheet
+        # generation before call the build file
+        # assign for the result sheet to the excel object will also be done in the
+        # sheet gen of eff_obj
+
+        # update the file name, but not update file name untill the file is finished
+
+        # save the result book and turn off the control book
+        wb_res.save(self.result_book_trace)
+        # wb.close()
+        # close control books
+
+        # base on output format copied from the control book
+        # start parameter initialization
+
+        # used array to setup the result sheet
+        # res_sheet_array = np.zeros(100)
+        # this method not working, skip this time
+
+        # here is to generate the sheet
+        # counter selection for sheet generation: EL power only one cycle needed (IAVDD= 0)
+        if channel_mode == 0 or channel_mode == 1:
+            # both only EL or only AVDD just one time
+            c_sheet_copy = 1
+            if channel_mode == 1:
+                sub_sh_count = 4
+                # eff + raw + AVDD regulation + Vout regulation
+                # 220825 add vout sheet
+            elif channel_mode == 0:
+                sub_sh_count = 6
+                # eff + raw + ELVDD regulation + ELVSS regulation + Vout regulation + Von regulation
+        elif channel_mode == 2:
+            c_sheet_copy = c_avdd_load
+            sub_sh_count = 6
+            # eff + raw + ELVDD regulation + ELVSS regulation + Vout regulation + Von regulation
+
+        x_sheet_copy = 0
+        sh_temp = sh_org_tab2
+        # this loop build the extra sheet needed in the program
+        # there are one raw data sheet and fixed format summarize table
+        # need to build both efficiency and load regulation summarize table in this loop
+        # 3-channel efficiency
+        while x_sheet_copy < c_sheet_copy:
+            # issue: if x_sheet_copy == 0:
+
+            if channel_mode == 2 or channel_mode == 0:
+                # sheet needed for 3 chand only EL are the same
+                # just define the different sheet name
+
+                # load AVDD current parameter
+                excel_temp = str(sh_org_tab.range(3 + x_sheet_copy, 4).value)
+
+                # =======
+                sh_temp.copy(sh_ref)
+                sh_org_tab2 = wb_res.sheets(result_sheet_name + ' (2)')
+                # here is to open a new sheet for data saving
+                if channel_mode == 2:
+                    # 3-ch operation
+                    sheet_temp = 'EFF_I_AVDD=' + excel_temp + 'A'
+                    # assign the AVDD settting to blue blank of the sheet
+                    sh_org_tab2.range(21, 3).value = sh_org_tab.range(
+                        3 + x_sheet_copy, 4).value
+                else:
+                    # EL operation
+                    sheet_temp = 'EFF'
+                    # assign the AVDD settting to blue blank of the sheet
+                    sh_org_tab2.range(21, 3).value = '0'
+                    # no AVDD current, but channel turn on in this operation
+                # save the sheet name into the array for loading
+                sheet_arry[sub_sh_count * x_sheet_copy] = sheet_temp
+                sh_org_tab2.name = sheet_temp
+
+                # =======
+
+                # =======
+                if channel_mode == 2:
+                    # add another sheet for the raw data of each AVDD current
+                    sheet_temp = 'RAW_I_AVDD=' + excel_temp + 'A'
+                else:
+                    sheet_temp = 'RAW'
+                # raw data sheet no need example format, can use empty sheet
+                sheet_arry[sub_sh_count * x_sheet_copy + 1] = sheet_temp
+                wb_res.sheets.add(sheet_temp)
+                # =======
+                # 220825 explanation added: since the sheet of raw data doesn't have specific
+                # format and input needed, add the sheet directly, no need to copy
+                # this is the reason why it's different with other sheet generation
+                # to add the Vout and Von load regulation, use the format in excel raw_out
+                # and it's general format for the regulation and plot function in VBA
+
+                # =======
+                # add another sheet for the ELVDD data of each AVDD current
+                sh_temp.copy(sh_ref)
+                sh_org_tab2 = wb_res.sheets(result_sheet_name + ' (2)')
+                # here is to open a new sheet for data saving
+                if channel_mode == 2:
+                    # 3-ch operation
+                    sheet_temp = 'ELVDD_I_AVDD=' + excel_temp + 'A'
+                    # assign the AVDD settting to blue blank of the sheet
+                    sh_org_tab2.range(21, 3).value = sh_org_tab.range(
+                        3 + x_sheet_copy, 4).value
+                else:
+                    # EL operation
+                    sheet_temp = 'ELVDD'
+                    # assign the AVDD settting to blue blank of the sheet
+                    sh_org_tab2.range(21, 3).value = '0'
+                    # no AVDD current, but channel turn on in this operation
+                # save the sheset name into the array for loading
+                sheet_arry[sub_sh_count * x_sheet_copy + 2] = sheet_temp
+                sh_org_tab2.name = sheet_temp
+                # =======
+
+                # =======
+                # add another sheet for the ELVSS data of each AVDD current
+                sh_temp.copy(sh_ref)
+                sh_org_tab2 = wb_res.sheets(result_sheet_name + ' (2)')
+                # here is to open a new sheet for data saving
+                if channel_mode == 2:
+                    # 3-ch operation
+                    sheet_temp = 'ELVSS_I_AVDD=' + excel_temp + 'A'
+                    # assign the AVDD settting to blue blank of the sheet
+                    sh_org_tab2.range(21, 3).value = sh_org_tab.range(
+                        3 + x_sheet_copy, 4).value
+                else:
+                    # EL operation
+                    sheet_temp = 'ELVSS'
+                    # assign the AVDD settting to blue blank of the sheet
+                    sh_org_tab2.range(21, 3).value = '0'
+                    # no AVDD current, but channel turn on in this operation
+                # save the sheet name into the array for loading
+                sheet_arry[sub_sh_count * x_sheet_copy + 3] = sheet_temp
+                sh_org_tab2.name = sheet_temp
+                # =======
+
+                # =======
+                sh_temp.copy(sh_ref)
+                sh_org_tab2 = wb_res.sheets(result_sheet_name + ' (2)')
+                # here is to open a new sheet for data saving
+                if channel_mode == 2:
+                    # 3-ch operation
+                    sheet_temp = 'Vop_I_AVDD=' + excel_temp + 'A'
+                    # assign the AVDD settting to blue blank of the sheet
+                    sh_org_tab2.range(21, 3).value = sh_org_tab.range(
+                        3 + x_sheet_copy, 4).value
+                else:
+                    # EL operation
+                    sheet_temp = 'Vop'
+                    # assign the AVDD settting to blue blank of the sheet
+                    sh_org_tab2.range(21, 3).value = '0'
+                    # no AVDD current, but channel turn on in this operation
+                # save the sheet name into the array for loading
+                sheet_arry[sub_sh_count * x_sheet_copy + 4] = sheet_temp
+                sh_org_tab2.name = sheet_temp
+
+                # =======
+
+                # =======
+                sh_temp.copy(sh_ref)
+                sh_org_tab2 = wb_res.sheets(result_sheet_name + ' (2)')
+                # here is to open a new sheet for data saving
+                if channel_mode == 2:
+                    # 3-ch operation
+                    sheet_temp = 'Von_I_AVDD=' + excel_temp + 'A'
+                    # assign the AVDD settting to blue blank of the sheet
+                    sh_org_tab2.range(21, 3).value = sh_org_tab.range(
+                        3 + x_sheet_copy, 4).value
+                else:
+                    # EL operation
+                    sheet_temp = 'Von'
+                    # assign the AVDD settting to blue blank of the sheet
+                    sh_org_tab2.range(21, 3).value = '0'
+                    # no AVDD current, but channel turn on in this operation
+                # save the sheet name into the array for loading
+                sheet_arry[sub_sh_count * x_sheet_copy + 5] = sheet_temp
+                sh_org_tab2.name = sheet_temp
+
+                # =======
+
+            elif channel_mode == 1:
+                # sheet build up for only AVDD
+
+                # =======
+                sh_temp.copy(sh_ref)
+                sh_org_tab2 = wb_res.sheets(result_sheet_name + ' (2)')
+                # here is to open a new sheet for data saving
+
+                # AVDD operation
+                sheet_temp = 'EFF'
+                # assign the AVDD settting to blue blank of the sheet
+                sh_org_tab2.range(21, 3).value = 'NA'
+                # here is for AVDD eff
+                # save the sheet name into the array for loading
+                sheet_arry[sub_sh_count * x_sheet_copy] = sheet_temp
+                sh_org_tab2.name = sheet_temp
+
+                # =======
+
+                # =======
+                # add another sheet for the raw data of each AVDD current
+                sheet_temp = 'RAW'
+                # raw data sheet no need example format, can use empty sheet
+                sheet_arry[sub_sh_count * x_sheet_copy + 1] = sheet_temp
+                wb_res.sheets.add(sheet_temp)
+                # =======
+
+                # =======
+                sh_temp.copy(sh_ref)
+                sh_org_tab2 = wb_res.sheets(result_sheet_name + ' (2)')
+                # here is to open a new sheet for data saving
+
+                # AVDD operation
+                sheet_temp = 'AVDD'
+                # assign the AVDD settting to blue blank of the sheet
+                sh_org_tab2.range(21, 3).value = 'NA'
+                # here is for AVDD eff
+                # save the sheet name into the array for loading
+                sheet_arry[sub_sh_count * x_sheet_copy + 2] = sheet_temp
+                sh_org_tab2.name = sheet_temp
+
+                # =======
+
+                # =======
+                sh_temp.copy(sh_ref)
+                sh_org_tab2 = wb_res.sheets(result_sheet_name + ' (2)')
+                # here is to open a new sheet for data saving
+
+                # AVDD operation
+                sheet_temp = 'Vout'
+                # assign the AVDD settting to blue blank of the sheet
+                sh_org_tab2.range(21, 3).value = 'NA'
+                # here is for AVDD eff
+                # save the sheet name into the array for loading
+                sheet_arry[sub_sh_count * x_sheet_copy + 3] = sheet_temp
+                sh_org_tab2.name = sheet_temp
+
+                # =======
+
+            x_sheet_copy = x_sheet_copy + 1
+
+        sh_temp.delete()
+        # don't need the original raw output format, remove the output
+
 
 if __name__ == '__main__':
     #  the testing code for this file object

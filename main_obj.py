@@ -25,6 +25,7 @@ import parameter_load_obj as para
 # import for the verification object
 import IQ_scan_obj as iq
 import SWIRE_scan_obj as sw
+import EFF_obj as eff
 
 # off line test, set to 1 set all the instrument to simulation mode
 main_off_line = 1
@@ -210,7 +211,7 @@ if program_group == 0:
     iq_test.run_verification()
 
     # remember that this is only call by main, not by  object
-    excel_m.end_of_test(multi_item)
+    excel_m.end_of_file(multi_item)
 
     print('end of the IQ object testing program')
 
@@ -242,18 +243,19 @@ elif program_group == 1:
     sw_test.run_verification()
 
     # remember that this is only call by main, not by  object
-    excel_m.end_of_test(multi_item)
+    excel_m.end_of_file(multi_item)
 
     print('end of the IQ object testing program')
 
     pass
 
 elif program_group == 2:
-    # SWIRE scan single verififcation
+    # SWIRE + IQ testing
 
     # single setting of the object need to be 1 => no needed single
     multi_item = 1
 
+    # if not off line testing, setup the the instrument needed independently
     if main_off_line == 0:
         # set simulation for the used instrument
         # pwr, met_v, met_i, loader, src, chamber
@@ -278,13 +280,47 @@ elif program_group == 2:
     sw_test.run_verification()
 
     # remember that this is only call by main, not by  object
-    excel_m.end_of_test(multi_item)
+    excel_m.end_of_file(multi_item)
 
     print('end of the IQ object testing program')
 
     pass
 
+elif program_group == 3:
+    # efficiency testing ( I2C and SWIRE-normal mode )
 
+    # single setting of the object need to be 1 => no needed single
+    multi_item = 0
+
+    if main_off_line == 0:
+        # set simulation for the used instrument
+        # pwr, met_v, met_i, loader, src, chamber
+        sim_mode_independent(1, 1, 1, 1, 1, 0)
+        pass
+
+    # definition of experiment object
+    eff_test = eff.eff_mea(excel_m, pwr_m, excel_m.pwr_act_ch,
+                           met_v_m, loader_chr_m, mcu_m, src_m, met_i_m, chamber_m)
+
+    # generate(or copy) the needed sheet to the result book
+    eff_test.sheet_gen()
+    excel_m.build_file()
+
+    # open instrument and add the name
+    open_inst_and_name()
+
+    # start the testing
+    # eff_test.run_verification()
+
+    # 220907 test for change name
+    excel_m.detail_name = '_detail name added'
+
+    # remember that this is only call by main, not by  object
+    excel_m.end_of_file(multi_item)
+
+    print('end of the EFF object testing program')
+
+    pass
 # instrument initialization
 # all the default had beent fix in the program and change directly in definition below
 
@@ -295,7 +331,7 @@ elif program_group == 2:
 # sh.sh_ref_condition.delete()
 # sh.wb_res.save()
 # 220901 change to delete the reference sheet in excel object
-# excel_m.end_of_test(multi_item)
+# excel_m.end_of_file(multi_item)
 
 # main program structure
 # ==============
