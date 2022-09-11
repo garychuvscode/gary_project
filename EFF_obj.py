@@ -218,7 +218,7 @@ class eff_mea:
             # eff_done can only be reset when it's already be 1 to prevent error
             if eff_done == 1:
                 excel_s.eff_rerun()
-                eff_done = eff_done_sh
+                eff_done = excel_s.eff_done_sh
 
             if inst_auto_selection == 1:
                 # 220824 change the condition to prevent stuck in check instrument when running efficiency testing
@@ -399,7 +399,11 @@ class eff_mea:
                                 x_i2c_group = x_i2c_group + 1
 
                             # extra_file_name = 'SWIRE_' + str(pulse1) + '_' + str(pulse2)
+
+                        # extra_file_name here is only the loacal of run_verification
+                        # it's call detail_name in the excel object
                         excel_s.build_file(str(extra_file_name))
+
                         # since sub sheet count is update after build file
                         sub_sh_count = excel_s.sub_sh_count
                         pro_status_str = 'file built'
@@ -719,13 +723,7 @@ class eff_mea:
 
                                     # initialization the temp saving parameter for the efficiency calculation
                                     # clear result for each round of the current loop
-                                    value_elvdd = 0
-                                    value_elvss = 0
-                                    value_avdd = 0
-                                    value_iin = 0
-                                    value_vin = 0
-                                    value_iel = 0
-                                    value_iavdd = 0
+
                                     value_eff = 0
                                     if x_iload > 0:
                                         # turn the load on to setting i_load (when x > 0)

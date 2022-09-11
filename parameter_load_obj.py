@@ -389,7 +389,10 @@ class excel_parameter ():
             # using multi item extra file name
             self.extra_file_name = '_p' + str(int(self.program_group_index))
 
-
+        if self.eff_single_file == 1:
+            print(self.detail_name)
+            input()
+            self.detail_name = '_all in 1 file'
 
         self.result_book_trace = self.excel_temp + \
             self.new_file_name + self.extra_file_name + self.detail_name + '.xlsx'
@@ -952,11 +955,6 @@ class excel_parameter ():
         # don't need the original raw output format, remove the output
 
     def eff_rerun(self):
-        self.eff_done_sh
-        self.sh_volt_curr_cmd
-        self.sh_raw_out
-        self.sh_i2c_cmd
-        self.sh_inst_ctrl
         # this program check the status of the excel file eff_re-run block
         # and update the eff_done to restart efficienct testing
         # from the main, this sub will run if eff_done is already 1
@@ -965,15 +963,16 @@ class excel_parameter ():
         print('the program will start again')
 
         if eff_reset_temp == 1:
-            eff_done_sh = 0
+            self.eff_done_sh = 0
             # reset to 0 if eff sheet is ready to re-run
             # also need to set te input blank back to 0
             self.sh_main.range('B13').value = 0
+            self.sh_main.range('C13').value = 0
             # other wise there will be infinite loop
 
             # also need to re-assign the mapping sheet to Eff_inst
             # the sheet assignment is gone after finished one round
-            self.re_assign_sheet()
+            self.sheet_reset()
 
             pass
         else:
