@@ -10,6 +10,13 @@ import numpy as np
 import locale as lo
 
 
+# ======== excel application related
+# 開啟 Excel 的app
+excel = win32com.client.Dispatch("Excel.Application")
+excel.Visible = True
+# ======== excel application related
+
+
 class excel_parameter ():
     def __init__(self, book_name):
         # when define the object, open the initialization and load all the parameter
@@ -77,11 +84,20 @@ class excel_parameter ():
         # program selection setting
         self.program_group_index = self.sh_main.range('B15').value
 
+        # Vin status global variable
+        self.vin_status = ''
+        # I_AVDD status global variable
+        self.i_avdd_status = ''
+        # I_EL staatus global variable
+        self.i_el_status = ''
+        # SW_I2C status global variable
+        self.sw_i2c_status = ''
+
         # default extra file name is call _temp
         # only multi item case will have temp file
         self.extra_file_name = '_temp'
         # for report contain one or multi testing items
-        # default is single (one verification)
+        # default is single ( one verification)
         # change the name to _pXX for multi program
         # XX means the program selection number
 
@@ -92,6 +108,8 @@ class excel_parameter ():
 
         # result_book_trace change in the sub_program
         # update the result book trace
+        self.full_result_name = self.new_file_name + \
+            self.extra_file_name + self.detail_name
         self.result_book_trace = self.excel_temp + \
             self.new_file_name + self.extra_file_name + self.detail_name + '.xlsx'
 
@@ -262,6 +280,11 @@ class excel_parameter ():
         # when control = 0, all channel used chroma's output mapping
         self.source_meter_channel = self.sh_main.range(
             self.index_eff + 3, 3).value
+        # when control = 0, all channel used chroma's output mapping
+        self.eff_chamber_en = self.sh_main.range(
+            self.index_eff + 4, 3).value
+        self.eff_single_file = self.sh_main.range(
+            self.index_eff + 5, 3).value
 
         # add the loop control for each items
 
@@ -288,6 +311,40 @@ class excel_parameter ():
         self.Iin_set = self.sh_sw_scan.range('E6').value
         self.EL_curr = self.sh_sw_scan.range('C7').value
         self.VCI_curr = self.sh_sw_scan.range('E7').value
+
+        # efficiency test needed variable
+        self.eff_done_sh = 0
+        self.sub_sh_count = 0
+        self.one_file_sheet_adj = 0
+
+        # temp sheet name for the plot index
+        # because there are different mode, no need specific channel name, just the positive and negative
+        self.eff_temp = ''
+        self.pos_temp = ''
+        self.neg_temp = ''
+        self.raw_temp = ''
+        # 220825 add for vout and von regulation
+        self.pos_pre_temp = ''
+        self.neg_pre_temp = ''
+
+        # the excel table gap for the data in raw sheet
+        self.raw_gap = 4 + 10
+        # setting of raw gap is the " gap + element "
+        # single eff: Vin, Iin, Vout, Iout, Eff => 5 elements
+
+        # active sheet (for the result and raw)
+        self.sheet_active = ''
+        # for efficiency
+        self.raw_active = ''
+        # for raw data
+        self.vout_p_active = ''
+        # for ELVDD, or AVDD
+        self.vout_n_active = ''
+        # for ELVSS
+        self.vout_p_pre_active = ''
+        # for VOP
+        self.vout_n_pre_active = ''
+        # for VON
 
         print('end of the parameter loaded')
 
@@ -332,13 +389,31 @@ class excel_parameter ():
             # using multi item extra file name
             self.extra_file_name = '_p' + str(int(self.program_group_index))
 
+
+
         self.result_book_trace = self.excel_temp + \
             self.new_file_name + self.extra_file_name + self.detail_name + '.xlsx'
+        self.full_result_name = self.new_file_name + \
+            self.extra_file_name + self.detail_name
         self.wb_res.save(self.result_book_trace)
 
         if self.book_off_finished == 1:
             self.wb_res.close()
             pass
+
+        # to reset the sheet after file finished and turn off
+        self.sheet_reset()
+        self.detail_name = ''
+        self.extra_file_name = '_temp'
+        self.new_file_name = str(self.sh_main.range('B8').value)
+        self.full_result_name = self.new_file_name + \
+            self.extra_file_name + self.detail_name
+        self.result_book_trace = self.excel_temp + \
+            self.new_file_name + self.extra_file_name + self.detail_name + '.xlsx'
+
+        # reset the sheet count of the one file efficiency when end of file
+        self.one_file_sheet_adj = 0
+        self.sh_temp.delete()
 
         pass
 
@@ -347,8 +422,6 @@ class excel_parameter ():
         # should be only the temp file during program operation
         self.wb_res.save(self.result_book_trace)
         pass
-
-    pass
 
     def inst_name_sheet(self, nick_name, full_name):
         # definition of sub program may not need the self, but definition of class will need the self
@@ -609,9 +682,12 @@ class excel_parameter ():
         ideal_v_res = self.sh_sw_scan.range((11 + c_swire, 3)).value
         return ideal_v_res
 
-    def build_file(self):
+    #  efficiency testing sub-program
+
+    def build_file(self, detail_name):
 
         # 220907 mapped variable with excel object
+        self.detail_name = detail_name
         wb = self.wb
         wb_res = self.wb_res
         result_sheet_name = 'raw_out'
@@ -653,6 +729,7 @@ class excel_parameter ():
             c_sheet_copy = 1
             if channel_mode == 1:
                 sub_sh_count = 4
+
                 # eff + raw + AVDD regulation + Vout regulation
                 # 220825 add vout sheet
             elif channel_mode == 0:
@@ -663,8 +740,12 @@ class excel_parameter ():
             sub_sh_count = 6
             # eff + raw + ELVDD regulation + ELVSS regulation + Vout regulation + Von regulation
 
+        self.sub_sh_count = sub_sh_count
+        # 220911 update the sub sh count after confirm the parameter
+
         x_sheet_copy = 0
         sh_temp = sh_org_tab2
+        self.sh_temp = sh_temp
         # this loop build the extra sheet needed in the program
         # there are one raw data sheet and fixed format summarize table
         # need to build both efficiency and load regulation summarize table in this loop
@@ -863,11 +944,223 @@ class excel_parameter ():
                 sh_org_tab2.name = sheet_temp
 
                 # =======
+                self.sub_sh_count = sub_sh_count
 
             x_sheet_copy = x_sheet_copy + 1
 
-        sh_temp.delete()
+        # sh_temp.delete()
         # don't need the original raw output format, remove the output
+
+    def eff_rerun(self):
+        self.eff_done_sh
+        self.sh_volt_curr_cmd
+        self.sh_raw_out
+        self.sh_i2c_cmd
+        self.sh_inst_ctrl
+        # this program check the status of the excel file eff_re-run block
+        # and update the eff_done to restart efficienct testing
+        # from the main, this sub will run if eff_done is already 1
+        eff_reset_temp = self.sh_main.range('B13').value
+        print('wait for re-run, update command and setup then set re-run to 1')
+        print('the program will start again')
+
+        if eff_reset_temp == 1:
+            eff_done_sh = 0
+            # reset to 0 if eff sheet is ready to re-run
+            # also need to set te input blank back to 0
+            self.sh_main.range('B13').value = 0
+            # other wise there will be infinite loop
+
+            # also need to re-assign the mapping sheet to Eff_inst
+            # the sheet assignment is gone after finished one round
+            self.re_assign_sheet()
+
+            pass
+        else:
+            # no need for the action of changing the reset status
+            pass
+
+        pass
+
+    def check_inst_update(self):
+
+        pass
+
+    def program_status(self, status_string):
+        # transfer to the string for following operation
+        # if you need to modify in sub-program, need to use global definition
+        # global vin_status
+        # global i_avdd_status
+        # global i_el_status
+        # global sw_i2c_status
+        status_sting_sub = str(status_string)
+        self.sh_main.range((3, 2)).value = status_sting_sub
+        # Vin status
+        self.sh_main.range('F3').value = self.vin_status
+        # I_AVDD status
+        self.sh_main.range('F4').value = self.i_avdd_status
+        # I_EL staatus
+        self.sh_main.range('F5').value = self.i_el_status
+        # SW_I2C status
+        self.sh_main.range('F6').value = self.sw_i2c_status
+
+        print('status_update: ' + status_sting_sub)
+        print(str(self.vin_status) + '-' + str(self.i_avdd_status) +
+              '-' + str(self.i_el_status) + '-' + str(self.sw_i2c_status))
+        # use for debugging for the program status update
+        # input()
+        pass
+
+    def act_sheet_loaded(self):
+        #  to consider to put the update of sheet assign to here or stay in eff_obj
+        pass
+
+    def eff_calculated(self):
+        self.value_eff = ((self.value_elvdd - self.value_elvss) * self.value_iel +
+                          self.value_avdd * self.value_iavdd) / (self.value_vin * self.value_iin)
+        return self.value_eff
+
+    def sheet_adj_for_eff(self, x_avdd):
+        # used to adjust the sheet name to prevent conflict when
+        # building in single file
+
+        # re-name the sheet with new name
+
+        x_sub_sh_count = 0
+        while x_sub_sh_count < self.sub_sh_count:
+            index = self.sub_sh_count * x_avdd + x_sub_sh_count
+            target_sheet = self.wb_res.sheets(self.sheet_arry[index])
+            new_sheet_name = str(self.one_file_sheet_adj) + \
+                '_' + self.sheet_arry[index]
+            target_sheet.name = new_sheet_name
+            self.sheet_arry[index] = new_sheet_name
+
+            # also need to update operating condition to each sheet
+            self.condition_note = self.extra_file_name + self.detail_name
+            if x_sub_sh_count == 0:
+                target_sheet.range('M2').value = 'operating condition'
+            target_sheet.range('M3').value = self.condition_note
+
+            x_sub_sh_count = x_sub_sh_count + 1
+
+        self.one_file_sheet_adj = self.one_file_sheet_adj + 1
+        pass
+
+    # used for the loading the data to related excel sheet and blank
+
+    def data_latch(self, data_name, mea_res, x_vin, x_iload, value_i_offset1, value_i_offset2):
+        raw_gap = self.raw_gap
+        channel_mode = self.channel_mode
+        # define the globa variable for eff calculation
+        # global value_elvdd
+        # global value_elvss
+        # global value_avdd
+        # global value_iin
+        # global value_vin
+        # global value_iel
+        # global value_iavdd
+
+        # global bypass_measurement_flag
+        # first to check if the bypass flag raise ~
+        # set measurement result to 0 if the bpass flag is enable
+        # if bypass_measurement_flag == 1:
+        #     mea_res = '0'
+
+        if data_name == 'vin':
+            # vin only record in the raw data
+            self.raw_active.range((11 + raw_gap * x_vin, 3 + x_iload)
+                                  ).value = lo.atof(mea_res)
+            self.value_vin = float(mea_res)
+
+        elif data_name == 'iin':
+            # iin only record in the raw data
+            self.raw_active.range((12 + raw_gap * x_vin, 3 + x_iload)
+                                  ).value = lo.atof(mea_res)
+            self.value_iin = float(mea_res)
+
+        elif data_name == 'elvdd':
+            # elvdd record in the raw data, elvdd regulation
+            self.raw_active.range((13 + raw_gap * x_vin, 3 + x_iload)
+                                  ).value = lo.atof(mea_res)
+            # sheet_active.range((25 + x_iload, 3 + x_vin)).value = lo.atof(mea_res)
+            if channel_mode == 0 or channel_mode == 2:
+                self.vout_p_active.range((25 + x_iload, 3 + x_vin)
+                                         ).value = lo.atof(mea_res)
+            self.value_elvdd = float(mea_res)
+
+        elif data_name == 'elvss':
+            # elvss record in the raw data, elvss regulation
+            self.raw_active.range((14 + raw_gap * x_vin, 3 + x_iload)
+                                  ).value = lo.atof(mea_res)
+            if channel_mode == 0 or channel_mode == 2:
+                self.vout_n_active.range((25 + x_iload, 3 + x_vin)
+                                         ).value = lo.atof(mea_res)
+            self.value_elvss = float(mea_res)
+
+        elif data_name == 'i_el':
+            # i_el only record in the raw data
+            self.raw_active.range((15 + raw_gap * x_vin, 3 + x_iload)
+                                  ).value = lo.atof(mea_res) - value_i_offset1
+            self.value_iel = float(mea_res) - value_i_offset1
+
+        elif data_name == 'avdd':
+            # avvdd record in the raw data, avvdd regulation
+            self.raw_active.range((16 + raw_gap * x_vin, 3 + x_iload)
+                                  ).value = lo.atof(mea_res)
+            self.value_avdd = float(mea_res)
+            # the raw data of AVDD need to record no matter in AVDD only mode or the 3-ch mode
+            # the selection of EL only or not is decidde inthe main program
+            # here is only for the choice of AVDD regulation
+            if channel_mode == 1:
+                # only need to record the regulation when is operating for AVDD only mode
+                self.vout_p_active.range((25 + x_iload, 3 + x_vin)
+                                         ).value = lo.atof(mea_res)
+
+        elif data_name == 'i_avdd':
+            # i_avdd only record in the raw data
+            self.raw_active.range((17 + raw_gap * x_vin, 3 + x_iload)
+                                  ).value = lo.atof(mea_res) - value_i_offset2
+            self.value_iavdd = float(mea_res) - value_i_offset2
+
+        elif data_name == 'eff':
+            # eff record in the raw data
+            self.raw_active.range((18 + raw_gap * x_vin, 3 + x_iload)
+                                  ).value = lo.atof(mea_res)
+            self.sheet_active.range((25 + x_iload, 3 + x_vin)
+                                    ).value = lo.atof(mea_res)
+
+        elif data_name == 'vop':
+            # vop record in the raw data
+            self.raw_active.range((19 + raw_gap * x_vin, 3 + x_iload)
+                                  ).value = lo.atof(mea_res)
+            self.vout_p_pre_active.range((25 + x_iload, 3 + x_vin)
+                                         ).value = lo.atof(mea_res)
+
+        elif data_name == 'von':
+            # von record in the raw data
+            self.raw_active.range((20 + raw_gap * x_vin, 3 + x_iload)
+                                  ).value = lo.atof(mea_res)
+            self.vout_n_pre_active.range((25 + x_iload, 3 + x_vin)
+                                         ).value = lo.atof(mea_res)
+
+        # clear the bypass flag every time enter data latch function
+        # bypass_measurement_flag = 0
+
+    # the instrument update check for excel
+    def check_inst_update(self):
+
+        pass
+
+    # to plot the result in different sheet
+    def plot_single_sheet(self, v_cnt, i_cnt, sheet_n):
+
+        book_n = str(self.full_result_name) + '.xlsx'
+        # plot the sheet based on the input sheet name and element length
+        excel.Application.Run("obj_main.xlsm!gary_chart",
+                              v_cnt, i_cnt, sheet_n, book_n, self.raw_y_position_start, self.raw_x_position_start)
+        print('the plot of ' + str(sheet_n) +
+              ' in book ' + str(book_n) + ' is finished')
+        pass
 
 
 if __name__ == '__main__':

@@ -41,6 +41,7 @@ class 0_class_name :
 # 220829: for the new structure, using object to define each function
 
 # excel parameter and settings
+from sys import executable
 import parameter_load_obj as par
 # for the jump out window
 # # also for the jump out window, same group with win32con
@@ -57,7 +58,7 @@ class iq_scan:
     # this class is used to measure IQ from the DUT, based on the I/O setting and different Vin
     # measure the IQ
 
-    def __init__(self, excel0, pwr0, pwr_ch0, met_i0, mcu0):
+    def __init__(self, excel0, pwr0, met_i0, mcu0):
 
         # # ======== only for object programming
         # # testing used temp instrument
@@ -82,7 +83,7 @@ class iq_scan:
         # assign the input information to object variable
         self.excel_ini = excel0
         self.pwr_ini = pwr0
-        self.pwr_ch_ini = pwr_ch0
+        # self.pwr_ch_ini = pwr_ch0
         self.met_i_ini = met_i0
         self.mcu_ini = mcu0
         # self.single_ini = single0
@@ -108,6 +109,10 @@ class iq_scan:
         #         str(self.excel_ini.program_group_index)
         #     pass
 
+        pass
+
+    def extra_file_name_setup(self):
+        self.excel_ini.extra_file_name = '_IQ'
         pass
 
     def sheet_gen(self):
@@ -138,13 +143,16 @@ class iq_scan:
     def run_verification(self):
         #  this function is to run the main item, for all the instrument control and main loop will be in this sub function
 
+        pre_test_en = self.excel_ini.pre_test_en
+
         # power supply OV and OC protection
         self.pwr_ini.ov_oc_set(self.excel_ini.pre_vin_max,
                                self.excel_ini.pre_imax)
-
-        self.pwr_ini.chg_out(self.excel_ini.pre_vin, self.excel_ini.pre_sup_iout,
-                             self.excel_ini.pwr_act_ch, 'on')
-        print('pre-power on here')
+        if pre_test_en == 1:
+            self.pwr_ini.chg_out(self.excel_ini.pre_vin, self.excel_ini.pre_sup_iout,
+                                 self.excel_ini.relay0_ch, 'on')
+            print('pre-power on here')
+            pass
 
         if self.excel_ini.en_start_up_check == 1:
             print('window jump out')
@@ -162,7 +170,7 @@ class iq_scan:
 
             # update the vin setting for different vin demand
             self.pwr_ini.chg_out(
-                ideal_v, self.excel_ini.pre_sup_iout, self.excel_ini.pwr_act_ch, 'on')
+                ideal_v, self.excel_ini.pre_sup_iout, self.excel_ini.relay0_ch, 'on')
 
             # four different mode in this loop will change
             x_submode = 0
@@ -229,7 +237,7 @@ class iq_scan:
         # excel_ini.end_of_test()
 
         self.pwr_ini.chg_out(0, self.excel_ini.pre_sup_iout,
-                             self.excel_ini.pwr_act_ch, 'off')
+                             self.excel_ini.relay0_ch, 'off')
         print('set the output voltage to 0 but keep the current setting')
         print('Gary is lucky to meet Grace XD')
         # self.pwr_ini.inst_close()
@@ -276,7 +284,7 @@ if __name__ == '__main__':
     # single testing is usuall set single to 1 and one test
     # 220904 no need for single
     # create one file
-    iq_test = iq_scan(excel1, pwr, 3, met_i, mcu0)
+    iq_test = iq_scan(excel1, pwr, met_i, mcu0)
 
     # generate(or copy) the needed sheet to the result book
     iq_test.sheet_gen()
@@ -285,6 +293,6 @@ if __name__ == '__main__':
     iq_test.run_verification()
 
     # remember that this is only call by main, not by  object
-    excel1.end_of_test(0)
+    excel1.end_of_file(0)
 
     print('end of the IQ object testing program')

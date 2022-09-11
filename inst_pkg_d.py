@@ -235,7 +235,6 @@ class LPS_505N:
         # go to the result directly
         if self.sim_inst == 1:
 
-
             # # measure the first Vin after relay change
             # if vin_ch == 0:
             #     v_res_temp = met_v0.mea_v()
@@ -878,7 +877,7 @@ class chroma_63600:
             print('loader read current with below GPIB string')
             print(str(self.cmd_str_ch_set))
             print(str(self.cmd_str_V_read))
-            self.i_out = 'sim_i_out'
+            self.i_out = self.i_out + 1
 
             pass
 
@@ -1140,6 +1139,9 @@ class Keth_2440:
         # this will be put in each instrument object independently
         # and you will be able to switch to simulation mode any time you want
 
+        #  this is the result string for the result return of simulation mode
+        self.return_str = 0
+
     # start from the source meter, to get a better efficiency when coding,
     # refresh the query and write to sub program(which include command print)
     # reduce the coding structure
@@ -1149,17 +1151,17 @@ class Keth_2440:
 
         if self.sim_inst == 1:
             # 220830 update for the independent simulation mode
-            return_str = self.inst_obj.query(cmd_str0)
+            self.return_str = self.inst_obj.query(cmd_str0)
 
             pass
         else:
             # for the simulatiom mode of change output
             print('query write for sub program')
-            return_str = 'query wirte in simulation mode'
+            self.return_str = self.return_str + 1
 
             pass
 
-        return return_str
+        return self.return_str
 
     def only_write(self, cmd_str1):
         print(cmd_str1)
@@ -1389,10 +1391,11 @@ class Keth_2440:
             self.read_res = self.query_write(self.read_str)
             time.sleep(wait_samll)
             # after reading the iout from source, remove the A in the string
-            self.read_res = self.read_res.replace('A', '')
+            if self.sim_inst == 1:
+                self.read_res = self.read_res.replace('A', '')
             print('mode ' + str(self.source_type_o) +
                   ', the ' + str(self.read_mode) + ' reading result is: ' + str(self.read_res))
-            return self.read_res
+            return str(self.read_res)
         else:
             return '0'
             pass
@@ -1482,9 +1485,9 @@ class chamber_su242:
         # measured, set, upper limit, lower limit
         self.temp_o = 0
         # current temperature
-        self.temp_L_limt = 0
-        self.temp_H_limt = 0
-        self.ready_err = 0
+        self.temp_L_limt = l_limt_0
+        self.temp_H_limt = h_limt_0
+        self.ready_err = ready_err_0
         # string for on or off
         # ---
 
@@ -1576,8 +1579,11 @@ class chamber_su242:
             print('temp now: ' + str(read_temp) +
                   ' and target is ' + str(self.tset_o))
             print('Gary still heading over heels with Grace XD')
-            # check every 10 seccond
-            time.sleep(10)
+            # check every 10 seccond in real case
+            if self.sim_inst == 1:
+                time.sleep(10)
+            else:
+                time.sleep(0.3)
             read_temp = self.read('temp_mea')
 
             # to break the while loop in the simulation mode

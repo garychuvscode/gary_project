@@ -199,7 +199,7 @@ if program_group == 0:
         pass
 
     # definition of experiment object
-    iq_test = iq.iq_scan(excel_m, pwr_m, excel_m.pwr_act_ch, met_i_m, mcu_m)
+    iq_test = iq.iq_scan(excel_m, pwr_m, met_i_m, mcu_m)
 
     # generate(or copy) the needed sheet to the result book
     iq_test.sheet_gen()
@@ -230,8 +230,7 @@ elif program_group == 1:
         pass
 
     # definition of experiment object
-    sw_test = sw.sw_scan(excel_m, pwr_m, excel_m.pwr_act_ch,
-                         met_v_m, loader_chr_m, mcu_m)
+    sw_test = sw.sw_scan(excel_m, pwr_m, met_v_m, loader_chr_m, mcu_m)
 
     # generate(or copy) the needed sheet to the result book
     sw_test.sheet_gen()
@@ -263,10 +262,9 @@ elif program_group == 2:
         pass
 
     # definition of experiment object
-    iq_test = iq.iq_scan(excel_m, pwr_m, excel_m.pwr_act_ch, met_i_m, mcu_m)
+    iq_test = iq.iq_scan(excel_m, pwr_m, met_i_m, mcu_m)
 
-    sw_test = sw.sw_scan(excel_m, pwr_m, excel_m.pwr_act_ch,
-                         met_v_m, loader_chr_m, mcu_m)
+    sw_test = sw.sw_scan(excel_m, pwr_m, met_v_m, loader_chr_m, mcu_m)
 
     # generate(or copy) the needed sheet to the result book
     sw_test.sheet_gen()
@@ -299,24 +297,24 @@ elif program_group == 3:
         pass
 
     # definition of experiment object
-    eff_test = eff.eff_mea(excel_m, pwr_m, excel_m.pwr_act_ch,
-                           met_v_m, loader_chr_m, mcu_m, src_m, met_i_m, chamber_m)
+    eff_test = eff.eff_mea(excel_m, pwr_m, met_v_m,
+                           loader_chr_m, mcu_m, src_m, met_i_m, chamber_m,)
 
     # generate(or copy) the needed sheet to the result book
     eff_test.sheet_gen()
-    excel_m.build_file()
+    # excel_m.build_file()
 
     # open instrument and add the name
     open_inst_and_name()
 
     # start the testing
-    # eff_test.run_verification()
+    eff_test.run_verification()
 
     # 220907 test for change name
-    excel_m.detail_name = '_detail name added'
+    # excel_m.detail_name = '_detail name added'
 
     # remember that this is only call by main, not by  object
-    excel_m.end_of_file(multi_item)
+    # excel_m.end_of_file(multi_item)
 
     print('end of the EFF object testing program')
 

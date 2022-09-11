@@ -18,7 +18,7 @@ class sw_scan:
     # this class is used to measure IQ from the DUT, based on the I/O setting and different Vin
     # measure the IQ
 
-    def __init__(self, excel0, pwr0, pwr_ch0, met_v0, loader_0, mcu0):
+    def __init__(self, excel0, pwr0, met_v0, loader_0, mcu0):
 
         # # ======== only for object programming
         # # testing used temp instrument
@@ -44,7 +44,7 @@ class sw_scan:
         # assign the input information to object variable
         self.excel_ini = excel0
         self.pwr_ini = pwr0
-        self.pwr_ch_ini = pwr_ch0
+        # self.pwr_ch_ini = pwr_ch0
         self.loader_ini = loader_0
         self.met_v_ini = met_v0
         self.mcu_ini = mcu0
@@ -62,6 +62,12 @@ class sw_scan:
         #     pass
         self.excel_ini.extra_file_name = '_SWIRE_pulse'
 
+
+
+        pass
+
+    def extra_file_name_setup(self):
+        self.excel_ini.extra_file_name = '_SWIRE_pulse'
         pass
 
     def sheet_gen(self):
@@ -106,12 +112,14 @@ class sw_scan:
         pre_sup_iout = excel_s.pre_sup_iout
         pre_imax = excel_s.pre_imax
         pre_vin_max = excel_s.pre_vin_max
+        pre_test_en = excel_s.pre_test_en
 
         # sheet needed in the sub
         res_sheet = excel_s.sh_sw_scan
 
         # specific variable for each verification
-        pwr_act_ch = excel_s.pwr_act_ch
+        # 220910 cancel pwr_act_ch, and replaced by relay0_ch
+        # pwr_act_ch = excel_s.pwr_act_ch
         vin_set = excel_s.vin_set
         iin_set = excel_s.Iin_set
         EL_curr = excel_s.EL_curr
@@ -120,6 +128,7 @@ class sw_scan:
         loader_VCIch = excel_s.loader_VCIch
         c_swire = excel_s.c_swire
         wait_time = excel_s.wait_time
+        relay0_ch = excel_s.relay0_ch
         # wait_small = excel_s.wait_small
 
         en_start_up_check = excel_s.en_start_up_check
@@ -130,8 +139,9 @@ class sw_scan:
         # power supply OV and OC protection
         pwr_s.ov_oc_set(pre_vin_max, pre_imax)
 
-        pwr_s.chg_out(pre_vin, pre_sup_iout, pwr_act_ch, 'on')
-        print('pre-power on here')
+        if pre_test_en == 1:
+            pwr_s.chg_out(pre_vin, pre_sup_iout, relay0_ch, 'on')
+            print('pre-power on here')
 
         if en_start_up_check == 1:
             print('window jump out')
@@ -142,7 +152,7 @@ class sw_scan:
         time.sleep(wait_time)
 
         # the power will change from initial state directly, not turn off between transition
-        pwr_s.chg_out(vin_set, iin_set, pwr_act_ch, 'on')
+        pwr_s.chg_out(vin_set, iin_set, relay0_ch, 'on')
 
         # loader channel and current
         # default off, will be turn on and off based on loop control
@@ -268,14 +278,14 @@ class sw_scan:
         time.sleep(wait_time)
 
         # turn off load and power supply
-        pwr_s.change_V(0, pwr_act_ch)
+        pwr_s.change_V(0, relay0_ch)
         # only turn off the power supply channel but not the relay
         load_s.chg_out(0, loader_ELch, 'off')
         load_s.chg_out(0, loader_VCIch, 'off')
 
         print('finsihed and goodbye')
 
-        pwr_s.chg_out(0, pre_sup_iout, pwr_act_ch, 'off')
+        pwr_s.chg_out(0, pre_sup_iout, relay0_ch, 'off')
         print('set the output voltage to 0 but keep the current setting')
         print("g's one laugh can make me happy one day!")
         time.sleep(wait_time)
@@ -325,7 +335,7 @@ if __name__ == '__main__':
     # and the different verification method can be call below
 
     # create one file
-    sw_test = sw_scan(excel1, pwr_t, 3, met_v_t, load_t, mcu_t)
+    sw_test = sw_scan(excel1, pwr_t, met_v_t, load_t, mcu_t)
 
     # generate(or copy) the needed sheet to the result book
     sw_test.sheet_gen()
@@ -334,6 +344,6 @@ if __name__ == '__main__':
     sw_test.run_verification()
 
     # remember that this is only call by main, not by  object
-    excel1.end_of_test(0)
+    excel1.end_of_file(0)
 
     print('end of the SWIRE scan object testing program')
