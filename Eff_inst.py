@@ -914,8 +914,9 @@ def data_latch(data_name, mea_res):
         # von record in the raw data
         raw_active.range((20 + raw_gap * x_vin, 3 + x_iload)
                          ).value = lo.atof(mea_res)
-        vout_n_pre_active.range((25 + x_iload, 3 + x_vin)
-                                ).value = lo.atof(mea_res)
+        if sh.channel_mode == 0 or sh.channel_mode == 2:
+            vout_n_pre_active.range((25 + x_iload, 3 + x_vin)
+                                    ).value = lo.atof(mea_res)
 
     # clear the bypass flag every time enter data latch function
     bypass_measurement_flag = 0

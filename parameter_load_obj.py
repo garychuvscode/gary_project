@@ -382,6 +382,7 @@ class excel_parameter ():
         # to cut file may be needed during single test
 
         self.sh_ref.delete()
+        self.sh_temp.delete()
         # self.sh_ref_condition.delete()
         # update the result book trace
         # extra file name should be update by the last item or the single item
@@ -416,7 +417,6 @@ class excel_parameter ():
 
         # reset the sheet count of the one file efficiency when end of file
         self.one_file_sheet_adj = 0
-        self.sh_temp.delete()
 
         pass
 
@@ -1139,8 +1139,9 @@ class excel_parameter ():
             # von record in the raw data
             self.raw_active.range((20 + raw_gap * x_vin, 3 + x_iload)
                                   ).value = lo.atof(mea_res)
-            self.vout_n_pre_active.range((25 + x_iload, 3 + x_vin)
-                                         ).value = lo.atof(mea_res)
+            if channel_mode == 0 or channel_mode == 2:
+                self.vout_n_pre_active.range((25 + x_iload, 3 + x_vin)
+                                             ).value = lo.atof(mea_res)
 
         # clear the bypass flag every time enter data latch function
         # bypass_measurement_flag = 0

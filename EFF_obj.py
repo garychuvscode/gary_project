@@ -3,7 +3,6 @@
 
 
 # excel parameter and settings
-from csv import excel
 import parameter_load_obj as par
 # for the jump out window
 # # also for the jump out window, same group with win32con
@@ -160,18 +159,9 @@ class eff_mea:
         pre_imax = excel_s.pre_imax
         pre_vin_max = excel_s.pre_vin_max
 
-        # sheet needed in the sub
-        res_sheet = excel_s.sh_sw_scan
-
         # specific variable for each verification
-        pwr_act_ch = excel_s.pwr_act_ch
-        vin_set = excel_s.vin_set
-        iin_set = excel_s.Iin_set
-        EL_curr = excel_s.EL_curr
-        VCI_curr = excel_s.VCI_curr
         loader_ELch = excel_s.loader_ELch
         loader_VCIch = excel_s.loader_VCIch
-        c_swire = excel_s.c_swire
         wait_time = excel_s.wait_time
         # wait_small = excel_s.wait_small
 
@@ -287,10 +277,16 @@ class eff_mea:
 
                 # add the while loop outside of SWIRE or I2C loop
                 x_temperature = 0
+                # file amount control, need to put at the loop control file amount
+                # calculated of c_open_new is below after c_sw_i2c is ready
+                x_open_new = 0
+
                 count_temperature = c_tempature
                 if en_chamber_mea == 0:
                     # cancel the temperature counter if en_chamber is disable
                     count_temperature = 1
+                # calculated of c_open_new is below after c_sw_i2c is ready
+                # c_open_new = count_temperature * c_sw_i2c
                 while x_temperature < count_temperature:
                     # update temperature setting every time the loop is start
                     tset_now = excel_s.sh_volt_curr_cmd.range(
@@ -321,6 +317,9 @@ class eff_mea:
                         # i2c group counter setting
                         c_i2c_group = c_i2c_g
 
+                    if x_temperature == 0:
+                        c_open_new = count_temperature * c_sw_i2c
+                        pass
                     # 220823 consider to add the AVDD measurement for both I2C and normal(SWIRE mode)
                     # but maybe no need for the
 
@@ -347,7 +346,7 @@ class eff_mea:
                                     (3 + x_sw_i2c, 8)).value
                                 pulse2 = pulse1
                                 extra_file_name = '_t' + \
-                                    str(tset_now) + 'C_' + 'SWIRE_AVDD_'
+                                    str(tset_now) + 'C_' + 'pulse_AVDD_'
                             elif channel_mode == 0 or channel_mode == 2:
                                 # for the SWIRE pulse, need 2 pulse for ELVDD and ELVSS
                                 pulse1 = excel_s.sh_volt_curr_cmd.range(
@@ -355,7 +354,7 @@ class eff_mea:
                                 pulse2 = excel_s.sh_volt_curr_cmd.range(
                                     (3 + x_sw_i2c, 6)).value
                                 extra_file_name = '_t' + \
-                                    str(tset_now) + 'C_' + 'SWIRE_EL_'
+                                    str(tset_now) + 'C_' + 'pulse_EL_'
                             print('pulse1: ' + str(pulse1) +
                                   '; and pulse2: ' + str(pulse2) + 'under mode ' + str(channel_mode))
                             # send the pulse out through MCU
@@ -936,7 +935,8 @@ class eff_mea:
                                         excel_s.data_latch(
                                             'i_avdd', v_res_temp, x_vin, x_iload, value_i_offset1, value_i_offset2)
                                         # give the i_el blank to 0 for result
-                                        excel_s.data_latch('i_el', '0')
+                                        excel_s.data_latch(
+                                            'i_el', '0', x_vin, x_iload, value_i_offset1, value_i_offset2)
 
                                     # # 220911 cancel the lader offset calibration from main and added to loader
                                     # # ==== loader offset configuration
@@ -1159,11 +1159,20 @@ class eff_mea:
                             excel_s.end_of_file(0)
                             # to preven the issue of re-run (same file opening and crash)
 
-                            # to connect with the new program flow settings
-                            excel_s.open_result_book()
-                            self.sheet_gen()
-                            self.inst_name_for_eff()
-                            self.extra_file_name_setup()
+                            if (x_open_new < c_open_new - 1):
+                                print(x_sw_i2c)
+                                print(c_sw_i2c)
+                                print(x_temperature)
+                                print(c_tempature)
+
+                                # 220912 not going to do at the last time
+
+                                # to connect with the new program flow settings
+                                excel_s.open_result_book()
+                                self.sheet_gen()
+                                self.inst_name_for_eff()
+                                self.extra_file_name_setup()
+                                x_open_new = x_open_new + 1
                             pass
                         else:
                             # need to be single file for all the items
@@ -1189,7 +1198,7 @@ class eff_mea:
                 # eff done is set after one cycle of efficiency measurement
                 # efficiency measurement will need to reset
                 # change the eff_done status on the main sheet
-                eff_done_sh = 1
+                excel_s.eff_done_sh = 1
                 excel_s.sh_main.range('C13').value = 1
                 print(excel_s.sh_main)
                 print('')

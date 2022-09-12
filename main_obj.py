@@ -168,8 +168,19 @@ def open_inst_and_name():
     pass
 
 
+def change_file_name(new_file_name_str):
+    excel_m.wb.sheets('main').range('B8').value = str(new_file_name_str)
+
+    pass
+
 # ==============
 
+
+# add the supported verification item and create the related object name
+iq_test = iq.iq_scan(excel_m, pwr_m, met_i_m, mcu_m)
+sw_test = sw.sw_scan(excel_m, pwr_m, met_v_m, loader_chr_m, mcu_m)
+eff_test = eff.eff_mea(excel_m, pwr_m, met_v_m,
+                        loader_chr_m, mcu_m, src_m, met_i_m, chamber_m)
 
 # ==============
 # main program structure
@@ -181,12 +192,13 @@ program_group = excel_m.program_group_index
 sim_mode_all(main_off_line)
 
 excel_m.open_result_book()
-
 excel_m.excel_save()
 
 # different verififcation combination
 # decide by the program_group variable
 if program_group == 0:
+    excel_m.open_result_book()
+    excel_m.excel_save()
     # here is the single test for IQ
 
     # single setting of the object need to be 1 => no needed single
@@ -218,6 +230,8 @@ if program_group == 0:
     pass
 
 elif program_group == 1:
+    excel_m.open_result_book()
+    excel_m.excel_save()
     # SWIRE scan single verififcation
 
     # single setting of the object need to be 1 => no needed single
@@ -249,6 +263,8 @@ elif program_group == 1:
     pass
 
 elif program_group == 2:
+    excel_m.open_result_book()
+    excel_m.excel_save()
     # SWIRE + IQ testing
 
     # single setting of the object need to be 1 => no needed single
@@ -285,6 +301,8 @@ elif program_group == 2:
     pass
 
 elif program_group == 3:
+    excel_m.open_result_book()
+    excel_m.excel_save()
     # efficiency testing ( I2C and SWIRE-normal mode )
 
     # single setting of the object need to be 1 => no needed single
@@ -298,7 +316,7 @@ elif program_group == 3:
 
     # definition of experiment object
     eff_test = eff.eff_mea(excel_m, pwr_m, met_v_m,
-                           loader_chr_m, mcu_m, src_m, met_i_m, chamber_m,)
+                           loader_chr_m, mcu_m, src_m, met_i_m, chamber_m)
 
     # generate(or copy) the needed sheet to the result book
     eff_test.sheet_gen()
@@ -319,6 +337,31 @@ elif program_group == 3:
     print('end of the EFF object testing program')
 
     pass
+
+elif program_group == 4:
+    excel_m.open_result_book()
+    excel_m.excel_save()
+    # testing for re-cal the object in the test
+
+
+    change_file_name('test_name')
+
+    pass
+
+# reference code
+elif program_group == 1000:
+    # fixed part, open one result book and save the book
+    # in temp name
+    excel_m.open_result_book()
+    excel_m.excel_save()
+    # verification items
+
+
+
+    pass
+
+
+
 # instrument initialization
 # all the default had beent fix in the program and change directly in definition below
 
