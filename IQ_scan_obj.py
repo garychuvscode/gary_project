@@ -141,6 +141,8 @@ class iq_scan:
         pass
 
     def run_verification(self):
+        # update the index for file reference
+        self.excel_ini.current_item_index = 'iq'
         #  this function is to run the main item, for all the instrument control and main loop will be in this sub function
 
         pre_test_en = self.excel_ini.pre_test_en

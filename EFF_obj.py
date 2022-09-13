@@ -201,7 +201,8 @@ class eff_mea:
         # 220521 new start of program, infinite loop for the selection
         # choose the eff or the normal instrument control
         while (eff_done == 0):
-
+            # update the index for file reference
+            excel_s.current_item_index = 'eff'
             # 220824 change the condition to prevent stuck in check instrument when running efficiency testing
 
             # here is the original eff testing program
@@ -1196,6 +1197,7 @@ class eff_mea:
                 # after confirm the jump wondow
                 eff_done = excel_s.eff_rerun()
 
+        excel_s.sh_temp.delete()
         print('this is the end of simulation mode ')
         print('close of instrument is control by main, not single object')
         print('finsihed and goodbye')

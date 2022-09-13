@@ -62,8 +62,6 @@ class sw_scan:
         #     pass
         self.excel_ini.extra_file_name = '_SWIRE_pulse'
 
-
-
         pass
 
     def extra_file_name_setup(self):
@@ -133,6 +131,7 @@ class sw_scan:
 
         en_start_up_check = excel_s.en_start_up_check
 
+        excel_s.current_item_index = 'sw_scan'
         # move all as much as possible index to the front of sub program and easier to modify
         # and less chance to fail when change index
 

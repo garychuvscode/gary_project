@@ -111,6 +111,12 @@ class excel_parameter ():
         # since save from each round of the eff test file
         self.detail_name = ''
 
+        # assign one sheet is not raw out if efficiency test now used
+        self.sh_temp = self.sh_volt_curr_cmd
+        # the string indicate current items for file name or other adjustmenr reference
+        # update the index when run verification start
+        self.current_item_index = ''
+
         # result_book_trace change in the sub_program
         # update the result book trace
         self.full_result_name = self.new_file_name + \
@@ -389,7 +395,7 @@ class excel_parameter ():
         # to cut file may be needed during single test
 
         self.sh_ref.delete()
-        self.sh_temp.delete()
+
         # self.sh_ref_condition.delete()
         # update the result book trace
         # extra file name should be update by the last item or the single item
@@ -397,10 +403,10 @@ class excel_parameter ():
             # using multi item extra file name
             self.extra_file_name = '_p' + str(int(self.program_group_index))
 
-        if self.eff_single_file == 1:
+        if self.eff_single_file == 1 and self.current_item_index == 'eff':
             print(self.detail_name)
             input()
-            self.detail_name = '_all in 1 file'
+            self.detail_name = '_eff all in 1'
 
         self.result_book_trace = self.excel_temp + \
             self.new_file_name + self.extra_file_name + self.detail_name + '.xlsx'

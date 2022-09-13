@@ -370,7 +370,7 @@ elif program_group == 4:
     # ===========
 
     # generate(or copy) the needed sheet to the result book
-    sw_test.sheet_gen()
+    # sw_test.sheet_gen()
     iq_test.sheet_gen()
     eff_test.sheet_gen()
     print('finished sheet generation')
@@ -387,8 +387,18 @@ elif program_group == 4:
     # changeable area
 
     # remember that this is only call by main, not by  object
-    excel_m.end_of_file(multi_item)
+    excel_m.end_of_file(0)
     print('end of the program')
+
+    # fixed part, open one result book and save the book
+    # in temp name
+    excel_m.open_result_book()
+    excel_m.excel_save()
+    # verification items
+
+    iq_test.sheet_gen()
+    # iq_test.run_verification()
+    excel_m.end_of_file(0)
 
     pass
 
