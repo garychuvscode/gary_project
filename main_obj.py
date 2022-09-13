@@ -180,7 +180,7 @@ def change_file_name(new_file_name_str):
 iq_test = iq.iq_scan(excel_m, pwr_m, met_i_m, mcu_m)
 sw_test = sw.sw_scan(excel_m, pwr_m, met_v_m, loader_chr_m, mcu_m)
 eff_test = eff.eff_mea(excel_m, pwr_m, met_v_m,
-                        loader_chr_m, mcu_m, src_m, met_i_m, chamber_m)
+                       loader_chr_m, mcu_m, src_m, met_i_m, chamber_m)
 
 # ==============
 # main program structure
@@ -191,8 +191,9 @@ program_group = excel_m.program_group_index
 # this is the general key
 sim_mode_all(main_off_line)
 
-excel_m.open_result_book()
-excel_m.excel_save()
+# to make sure moudlize, put in to the selection
+# excel_m.open_result_book()
+# excel_m.excel_save()
 
 # different verififcation combination
 # decide by the program_group variable
@@ -211,7 +212,7 @@ if program_group == 0:
         pass
 
     # definition of experiment object
-    iq_test = iq.iq_scan(excel_m, pwr_m, met_i_m, mcu_m)
+    # iq_test = iq.iq_scan(excel_m, pwr_m, met_i_m, mcu_m)
 
     # generate(or copy) the needed sheet to the result book
     iq_test.sheet_gen()
@@ -244,7 +245,7 @@ elif program_group == 1:
         pass
 
     # definition of experiment object
-    sw_test = sw.sw_scan(excel_m, pwr_m, met_v_m, loader_chr_m, mcu_m)
+    # sw_test = sw.sw_scan(excel_m, pwr_m, met_v_m, loader_chr_m, mcu_m)
 
     # generate(or copy) the needed sheet to the result book
     sw_test.sheet_gen()
@@ -278,9 +279,9 @@ elif program_group == 2:
         pass
 
     # definition of experiment object
-    iq_test = iq.iq_scan(excel_m, pwr_m, met_i_m, mcu_m)
+    # iq_test = iq.iq_scan(excel_m, pwr_m, met_i_m, mcu_m)
 
-    sw_test = sw.sw_scan(excel_m, pwr_m, met_v_m, loader_chr_m, mcu_m)
+    # sw_test = sw.sw_scan(excel_m, pwr_m, met_v_m, loader_chr_m, mcu_m)
 
     # generate(or copy) the needed sheet to the result book
     sw_test.sheet_gen()
@@ -315,8 +316,8 @@ elif program_group == 3:
         pass
 
     # definition of experiment object
-    eff_test = eff.eff_mea(excel_m, pwr_m, met_v_m,
-                           loader_chr_m, mcu_m, src_m, met_i_m, chamber_m)
+    # eff_test = eff.eff_mea(excel_m, pwr_m, met_v_m,
+    #                        loader_chr_m, mcu_m, src_m, met_i_m, chamber_m)
 
     # generate(or copy) the needed sheet to the result book
     eff_test.sheet_gen()
@@ -339,12 +340,55 @@ elif program_group == 3:
     pass
 
 elif program_group == 4:
+
+    # change file name should be with different setting, cancel the plan to
+    # make the change file name function
+    # change_file_name('test_name')
+
+    # fixed part, open one result book and save the book
+    # in temp name
     excel_m.open_result_book()
     excel_m.excel_save()
-    # testing for re-cal the object in the test
+    # verification items
 
+    # single setting of the object need to be 1 => no needed single
+    multi_item = 1
 
-    change_file_name('test_name')
+    # if not off line testing, setup the the instrument needed independently
+    if main_off_line == 0:
+        # set simulation for the used instrument
+        # pwr, met_v, met_i, loader, src, chamber
+        sim_mode_independent(1, 1, 1, 1, 1, 0)
+        pass
+
+    # open instrument and add the name
+    # must open after simulation mode setting(open real or sim)
+    open_inst_and_name()
+    print('open instrument with real or simulation mode')
+
+    # changeable area
+    # ===========
+
+    # generate(or copy) the needed sheet to the result book
+    sw_test.sheet_gen()
+    iq_test.sheet_gen()
+    eff_test.sheet_gen()
+    print('finished sheet generation')
+
+    # start the testing
+    # iq_test.run_verification()
+    print('IQ test finished')
+    # sw_test.run_verification()
+    print('SW test finished')
+    eff_test.run_verification()
+    print('efficiency test finished')
+
+    # ===========
+    # changeable area
+
+    # remember that this is only call by main, not by  object
+    excel_m.end_of_file(multi_item)
+    print('end of the program')
 
     pass
 
@@ -356,10 +400,41 @@ elif program_group == 1000:
     excel_m.excel_save()
     # verification items
 
+    # single setting of the object need to be 1 => no needed single
+    multi_item = 1
 
+    # if not off line testing, setup the the instrument needed independently
+    if main_off_line == 0:
+        # set simulation for the used instrument
+        # pwr, met_v, met_i, loader, src, chamber
+        sim_mode_independent(1, 1, 1, 1, 1, 0)
+        pass
+
+    # open instrument and add the name
+    # must open after simulation mode setting(open real or sim)
+    open_inst_and_name()
+    print('open instrument with real or simulation mode')
+
+    # changeable area
+    # ===========
+
+    # generate(or copy) the needed sheet to the result book
+
+    print('finished sheet generation')
+
+    # start the testing
+    # run_verification() => should be put in here
+
+    print('finished XX verification')
+
+    # ===========
+    # changeable area
+
+    # remember that this is only call by main, not by  object
+    excel_m.end_of_file(multi_item)
+    print('end of the program')
 
     pass
-
 
 
 # instrument initialization

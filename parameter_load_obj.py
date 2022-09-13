@@ -9,6 +9,11 @@ import numpy as np
 # include for atof function => transfer string to float
 import locale as lo
 
+# # also for the jump out window, same group with win32con
+import win32api
+
+import time
+
 
 # ======== excel application related
 # 開啟 Excel 的app
@@ -285,6 +290,8 @@ class excel_parameter ():
             self.index_eff + 4, 3).value
         self.eff_single_file = self.sh_main.range(
             self.index_eff + 5, 3).value
+        self.eff_rerun_en = self.sh_main.range(
+            self.index_eff + 6, 3).value
 
         # add the loop control for each items
 
@@ -313,7 +320,7 @@ class excel_parameter ():
         self.VCI_curr = self.sh_sw_scan.range('E7').value
 
         # efficiency test needed variable
-        self.eff_done_sh = 0
+        self.eff_done_sh = 1
         self.sub_sh_count = 0
         self.one_file_sheet_adj = 0
 
@@ -951,35 +958,78 @@ class excel_parameter ():
 
             x_sheet_copy = x_sheet_copy + 1
 
+        # assign the sheet to the raw out in resuslt sheet
+        self.sh_temp = wb_res.sheets('raw_out')
         # sh_temp.delete()
         # don't need the original raw output format, remove the output
+
+    def message_box(self, content_str, title_str):
+        content_str = str(content_str)
+        title_str = str(title_str)
+        msg_res = win32api.MessageBox(0, content_str, title_str)
+        # 0 to 3 is different type of message box and can sen different return value
+        # detail check on the internet
+        print('msg box call~~ ')
+        print('P.S Grace is cute! ~ ')
+
+        pass
 
     def eff_rerun(self):
         # this program check the status of the excel file eff_re-run block
         # and update the eff_done to restart efficienct testing
         # from the main, this sub will run if eff_done is already 1
-        eff_reset_temp = self.sh_main.range('B13').value
-        print('wait for re-run, update command and setup then set re-run to 1')
-        print('the program will start again')
 
-        if eff_reset_temp == 1:
-            self.eff_done_sh = 0
-            # reset to 0 if eff sheet is ready to re-run
-            # also need to set te input blank back to 0
-            self.sh_main.range('B13').value = 0
-            self.sh_main.range('C13').value = 0
-            # other wise there will be infinite loop
+        # 220913 new re-run setting for eff
+        # check if the re-efficiency is needed for verification
+        # jump the window if needed to re-run, and turn off if not
+        # check the rerun_en first and load the verification re-run
+        # after confirm the jump wondow
+        # only run re-run process when re-run EN is 1
+        if self.eff_rerun_en == 1:
 
-            # also need to re-assign the mapping sheet to Eff_inst
-            # the sheet assignment is gone after finished one round
-            self.sheet_reset()
+            msg_res = win32api.MessageBox(
+                0, 're-run is set to 1, update re-run_en to deecide to sotp in next round or not', 'Updating setting of re-run')
 
-            pass
-        else:
-            # no need for the action of changing the reset status
-            pass
+            eff_reset_temp = self.sh_main.range('B13').value
+            while eff_reset_temp == 0:
 
-        pass
+                self.program_exit = self.sh_main.range('B12').value
+                eff_reset_temp = self.sh_main.range('B13').value
+                print('wait for re-run, update command and setup then set re-run to 1')
+                print('the program will start again')
+                print('break the loop by a kiss from Grace')
+                time.sleep(2)
+                print('just kidding~ . Set B12 in main to 0 to break')
+                time.sleep(10)
+
+                if self.program_exit == 0:
+                    break
+                pass
+
+            eff_reset_temp = self.sh_main.range('B13').value
+
+            if eff_reset_temp == 1:
+                self.eff_done_sh = 0
+                # reset to 0 if eff sheet is ready to re-run
+                # also need to set te input blank back to 0
+                self.sh_main.range('B13').value = 0
+                self.sh_main.range('C13').value = 0
+                # other wise there will be infinite loop
+
+                # update the re-run control variable
+                self.eff_rerun_en = self.sh_main.range(
+                    self.index_eff + 6, 3).value
+
+                # also need to re-assign the mapping sheet to Eff_inst
+                # the sheet assignment is gone after finished one round
+                self.sheet_reset()
+
+                pass
+            else:
+                # no need for the action of changing the reset status
+                pass
+
+        return self.eff_done_sh
 
     def check_inst_update(self):
 
