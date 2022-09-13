@@ -116,6 +116,9 @@ class excel_parameter ():
         # the string indicate current items for file name or other adjustmenr reference
         # update the index when run verification start
         self.current_item_index = ''
+        # identify if result book is close from the verification
+        # open means can save file, close means skip end_of_file
+        self.result_book_status = 'close'
 
         # result_book_trace change in the sub_program
         # update the result book trace
@@ -367,26 +370,34 @@ class excel_parameter ():
 
         # before open thr result book to check index, first check and correct
         # index (will be update to the obj_main)
-        self.index_check()
+        if self.result_book_status == 'close':
+            self.index_check()
 
-        # define new result workbook
-        self.wb_res = xw.Book()
-        # create reference sheet (for sheet position)
-        # sh_ref is the index for result sheet
-        # sh_ref_condition is for testing condition and setting
-        # all the reference sheet will delete after the program finished
-        self.sh_ref = self.wb_res.sheets.add('ref_sh')
-        # self.sh_ref_condition = self.wb_res.sheets.add('ref_sh2')
-        # delete the extra sheet from new workbook, difference from version
-        self.wb_res.sheets('工作表1').delete()
+            # define new result workbook
+            self.wb_res = xw.Book()
+            # create reference sheet (for sheet position)
+            # sh_ref is the index for result sheet
+            # sh_ref_condition is for testing condition and setting
+            # all the reference sheet will delete after the program finished
+            self.sh_ref = self.wb_res.sheets.add('ref_sh')
+            # self.sh_ref_condition = self.wb_res.sheets.add('ref_sh2')
+            # delete the extra sheet from new workbook, difference from version
+            self.wb_res.sheets('工作表1').delete()
 
-        # copy the main sheets to new book
-        self.sh_main.copy(self.sh_ref)
-        # assign sheet to the new sheets in result book
-        self.sh_main = self.wb_res.sheets('main')
+            # copy the main sheets to new book
+            self.sh_main.copy(self.sh_ref)
+            # assign sheet to the new sheets in result book
+            self.sh_main = self.wb_res.sheets('main')
 
-        # for the other sheet rather than main, will decide to copy to result
-        # or not depends on verification item is used or not
+            # for the other sheet rather than main, will decide to copy to result
+            # or not depends on verification item is used or not
+            self.result_book_status = 'open'
+            pass
+        else:
+            print('result book already open, may have errors')
+            time.sleep(3)
+            pass
+
         pass
 
     def end_of_file(self, multi_items):
@@ -394,42 +405,56 @@ class excel_parameter ():
         # 220907 change name from end_of_test to end_of file, since the operation
         # to cut file may be needed during single test
 
-        self.sh_ref.delete()
+        # 220914 if result book already close, skip all the action
+        if self.result_book_status == 'open':
 
-        # self.sh_ref_condition.delete()
-        # update the result book trace
-        # extra file name should be update by the last item or the single item
-        if multi_items == 1:
-            # using multi item extra file name
-            self.extra_file_name = '_p' + str(int(self.program_group_index))
+            self.sh_ref.delete()
+            # if self.eff_single_file == 0:
+            #     self.sh_temp.delete()
 
-        if self.eff_single_file == 1 and self.current_item_index == 'eff':
-            print(self.detail_name)
-            input()
-            self.detail_name = '_eff all in 1'
+            # self.sh_ref_condition.delete()
+            # update the result book trace
+            # extra file name should be update by the last item or the single item
+            if multi_items == 1:
+                # using multi item extra file name
+                self.extra_file_name = '_p' + \
+                    str(int(self.program_group_index))
 
-        self.result_book_trace = self.excel_temp + \
-            self.new_file_name + self.extra_file_name + self.detail_name + '.xlsx'
-        self.full_result_name = self.new_file_name + \
-            self.extra_file_name + self.detail_name
-        self.wb_res.save(self.result_book_trace)
+            if self.eff_single_file == 1 and self.current_item_index == 'eff':
+                print(self.detail_name)
+                # input()
+                self.detail_name = '_eff all in 1'
 
-        if self.book_off_finished == 1:
-            self.wb_res.close()
+            self.result_book_trace = self.excel_temp + \
+                self.new_file_name + self.extra_file_name + self.detail_name + '.xlsx'
+            self.full_result_name = self.new_file_name + \
+                self.extra_file_name + self.detail_name
+            self.wb_res.save(self.result_book_trace)
+
+            if self.book_off_finished == 1:
+                self.wb_res.close()
+                pass
+
+            # to reset the sheet after file finished and turn off
+            self.sheet_reset()
+            self.detail_name = ''
+            self.extra_file_name = '_temp'
+            self.new_file_name = str(self.sh_main.range('B8').value)
+            self.full_result_name = self.new_file_name + \
+                self.extra_file_name + self.detail_name
+            self.result_book_trace = self.excel_temp + \
+                self.new_file_name + self.extra_file_name + self.detail_name + '.xlsx'
+
+            # reset the sheet count of the one file efficiency when end of file
+            self.one_file_sheet_adj = 0
+
+            self.result_book_status = 'close'
             pass
-
-        # to reset the sheet after file finished and turn off
-        self.sheet_reset()
-        self.detail_name = ''
-        self.extra_file_name = '_temp'
-        self.new_file_name = str(self.sh_main.range('B8').value)
-        self.full_result_name = self.new_file_name + \
-            self.extra_file_name + self.detail_name
-        self.result_book_trace = self.excel_temp + \
-            self.new_file_name + self.extra_file_name + self.detail_name + '.xlsx'
-
-        # reset the sheet count of the one file efficiency when end of file
-        self.one_file_sheet_adj = 0
+        else:
+            print('there should be error, no result book to save')
+            print("can't find Grace")
+            time.sleep(3)
+            pass
 
         pass
 
@@ -711,6 +736,9 @@ class excel_parameter ():
         excel_trace = self.excel_temp
         channel_mode = self.channel_mode
         c_avdd_load = self.c_avdd_load
+        sh_ref = self.sh_ref
+        self.wb.sheets('raw_out').copy(self.sh_ref)
+        self.sh_raw_out = wb_res.sheets('raw_out')
         # this sheet mapped to raw out at eff_inst
         sh_org_tab2 = self.sh_raw_out
         # this sheet mapped to volage and current command
@@ -966,7 +994,7 @@ class excel_parameter ():
 
         # assign the sheet to the raw out in resuslt sheet
         self.sh_temp = wb_res.sheets('raw_out')
-        # sh_temp.delete()
+        sh_temp.delete()
         # don't need the original raw output format, remove the output
 
     def message_box(self, content_str, title_str):

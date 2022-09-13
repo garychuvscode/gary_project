@@ -112,6 +112,8 @@ class sw_scan:
         pre_vin_max = excel_s.pre_vin_max
         pre_test_en = excel_s.pre_test_en
 
+        self.sheet_gen()
+
         # sheet needed in the sub
         res_sheet = excel_s.sh_sw_scan
 
@@ -290,6 +292,7 @@ class sw_scan:
         time.sleep(wait_time)
         # self.pwr_ini.inst_close()
         # since inst_close may turn all the channel, may not be a good command for single function
+        self.extra_file_name_setup()
         print('finsihed and goodbye')
 
         pass

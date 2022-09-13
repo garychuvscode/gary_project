@@ -371,8 +371,8 @@ elif program_group == 4:
 
     # generate(or copy) the needed sheet to the result book
     # sw_test.sheet_gen()
-    iq_test.sheet_gen()
-    eff_test.sheet_gen()
+    # iq_test.sheet_gen()
+    # eff_test.sheet_gen()
     print('finished sheet generation')
 
     # start the testing
@@ -396,8 +396,15 @@ elif program_group == 4:
     excel_m.excel_save()
     # verification items
 
-    iq_test.sheet_gen()
-    # iq_test.run_verification()
+    # iq_test.sheet_gen()
+    iq_test.run_verification()
+    # iq_test.extra_file_name_setup()
+    excel_m.end_of_file(0)
+
+    excel_m.open_result_book()
+    excel_m.excel_save()
+
+    sw_test.run_verification()
     excel_m.end_of_file(0)
 
     pass

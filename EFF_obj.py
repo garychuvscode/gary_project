@@ -110,10 +110,11 @@ class eff_mea:
         self.excel_ini.sh_i2c_cmd.copy(self.excel_ini.sh_ref)
         # assign the sheet to result book
         self.excel_ini.sh_i2c_cmd = self.excel_ini.wb_res.sheets('I2C_ctrl')
-        # copy the rsult sheet to result book
-        self.excel_ini.sh_raw_out.copy(self.excel_ini.sh_ref)
-        # assign the sheet to result book
-        self.excel_ini.sh_raw_out = self.excel_ini.wb_res.sheets('raw_out')
+        # # 220914 move to build file to prevent error of delete and end of file
+        # # copy the result sheet to result book
+        # self.excel_ini.sh_raw_out.copy(self.excel_ini.sh_ref)
+        # # assign the sheet to result book
+        # self.excel_ini.sh_raw_out = self.excel_ini.wb_res.sheets('raw_out')
 
         # # copy the sheets to new book
         # # for the new sheet generation, located in sheet_gen
@@ -197,6 +198,7 @@ class eff_mea:
         # 220911 local variable needed for the verification process
         eff_done = 0
         bypass_measurement_flag = 0
+        self.sheet_gen()
 
         # 220521 new start of program, infinite loop for the selection
         # choose the eff or the normal instrument control
@@ -1196,8 +1198,8 @@ class eff_mea:
                 # check the rerun_en first and load the verification re-run
                 # after confirm the jump wondow
                 eff_done = excel_s.eff_rerun()
-
-        excel_s.sh_temp.delete()
+        # if excel_s.eff_single_file == 1:
+        #     excel_s.sh_temp.delete()
         print('this is the end of simulation mode ')
         print('close of instrument is control by main, not single object')
         print('finsihed and goodbye')
