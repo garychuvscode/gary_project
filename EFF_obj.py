@@ -4,8 +4,13 @@
 
 # excel parameter and settings
 import parameter_load_obj as par
+# === other support py import
+# for the instrument objects
+import inst_pkg_d as inst
+import mcu_obj as mcu
+
 # for the jump out window
-# # also for the jump out window, same group with win32con
+# also for the jump out window, same group with win32con
 import win32api
 from win32con import MB_SYSTEMMODAL
 # for the delay function
@@ -19,7 +24,7 @@ class eff_mea:
     # this class is used to measure IQ from the DUT, based on the I/O setting and different Vin
     # measure the IQ
 
-    def __init__(self, excel0, pwr0, met_v0, loader_0, mcu0, src0, met_i0, chamber0):
+    def __init__(self, excel0):
 
         # # ======== only for object programming
         # # testing used temp instrument
@@ -45,19 +50,48 @@ class eff_mea:
         # chamber0 = inst.chamber_su242(25, 10, 'off', -45, 180, 0)
         # chamber0.sim_inst = 0
         # # ======== only for object programming
+        self.excel_ini = excel0
+        # # ==============
+        # # excel setting
+
+        # # define the excel object
+        # self.excel_ini = par.excel_parameter(str(file_setting))
+        # # ==============
+
+        # 220913 add all instrument in single object => mode independent # ==============
+        # ==============
+        # instrument startup configuration
+        self.pwr_ini = inst.LPS_505N(self.excel_ini.pwr_vset, self.excel_ini.pwr_iset,
+                                     self.excel_ini.pwr_act_ch, self.excel_ini.pwr_supply_addr, self.excel_ini.pwr_ini_state)
+        self.met_v_ini = inst.Met_34460(self.excel_ini.met_v_res, self.excel_ini.met_v_max,
+                                        self.excel_ini.met_i_res, self.excel_ini.met_i_max, self.excel_ini.meter1_v_addr)
+        self.met_i_ini = inst.Met_34460(self.excel_ini.met_v_res, self.excel_ini.met_v_max,
+                                        self.excel_ini.met_i_res, self.excel_ini.met_i_max, self.excel_ini.meter2_i_addr)
+        self.loader_ini = inst.chroma_63600(
+            self.excel_ini.loader_act_ch, self.excel_ini.loader_addr, self.excel_ini.loader_ini_mode)
+        self.src_ini = inst.Keth_2440(self.excel_ini.src_vset, self.excel_ini.src_iset, self.excel_ini.loader_src_addr,
+                                      self.excel_ini.src_ini_state, self.excel_ini.src_ini_type, self.excel_ini.src_clamp_ini)
+        self.chamber_ini = inst.chamber_su242(self.excel_ini.cham_tset_ini, self.excel_ini.chamber_addr,
+                                              self.excel_ini.cham_ini_state, self.excel_ini.cham_l_limt, self.excel_ini.cham_h_limt, self.excel_ini.cham_hyst)
+
+        # default turn the MCU on
+        self.mcu_ini = mcu.MCU_control(1, self.excel_ini.mcu_com_addr)
+
+        # instrument startup configuration
+        # ==============
 
         # this is the initialize sub-program for the class and which will operate once class
         # has been defined
 
         # assign the input information to object variable
-        self.excel_ini = excel0
-        self.pwr_ini = pwr0
-        self.loader_ini = loader_0
-        self.met_v_ini = met_v0
-        self.mcu_ini = mcu0
-        self.src_ini = src0
-        self.met_i_ini = met_i0
-        self.chamber_ini = chamber0
+        # self.excel_ini = excel0
+        # self.pwr_ini = self.pwr_ini
+        # self.loader_ini = self.loader_ini
+        # self.met_v_ini = self.met_v_ini
+        # self.mcu_ini = self.mcu_ini
+        # self.src_ini = self.src_ini
+        # self.met_i_ini = self.met_i_ini
+        # self.chamber_ini = self.chamber_ini
         # self.single_ini = single0
 
         # # setup extra file name if single verification
@@ -81,6 +115,101 @@ class eff_mea:
             pass
         pass
 
+    # the instrument control sub from main
+
+    def open_inst_and_name(self):
+        # this used to turn all the instrument on after program start
+        # setup simulation mode help to prevent error
+
+        # open instrument
+        self.pwr_ini.open_inst()
+        self.met_v_ini.open_inst()
+        self.met_i_ini.open_inst()
+        self.loader_ini.open_inst()
+        self.src_ini.open_inst()
+        self.chamber_ini.open_inst()
+        self.mcu_ini.com_open()
+
+        # for the instrument in simulation mode, name will be set to simulation mode
+
+        # link the name to the sheet
+        self.excel_ini.inst_name_sheet('PWR1', self.pwr_ini.inst_name())
+        self.excel_ini.inst_name_sheet('MET1', self.met_v_ini.inst_name())
+        self.excel_ini.inst_name_sheet('MET2', self.met_i_ini.inst_name())
+        self.excel_ini.inst_name_sheet('LOAD1', self.loader_ini.inst_name())
+        self.excel_ini.inst_name_sheet('LOADSR', self.src_ini.inst_name())
+        self.excel_ini.inst_name_sheet('chamber', self.chamber_ini.inst_name())
+
+        pass
+
+    def sim_mode_independent(self, pwr, met_v, met_i, loader, src, chamber):
+        # independent setting for instrument simulation mode
+        if pwr == 1:
+            self.pwr_ini.sim_inst = 1
+            pass
+        else:
+            self.pwr_ini.sim_inst = 0
+            pass
+        if met_v == 1:
+            self.met_v_ini.sim_inst = 1
+            pass
+        else:
+            self.met_v_ini.sim_inst = 0
+            pass
+        if met_i == 1:
+            self.met_i_ini.sim_inst = 1
+            pass
+        else:
+            self.met_i_ini.sim_inst = 0
+            pass
+        if loader == 1:
+            self.loader_ini.sim_inst = 1
+            pass
+        else:
+            self.loader_ini.sim_inst = 0
+            pass
+        if src == 1:
+            self.src_ini.sim_inst = 1
+            pass
+        else:
+            self.src_ini.sim_inst = 0
+            pass
+        if chamber == 1:
+            self.chamber_ini.sim_inst = 1
+            pass
+        else:
+            self.chamber_ini.sim_inst = 0
+            pass
+
+        pass
+
+    def sim_mode_all(self, main_off_line0):
+        # set all the stuff inst into simulation mode
+        if main_off_line0 == 0:
+            # all the stuff set to experiment mode
+            self.pwr_ini.sim_inst = 1
+            self.met_v_ini.sim_inst = 1
+            self.met_i_ini.sim_inst = 1
+            self.loader_ini.sim_inst = 1
+            self.src_ini.sim_inst = 1
+            self.chamber_ini.sim_inst = 1
+            self.mcu_ini.sim_mcu = 1
+
+            pass
+        else:
+            # all the stuff set to simulation mode
+            self.pwr_ini.sim_inst = 0
+            self.met_v_ini.sim_inst = 0
+            self.met_i_ini.sim_inst = 0
+            self.loader_ini.sim_inst = 0
+            self.src_ini.sim_inst = 0
+            self.chamber_ini.sim_inst = 0
+            self.mcu_ini.sim_mcu = 0
+            self.excel_ini.sim_mode_delay(0.02, 0.01)
+            pass
+
+        pass
+
     # since there are more than 1 file for efficiency test, need to call file name reset
     def extra_file_name_setup(self):
         if self.excel_ini.channel_mode == 0:
@@ -101,7 +230,7 @@ class eff_mea:
         # 3. if plot is needed for this verification, need to integrated the plot in the excel file and call from here
         # 4. not a new file but an add on sheet to the result workbook
 
-        # copy the rsult sheet to result book
+        # copy the result sheet to result book
         self.excel_ini.sh_volt_curr_cmd.copy(self.excel_ini.sh_ref)
         # assign the sheet to result book
         self.excel_ini.sh_volt_curr_cmd = self.excel_ini.wb_res.sheets(
@@ -682,7 +811,7 @@ class eff_mea:
 
                                 # setting up for the relay channel
 
-                                # uart_cmd_str = (chr(mcu_mode_8_bit_IO) +
+                                # uart_cmd_str = (chr(self.mcu_iniode_8_bit_IO) +
                                 #                 mcu_cmd_arry[int(meter_ch_ctrl)])
                                 # print(uart_cmd_str)
                                 # mcu_com.write(uart_cmd_str)

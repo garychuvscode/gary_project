@@ -179,8 +179,7 @@ def change_file_name(new_file_name_str):
 # add the supported verification item and create the related object name
 iq_test = iq.iq_scan(excel_m, pwr_m, met_i_m, mcu_m)
 sw_test = sw.sw_scan(excel_m, pwr_m, met_v_m, loader_chr_m, mcu_m)
-eff_test = eff.eff_mea(excel_m, pwr_m, met_v_m,
-                       loader_chr_m, mcu_m, src_m, met_i_m, chamber_m)
+eff_test = eff.eff_mea(excel_m)
 
 # ==============
 # main program structure
@@ -374,6 +373,9 @@ elif program_group == 4:
     iq_test.sheet_gen()
     eff_test.sheet_gen()
     print('finished sheet generation')
+
+    # turn off the simulation mode of each instrument
+    eff_test.sim_mode_all(main_off_line)
 
     # start the testing
     # iq_test.run_verification()
