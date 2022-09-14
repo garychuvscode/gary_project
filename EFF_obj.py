@@ -190,7 +190,7 @@ class eff_mea:
         c_avdd_single = excel_s.c_avdd_single
         c_iload = excel_s.c_iload
         c_vin = excel_s.c_vin
-        eff_rerun_en = excel_s.eff_rerun_en
+        # eff_rerun_en = excel_s.eff_rerun_en
 
         # move all as much as possible index to the front of sub program and easier to modify
         # and less chance to fail when change index

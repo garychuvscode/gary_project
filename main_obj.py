@@ -26,6 +26,7 @@ import parameter_load_obj as para
 import IQ_scan_obj as iq
 import SWIRE_scan_obj as sw
 import EFF_obj as eff
+import instrument_scan_obj as ins_scan
 
 # off line test, set to 1 set all the instrument to simulation mode
 main_off_line = 1
@@ -180,6 +181,8 @@ def change_file_name(new_file_name_str):
 iq_test = iq.iq_scan(excel_m, pwr_m, met_i_m, mcu_m)
 sw_test = sw.sw_scan(excel_m, pwr_m, met_v_m, loader_chr_m, mcu_m)
 eff_test = eff.eff_mea(excel_m, pwr_m, met_v_m,
+                       loader_chr_m, mcu_m, src_m, met_i_m, chamber_m)
+in_scan = ins_scan.instrument_scan(excel_m, pwr_m, met_v_m,
                        loader_chr_m, mcu_m, src_m, met_i_m, chamber_m)
 
 # ==============
@@ -348,7 +351,7 @@ elif program_group == 4:
     # fixed part, open one result book and save the book
     # in temp name
     excel_m.open_result_book()
-    excel_m.excel_save()
+    # excel_m.excel_save()
     # verification items
 
     # single setting of the object need to be 1 => no needed single
@@ -360,11 +363,9 @@ elif program_group == 4:
         # pwr, met_v, met_i, loader, src, chamber
         sim_mode_independent(1, 1, 1, 1, 1, 0)
         pass
-
     # open instrument and add the name
     # must open after simulation mode setting(open real or sim)
     open_inst_and_name()
-    print('open instrument with real or simulation mode')
 
     # changeable area
     # ===========
@@ -393,7 +394,8 @@ elif program_group == 4:
     # fixed part, open one result book and save the book
     # in temp name
     excel_m.open_result_book()
-    excel_m.excel_save()
+    # 220914 excel save is been added into the open result book
+    # excel_m.excel_save()
     # verification items
 
     # iq_test.sheet_gen()
@@ -402,10 +404,47 @@ elif program_group == 4:
     excel_m.end_of_file(0)
 
     excel_m.open_result_book()
-    excel_m.excel_save()
+    # excel_m.excel_save()
 
     sw_test.run_verification()
     excel_m.end_of_file(0)
+
+    pass
+
+elif program_group == 5:
+    # fixed part, open one result book and save the book
+    # in temp name
+    # excel_m.open_result_book()
+    # verification items
+
+    # single setting of the object need to be 1 => no needed single
+    multi_item = 0
+
+    # if not off line testing, setup the the instrument needed independently
+    if main_off_line == 0:
+        # set simulation for the used instrument
+        # pwr, met_v, met_i, loader, src, chamber
+        sim_mode_independent(1, 1, 1, 1, 1, 0)
+        pass
+
+    # open instrument and add the name
+    # must open after simulation mode setting(open real or sim)
+    open_inst_and_name()
+    print('open instrument with real or simulation mode')
+
+    # changeable area
+    # ===========
+    while 1 :
+        in_scan.check_inst_update()
+
+    print('finished XX verification')
+
+    # ===========
+    # changeable area
+
+    # remember that this is only call by main, not by  object
+    # excel_m.end_of_file(multi_item)
+    print('end of the program')
 
     pass
 
@@ -414,11 +453,10 @@ elif program_group == 1000:
     # fixed part, open one result book and save the book
     # in temp name
     excel_m.open_result_book()
-    excel_m.excel_save()
     # verification items
 
     # single setting of the object need to be 1 => no needed single
-    multi_item = 1
+    multi_item = 0
 
     # if not off line testing, setup the the instrument needed independently
     if main_off_line == 0:

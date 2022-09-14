@@ -120,6 +120,12 @@ class excel_parameter ():
         # open means can save file, close means skip end_of_file
         self.result_book_status = 'close'
 
+        # 220914 the instrument control variable
+        self.inst_auto_selection = 1
+        # this object is only used for self auto testing, no need to disable due to
+        # conflict like eff_inst, so just set this to 1 directly,
+        # reference this variable to B11 if going to mapped with auto control
+
         # result_book_trace change in the sub_program
         # update the result book trace
         self.full_result_name = self.new_file_name + \
@@ -362,7 +368,758 @@ class excel_parameter ():
         self.vout_n_pre_active = ''
         # for VON
 
+        # =============
+        # instrument control related
+
+        # 20220502 instrument control parameter loading
+        # use update sub program for continuous update the parameter from wb
+        # position index (y-pos, x-pos)
+        self.insref_pwr_y = self.sh_inst_ctrl.range('J5').value
+        self.insref_load_y = self.sh_inst_ctrl.range('J6').value
+        self.insref_met1_y = self.sh_inst_ctrl.range('J7').value
+        self.insref_met2_y = self.sh_inst_ctrl.range('J8').value
+        self.insref_src_y = self.sh_inst_ctrl.range('J9').value
+
+        self.insref_pwr_x = self.sh_inst_ctrl.range('K5').value
+        self.insref_load_x = self.sh_inst_ctrl.range('K6').value
+        self.insref_met1_x = self.sh_inst_ctrl.range('K7').value
+        self.insref_met2_x = self.sh_inst_ctrl.range('K8').value
+        self.insref_src_x = self.sh_inst_ctrl.range('K9').value
+
+        # self.insctl_refresh = self.sh_inst_ctrl.range('N4').value
+
+        # variable to get the status update from main program
+
+        self.pwr_connection_status = 0
+
+        self.pwr_v_ch1_status = 0
+        self.pwr_i_ch1_status = 0
+        self.pwr_o_ch1_status = 0
+        self.pwr_auto_ch1_status = 1
+
+        self.pwr_v_ch2_status = 0
+        self.pwr_i_ch2_status = 0
+        self.pwr_o_ch2_status = 0
+        self.pwr_auto_ch2_status = 1
+
+        self.pwr_v_ch3_status = 0
+        self.pwr_i_ch3_status = 0
+        self.pwr_o_ch3_status = 0
+        self.pwr_auto_ch3_status = 1
+
+        self.load_connection_status = 0
+
+        self.load_i_ch1_status = 0
+        self.load_m_ch1_status = 0
+        self.load_o_ch1_status = 0
+        self.load_auto_ch1_status = 1
+
+        self.load_i_ch2_status = 0
+        self.load_m_ch2_status = 0
+        self.load_o_ch2_status = 0
+        self.load_auto_ch2_status = 1
+
+        self.load_i_ch3_status = 0
+        self.load_m_ch3_status = 0
+        self.load_o_ch3_status = 0
+        self.load_auto_ch3_status = 1
+
+        self.load_i_ch4_status = 0
+        self.load_m_ch4_status = 0
+        self.load_o_ch4_status = 0
+        self.load_auto_ch4_status = 1
+
+        self.met1_connection_status = 0
+        self.met1_mode_status = 0
+        self.met1_level_status = 0
+        self.met1_v_mea_status = 0
+        self.met1_i_mea_status = 0
+
+        self.met2_connection_status = 0
+        self.met2_mode_status = 0
+        self.met2_level_status = 0
+        self.met2_v_mea_status = 0
+        self.met2_i_mea_status = 0
+
+        self.src_connection_status = 0
+        self.src_mode_status = 0
+        self.src_clamp_status = 0
+        self.src_level_status = 0
+        self.src_v_mea_status = 0
+        self.src_i_mea_status = 0
+        self.src_o_status = 0
+
+        # self.inssts => instrument status related parameter (blue)
+        # status output indexing (y-pos and x-pos)
+        self.inssts_pwr_connection_y = int(self.insref_pwr_y)
+        self.inssts_pwr_connection_x = int(self.insref_pwr_x) + 1
+
+        self.inssts_pwr_refresh_y = int(self.insref_pwr_y) + 1
+        self.inssts_pwr_refresh_x = int(self.insref_pwr_x) + 2
+
+        self.inssts_pwr_serial_y = int(self.insref_pwr_y)
+        self.inssts_pwr_serial_x = int(self.insref_pwr_x) + 5
+
+        self.inssts_pwr_calibration_y = int(self.insref_pwr_y) + 1
+        self.inssts_pwr_calibration_x = int(self.insref_pwr_x) + 5
+
+        self.inssts_pwr_vset_ch1_y = int(self.insref_pwr_y) + 4
+        self.inssts_pwr_vset_ch1_x = int(self.insref_pwr_x) + 1
+        self.inssts_pwr_iset_ch1_y = int(self.insref_pwr_y) + 6
+        self.inssts_pwr_iset_ch1_x = int(self.insref_pwr_x) + 1
+        self.inssts_pwr_outs_ch1_y = int(self.insref_pwr_y) + 8
+        self.inssts_pwr_outs_ch1_x = int(self.insref_pwr_x) + 1
+        self.inssts_pwr_auto_ch1_y = int(self.insref_pwr_y) + 2
+        self.inssts_pwr_auto_ch1_x = int(self.insref_pwr_x) + 1
+
+        self.inssts_pwr_vset_ch2_y = int(self.insref_pwr_y) + 4
+        self.inssts_pwr_vset_ch2_x = int(self.insref_pwr_x) + 3
+        self.inssts_pwr_iset_ch2_y = int(self.insref_pwr_y) + 6
+        self.inssts_pwr_iset_ch2_x = int(self.insref_pwr_x) + 3
+        self.inssts_pwr_outs_ch2_y = int(self.insref_pwr_y) + 8
+        self.inssts_pwr_outs_ch2_x = int(self.insref_pwr_x) + 3
+        self.inssts_pwr_auto_ch2_y = int(self.insref_pwr_y) + 2
+        self.inssts_pwr_auto_ch2_x = int(self.insref_pwr_x) + 3
+
+        self.inssts_pwr_vset_ch3_y = int(self.insref_pwr_y) + 4
+        self.inssts_pwr_vset_ch3_x = int(self.insref_pwr_x) + 5
+        self.inssts_pwr_iset_ch3_y = int(self.insref_pwr_y) + 6
+        self.inssts_pwr_iset_ch3_x = int(self.insref_pwr_x) + 5
+        self.inssts_pwr_outs_ch3_y = int(self.insref_pwr_y) + 8
+        self.inssts_pwr_outs_ch3_x = int(self.insref_pwr_x) + 5
+        self.inssts_pwr_auto_ch3_y = int(self.insref_pwr_y) + 2
+        self.inssts_pwr_auto_ch3_x = int(self.insref_pwr_x) + 5
+
+        # position of index for channel status (for status color change)
+        self.inssts_pwr_pos_ch1_y = int(self.insref_pwr_y) + 2
+        self.inssts_pwr_pos_ch1_x = int(self.insref_pwr_x) + 0
+        self.inssts_pwr_pos_ch2_y = int(self.insref_pwr_y) + 2
+        self.inssts_pwr_pos_ch2_x = int(self.insref_pwr_x) + 2
+        self.inssts_pwr_pos_ch3_y = int(self.insref_pwr_y) + 2
+        self.inssts_pwr_pos_ch3_x = int(self.insref_pwr_x) + 4
+
+        # DC loader status output index
+        self.inssts_load_connection_y = int(self.insref_load_y)
+        self.inssts_load_connection_x = int(self.insref_load_x) + 1
+
+        self.inssts_load_refresh_y = int(self.insref_load_y) + 1
+        self.inssts_load_refresh_x = int(self.insref_load_x) + 2
+
+        self.inssts_load_iset_ch1_y = int(self.insref_load_y) + 4
+        self.inssts_load_iset_ch1_x = int(self.insref_load_x) + 1
+        self.inssts_load_mset_ch1_y = int(self.insref_load_y) + 6
+        self.inssts_load_mset_ch1_x = int(self.insref_load_x) + 1
+        self.inssts_load_outs_ch1_y = int(self.insref_load_y) + 8
+        self.inssts_load_outs_ch1_x = int(self.insref_load_x) + 1
+        self.inssts_load_auto_ch1_y = int(self.insref_load_y) + 2
+        self.inssts_load_auto_ch1_x = int(self.insref_load_x) + 1
+
+        self.inssts_load_iset_ch2_y = int(self.insref_load_y) + 4
+        self.inssts_load_iset_ch2_x = int(self.insref_load_x) + 3
+        self.inssts_load_mset_ch2_y = int(self.insref_load_y) + 6
+        self.inssts_load_mset_ch2_x = int(self.insref_load_x) + 3
+        self.inssts_load_outs_ch2_y = int(self.insref_load_y) + 8
+        self.inssts_load_outs_ch2_x = int(self.insref_load_x) + 3
+        self.inssts_load_auto_ch2_y = int(self.insref_load_y) + 2
+        self.inssts_load_auto_ch2_x = int(self.insref_load_x) + 3
+
+        self.inssts_load_iset_ch3_y = int(self.insref_load_y) + 4
+        self.inssts_load_iset_ch3_x = int(self.insref_load_x) + 5
+        self.inssts_load_mset_ch3_y = int(self.insref_load_y) + 6
+        self.inssts_load_mset_ch3_x = int(self.insref_load_x) + 5
+        self.inssts_load_outs_ch3_y = int(self.insref_load_y) + 8
+        self.inssts_load_outs_ch3_x = int(self.insref_load_x) + 5
+        self.inssts_load_auto_ch3_y = int(self.insref_load_y) + 2
+        self.inssts_load_auto_ch3_x = int(self.insref_load_x) + 5
+
+        self.inssts_load_iset_ch4_y = int(self.insref_load_y) + 4
+        self.inssts_load_iset_ch4_x = int(self.insref_load_x) + 7
+        self.inssts_load_mset_ch4_y = int(self.insref_load_y) + 6
+        self.inssts_load_mset_ch4_x = int(self.insref_load_x) + 7
+        self.inssts_load_outs_ch4_y = int(self.insref_load_y) + 8
+        self.inssts_load_outs_ch4_x = int(self.insref_load_x) + 7
+        self.inssts_load_auto_ch4_y = int(self.insref_load_y) + 2
+        self.inssts_load_auto_ch4_x = int(self.insref_load_x) + 7
+
+        # muti-meter status output index
+        self.inssts_met1_connection_y = int(self.insref_met1_y)
+        self.inssts_met1_connection_x = int(self.insref_met1_x) + 1
+        self.inssts_met1_refresh_y = int(self.insref_met1_y) + 7
+        self.inssts_met1_refresh_x = int(self.insref_met1_x) + 1
+        self.inssts_met1_mset_y = int(self.insref_met1_y) + 3
+        self.inssts_met1_mset_x = int(self.insref_met1_x) + 1
+        self.inssts_met1_leve_y = int(self.insref_met1_y) + 5
+        self.inssts_met1_leve_x = int(self.insref_met1_x) + 1
+        self.inssts_met1_meav_y = int(self.insref_met1_y) + 7
+        self.inssts_met1_meav_x = int(self.insref_met1_x) + 0
+        self.inssts_met1_meai_y = int(self.insref_met1_y) + 9
+        self.inssts_met1_meai_x = int(self.insref_met1_x) + 0
+
+        self.inssts_met2_connection_y = int(self.insref_met2_y)
+        self.inssts_met2_connection_x = int(self.insref_met2_x) + 1
+        self.inssts_met2_refresh_y = int(self.insref_met2_y) + 7
+        self.inssts_met2_refresh_x = int(self.insref_met2_x) + 1
+        self.inssts_met2_mset_y = int(self.insref_met2_y) + 3
+        self.inssts_met2_mset_x = int(self.insref_met2_x) + 1
+        self.inssts_met2_leve_y = int(self.insref_met2_y) + 5
+        self.inssts_met2_leve_x = int(self.insref_met2_x) + 1
+        self.inssts_met2_meav_y = int(self.insref_met2_y) + 7
+        self.inssts_met2_meav_x = int(self.insref_met2_x) + 0
+        self.inssts_met2_meai_y = int(self.insref_met2_y) + 9
+        self.inssts_met2_meai_x = int(self.insref_met2_x) + 0
+
+        # source meter status output index
+
+        self.inssts_src_connection_y = int(self.insref_src_y)
+        self.inssts_src_connection_x = int(self.insref_src_x) + 1
+        self.inssts_src_refresh_y = int(self.insref_src_y) + 9
+        self.inssts_src_refresh_x = int(self.insref_src_x) + 1
+        self.inssts_src_cset_y = int(self.insref_src_y) + 3
+        self.inssts_src_cset_x = int(self.insref_src_x) + 1
+        self.inssts_src_mset_y = int(self.insref_src_y) + 5
+        self.inssts_src_mset_x = int(self.insref_src_x) + 1
+        self.inssts_src_leve_y = int(self.insref_src_y) + 7
+        self.inssts_src_leve_x = int(self.insref_src_x) + 1
+        self.inssts_src_meav_y = int(self.insref_src_y) + 9
+        self.inssts_src_meav_x = int(self.insref_src_x) + 0
+        self.inssts_src_meai_y = int(self.insref_src_y) + 11
+        self.inssts_src_meai_x = int(self.insref_src_x) + 0
+        self.inssts_src_outs_y = int(self.insref_src_y) + 13
+        self.inssts_src_outs_x = int(self.insref_src_x) + 1
+
+        # finished the output index settings
+        # since it will be fixed after table reference cell is set, only need to load once
+
+        # self.insctl => instrument control related parameter (green)
+        # input parameter loading
+
+        # DC power supply table
+        self.insctl_pwr_refresh = self.sh_inst_ctrl.range(
+            (int(self.insref_pwr_y) + 1, int(self.insref_pwr_x) + 1)).value
+        self.insctl_pwr_serial = self.sh_inst_ctrl.range(
+            (int(self.insref_pwr_y), int(self.insref_pwr_x) + 4)).value
+        self.insctl_pwr_calibration = self.sh_inst_ctrl.range(
+            (int(self.insref_pwr_y) + 1, int(self.insref_pwr_x) + 4)).value
+        self.insctl_pwr_vset_ch1 = self.sh_inst_ctrl.range(
+            (int(self.insref_pwr_y) + 4, int(self.insref_pwr_x) + 0)).value
+        self.insctl_pwr_iset_ch1 = self.sh_inst_ctrl.range(
+            (int(self.insref_pwr_y) + 6, int(self.insref_pwr_x) + 0)).value
+        self.insctl_pwr_outs_ch1 = self.sh_inst_ctrl.range(
+            (int(self.insref_pwr_y) + 8, int(self.insref_pwr_x) + 0)).value
+        self.insctl_pwr_vset_ch2 = self.sh_inst_ctrl.range(
+            (int(self.insref_pwr_y) + 4, int(self.insref_pwr_x) + 2)).value
+        self.insctl_pwr_iset_ch2 = self.sh_inst_ctrl.range(
+            (int(self.insref_pwr_y) + 6, int(self.insref_pwr_x) + 2)).value
+        self.insctl_pwr_outs_ch2 = self.sh_inst_ctrl.range(
+            (int(self.insref_pwr_y) + 8, int(self.insref_pwr_x) + 2)).value
+        self.insctl_pwr_vset_ch3 = self.sh_inst_ctrl.range(
+            (int(self.insref_pwr_y) + 4, int(self.insref_pwr_x) + 4)).value
+        self.insctl_pwr_iset_ch3 = self.sh_inst_ctrl.range(
+            (int(self.insref_pwr_y) + 6, int(self.insref_pwr_x) + 4)).value
+        self.insctl_pwr_outs_ch3 = self.sh_inst_ctrl.range(
+            (int(self.insref_pwr_y) + 8, int(self.insref_pwr_x) + 4)).value
+
+        # DC loader table
+        self.insctl_load_refresh = self.sh_inst_ctrl.range(
+            (int(self.insref_load_y) + 1, int(self.insref_load_x) + 1)).value
+        self.insctl_load_iset_ch1 = self.sh_inst_ctrl.range(
+            (int(self.insref_load_y) + 4, int(self.insref_load_x) + 0)).value
+        self.insctl_load_mset_ch1 = self.sh_inst_ctrl.range(
+            (int(self.insref_load_y) + 6, int(self.insref_load_x) + 0)).value
+        self.insctl_load_outs_ch1 = self.sh_inst_ctrl.range(
+            (int(self.insref_load_y) + 8, int(self.insref_load_x) + 0)).value
+        self.insctl_load_iset_ch2 = self.sh_inst_ctrl.range(
+            (int(self.insref_load_y) + 4, int(self.insref_load_x) + 2)).value
+        self.insctl_load_mset_ch2 = self.sh_inst_ctrl.range(
+            (int(self.insref_load_y) + 6, int(self.insref_load_x) + 2)).value
+        self.insctl_load_outs_ch2 = self.sh_inst_ctrl.range(
+            (int(self.insref_load_y) + 8, int(self.insref_load_x) + 2)).value
+        self.insctl_load_iset_ch3 = self.sh_inst_ctrl.range(
+            (int(self.insref_load_y) + 4, int(self.insref_load_x) + 4)).value
+        self.insctl_load_mset_ch3 = self.sh_inst_ctrl.range(
+            (int(self.insref_load_y) + 6, int(self.insref_load_x) + 4)).value
+        self.insctl_load_outs_ch3 = self.sh_inst_ctrl.range(
+            (int(self.insref_load_y) + 8, int(self.insref_load_x) + 4)).value
+        self.insctl_load_iset_ch4 = self.sh_inst_ctrl.range(
+            (int(self.insref_load_y) + 4, int(self.insref_load_x) + 6)).value
+        self.insctl_load_mset_ch4 = self.sh_inst_ctrl.range(
+            (int(self.insref_load_y) + 6, int(self.insref_load_x) + 6)).value
+        self.insctl_load_outs_ch4 = self.sh_inst_ctrl.range(
+            (int(self.insref_load_y) + 8, int(self.insref_load_x) + 6)).value
+
+        # multi-meter talbe
+
+        self.insctl_met1_refresh = self.sh_inst_ctrl.range(
+            (int(self.insref_met1_y) + 1, int(self.insref_met1_x) + 1)).value
+        self.insctl_met1_mset = self.sh_inst_ctrl.range(
+            (int(self.insref_met1_y) + 3, int(self.insref_met1_x) + 0)).value
+        # the measurement level of the meter
+        self.insctl_met1_leve = self.sh_inst_ctrl.range(
+            (int(self.insref_met1_y) + 5, int(self.insref_met1_x) + 0)).value
+
+        self.insctl_met2_refresh = self.sh_inst_ctrl.range(
+            (int(self.insref_met2_y) + 1, int(self.insref_met2_x) + 1)).value
+        self.insctl_met2_mset = self.sh_inst_ctrl.range(
+            (int(self.insref_met2_y) + 3, int(self.insref_met2_x) + 0)).value
+        # the measurement level of the meter
+        self.insctl_met2_leve = self.sh_inst_ctrl.range(
+            (int(self.insref_met2_y) + 5, int(self.insref_met2_x) + 0)).value
+
+        # source-meter talbe
+
+        self.insctl_src_refresh = self.sh_inst_ctrl.range(
+            (int(self.insref_src_y) + 1, int(self.insref_src_x) + 1)).value
+        # setting of the clamp parameter
+        self.insctl_src_cset = self.sh_inst_ctrl.range(
+            (int(self.insref_src_y) + 3, int(self.insref_src_x) + 0)).value
+        self.insctl_src_mset = self.sh_inst_ctrl.range(
+            (int(self.insref_src_y) + 5, int(self.insref_src_x) + 0)).value
+        # the setting level of the source meter
+        self.insctl_src_leve = self.sh_inst_ctrl.range(
+            (int(self.insref_src_y) + 7, int(self.insref_src_x) + 0)).value
+        # source meter ona and off control status
+        self.insctl_src_outs = self.sh_inst_ctrl.range(
+            (int(self.insref_src_y) + 13, int(self.insref_src_x) + 0)).value
+
+        # instrument control related
+        # =============
+
         print('end of the parameter loaded')
+
+        pass
+
+    # sub_program of instrument check
+
+    def para_update_pwr(self):
+        # no need to input the parameter, check all the items based on the refrech time setting for each device
+        # settings for table no need to use global, because re-load from excel every time,
+        # but the status need to be global, since it will save the previous status
+        # need to separate all the different instrument (there are different refresh rate)
+
+        # call for parameter updatae
+        # DC power supply table
+
+        # global self.insctl_pwr_refresh
+        # global self.insctl_pwr_serial
+        # global self.insctl_pwr_calibration
+        # global self.insctl_pwr_vset_ch1
+        # global self.insctl_pwr_iset_ch1
+        # global self.insctl_pwr_outs_ch1
+        # global self.insctl_pwr_vset_ch2
+        # global self.insctl_pwr_iset_ch2
+        # global self.insctl_pwr_outs_ch2
+        # global self.insctl_pwr_vset_ch3
+        # global self.insctl_pwr_iset_ch3
+        # global self.insctl_pwr_outs_ch3
+
+        # DC power supply table
+        self.insctl_pwr_refresh = self.sh_inst_ctrl.range(
+            (int(self.insref_pwr_y) + 1, int(self.insref_pwr_x) + 1)).value
+        self.insctl_pwr_serial = self.sh_inst_ctrl.range(
+            (int(self.insref_pwr_y), int(self.insref_pwr_x) + 4)).value
+        self.insctl_pwr_calibration = self.sh_inst_ctrl.range(
+            (int(self.insref_pwr_y) + 1, int(self.insref_pwr_x) + 4)).value
+        self.insctl_pwr_vset_ch1 = self.sh_inst_ctrl.range(
+            (int(self.insref_pwr_y) + 4, int(self.insref_pwr_x) + 0)).value
+        self.insctl_pwr_iset_ch1 = self.sh_inst_ctrl.range(
+            (int(self.insref_pwr_y) + 6, int(self.insref_pwr_x) + 0)).value
+        self.insctl_pwr_outs_ch1 = self.sh_inst_ctrl.range(
+            (int(self.insref_pwr_y) + 8, int(self.insref_pwr_x) + 0)).value
+        self.insctl_pwr_vset_ch2 = self.sh_inst_ctrl.range(
+            (int(self.insref_pwr_y) + 4, int(self.insref_pwr_x) + 2)).value
+        self.insctl_pwr_iset_ch2 = self.sh_inst_ctrl.range(
+            (int(self.insref_pwr_y) + 6, int(self.insref_pwr_x) + 2)).value
+        self.insctl_pwr_outs_ch2 = self.sh_inst_ctrl.range(
+            (int(self.insref_pwr_y) + 8, int(self.insref_pwr_x) + 2)).value
+        self.insctl_pwr_vset_ch3 = self.sh_inst_ctrl.range(
+            (int(self.insref_pwr_y) + 4, int(self.insref_pwr_x) + 4)).value
+        self.insctl_pwr_iset_ch3 = self.sh_inst_ctrl.range(
+            (int(self.insref_pwr_y) + 6, int(self.insref_pwr_x) + 4)).value
+        self.insctl_pwr_outs_ch3 = self.sh_inst_ctrl.range(
+            (int(self.insref_pwr_y) + 8, int(self.insref_pwr_x) + 4)).value
+
+        print('para_update_pwr')
+        print('self.insctl_pwr_refresh = ' + str(self.insctl_pwr_refresh))
+        print('self.insctl_pwr_serial = ' + str(self.insctl_pwr_serial))
+        print('self.insctl_pwr_calibration = ' +
+              str(self.insctl_pwr_calibration))
+        print('self.insctl_pwr_vset_ch1 = ' + str(self.insctl_pwr_vset_ch1))
+        print('self.insctl_pwr_iset_ch1 = ' + str(self.insctl_pwr_iset_ch1))
+        print('self.insctl_pwr_outs_ch1 = ' + str(self.insctl_pwr_outs_ch1))
+        print('self.insctl_pwr_vset_ch2 = ' + str(self.insctl_pwr_vset_ch2))
+        print('self.insctl_pwr_iset_ch2 = ' + str(self.insctl_pwr_iset_ch2))
+        print('self.insctl_pwr_outs_ch2 = ' + str(self.insctl_pwr_outs_ch2))
+        print('self.insctl_pwr_vset_ch3 = ' + str(self.insctl_pwr_vset_ch3))
+        print('self.insctl_pwr_iset_ch3 = ' + str(self.insctl_pwr_iset_ch3))
+        print('self.insctl_pwr_outs_ch3 = ' + str(self.insctl_pwr_outs_ch3))
+
+        pass
+
+    def status_update_pwr(self):
+        # update the status to the related excel table
+        self.sh_inst_ctrl.range((self.inssts_pwr_connection_y,
+                                 self.inssts_pwr_connection_x)).value = self.pwr_connection_status
+        self.sh_inst_ctrl.range(
+            (self.inssts_pwr_refresh_y, self.inssts_pwr_refresh_x)).value = self.insctl_pwr_refresh
+        self.sh_inst_ctrl.range(
+            (self.inssts_pwr_serial_y, self.inssts_pwr_serial_x)).value = self.insctl_pwr_serial
+        self.sh_inst_ctrl.range((self.inssts_pwr_calibration_y,
+                                 self.inssts_pwr_calibration_x)).value = self.insctl_pwr_calibration
+        self.sh_inst_ctrl.range(
+            (self.inssts_pwr_vset_ch1_y, self.inssts_pwr_vset_ch1_x)).value = self.pwr_v_ch1_status
+        self.sh_inst_ctrl.range(
+            (self.inssts_pwr_iset_ch1_y, self.inssts_pwr_iset_ch1_x)).value = self.pwr_i_ch1_status
+        self.sh_inst_ctrl.range(
+            (self.inssts_pwr_outs_ch1_y, self.inssts_pwr_outs_ch1_x)).value = self.pwr_o_ch1_status
+        self.sh_inst_ctrl.range(
+            (self.inssts_pwr_auto_ch1_y, self.inssts_pwr_auto_ch1_x)).value = self.pwr_auto_ch1_status
+
+        self.sh_inst_ctrl.range(
+            (self.inssts_pwr_vset_ch2_y, self.inssts_pwr_vset_ch2_x)).value = self.pwr_v_ch2_status
+        self.sh_inst_ctrl.range(
+            (self.inssts_pwr_iset_ch2_y, self.inssts_pwr_iset_ch2_x)).value = self.pwr_i_ch2_status
+        self.sh_inst_ctrl.range(
+            (self.inssts_pwr_outs_ch2_y, self.inssts_pwr_outs_ch2_x)).value = self.pwr_o_ch2_status
+        self.sh_inst_ctrl.range(
+            (self.inssts_pwr_auto_ch2_y, self.inssts_pwr_auto_ch2_x)).value = self.pwr_auto_ch2_status
+
+        self.sh_inst_ctrl.range(
+            (self.inssts_pwr_vset_ch3_y, self.inssts_pwr_vset_ch3_x)).value = self.pwr_v_ch3_status
+        self.sh_inst_ctrl.range(
+            (self.inssts_pwr_iset_ch3_y, self.inssts_pwr_iset_ch3_x)).value = self.pwr_i_ch3_status
+        self.sh_inst_ctrl.range(
+            (self.inssts_pwr_outs_ch3_y, self.inssts_pwr_outs_ch3_x)).value = self.pwr_o_ch3_status
+        self.sh_inst_ctrl.range(
+            (self.inssts_pwr_auto_ch3_y, self.inssts_pwr_auto_ch3_x)).value = self.pwr_auto_ch3_status
+
+        pass
+
+    def para_update_load(self):
+
+        # global self.insctl_load_refresh
+        # global self.insctl_load_iset_ch1
+        # global self.insctl_load_mset_ch1
+        # global self.insctl_load_outs_ch1
+        # global self.insctl_load_iset_ch2
+        # global self.insctl_load_mset_ch2
+        # global self.insctl_load_outs_ch2
+        # global self.insctl_load_iset_ch3
+        # global self.insctl_load_mset_ch3
+        # global self.insctl_load_outs_ch3
+        # global self.insctl_load_iset_ch4
+        # global self.insctl_load_mset_ch4
+        # global self.insctl_load_outs_ch4
+
+        # DC loader table
+        self.insctl_load_refresh = self.sh_inst_ctrl.range(
+            (int(self.insref_load_y) + 1, int(self.insref_load_x) + 1)).value
+        self.insctl_load_iset_ch1 = self.sh_inst_ctrl.range(
+            (int(self.insref_load_y) + 4, int(self.insref_load_x) + 0)).value
+        self.insctl_load_mset_ch1 = self.sh_inst_ctrl.range(
+            (int(self.insref_load_y) + 6, int(self.insref_load_x) + 0)).value
+        self.insctl_load_outs_ch1 = self.sh_inst_ctrl.range(
+            (int(self.insref_load_y) + 8, int(self.insref_load_x) + 0)).value
+        self.insctl_load_iset_ch2 = self.sh_inst_ctrl.range(
+            (int(self.insref_load_y) + 4, int(self.insref_load_x) + 2)).value
+        self.insctl_load_mset_ch2 = self.sh_inst_ctrl.range(
+            (int(self.insref_load_y) + 6, int(self.insref_load_x) + 2)).value
+        self.insctl_load_outs_ch2 = self.sh_inst_ctrl.range(
+            (int(self.insref_load_y) + 8, int(self.insref_load_x) + 2)).value
+        self.insctl_load_iset_ch3 = self.sh_inst_ctrl.range(
+            (int(self.insref_load_y) + 4, int(self.insref_load_x) + 4)).value
+        self.insctl_load_mset_ch3 = self.sh_inst_ctrl.range(
+            (int(self.insref_load_y) + 6, int(self.insref_load_x) + 4)).value
+        self.insctl_load_outs_ch3 = self.sh_inst_ctrl.range(
+            (int(self.insref_load_y) + 8, int(self.insref_load_x) + 4)).value
+        self.insctl_load_iset_ch4 = self.sh_inst_ctrl.range(
+            (int(self.insref_load_y) + 4, int(self.insref_load_x) + 6)).value
+        self.insctl_load_mset_ch4 = self.sh_inst_ctrl.range(
+            (int(self.insref_load_y) + 6, int(self.insref_load_x) + 6)).value
+        self.insctl_load_outs_ch4 = self.sh_inst_ctrl.range(
+            (int(self.insref_load_y) + 8, int(self.insref_load_x) + 6)).value
+
+        print('para_update_load')
+        print('self.insctl_load_refresh = ' + str(self.insctl_load_refresh))
+        print('self.insctl_load_iset_ch1 = ' + str(self.insctl_load_iset_ch1))
+        print('self.insctl_load_mset_ch1 = ' + str(self.insctl_load_mset_ch1))
+        print('self.insctl_load_outs_ch1 = ' + str(self.insctl_load_outs_ch1))
+        print('self.insctl_load_iset_ch2 = ' + str(self.insctl_load_iset_ch2))
+        print('self.insctl_load_mset_ch2 = ' + str(self.insctl_load_mset_ch2))
+        print('self.insctl_load_outs_ch2 = ' + str(self.insctl_load_outs_ch2))
+        print('self.insctl_load_iset_ch3 = ' + str(self.insctl_load_iset_ch3))
+        print('self.insctl_load_mset_ch3 = ' + str(self.insctl_load_mset_ch3))
+        print('self.insctl_load_outs_ch3 = ' + str(self.insctl_load_outs_ch3))
+        print('self.insctl_load_iset_ch4 = ' + str(self.insctl_load_iset_ch4))
+        print('self.insctl_load_mset_ch4 = ' + str(self.insctl_load_mset_ch4))
+        print('self.insctl_load_outs_ch4 = ' + str(self.insctl_load_outs_ch4))
+
+        pass
+
+    def status_update_load(self):
+
+        # update the status to the related excel table
+        self.sh_inst_ctrl.range((self.inssts_load_connection_y,
+                                 self.inssts_load_connection_x)).value = self.load_connection_status
+        self.sh_inst_ctrl.range(
+            (self.inssts_load_refresh_y, self.inssts_load_refresh_x)).value = self.insctl_load_refresh
+
+        # ch1
+        self.sh_inst_ctrl.range(
+            (self.inssts_load_iset_ch1_y, self.inssts_load_iset_ch1_x)).value = self.load_i_ch1_status
+        self.sh_inst_ctrl.range((self.inssts_load_mset_ch1_y,
+                                 self.inssts_load_mset_ch1_x)).value = self.load_m_ch1_status
+        self.sh_inst_ctrl.range(
+            (self.inssts_load_outs_ch1_y, self.inssts_load_outs_ch1_x)).value = self.load_o_ch1_status
+        self.sh_inst_ctrl.range(
+            (self.inssts_load_auto_ch1_y, self.inssts_load_auto_ch1_x)).value = self.load_auto_ch1_status
+
+        # ch2
+        self.sh_inst_ctrl.range(
+            (self.inssts_load_iset_ch2_y, self.inssts_load_iset_ch2_x)).value = self.load_i_ch2_status
+        self.sh_inst_ctrl.range((self.inssts_load_mset_ch2_y,
+                                 self.inssts_load_mset_ch2_x)).value = self.load_m_ch2_status
+        self.sh_inst_ctrl.range(
+            (self.inssts_load_outs_ch2_y, self.inssts_load_outs_ch2_x)).value = self.load_o_ch2_status
+        self.sh_inst_ctrl.range(
+            (self.inssts_load_auto_ch2_y, self.inssts_load_auto_ch2_x)).value = self.load_auto_ch2_status
+
+        # ch3
+        self.sh_inst_ctrl.range(
+            (self.inssts_load_iset_ch3_y, self.inssts_load_iset_ch3_x)).value = self.load_i_ch3_status
+        self.sh_inst_ctrl.range((self.inssts_load_mset_ch3_y,
+                                 self.inssts_load_mset_ch3_x)).value = self.load_m_ch3_status
+        self.sh_inst_ctrl.range(
+            (self.inssts_load_outs_ch3_y, self.inssts_load_outs_ch3_x)).value = self.load_o_ch3_status
+        self.sh_inst_ctrl.range(
+            (self.inssts_load_auto_ch3_y, self.inssts_load_auto_ch3_x)).value = self.load_auto_ch3_status
+
+        # ch4
+        self.sh_inst_ctrl.range(
+            (self.inssts_load_iset_ch4_y, self.inssts_load_iset_ch4_x)).value = self.load_i_ch4_status
+        self.sh_inst_ctrl.range((self.inssts_load_mset_ch4_y,
+                                 self.inssts_load_mset_ch4_x)).value = self.load_m_ch4_status
+        self.sh_inst_ctrl.range(
+            (self.inssts_load_outs_ch4_y, self.inssts_load_outs_ch4_x)).value = self.load_o_ch4_status
+        self.sh_inst_ctrl.range(
+            (self.inssts_load_auto_ch4_y, self.inssts_load_auto_ch4_x)).value = self.load_auto_ch4_status
+
+        pass
+
+    def para_update_met1(self):
+
+        # global self.insctl_met1_refresh
+        # global self.insctl_met1_mset
+        # global self.insctl_met1_leve
+
+        self.insctl_met1_refresh = self.sh_inst_ctrl.range(
+            (int(self.insref_met1_y) + 1, int(self.insref_met1_x) + 1)).value
+        self.insctl_met1_mset = self.sh_inst_ctrl.range(
+            (int(self.insref_met1_y) + 3, int(self.insref_met1_x) + 0)).value
+        # the measurement level of the meter
+        self.insctl_met1_leve = self.sh_inst_ctrl.range(
+            (int(self.insref_met1_y) + 5, int(self.insref_met1_x) + 0)).value
+
+        print('para_update_met1')
+        print('self.insctl_met1_refresh = ' + str(self.insctl_met1_refresh))
+        print('self.insctl_met1_mset = ' + str(self.insctl_met1_mset))
+        print('self.insctl_met1_leve = ' + str(self.insctl_met1_leve))
+
+        pass
+
+    def status_update_met1(self):
+
+        # global met1_mode_status
+        # global met1_level_status
+        # global met1_v_mea_status
+        # global met1_i_mea_status
+
+        # if self.insctl_met1_mset == 0:
+        #     # enter the voltage measurement mode
+
+        #     met1_i_mea_status = 'NA'
+        #     met1_mode_status = 'votlage'
+        #     met1_level_status = self.insctl_met1_leve
+        #     pass
+
+        # elif self.insctl_met1_mset == 1:
+        #     # enter the current measurement mode
+
+        #     met1_v_mea_status = 'NA'
+        #     met1_mode_status = 'current'
+        #     met1_level_status = self.insctl_met1_leve
+        #     pass
+
+        # 220521 some of the status variable comes from the main program, so need other variable save for the result
+        self.sh_inst_ctrl.range(
+            (self.inssts_met1_connection_y, self.inssts_met1_connection_x)).value = self.met1_connection_status
+        self.sh_inst_ctrl.range((self.inssts_met1_refresh_y,
+                                 self.inssts_met1_refresh_x)).value = self.insctl_met1_refresh
+        self.sh_inst_ctrl.range(
+            (self.inssts_met1_mset_y, self.inssts_met1_mset_x)).value = self.met1_mode_status
+        self.sh_inst_ctrl.range(
+            (self.inssts_met1_leve_y, self.inssts_met1_leve_x)).value = self.met1_level_status
+        self.sh_inst_ctrl.range(
+            (self.inssts_met1_meav_y, self.inssts_met1_meav_x)).value = self.met1_v_mea_status
+        self.sh_inst_ctrl.range(
+            (self.inssts_met1_meai_y, self.inssts_met1_meai_x)).value = self.met1_i_mea_status
+
+        pass
+
+    def para_update_met2(self):
+
+        # global self.insctl_met2_refresh
+        # global self.insctl_met2_mset
+        # global self.insctl_met2_leve
+
+        self.insctl_met2_refresh = self.sh_inst_ctrl.range(
+            (int(self.insref_met2_y) + 1, int(self.insref_met2_x) + 1)).value
+        self.insctl_met2_mset = self.sh_inst_ctrl.range(
+            (int(self.insref_met2_y) + 3, int(self.insref_met2_x) + 0)).value
+        # the measurement level of the meter
+        self.insctl_met2_leve = self.sh_inst_ctrl.range(
+            (int(self.insref_met2_y) + 5, int(self.insref_met2_x) + 0)).value
+
+        print('para_update_met2')
+        print('self.insctl_met2_refresh = ' + str(self.insctl_met2_refresh))
+        print('self.insctl_met2_mset = ' + str(self.insctl_met2_mset))
+        print('self.insctl_met2_leve = ' + str(self.insctl_met2_leve))
+
+        pass
+
+    def status_update_met2(self):
+
+        # global met2_mode_status
+        # global met2_level_status
+        # global met2_v_mea_status
+        # global met2_i_mea_status
+
+        # if self.insctl_met2_mset == 0:
+        #     # enter the voltage measurement mode
+
+        #     met2_i_mea_status = 'NA'
+        #     met2_mode_status = 'votlage'
+        #     met2_level_status = self.insctl_met2_leve
+        #     pass
+
+        # elif self.insctl_met2_mset == 1:
+        #     # enter the current measurement mode
+
+        #     met2_v_mea_status = 'NA'
+        #     met2_mode_status = 'current'
+        #     met2_level_status = self.insctl_met2_leve
+        #     pass
+
+        self.sh_inst_ctrl.range(
+            (self.inssts_met2_connection_y, self.inssts_met2_connection_x)).value = self.met2_connection_status
+        self.sh_inst_ctrl.range((self.inssts_met2_refresh_y,
+                                 self.inssts_met2_refresh_x)).value = self.insctl_met2_refresh
+        self.sh_inst_ctrl.range(
+            (self.inssts_met2_mset_y, self.inssts_met2_mset_x)).value = self.met2_mode_status
+        self.sh_inst_ctrl.range(
+            (self.inssts_met2_leve_y, self.inssts_met2_leve_x)).value = self.met2_level_status
+        self.sh_inst_ctrl.range(
+            (self.inssts_met2_meav_y, self.inssts_met2_meav_x)).value = self.met2_v_mea_status
+        self.sh_inst_ctrl.range(
+            (self.inssts_met2_meai_y, self.inssts_met2_meai_x)).value = self.met2_i_mea_status
+
+        pass
+
+    def para_update_src(self):
+
+        # global self.insctl_src_refresh
+        # global self.insctl_src_cset
+        # global self.insctl_src_mset
+        # global self.insctl_src_leve
+        # global self.insctl_src_outs
+
+        self.insctl_src_refresh = self.sh_inst_ctrl.range(
+            (int(self.insref_src_y) + 1, int(self.insref_src_x) + 1)).value
+        # setting of the clamp parameter
+        self.insctl_src_cset = self.sh_inst_ctrl.range(
+            (int(self.insref_src_y) + 3, int(self.insref_src_x) + 0)).value
+        self.insctl_src_mset = self.sh_inst_ctrl.range(
+            (int(self.insref_src_y) + 5, int(self.insref_src_x) + 0)).value
+        # the setting level of the source meter
+        self.insctl_src_leve = self.sh_inst_ctrl.range(
+            (int(self.insref_src_y) + 7, int(self.insref_src_x) + 0)).value
+        # source meter ona and off control status
+        self.insctl_src_outs = self.sh_inst_ctrl.range(
+            (int(self.insref_src_y) + 13, int(self.insref_src_x) + 0)).value
+
+        print('para_update_src')
+        print('self.insctl_src_refresh = ' + str(self.insctl_src_refresh))
+        print('self.insctl_src_cset = ' + str(self.insctl_src_cset))
+        print('self.insctl_src_mset = ' + str(self.insctl_src_mset))
+        print('self.insctl_src_leve = ' + str(self.insctl_src_leve))
+        print('self.insctl_src_outs = ' + str(self.insctl_src_outs))
+
+        pass
+
+    def status_update_src(self):
+
+        self.sh_inst_ctrl.range(
+            (self.inssts_src_connection_y, self.inssts_src_connection_x)).value = self.src_connection_status
+        self.sh_inst_ctrl.range(
+            (self.inssts_src_refresh_y, self.inssts_src_refresh_x)).value = self.insctl_src_refresh
+        self.sh_inst_ctrl.range(
+            (self.inssts_src_cset_y, self.inssts_src_cset_x)).value = self.src_clamp_status
+        self.sh_inst_ctrl.range(
+            (self.inssts_src_mset_y, self.inssts_src_mset_x)).value = self.src_mode_status
+        self.sh_inst_ctrl.range(
+            (self.inssts_src_leve_y, self.inssts_src_leve_x)).value = self.src_level_status
+        self.sh_inst_ctrl.range(
+            (self.inssts_src_meav_y, self.inssts_src_meav_x)).value = self.src_v_mea_status
+        self.sh_inst_ctrl.range(
+            (self.inssts_src_meai_y, self.inssts_src_meai_x)).value = self.src_i_mea_status
+        self.sh_inst_ctrl.range(
+            (self.inssts_src_outs_y, self.inssts_src_outs_x)).value = self.src_o_status
+
+        pass
+
+    def check_refresh(self):
+        # this sub is used prevent the dead loop of latch refresh setting
+
+        # global self.insctl_pwr_refresh
+        # global self.insctl_load_refresh
+        # global self.insctl_met1_refresh
+        # global self.insctl_met2_refresh
+        # global self.insctl_src_refresh
+
+        self.insctl_pwr_refresh = self.sh_inst_ctrl.range(
+            (int(self.insref_pwr_y) + 1, int(self.insref_pwr_x) + 1)).value
+        self.insctl_load_refresh = self.sh_inst_ctrl.range(
+            (int(self.insref_load_y) + 1, int(self.insref_load_x) + 1)).value
+        self.insctl_met1_refresh = self.sh_inst_ctrl.range(
+            (int(self.insref_met1_y) + 1, int(self.insref_met1_x) + 1)).value
+        self.insctl_met2_refresh = self.sh_inst_ctrl.range(
+            (int(self.insref_met2_y) + 1, int(self.insref_met2_x) + 1)).value
+        self.insctl_src_refresh = self.sh_inst_ctrl.range(
+            (int(self.insref_src_y) + 1, int(self.insref_src_x) + 1)).value
+
+        # also need to update the refresh status to the excel table
+        # so people know if refresh command is enter or not
+
+        self.sh_inst_ctrl.range(
+            (self.inssts_pwr_refresh_y, self.inssts_pwr_refresh_x)).value = self.insctl_pwr_refresh
+
+        self.sh_inst_ctrl.range(
+            (self.inssts_load_refresh_y, self.inssts_load_refresh_x)).value = self.insctl_load_refresh
+
+        self.sh_inst_ctrl.range((self.inssts_met1_refresh_y,
+                                 self.inssts_met1_refresh_x)).value = self.insctl_met1_refresh
+
+        self.sh_inst_ctrl.range((self.inssts_met2_refresh_y,
+                                 self.inssts_met2_refresh_x)).value = self.insctl_met2_refresh
+
+        self.sh_inst_ctrl.range(
+            (self.inssts_src_refresh_y, self.inssts_src_refresh_x)).value = self.insctl_src_refresh
+
+        print('check_refresh')
+        print('self.insctl_pwr_refresh = ' + str(self.insctl_pwr_refresh))
+        print('self.insctl_load_refresh = ' + str(self.insctl_load_refresh))
+        print('self.insctl_met1_refresh = ' + str(self.insctl_met1_refresh))
+        print('self.insctl_met2_refresh = ' + str(self.insctl_met2_refresh))
+        print('self.insctl_src_refresh = ' + str(self.insctl_src_refresh))
 
         pass
 
@@ -393,6 +1150,7 @@ class excel_parameter ():
             # or not depends on verification item is used or not
             self.result_book_status = 'open'
             pass
+            self.excel_save()
         else:
             print('result book already open, may have errors')
             time.sleep(3)
