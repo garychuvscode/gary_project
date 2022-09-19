@@ -73,6 +73,10 @@ class excel_parameter ():
         self.sh_iq_scan = self.wb.sheets('IQ_measured')
         # this is the sheet for wire scan
         self.sh_sw_scan = self.wb.sheets('SWIRE_scan')
+        # the sheet used to generate general format of waveform
+        self.sh_format_gen = self.wb.sheets('CTRL_sh_ex')
+        # the sheet used save the file information
+        self.sh_ref_table = self.wb.sheets('table')
 
         # file name from the master excel
         self.new_file_name = str(self.sh_main.range('B8').value)
@@ -2002,6 +2006,20 @@ class excel_parameter ():
                               v_cnt, i_cnt, sheet_n, book_n, self.raw_y_position_start, self.raw_x_position_start)
         print('the plot of ' + str(sheet_n) +
               ' in book ' + str(book_n) + ' is finished')
+        pass
+
+    def check_program_exit(self):
+        # the sub add for checking the program exit
+        #  can be used to skip the loop and prevent dead loop
+        self.program_exit = self.sh_main.range('B12').value
+        pass
+
+    #  sub program for the format generation
+
+    def table_return(self):
+        # need to recover this sheet: self.excel_ini.sh_ref_table
+        self.sh_ref_table = self.wb.sheets('table')
+
         pass
 
 

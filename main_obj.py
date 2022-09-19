@@ -434,8 +434,10 @@ elif program_group == 5:
 
     # changeable area
     # ===========
-    while 1 :
+    while excel_m.program_exit == 1 :
         in_scan.check_inst_update()
+        # the program exit will be check after the check inst update
+        # the loop will break automatically after change the program exit
 
     print('finished XX verification')
 
