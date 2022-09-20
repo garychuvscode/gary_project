@@ -2014,13 +2014,23 @@ class excel_parameter ():
         self.program_exit = self.sh_main.range('B12').value
         pass
 
-    #  sub program for the format generation
+    # sub program for the format generation
 
     def table_return(self):
         # need to recover this sheet: self.excel_ini.sh_ref_table
         self.sh_ref_table = self.wb.sheets('table')
 
         pass
+
+    # sub program for waveform capture
+
+    def scope_capture(self):
+        # here is to call the VBA function and get the capture from the scope
+        # will need to reference the scope library and see if it can be cover from
+        # python only, should be easier
+
+        pass
+
 
 
 if __name__ == '__main__':
