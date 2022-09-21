@@ -781,9 +781,10 @@ class chroma_63600:
             str(self.i_sel_ch[int(self.act_ch_o) - 1])
         print(self.cmd_str_I_load)
 
-        if self.cal_mode_en == 1 :
+        if self.cal_mode_en == 1:
             self.cmd_str_I_load = "curr:stat:L1 " + \
-            str(self.i_sel_ch[int(self.act_ch_o) - 1] - self.i_cal_leakage_ch[int(self.act_ch_o) - 1])
+                str(self.i_sel_ch[int(self.act_ch_o) - 1] -
+                    self.i_cal_leakage_ch[int(self.act_ch_o) - 1])
             print('after calibration')
             print(self.cmd_str_I_load)
 
@@ -880,6 +881,12 @@ class chroma_63600:
                     self.i_cal_offset_ch[self.act_ch_o - 1]
                 print('after:')
                 print(temp_i_out)
+
+                # and current can't be 0
+                if temp_i_out < 0:
+                    temp_i_out = 0
+                    pass
+
                 self.i_out = str(temp_i_out)
                 print(self.i_out)
 
@@ -1443,6 +1450,15 @@ class Keth_2440:
             # after reading the iout from source, remove the A in the string
             if self.sim_inst == 1:
                 self.read_res = self.read_res.replace('A', '')
+                pass
+            # # 220921 add the read current exception
+            # # source meter can't used this rule, positive and negative current
+            # if read_type == "CURR" :
+            #     if lo.atof(self.read_res) < 0 :
+            #         self.read_res = 0
+            #         pass
+            #     pass
+
             print('mode ' + str(self.source_type_o) +
                   ', the ' + str(self.read_mode) + ' reading result is: ' + str(self.read_res))
             return str(self.read_res)

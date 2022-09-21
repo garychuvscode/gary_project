@@ -895,8 +895,8 @@ class eff_mea:
                                             # give the i_el blank to 0 for result
                                             excel_s.data_latch(
                                                 'i_el', '0', x_vin, x_iload, value_i_offset1, value_i_offset2)
-                                            excel_s.data_latch(
-                                                'i_el', str(value_i_offset1), x_vin, x_iload, value_i_offset1, value_i_offset2)
+                                            # excel_s.data_latch(
+                                            #     'i_el', str(value_i_offset1), x_vin, x_iload, value_i_offset1, value_i_offset2)
                                             # 0511 to preven calibration settings cause error
                                             # pass the calibration parameter into data_latch to
                                             # cancel the result adjustment

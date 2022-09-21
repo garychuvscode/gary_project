@@ -174,8 +174,10 @@ def change_file_name(new_file_name_str):
 
     pass
 
-def loader_cal_excel ():
-    loader_chr_m.current_cal_setup(excel_m.loader_cal_offset_ELch, excel_m.loader_cal_offset_VCIch, 0, 0, excel_m.loader_cal_leakage_ELch, excel_m.loader_cal_leakage_VCIch, 0, 0)
+
+def loader_cal_excel():
+    loader_chr_m.current_cal_setup(excel_m.loader_cal_offset_ELch, excel_m.loader_cal_offset_VCIch,
+                                   0, 0, excel_m.loader_cal_leakage_ELch, excel_m.loader_cal_leakage_VCIch, 0, 0)
     # turn on the calibration mode
     loader_chr_m.cal_mode_en = 1
     pass
@@ -384,13 +386,13 @@ elif program_group == 4:
 
     # 220921 add the current calibration setting for loader
     loader_chr_m.current_cal_setup(
-        excel_m.loader_cal_ELch, excel_m.loader_cal_VCIch, 0, 0)
+        excel_m.loader_cal_offset_ELch, excel_m.loader_cal_offset_VCIch, 0, 0, 0, 0, 0, 0)
 
-    # start the testing
-    iq_test.run_verification()
-    print('IQ test finished')
-    sw_test.run_verification()
-    print('SW test finished')
+    # # start the testing
+    # iq_test.run_verification()
+    # print('IQ test finished')
+    # sw_test.run_verification()
+    # print('SW test finished')
     eff_test.run_verification()
     print('efficiency test finished')
 
@@ -475,12 +477,12 @@ elif program_group == 6:
     open_inst_and_name()
     print('open instrument with real or simulation mode')
 
-    loader_chr_m.current_calibration(met_v_m, pwr_m, 3, 1)
+    loader_chr_m.current_calibration(met_i_m, pwr_m, 3, 1, 6.6)
 
     print('finished the loader calibration, check result')
     # give interrupt for the parameter check
     input()
-    loader_chr_m.current_calibration(met_v_m, pwr_m, 3, 2)
+    loader_chr_m.current_calibration(met_i_m, pwr_m, 3, 2, 3.3)
 
     # give interrupt for the parameter check
     input()
