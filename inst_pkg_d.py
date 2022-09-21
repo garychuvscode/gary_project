@@ -664,7 +664,9 @@ class chroma_63600:
         # array of current setting, map number = number -1
         self.i_sel_ch = [0, 0, 0, 0]
         # current calibration index for each channel => number -1
-        self.i_cal_ch = [0, 0, 0, 0]
+        self.i_cal_offset_ch = [0, 0, 0, 0]
+        # current calibration index for each channel => number -1
+        self.i_cal_leakage_ch = [0, 0, 0, 0]
         # self.i_sel_ch1 = 0
         # self.i_sel_ch2 = 0
         # self.i_sel_ch3 = 0
@@ -865,7 +867,8 @@ class chroma_63600:
                 print('before:')
                 print(temp_i_out)
 
-                temp_i_out = temp_i_out - self.i_cal_ch[self.act_ch_o - 1]
+                temp_i_out = temp_i_out - \
+                    self.i_cal_offset_ch[self.act_ch_o - 1]
                 print('after:')
                 print(temp_i_out)
                 self.i_out = str(temp_i_out)
@@ -1028,12 +1031,16 @@ class chroma_63600:
         # met_v0 = inst.Met_34460(0.0001, 7, 0.000001, 2.5, 21)
         # met_v0.sim_inst = 0
 
+        # since there are offset and leakage at the chroma loader
+        # get both setting updatte in this case
+
         # read from loader
         read_i_result = 0
         # meter result
         met_i_result = 0
         # result
-        calibration_result = 0
+        calibration_result_offset = 0
+        calibration_result_leakage = 0
         # get 20 times for calibration
         average = 20
 
@@ -1054,7 +1061,10 @@ class chroma_63600:
         self.chg_out(0, load_channel, 'on')
 
         x_cal = 0
+        # for the offset calculation
         result_temp = 0
+        # for the leakage calculation
+        met_temp = 0
         while x_cal < average:
 
             met_i_result = met_v0.mea_i()
@@ -1067,13 +1077,26 @@ class chroma_63600:
             print('measure I(loader) - calibration = measure I(meter)')
             result_temp = result_temp + \
                 lo.atof(read_i_result) - lo.atof(met_i_result)
+            met_temp = met_temp + lo.atof(met_i_result)
 
             x_cal = x_cal + 1
             pass
-        calibration_result = result_temp / average
-        self.i_cal_ch[load_channel - 1] = calibration_result
+        calibration_result_offset = result_temp / average
+        calibration_result_leakage = result_temp / average
+
+        self.i_cal_offset_ch[load_channel - 1] = calibration_result_offset
+        self.i_cal_leakage_ch[load_channel - 1] = calibration_result_leakage
         print('calibration for ' + str(average) + ' times finished')
         print('to get along well with lover well, we need to calibrate offtenly')
+
+        print('offset is: ')
+        print(self.i_cal_offset_ch[load_channel - 1])
+        print('leakage is: ')
+        print(self.i_cal_leakage_ch[load_channel - 1])
+
+        print('window jump out')
+        self.msg_res = win32api.MessageBox(0, 'press enter for next step',
+                                           'the offset and leakage of' + str(load_channel) + ' show in termainal')
 
         pwr0.chg_out(0, 0.5, pwr_ch, 'off')
         self.chg_out(0, load_channel, 'off')
@@ -1083,13 +1106,18 @@ class chroma_63600:
 
         pass
 
-    def current_cal_setup(self, cal_ch1, cal_ch2, cal_ch3, cal_ch4):
+    def current_cal_setup(self, off_ch1, off_ch2, off_ch3, off_ch4, leak_ch1, leak_ch2, leak_ch3, leak_ch4):
         # this sub function used to setup the current calibartion constant directly
         # from the excel input
-        self.i_cal_ch[0] = cal_ch1
-        self.i_cal_ch[1] = cal_ch2
-        self.i_cal_ch[2] = cal_ch3
-        self.i_cal_ch[3] = cal_ch4
+        self.i_cal_offset_ch[0] = off_ch1
+        self.i_cal_offset_ch[1] = off_ch2
+        self.i_cal_offset_ch[2] = off_ch3
+        self.i_cal_offset_ch[3] = off_ch4
+
+        self.i_cal_leakage_ch[0] = leak_ch1
+        self.i_cal_leakage_ch[1] = leak_ch2
+        self.i_cal_leakage_ch[2] = leak_ch3
+        self.i_cal_leakage_ch[3] = leak_ch4
 
         pass
 
