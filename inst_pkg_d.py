@@ -1015,7 +1015,7 @@ class chroma_63600:
         # this sub is used to clear error flag
         pass
 
-    def current_calibration(self, met_v0, pwr0, pwr_ch, load_channel):
+    def current_calibration(self, met_v0, pwr0, pwr_ch, load_channel, v_test):
         # current calubration function for loader
         # meed meter(met0) amd power supply(pwr0)
         # object input for control
@@ -1050,7 +1050,7 @@ class chroma_63600:
 
         # calibration start from here
 
-        pwr0.chg_out(3.7, 0.5, pwr_ch, 'on')
+        pwr0.chg_out(v_test, 0.5, pwr_ch, 'on')
         self.chg_out(0, load_channel, 'on')
 
         x_cal = 0
@@ -1058,13 +1058,15 @@ class chroma_63600:
         while x_cal < average:
 
             met_i_result = met_v0.mea_i()
+            print(met_i_result)
             time.sleep(wait_samll)
             read_i_result = self.read_iout(load_channel)
             time.sleep(wait_samll)
 
             # measure I(loader) - calibration = measure I(meter)
             print('measure I(loader) - calibration = measure I(meter)')
-            result_temp = result_temp + int(read_i_result) - int(met_i_result)
+            result_temp = result_temp + \
+                lo.atof(read_i_result) - lo.atof(met_i_result)
 
             x_cal = x_cal + 1
             pass
