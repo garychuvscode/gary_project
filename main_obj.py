@@ -454,6 +454,33 @@ elif program_group == 5:
 
     pass
 
+elif program_group == 6:
+    # testing for the current calibration of the chroma loader
+
+    # if not off line testing, setup the the instrument needed independently
+    if main_off_line == 0:
+        # set simulation for the used instrument
+        # pwr, met_v, met_i, loader, src, chamber
+        sim_mode_independent(1, 1, 1, 1, 1, 0)
+        pass
+
+    # open instrument and add the name
+    # must open after simulation mode setting(open real or sim)
+    open_inst_and_name()
+    print('open instrument with real or simulation mode')
+
+    loader_chr_m.current_calibration(met_v_m, pwr_m, 3, 1)
+
+    print('finished the loader calibration, check result')
+    # give interrupt for the parameter check
+    input()
+    loader_chr_m.current_calibration(met_v_m, pwr_m, 3, 2)
+
+    # give interrupt for the parameter check
+    input()
+
+    pass
+
 # reference code
 elif program_group == 1000:
     # fixed part, open one result book and save the book
@@ -481,7 +508,7 @@ elif program_group == 1000:
 
     # generate(or copy) the needed sheet to the result book
 
-    print('finished sheet generation')
+    print('finished sheet generation in run verification')
 
     # start the testing
     # run_verification() => should be put in here

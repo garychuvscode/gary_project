@@ -1064,8 +1064,9 @@ class chroma_63600:
 
             # measure I(loader) - calibration = measure I(meter)
             print('measure I(loader) - calibration = measure I(meter)')
-            result_temp = result_temp + read_i_result - met_i_result
+            result_temp = result_temp + int(read_i_result) - int(met_i_result)
 
+            x_cal = x_cal + 1
             pass
         calibration_result = result_temp / average
         self.i_cal_ch[load_channel - 1] = calibration_result
