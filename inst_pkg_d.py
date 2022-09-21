@@ -1080,6 +1080,16 @@ class chroma_63600:
 
         pass
 
+    def current_cal_setup(self, cal_ch1, cal_ch2, cal_ch3, cal_ch4):
+        # this sub function used to setup the current calibartion constant directly
+        # from the excel input
+        self.i_cal_ch[0] = cal_ch1
+        self.i_cal_ch[1] = cal_ch2
+        self.i_cal_ch[2] = cal_ch3
+        self.i_cal_ch[3] = cal_ch4
+
+        pass
+
 
 # still on planning
 

@@ -183,7 +183,7 @@ sw_test = sw.sw_scan(excel_m, pwr_m, met_v_m, loader_chr_m, mcu_m)
 eff_test = eff.eff_mea(excel_m, pwr_m, met_v_m,
                        loader_chr_m, mcu_m, src_m, met_i_m, chamber_m)
 in_scan = ins_scan.instrument_scan(excel_m, pwr_m, met_v_m,
-                       loader_chr_m, mcu_m, src_m, met_i_m, chamber_m)
+                                   loader_chr_m, mcu_m, src_m, met_i_m, chamber_m)
 
 # ==============
 # main program structure
@@ -376,10 +376,14 @@ elif program_group == 4:
     # eff_test.sheet_gen()
     print('finished sheet generation')
 
+    # 220921 add the current calibration setting for loader
+    loader_chr_m.current_cal_setup(
+        excel_m.loader_cal_ELch, excel_m.loader_cal_VCIch, 0, 0)
+
     # start the testing
-    # iq_test.run_verification()
+    iq_test.run_verification()
     print('IQ test finished')
-    # sw_test.run_verification()
+    sw_test.run_verification()
     print('SW test finished')
     eff_test.run_verification()
     print('efficiency test finished')
@@ -391,23 +395,23 @@ elif program_group == 4:
     excel_m.end_of_file(0)
     print('end of the program')
 
-    # fixed part, open one result book and save the book
-    # in temp name
-    excel_m.open_result_book()
-    # 220914 excel save is been added into the open result book
-    # excel_m.excel_save()
-    # verification items
+    # # fixed part, open one result book and save the book
+    # # in temp name
+    # excel_m.open_result_book()
+    # # 220914 excel save is been added into the open result book
+    # # excel_m.excel_save()
+    # # verification items
 
-    # iq_test.sheet_gen()
-    iq_test.run_verification()
-    # iq_test.extra_file_name_setup()
-    excel_m.end_of_file(0)
+    # # iq_test.sheet_gen()
+    # iq_test.run_verification()
+    # # iq_test.extra_file_name_setup()
+    # excel_m.end_of_file(0)
 
-    excel_m.open_result_book()
-    # excel_m.excel_save()
+    # excel_m.open_result_book()
+    # # excel_m.excel_save()
 
-    sw_test.run_verification()
-    excel_m.end_of_file(0)
+    # sw_test.run_verification()
+    # excel_m.end_of_file(0)
 
     pass
 
@@ -434,7 +438,7 @@ elif program_group == 5:
 
     # changeable area
     # ===========
-    while excel_m.program_exit == 1 :
+    while excel_m.program_exit == 1:
         in_scan.check_inst_update()
         # the program exit will be check after the check inst update
         # the loop will break automatically after change the program exit
