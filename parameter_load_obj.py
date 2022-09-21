@@ -222,9 +222,9 @@ class excel_parameter ():
             (self.index_chroma_inst + 1, 3)).value
         self.loader_ini_mode = self.sh_main.range(
             (self.index_chroma_inst + 2, 3)).value
-        self.loader_cal_ELch = self.sh_main.range(
+        self.loader_cal_offset_ELch = self.sh_main.range(
             (self.index_chroma_inst + 3, 3)).value
-        self.loader_cal_VCIch = self.sh_main.range(
+        self.loader_cal_offset_VCIch = self.sh_main.range(
             (self.index_chroma_inst + 4, 3)).value
         self.loader_ELch = self.sh_main.range(
             (self.index_chroma_inst + 5, 3)).value
@@ -234,6 +234,10 @@ class excel_parameter ():
             (self.index_chroma_inst + 7, 3)).value
         self.loader_cal_mode = self.sh_main.range(
             (self.index_chroma_inst + 8, 3)).value
+        self.loader_cal_leakage_ELch = self.sh_main.range(
+            (self.index_chroma_inst + 9, 3)).value
+        self.loader_cal_leakage_VCIch = self.sh_main.range(
+            (self.index_chroma_inst + 10, 3)).value
 
         # parameter setting for source meter
         self.src_vset = self.sh_main.range((self.index_src_inst + 1, 3)).value
@@ -2030,7 +2034,6 @@ class excel_parameter ():
         # python only, should be easier
 
         pass
-
 
 
 if __name__ == '__main__':

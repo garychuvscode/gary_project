@@ -174,6 +174,12 @@ def change_file_name(new_file_name_str):
 
     pass
 
+def loader_cal_excel ():
+    loader_chr_m.current_cal_setup(excel_m.loader_cal_offset_ELch, excel_m.loader_cal_offset_VCIch, 0, 0, excel_m.loader_cal_leakage_ELch, excel_m.loader_cal_leakage_VCIch, 0, 0)
+    # turn on the calibration mode
+    loader_chr_m.cal_mode_en = 1
+    pass
+
 # ==============
 
 

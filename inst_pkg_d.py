@@ -775,9 +775,18 @@ class chroma_63600:
             str(self.mode_o[int(self.act_ch_o) - 1])
         print(self.cmd_str_mode_set)
         # update the string for current definition (map from the related array element)
+
+        # 220921: reduce the error cause from leakage
         self.cmd_str_I_load = "curr:stat:L1 " + \
             str(self.i_sel_ch[int(self.act_ch_o) - 1])
         print(self.cmd_str_I_load)
+
+        if self.cal_mode_en == 1 :
+            self.cmd_str_I_load = "curr:stat:L1 " + \
+            str(self.i_sel_ch[int(self.act_ch_o) - 1] - self.i_cal_leakage_ch[int(self.act_ch_o) - 1])
+            print('after calibration')
+            print(self.cmd_str_I_load)
+
         # update the status of on and off
         self.cmd_str_status = ("Load " + self.state_o[int(self.act_ch_o) - 1])
         print(self.cmd_str_status)
