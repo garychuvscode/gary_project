@@ -28,6 +28,7 @@ import SWIRE_scan_obj as sw
 import EFF_obj as eff
 import instrument_scan_obj as ins_scan
 
+
 # off line test, set to 1 set all the instrument to simulation mode
 main_off_line = 1
 # this is the variable control file name, single or the multi item
@@ -101,43 +102,45 @@ def sim_mode_all(main_off_line0):
     pass
 
 
-def sim_mode_independent(pwr, met_v, met_i, loader, src, chamber):
+def sim_mode_independent(pwr, met_v, met_i, loader, src, chamber, main_off_line0):
     # independent setting for instrument simulation mode
-    if pwr == 1:
-        pwr_m.sim_inst = 1
-        pass
-    else:
-        pwr_m.sim_inst = 0
-        pass
-    if met_v == 1:
-        met_v_m.sim_inst = 1
-        pass
-    else:
-        met_v_m.sim_inst = 0
-        pass
-    if met_i == 1:
-        met_i_m.sim_inst = 1
-        pass
-    else:
-        met_i_m.sim_inst = 0
-        pass
-    if loader == 1:
-        loader_chr_m.sim_inst = 1
-        pass
-    else:
-        loader_chr_m.sim_inst = 0
-        pass
-    if src == 1:
-        src_m.sim_inst = 1
-        pass
-    else:
-        src_m.sim_inst = 0
-        pass
-    if chamber == 1:
-        chamber_m.sim_inst = 1
-        pass
-    else:
-        chamber_m.sim_inst = 0
+    if main_off_line0 == 0:
+        if pwr == 1:
+            pwr_m.sim_inst = 1
+            pass
+        else:
+            pwr_m.sim_inst = 0
+            pass
+        if met_v == 1:
+            met_v_m.sim_inst = 1
+            pass
+        else:
+            met_v_m.sim_inst = 0
+            pass
+        if met_i == 1:
+            met_i_m.sim_inst = 1
+            pass
+        else:
+            met_i_m.sim_inst = 0
+            pass
+        if loader == 1:
+            loader_chr_m.sim_inst = 1
+            pass
+        else:
+            loader_chr_m.sim_inst = 0
+            pass
+        if src == 1:
+            src_m.sim_inst = 1
+            pass
+        else:
+            src_m.sim_inst = 0
+            pass
+        if chamber == 1:
+            chamber_m.sim_inst = 1
+            pass
+        else:
+            chamber_m.sim_inst = 0
+            pass
         pass
 
     pass
@@ -194,356 +197,271 @@ in_scan = ins_scan.instrument_scan(excel_m, pwr_m, met_v_m,
                                    loader_chr_m, mcu_m, src_m, met_i_m, chamber_m)
 
 # ==============
-# main program structure
-program_group = excel_m.program_group_index
 
-# check simulation mode or experiment mode
-# for single inst change, adjut by each object
-# this is the general key
-sim_mode_all(main_off_line)
+if __name__ == '__main__':
+    #  the testing code for this file object
 
-# to make sure moudlize, put in to the selection
-# excel_m.open_result_book()
-# excel_m.excel_save()
+    # main program structure
+    program_group = excel_m.program_group_index
 
-# different verififcation combination
-# decide by the program_group variable
-if program_group == 0:
-    excel_m.open_result_book()
-    excel_m.excel_save()
-    # here is the single test for IQ
+    # check simulation mode or experiment mode
+    # for single inst change, adjut by each object
+    # this is the general key
+    sim_mode_all(main_off_line)
 
-    # single setting of the object need to be 1 => no needed single
-    multi_item = 0
-
-    if main_off_line == 0:
-        # set simulation for the used instrument
-        # pwr, met_v, met_i, loader, src, chamber
-        sim_mode_independent(1, 0, 1, 0, 0, 0)
-        pass
-
-    # definition of experiment object
-    # iq_test = iq.iq_scan(excel_m, pwr_m, met_i_m, mcu_m)
-
-    # generate(or copy) the needed sheet to the result book
-    iq_test.sheet_gen()
-
-    # open instrument and add the name
-    open_inst_and_name()
-
-    # start the testing
-    iq_test.run_verification()
-
-    # remember that this is only call by main, not by  object
-    excel_m.end_of_file(multi_item)
-
-    print('end of the IQ object testing program')
-
-    pass
-
-elif program_group == 1:
-    excel_m.open_result_book()
-    excel_m.excel_save()
-    # SWIRE scan single verififcation
-
-    # single setting of the object need to be 1 => no needed single
-    multi_item = 0
-
-    if main_off_line == 0:
-        # set simulation for the used instrument
-        # pwr, met_v, met_i, loader, src, chamber
-        sim_mode_independent(1, 1, 0, 1, 0, 0)
-        pass
-
-    # definition of experiment object
-    # sw_test = sw.sw_scan(excel_m, pwr_m, met_v_m, loader_chr_m, mcu_m)
-
-    # generate(or copy) the needed sheet to the result book
-    sw_test.sheet_gen()
-
-    # open instrument and add the name
-    open_inst_and_name()
-
-    # start the testing
-    sw_test.run_verification()
-
-    # remember that this is only call by main, not by  object
-    excel_m.end_of_file(multi_item)
-
-    print('end of the IQ object testing program')
-
-    pass
-
-elif program_group == 2:
-    excel_m.open_result_book()
-    excel_m.excel_save()
-    # SWIRE + IQ testing
-
-    # single setting of the object need to be 1 => no needed single
-    multi_item = 1
-
-    # if not off line testing, setup the the instrument needed independently
-    if main_off_line == 0:
-        # set simulation for the used instrument
-        # pwr, met_v, met_i, loader, src, chamber
-        sim_mode_independent(1, 1, 1, 1, 0, 0)
-        pass
-
-    # definition of experiment object
-    # iq_test = iq.iq_scan(excel_m, pwr_m, met_i_m, mcu_m)
-
-    # sw_test = sw.sw_scan(excel_m, pwr_m, met_v_m, loader_chr_m, mcu_m)
-
-    # generate(or copy) the needed sheet to the result book
-    sw_test.sheet_gen()
-    iq_test.sheet_gen()
-
-    # open instrument and add the name
-    open_inst_and_name()
-
-    # start the testing
-    iq_test.run_verification()
-    sw_test.run_verification()
-
-    # remember that this is only call by main, not by  object
-    excel_m.end_of_file(multi_item)
-
-    print('end of the IQ object testing program')
-
-    pass
-
-elif program_group == 3:
-    excel_m.open_result_book()
-    excel_m.excel_save()
-    # efficiency testing ( I2C and SWIRE-normal mode )
-
-    # single setting of the object need to be 1 => no needed single
-    multi_item = 0
-
-    if main_off_line == 0:
-        # set simulation for the used instrument
-        # pwr, met_v, met_i, loader, src, chamber
-        sim_mode_independent(1, 1, 1, 1, 1, 0)
-        pass
-
-    # definition of experiment object
-    # eff_test = eff.eff_mea(excel_m, pwr_m, met_v_m,
-    #                        loader_chr_m, mcu_m, src_m, met_i_m, chamber_m)
-
-    # generate(or copy) the needed sheet to the result book
-    eff_test.sheet_gen()
-    # excel_m.build_file()
-
-    # open instrument and add the name
-    open_inst_and_name()
-
-    # start the testing
-    eff_test.run_verification()
-
-    # 220907 test for change name
-    # excel_m.detail_name = '_detail name added'
-
-    # remember that this is only call by main, not by  object
-    # excel_m.end_of_file(multi_item)
-
-    print('end of the EFF object testing program')
-
-    pass
-
-elif program_group == 4:
-
-    # change file name should be with different setting, cancel the plan to
-    # make the change file name function
-    # change_file_name('test_name')
-
-    # fixed part, open one result book and save the book
-    # in temp name
-    excel_m.open_result_book()
+    # to make sure moudlize, put in to the selection
+    # excel_m.open_result_book()
     # excel_m.excel_save()
-    # verification items
 
-    # single setting of the object need to be 1 => no needed single
-    multi_item = 1
+    # different verififcation combination
+    # decide by the program_group variable
 
-    # if not off line testing, setup the the instrument needed independently
-    if main_off_line == 0:
+    # Single IQ
+    if program_group == 0:
+        excel_m.open_result_book()
+        excel_m.excel_save()
+        # here is the single test for IQ
+        # single setting of the object need to be 1 => no needed single
+        multi_item = 0
         # set simulation for the used instrument
         # pwr, met_v, met_i, loader, src, chamber
-        sim_mode_independent(1, 1, 1, 1, 1, 0)
+        sim_mode_independent(1, 0, 1, 0, 0, 0, main_off_line)
+        # open instrument and add the name
+        open_inst_and_name()
+
+        # start the testing
+        iq_test.run_verification()
+
+        # remember that this is only call by main, not by  object
+        excel_m.end_of_file(multi_item)
+        print('end of the IQ object testing program')
         pass
-    # open instrument and add the name
-    # must open after simulation mode setting(open real or sim)
-    open_inst_and_name()
 
-    # changeable area
-    # ===========
-
-    # generate(or copy) the needed sheet to the result book
-    # sw_test.sheet_gen()
-    # iq_test.sheet_gen()
-    # eff_test.sheet_gen()
-    print('finished sheet generation')
-
-    # 220921 add the current calibration setting for loader
-    loader_chr_m.current_cal_setup(
-        excel_m.loader_cal_offset_ELch, excel_m.loader_cal_offset_VCIch, 0, 0, 0, 0, 0, 0)
-
-    # # start the testing
-    # iq_test.run_verification()
-    # print('IQ test finished')
-    # sw_test.run_verification()
-    # print('SW test finished')
-    eff_test.run_verification()
-    print('efficiency test finished')
-
-    # ===========
-    # changeable area
-
-    # remember that this is only call by main, not by  object
-    excel_m.end_of_file(0)
-    print('end of the program')
-
-    # # fixed part, open one result book and save the book
-    # # in temp name
-    # excel_m.open_result_book()
-    # # 220914 excel save is been added into the open result book
-    # # excel_m.excel_save()
-    # # verification items
-
-    # # iq_test.sheet_gen()
-    # iq_test.run_verification()
-    # # iq_test.extra_file_name_setup()
-    # excel_m.end_of_file(0)
-
-    # excel_m.open_result_book()
-    # # excel_m.excel_save()
-
-    # sw_test.run_verification()
-    # excel_m.end_of_file(0)
-
-    pass
-
-elif program_group == 5:
-    # fixed part, open one result book and save the book
-    # in temp name
-    # excel_m.open_result_book()
-    # verification items
-
-    # single setting of the object need to be 1 => no needed single
-    multi_item = 0
-
-    # if not off line testing, setup the the instrument needed independently
-    if main_off_line == 0:
+    # single SWIRE
+    elif program_group == 1:
+        excel_m.open_result_book()
+        excel_m.excel_save()
+        # SWIRE scan single verififcation
+        # single setting of the object need to be 1 => no needed single
+        multi_item = 0
         # set simulation for the used instrument
         # pwr, met_v, met_i, loader, src, chamber
-        sim_mode_independent(1, 1, 1, 1, 1, 0)
+        sim_mode_independent(1, 0, 1, 0, 0, 0, main_off_line)
+        # open instrument and add the name
+        open_inst_and_name()
+
+        # start the testing
+        sw_test.run_verification()
+
+        # remember that this is only call by main, not by  object
+        excel_m.end_of_file(multi_item)
+        print('end of the SWIRE object testing program')
         pass
 
-    # open instrument and add the name
-    # must open after simulation mode setting(open real or sim)
-    open_inst_and_name()
-    print('open instrument with real or simulation mode')
+    # SWIRE + IQ testing
+    elif program_group == 2:
+        excel_m.open_result_book()
+        excel_m.excel_save()
+        # SWIRE + IQ testing
 
-    # changeable area
-    # ===========
-    while excel_m.program_exit == 1:
-        in_scan.check_inst_update()
-        # the program exit will be check after the check inst update
-        # the loop will break automatically after change the program exit
-
-    print('finished XX verification')
-
-    # ===========
-    # changeable area
-
-    # remember that this is only call by main, not by  object
-    # excel_m.end_of_file(multi_item)
-    print('end of the program')
-
-    pass
-
-elif program_group == 6:
-    # testing for the current calibration of the chroma loader
-
-    # if not off line testing, setup the the instrument needed independently
-    if main_off_line == 0:
+        # single setting of the object need to be 1 => no needed single
+        multi_item = 1
+        # if not off line testing, setup the the instrument needed independently
         # set simulation for the used instrument
         # pwr, met_v, met_i, loader, src, chamber
-        sim_mode_independent(1, 1, 1, 1, 1, 0)
+        sim_mode_independent(1, 1, 1, 1, 0, 0, main_off_line)
+        # open instrument and add the name
+        open_inst_and_name()
+
+        # start the testing
+        iq_test.run_verification()
+        sw_test.run_verification()
+
+        # remember that this is only call by main, not by  object
+        excel_m.end_of_file(multi_item)
+        print('end of the IQ and SWIRE object testing program')
         pass
 
-    # open instrument and add the name
-    # must open after simulation mode setting(open real or sim)
-    open_inst_and_name()
-    print('open instrument with real or simulation mode')
-
-    loader_chr_m.current_calibration(met_i_m, pwr_m, 3, 1, 6.6)
-
-    print('finished the loader calibration, check result')
-    # give interrupt for the parameter check
-    input()
-    loader_chr_m.current_calibration(met_i_m, pwr_m, 3, 2, 3.3)
-
-    # give interrupt for the parameter check
-    input()
-
-    pass
-
-# reference code
-elif program_group == 1000:
-    # fixed part, open one result book and save the book
-    # in temp name
-    excel_m.open_result_book()
-    # verification items
-
-    # single setting of the object need to be 1 => no needed single
-    multi_item = 0
-
-    # if not off line testing, setup the the instrument needed independently
-    if main_off_line == 0:
+    elif program_group == 3:
+        excel_m.open_result_book()
+        excel_m.excel_save()
+        # efficiency testing ( I2C and SWIRE-normal mode )
+        # single setting of the object need to be 1 => no needed single
+        multi_item = 0
         # set simulation for the used instrument
         # pwr, met_v, met_i, loader, src, chamber
-        sim_mode_independent(1, 1, 1, 1, 1, 0)
+        sim_mode_independent(1, 1, 1, 1, 1, 0, main_off_line)
+        # open instrument and add the name
+        open_inst_and_name()
+
+        # start the testing
+        eff_test.run_verification()
+        # issue for using end of file should be solve for efficiency test
+
+        # remember that this is only call by main, not by  object
+        excel_m.end_of_file(multi_item)
+        print('end of the EFF object testing program')
+
         pass
 
-    # open instrument and add the name
-    # must open after simulation mode setting(open real or sim)
-    open_inst_and_name()
-    print('open instrument with real or simulation mode')
+    # IQ + SWIRE + efficiency (eff can be in 1 or multi file)
+    elif program_group == 4:
+        excel_m.open_result_book()
+        # excel_m.excel_save()
+        # verification items
 
-    # changeable area
-    # ===========
+        # single setting of the object need to be 1 => no needed single
+        multi_item = 1
+        # if not off line testing, setup the the instrument needed independently
+        # set simulation for the used instrument
+        # pwr, met_v, met_i, loader, src, chamber
+        sim_mode_independent(1, 1, 1, 1, 1, 0, main_off_line)
 
-    # generate(or copy) the needed sheet to the result book
+        # open instrument and add the name
+        # must open after simulation mode setting(open real or sim)
+        open_inst_and_name()
 
-    print('finished sheet generation in run verification')
+        # changeable area
+        # ===========
 
-    # start the testing
-    # run_verification() => should be put in here
+        # 220921 add the current calibration setting for loader
+        loader_chr_m.current_cal_setup(
+            excel_m.loader_cal_offset_ELch, excel_m.loader_cal_offset_VCIch, 0, 0, 0, 0, 0, 0)
 
-    print('finished XX verification')
+        # start the testing
+        iq_test.run_verification()
+        print('IQ test finished')
+        sw_test.run_verification()
+        print('SW test finished')
+        eff_test.run_verification()
+        print('efficiency test finished')
 
-    # ===========
-    # changeable area
+        # ===========
+        # changeable area
 
-    # remember that this is only call by main, not by  object
-    excel_m.end_of_file(multi_item)
-    print('end of the program')
+        # remember that this is only call by main, not by  object
+        excel_m.end_of_file(0)
+        print('end of the program')
+        pass
 
-    pass
+    # single verification, independent file
+    elif program_group == 4.5:
 
+        excel_m.open_result_book()
+        iq_test.run_verification()
+        excel_m.end_of_file(0)
 
-# instrument initialization
-# all the default had beent fix in the program and change directly in definition below
+        excel_m.open_result_book()
+        sw_test.run_verification()
+        excel_m.end_of_file(0)
 
+        excel_m.open_result_book()
+        eff_test.run_verification()
+        excel_m.end_of_file(0)
 
-# # reference sheet delete after all the test finished
-# # delete reference after copied
-# sh.sh_ref.delete()
-# sh.sh_ref_condition.delete()
-# sh.wb_res.save()
-# 220901 change to delete the reference sheet in excel object
-# excel_m.end_of_file(multi_item)
+        pass
 
-# main program structure
-# ==============
+    # instrument control panel only
+    elif program_group == 5:
+        # fixed part, open one result book and save the book
+        # in temp name
+        # excel_m.open_result_book()
+        # verification items
+
+        # single setting of the object need to be 1 => no needed single
+        multi_item = 0
+
+        # if not off line testing, setup the the instrument needed independently
+        if main_off_line == 0:
+            # set simulation for the used instrument
+            # pwr, met_v, met_i, loader, src, chamber
+            sim_mode_independent(1, 1, 1, 1, 1, 0, main_off_line)
+            pass
+
+        # open instrument and add the name
+        # must open after simulation mode setting(open real or sim)
+        open_inst_and_name()
+        print('open instrument with real or simulation mode')
+
+        # changeable area
+        # ===========
+        while excel_m.program_exit == 1:
+            in_scan.check_inst_update()
+            # the program exit will be check after the check inst update
+            # the loop will break automatically after change the program exit
+
+        print('finished XX verification')
+
+        # ===========
+        # changeable area
+
+        # remember that this is only call by main, not by  object
+        # excel_m.end_of_file(multi_item)
+        print('end of the program')
+
+        pass
+
+    # testing for current calibration (chroma 63600)
+    elif program_group == 6:
+        # testing for the current calibration of the chroma loader
+
+        # if not off line testing, setup the the instrument needed independently
+        # set simulation for the used instrument
+        # pwr, met_v, met_i, loader, src, chamber
+        sim_mode_independent(1, 1, 1, 1, 1, 0, main_off_line)
+
+        # open instrument and add the name
+        # must open after simulation mode setting(open real or sim)
+        open_inst_and_name()
+        print('open instrument with real or simulation mode')
+
+        loader_chr_m.current_calibration(met_i_m, pwr_m, 3, 1, 6.6)
+
+        print('finished the loader calibration, check result')
+        # give interrupt for the parameter check
+        input()
+        loader_chr_m.current_calibration(met_i_m, pwr_m, 3, 2, 3.3)
+
+        # give interrupt for the parameter check
+        input()
+
+        pass
+
+    # reference code
+    elif program_group == 1000:
+        # fixed part, open one result book and save the book
+        # in temp name
+        excel_m.open_result_book()
+        # auto save after the book is generate
+        excel_m.excel_save()
+
+        # single setting of the object need to be 1 => no needed single
+        multi_item = 0
+        # if not off line testing, setup the the instrument needed independently
+        # set simulation for the used instrument
+        # pwr, met_v, met_i, loader, src, chamber, main offline
+        sim_mode_independent(1, 1, 1, 1, 1, 0, main_off_line)
+        # open instrument and add the name
+        # must open after simulation mode setting(open real or sim)
+        open_inst_and_name()
+        print('open instrument with real or simulation mode')
+
+        # changeable area
+        # ===========
+
+        # sheet generation is added in the run verification
+
+        # start the testing
+        # run_verification() => should be put in here
+
+        print('finished XX verification')
+
+        # ===========
+        # changeable area
+
+        # remember that this is only call by main, not by  object
+        excel_m.end_of_file(multi_item)
+        # end of file can also be call between each item
+        print('end of the program')
+
+        pass
