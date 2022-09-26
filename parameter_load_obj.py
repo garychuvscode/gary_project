@@ -376,6 +376,19 @@ class excel_parameter ():
         self.vout_n_pre_active = ''
         # for VON
 
+        # 220926 format gen related control variable
+        self.c_row_item = 0
+        self.c_column_item = 0
+        self.c_data_mea = 0
+        self.c_ctrl_var1 = 0
+        self.c_ctrl_var2 = 0
+        self.c_ctrl_var4 = 0
+        # fixed start point of the format gen (waveform element)
+        self.format_start_x = 5
+        self.format_start_y = 2
+
+
+
         # =============
         # instrument control related
 

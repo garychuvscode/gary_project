@@ -19,7 +19,7 @@ class format_gen:
     # this class is used to measure IQ from the DUT, based on the I/O setting and different Vin
     # measure the IQ
 
-    def __init__(self, excel0, ctrl_sheet_name0):
+    def __init__(self, excel0):
 
         # # ======== only for object programming
         # # testing used temp instrument
@@ -49,22 +49,57 @@ class format_gen:
         # assign the input information to object variable
         self.excel_ini = excel0
 
-        # assign the related sheet of each format gen
-        self.ctrl_sheet_name = ctrl_sheet_name0
-        self.excel_ini.sh_format_gen = self.excel_ini.wb.sheets(
-            str(self.ctrl_sheet_name))
-        self.sh_format_gen = self.excel_ini.wb.sheets(
-            str(self.ctrl_sheet_name))
+        # # 220926 change the call format
+        # # assign the related sheet of each format gen
+        # self.ctrl_sheet_name = ctrl_sheet_name0
+        # self.excel_ini.sh_format_gen = self.excel_ini.wb.sheets(
+        #     str(self.ctrl_sheet_name))
+        # self.sh_format_gen = self.excel_ini.wb.sheets(
+        #     str(self.ctrl_sheet_name))
 
         # use another experiment object to send the name in, and
         # related object will adjust the related instrument for the experiment
         # this object only for the testing result format generation
         self.sh_ref_table = self.excel_ini.wb.sheets('table')
 
+        # indicator for the sheet name input check 0 => no correct name, 1 is ok
+        self.sheet_name_ready = 0
+
+        pass
+
+    def set_sheet_name(self, ctrl_sheet_name0):
+
+        # assign the related sheet of each format gen
+        self.ctrl_sheet_name = ctrl_sheet_name0
+
+        # sh_format_gen is the sheet can be access from other object
+        # load the setting value for instrument
+        self.excel_ini.sh_format_gen = self.excel_ini.wb.sheets(
+            str(self.ctrl_sheet_name))
+        self.sh_format_gen = self.excel_ini.wb.sheets(
+            str(self.ctrl_sheet_name))
+
+        # also include the new sheet setting from each different sheet
+
         # loading the control values
+        # 220926: index of counter need to passed to the excel, so other object or instrument
+        # is able to reference
+
         self.c_row_item = self.sh_format_gen.range('C31').value
         self.c_column_item = self.sh_format_gen.range('C32').value
+        # c_data_mea is data count
         self.c_data_mea = self.sh_format_gen.range('C33').value
+        self.c_ctrl_var1 = self.sh_format_gen.range('D40').value
+        self.c_ctrl_var2 = self.sh_format_gen.range('E40').value
+        self.c_ctrl_var4 = self.sh_format_gen.range('G40').value
+
+        # also need to assign the variable to the excel obj
+        self.excel_ini.c_row_item = self.c_row_item
+        self.excel_ini.c_column_item = self.c_column_item
+        self.excel_ini.c_data_mea = self.c_data_mea
+        self.excel_ini.c_ctrl_var1 = self.c_ctrl_var1
+        self.excel_ini.c_ctrl_var2 = self.c_ctrl_var2
+        self.excel_ini.c_ctrl_var4 = self.c_ctrl_var4
 
         self.item_str = self.sh_format_gen.range('C28').value
         self.row_str = self.sh_format_gen.range('C29').value
@@ -84,161 +119,177 @@ class format_gen:
 
         self.new_sheet_name = str(self.sh_format_gen.range('C35').value)
 
-        pass
+        print('sheet name ready')
+        self.sheet_name_ready = 1
 
     def run_format_gen(self):
 
-        # start to adjust the the format based on the input settings
+        if self.sheet_name_ready == 0:
+            print('no proper sheet name set yet, need to set_sheet_name first')
+            pass
 
-        # before changin the format, adjust the color
-        y_dim = 0
-        c_y_dim = 3 * self.c_column_item
-        # y dimension 3*c_column_item, because not adding c_data_mea yet
-        # knowing the amount is enough
-        while y_dim < c_y_dim:
-            # need to check every cell in the effective operating range
-            # from the sheet setting in CTRL sheet
+        else:
 
-            x_dim = 0
-            c_x_dim = self.c_row_item + 1
-            while x_dim < c_x_dim:
-                color_temp = self.sh_ref_table.range(
-                    (4 + y_dim, 1 + x_dim)).color
+            # start to adjust the the format based on the input settings
 
-                if color_temp == self.color_default:
+            # before changin the format, adjust the color
+            y_dim = 0
+            c_y_dim = 3 * self.c_column_item
+            # y dimension 3*c_column_item, because not adding c_data_mea yet
+            # knowing the amount is enough
+            while y_dim < c_y_dim:
+                # need to check every cell in the effective operating range
+                # from the sheet setting in CTRL sheet
+
+                x_dim = 0
+                c_x_dim = self.c_row_item + 1
+                while x_dim < c_x_dim:
+                    color_temp = self.sh_ref_table.range(
+                        (4 + y_dim, 1 + x_dim)).color
+
+                    if color_temp == self.color_default:
+                        self.sh_ref_table.range(
+                            (4 + y_dim, 1 + x_dim)).color = self.color_target
+                        # change the needed place with default color to the target color
+
+                    x_dim = x_dim + 1
+
+                y_dim = y_dim + 1
+
+            # before insert the row, add the content into realted row and column
+            # use the same definition but different action
+            y_dim = 0
+            c_y_dim = self.c_column_item
+            # y dimension 3*c_column_item, because not adding c_data_mea yet
+            # knowing the amount is enough
+
+            # filter the error of extra_str = none (error handling for the no input cells)
+            extra_str = self.extra_str
+            item_str = self.item_str
+            row_str = self.row_str
+            col_str = self.col_str
+
+            if extra_str == None:
+                extra_str = ''
+            if item_str == None:
+                item_str = ''
+            if row_str == None:
+                row_str = ''
+            if col_str == None:
+                col_str = ''
+
+            # x_dim, y_dim are the dimension counter for modifing the table
+            while y_dim < c_y_dim:
+                # need to check every cell in the effective operating range
+                # from the sheet setting in CTRL sheet
+                str_temp = self.sh_format_gen.range((43 + y_dim, 2)).value
+                excel_temp = col_str + '\n' + \
+                    str(str_temp) + item_str + '\n' + extra_str
+                self.sh_ref_table.range(
+                    (4 + 1 + y_dim * 3, 1)).value = excel_temp
+                self.sh_ref_table.range(
+                    (4 + 1 + y_dim * 3, 1)).row_height = self.target_heigh
+                # height need to change when modifing the column cells
+
+                x_dim = 0
+                c_x_dim = self.c_row_item
+                while x_dim < c_x_dim:
+
+                    str_temp = self.sh_format_gen.range((43 + x_dim, 1)).value
+                    excel_temp = row_str + str(str_temp)
                     self.sh_ref_table.range(
-                        (4 + y_dim, 1 + x_dim)).color = self.color_target
-                    # change the needed place with default color to the target color
+                        (4 + y_dim * 3, 1 + 1 + x_dim)).value = excel_temp
+                    self.sh_ref_table.range((4 + y_dim * 3, 1 + 1 + x_dim)
+                                            ).column_width = self.target_width
+                    # width need to change when modifing the row cells
 
-                x_dim = x_dim + 1
+                    x_dim = x_dim + 1
 
-            y_dim = y_dim + 1
+                y_dim = y_dim + 1
 
-        # before insert the row, add the content into realted row and column
-        # use the same definition but different action
-        y_dim = 0
-        c_y_dim = self.c_column_item
-        # y dimension 3*c_column_item, because not adding c_data_mea yet
-        # knowing the amount is enough
+            # add the new row to the related position
+            x_column_item = 0
+            while x_column_item < self.c_column_item:
+                # each column item need to have related data result row
 
-        # filter the error of extra_str = none (error handling for the no input cells)
-        extra_str = self.extra_str
-        item_str = self.item_str
-        row_str = self.row_str
-        col_str = self.col_str
+                x_data_mea = 0
+                while x_data_mea < self.c_data_mea:
+                    # will need to insert the row and assign the row index at the same time
+                    # first to insert the related row with new color
+                    if x_data_mea > 0:
+                        self.sh_ref_table.api.Rows(
+                            6 + (2 + self.c_data_mea) * x_column_item).Insert()
 
-        if extra_str == None:
-            extra_str = ''
-        if item_str == None:
-            item_str = ''
-        if row_str == None:
-            row_str = ''
-        if col_str == None:
-            col_str = ''
+                    # then assign the related data name for related row ( in reverse order )
+                    excel_temp = self.sh_format_gen.range(
+                        (43 + self.c_data_mea - x_data_mea - 1, 3)).value
+                    self.sh_ref_table.range(
+                        (6 + (2 + self.c_data_mea) * x_column_item, 1)).value = excel_temp
+                    # keep the added row in the default high, not change due to insert
+                    self.sh_ref_table.range(
+                        (6 + (2 + self.c_data_mea) * x_column_item, 1)).row_height = self.default_heigh
 
-        # x_dim, y_dim are the dimension counter for modifing the table
-        while y_dim < c_y_dim:
-            # need to check every cell in the effective operating range
-            # from the sheet setting in CTRL sheet
-            str_temp = self.sh_format_gen.range((43 + y_dim, 2)).value
-            excel_temp = col_str + '\n' + \
-                str(str_temp) + item_str + '\n' + extra_str
-            self.sh_ref_table.range((4 + 1 + y_dim * 3, 1)).value = excel_temp
-            self.sh_ref_table.range(
-                (4 + 1 + y_dim * 3, 1)).row_height = self.target_heigh
-            # height need to change when modifing the column cells
+                    x_data_mea = x_data_mea + 1
+                    # testing of insert row into related position
+                    # self.sh_ref_table.api.Rows(6).Insert()
 
-            x_dim = 0
-            c_x_dim = self.c_row_item
-            while x_dim < c_x_dim:
+                x_column_item = x_column_item + 1
 
-                str_temp = self.sh_format_gen.range((43 + x_dim, 1)).value
-                excel_temp = row_str + str(str_temp)
-                self.sh_ref_table.range(
-                    (4 + y_dim * 3, 1 + 1 + x_dim)).value = excel_temp
-                self.sh_ref_table.range((4 + y_dim * 3, 1 + 1 + x_dim)
-                                        ).column_width = self.target_width
-                # width need to change when modifing the row cells
-
-                x_dim = x_dim + 1
-
-            y_dim = y_dim + 1
-
-        # add the new row to the related position
-        x_column_item = 0
-        while x_column_item < self.c_column_item:
-            # each column item need to have related data result row
-
-            x_data_mea = 0
-            while x_data_mea < self.c_data_mea:
-                # will need to insert the row and assign the row index at the same time
-                # first to insert the related row with new color
-                if x_data_mea > 0:
-                    self.sh_ref_table.api.Rows(
-                        6 + (2 + self.c_data_mea) * x_column_item).Insert()
-
-                # then assign the related data name for related row ( in reverse order )
-                excel_temp = self.sh_format_gen.range(
-                    (43 + self.c_data_mea - x_data_mea - 1, 3)).value
-                self.sh_ref_table.range(
-                    (6 + (2 + self.c_data_mea) * x_column_item, 1)).value = excel_temp
-                # keep the added row in the default high, not change due to insert
-                self.sh_ref_table.range(
-                    (6 + (2 + self.c_data_mea) * x_column_item, 1)).row_height = self.default_heigh
-
-                x_data_mea = x_data_mea + 1
-                # testing of insert row into related position
-                # self.sh_ref_table.api.Rows(6).Insert()
-
-            x_column_item = x_column_item + 1
-
-        self.excel_ini.excel_save()
-        # wb_res.save(result_book_trace)
-        # save the result after program is finished
+            self.excel_ini.excel_save()
+            # wb_res.save(result_book_trace)
+            # save the result after program is finished
+            pass
 
         pass
 
-
-
     def sheet_gen(self):
-        # this function is a must have function to generate the related excel for this verification item
-        # this sub must include:
-        # 2. generate the result sheet in the result book, and setup the format
-        # 3. if plot is needed for this verification, need to integrated the plot in the excel file and call from here
-        # 4. not a new file but an add on sheet to the result workbook
 
-        # copy the rsult sheet to result book
-        self.excel_ini.sh_format_gen.copy(self.excel_ini.sh_ref)
-        # assign the sheet to result book
-        self.excel_ini.sh_format_gen = self.excel_ini.wb_res.sheets(
-            str(self.ctrl_sheet_name))
-        # copy the rsult sheet to result book
-        self.excel_ini.sh_ref_table.copy(self.excel_ini.sh_ref)
-        # assign the sheet to result book
-        self.excel_ini.sh_ref_table = self.excel_ini.wb_res.sheets('table')
+        if self.sheet_name_ready == 0:
+            print('no proper sheet name set yet, need to set_sheet_name first')
+            pass
+        else:
+            # this function is a must have function to generate the related excel for this verification item
+            # this sub must include:
+            # 2. generate the result sheet in the result book, and setup the format
+            # 3. if plot is needed for this verification, need to integrated the plot in the excel file and call from here
+            # 4. not a new file but an add on sheet to the result workbook
 
-        # change the sheet name after finished and save into the excel object
-        self.excel_ini.sh_ref_table.name = str(self.new_sheet_name)
-        self.sh_ref_table = self.excel_ini.sh_ref_table
+            # copy the rsult sheet to result book
+            self.excel_ini.sh_format_gen.copy(self.excel_ini.sh_ref)
+            # assign the sheet to result book
+            self.excel_ini.sh_format_gen = self.excel_ini.wb_res.sheets(
+                str(self.ctrl_sheet_name))
+            # copy the rsult sheet to result book
+            self.excel_ini.sh_ref_table.copy(self.excel_ini.sh_ref)
+            # assign the sheet to result book
+            self.excel_ini.sh_ref_table = self.excel_ini.wb_res.sheets('table')
 
-        # # 220914 move to build file to prevent error of delete and end of file
-        # # copy the result sheet to result book
-        # self.excel_ini.sh_raw_out.copy(self.excel_ini.sh_ref)
-        # # assign the sheet to result book
-        # self.excel_ini.sh_raw_out = self.excel_ini.wb_res.sheets('raw_out')
+            # change the sheet name after finished and save into the excel object
+            self.excel_ini.sh_ref_table.name = str(self.new_sheet_name)
+            self.sh_ref_table = self.excel_ini.sh_ref_table
 
-        # # copy the sheets to new book
-        # # for the new sheet generation, located in sheet_gen
-        # self.excel_s.sh_main.copy(self.sh_ref_condition)
-        # self.sh_result.copy(self.sh_ref)
+            # # 220914 move to build file to prevent error of delete and end of file
+            # # copy the result sheet to result book
+            # self.excel_ini.sh_raw_out.copy(self.excel_ini.sh_ref)
+            # # assign the sheet to result book
+            # self.excel_ini.sh_raw_out = self.excel_ini.wb_res.sheets('raw_out')
+
+            # # copy the sheets to new book
+            # # for the new sheet generation, located in sheet_gen
+            # self.excel_s.sh_main.copy(self.sh_ref_condition)
+            # self.sh_result.copy(self.sh_ref)
+            pass
 
         pass
 
     def table_return(self):
-            # need to recover this sheet: self.excel_ini.sh_ref_table
-            self.excel_ini.sh_ref_table = self.excel_ini.wb.sheets('table')
+        # need to recover this sheet: self.excel_ini.sh_ref_table
+        self.excel_ini.sh_ref_table = self.excel_ini.wb.sheets('table')
 
-            pass
+        # reset sheet choice to wait for next sheet name update
+        self.sheet_name_ready = 0
+
+        pass
 
 
 if __name__ == '__main__':
@@ -285,38 +336,64 @@ if __name__ == '__main__':
 
     # and the different verification method can be call below
 
-    # create one file
-    format_gen_1 = format_gen(excel_t, 'CTRL_sh_ex')
+    version_select = 1
 
-    # generate(or copy) the needed sheet to the result book
-    format_gen_1.sheet_gen()
+    if version_select == 0:
 
-    # start the testing
-    format_gen_1.run_format_gen()
-    # return the table after data input finished
-    format_gen_1.table_return()
+        # create one file
+        format_gen_1 = format_gen(excel_t, 'CTRL_sh_ex')
 
-    # create one file
-    format_gen_2 = format_gen(excel_t, 'CTRL_sh_line')
+        # generate(or copy) the needed sheet to the result book
+        format_gen_1.sheet_gen()
 
-    # generate(or copy) the needed sheet to the result book
-    format_gen_2.sheet_gen()
+        # start the testing
+        format_gen_1.run_format_gen()
+        # return the table after data input finished
+        format_gen_1.table_return()
 
-    # start the testing
-    format_gen_2.run_format_gen()
-    format_gen_2.table_return()
+        # create one file
+        format_gen_2 = format_gen(excel_t, 'CTRL_sh_line')
 
-    # create one file
-    format_gen_3 = format_gen(excel_t, 'CTRL_sh_load')
+        # generate(or copy) the needed sheet to the result book
+        format_gen_2.sheet_gen()
 
-    # generate(or copy) the needed sheet to the result book
-    format_gen_3.sheet_gen()
+        # start the testing
+        format_gen_2.run_format_gen()
+        format_gen_2.table_return()
 
-    # start the testing
-    format_gen_3.run_format_gen()
-    format_gen_3.table_return()
+        # create one file
+        format_gen_3 = format_gen(excel_t, 'CTRL_sh_load')
 
-    # remember that this is only call by main, not by  object
-    excel_t.end_of_file(0)
+        # generate(or copy) the needed sheet to the result book
+        format_gen_3.sheet_gen()
 
-    print('end of the SWIRE scan object testing program')
+        # start the testing
+        format_gen_3.run_format_gen()
+        format_gen_3.table_return()
+
+        # remember that this is only call by main, not by  object
+        excel_t.end_of_file(0)
+
+        print('end of the SWIRE scan object testing program')
+
+        pass
+
+    elif version_select == 1:
+
+        format_gen_1 = format_gen(excel_t)
+        format_gen_1.set_sheet_name('CTRL_sh_ripple')
+        format_gen_1.sheet_gen()
+        format_gen_1.run_format_gen()
+        format_gen_1.table_return()
+
+        format_gen_1.set_sheet_name('CTRL_sh_line')
+        format_gen_1.sheet_gen()
+        format_gen_1.run_format_gen()
+        format_gen_1.table_return()
+
+        format_gen_1.set_sheet_name('CTRL_sh_load')
+        format_gen_1.sheet_gen()
+        format_gen_1.run_format_gen()
+        format_gen_1.table_return()
+
+        pass
