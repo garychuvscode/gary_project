@@ -236,8 +236,10 @@ class eff_mea:
                 print('also turn all load off')
 
                 if en_start_up_check == 1:
-                    msg_res = win32api.MessageBox(
-                        0, 'press enter if hardware configuration is correct', 'Pre-power on for system test under Vin= ' + str(pre_vin) + 'Iin= ' + str(pre_sup_iout))
+                    excel_s.message_box('press enter if hardware configuration is correct',
+                                        'Pre-power on for system test under Vin= ' + str(pre_vin) + 'Iin= ' + str(pre_sup_iout))
+                    # msg_res = win32api.MessageBox(
+                    #     0, 'press enter if hardware configuration is correct', 'Pre-power on for system test under Vin= ' + str(pre_vin) + 'Iin= ' + str(pre_sup_iout))
 
                 if en_chamber_mea == 1:
                     # chamber turn on with default setting, using default temperature
@@ -1070,8 +1072,10 @@ class eff_mea:
                         # so there will not be the error from the plot
                         # remind the operation can keep going after the plot is finished
                         if excel_s.en_plot_waring == 1:
-                            msg_res = win32api.MessageBox(
-                                0, 'Release the control of excel, change the window to auto file now, and press enter, remind again when the plot is finished', 'Plot request from python')
+                            excel_s.message_box(
+                                'Release the control of excel, change the window to auto file now, and press enter, remind again when the plot is finished', 'Plot request from python')
+                            # msg_res = win32api.MessageBox(
+                            #     0, 'Release the control of excel, change the window to auto file now, and press enter, remind again when the plot is finished', 'Plot request from python')
 
                         # plot for efficiency
                         sheet_n = excel_s.eff_temp
@@ -1118,8 +1122,10 @@ class eff_mea:
 
                         # the plot request is finished and jump another window to remind
                         if excel_s.en_plot_waring == 1:
-                            msg_res = win32api.MessageBox(
-                                0, 'You can start to operate the computer again', 'Plot request finished ')
+                            excel_s.message_box(
+                                'You can start to operate the computer again', 'Plot request finished ')
+                            # msg_res = win32api.MessageBox(
+                            #     0, 'You can start to operate the computer again', 'Plot request finished ')
 
                         if excel_s.program_exit == 0:
                             # exit the program

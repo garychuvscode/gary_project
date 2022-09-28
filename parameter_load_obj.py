@@ -77,6 +77,8 @@ class excel_parameter ():
         self.sh_format_gen = self.wb.sheets('CTRL_sh_ex')
         # the sheet used save the file information
         self.sh_ref_table = self.wb.sheets('table')
+        # thesheet for general testing item
+        self.sh_general_test = self.wb.sheets('general')
 
         # file name from the master excel
         self.new_file_name = str(self.sh_main.range('B8').value)
@@ -151,6 +153,7 @@ class excel_parameter ():
         self.index_chamber_inst = 0
         self.index_IQ_scan = 0
         self.index_eff = 0
+        self.index_general_test = 0
 
         self.index_par_pre_con = self.sh_main.range((3, 9)).value
         self.index_GPIB_inst = self.sh_main.range((4, 9)).value
@@ -162,6 +165,8 @@ class excel_parameter ():
         self.index_chamber_inst = self.sh_main.range((6, 12)).value
         self.index_IQ_scan = self.sh_main.range((3, 15)).value
         self.index_eff = self.sh_main.range((4, 15)).value
+        self.index_general_test = self.sh_main.range((5, 15)).value
+
         # self.index_meter_inst = self.sh_main.range((5, 15)).value
         # self.index_chamber_inst = self.sh_main.range((6, 15)).value
 
@@ -316,6 +321,26 @@ class excel_parameter ():
         self.eff_rerun_en = self.sh_main.range(
             self.index_eff + 6, 3).value
 
+        # verification item: eff control parameter
+        self.gen_chamber_en = self.sh_main.range(
+            self.index_general_test + 1, 3).value
+        self.gen_loader_en = self.sh_main.range(
+            self.index_general_test + 2, 3).value
+        self.gen_met_i_en = self.sh_main.range(
+            self.index_general_test + 3, 3).value
+        self.gen_volt_ch_amount = self.sh_main.range(
+            self.index_general_test + 4, 3).value
+        self.gen_pulse_i2x_en = self.sh_main.range(
+            self.index_general_test + 5, 3).value
+        self.gen_loader_ch_amount = self.sh_main.range(
+            self.index_general_test + 6, 3).value
+        self.gen_pwr_ch_amount = self.sh_main.range(
+            self.index_general_test + 7, 3).value
+        self.gen_pwr_i_set = self.sh_main.range(
+            self.index_general_test + 8, 3).value
+        self.gen_col_amount = self.sh_main.range(
+            self.index_general_test + 9, 3).value
+
         # add the loop control for each items
 
         # counteer is usually use c_ in opening
@@ -386,8 +411,6 @@ class excel_parameter ():
         # fixed start point of the format gen (waveform element)
         self.format_start_x = 5
         self.format_start_y = 2
-
-
 
         # =============
         # instrument control related
@@ -1779,7 +1802,8 @@ class excel_parameter ():
     def message_box(self, content_str, title_str):
         content_str = str(content_str)
         title_str = str(title_str)
-        msg_res = win32api.MessageBox(0, content_str, title_str)
+        if self.en_fully_auto == 0:
+            msg_res = win32api.MessageBox(0, content_str, title_str)
         # 0 to 3 is different type of message box and can sen different return value
         # detail check on the internet
         print('msg box call~~ ')

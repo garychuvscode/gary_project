@@ -146,8 +146,9 @@ class sw_scan:
 
         if en_start_up_check == 1:
             print('window jump out')
-            self.msg_res = win32api.MessageBox(
-                0, 'press enter if hardware configuration is correct', 'Pre-power on for system test under Vin= ' + str(excel_s.pre_vin) + 'Iin= ' + str(excel_s.pre_sup_iout))
+            excel_s.message_box('press enter if hardware configuration is correct', 'Pre-power on for system test under Vin= ' + str(excel_s.pre_vin) + 'Iin= ' + str(excel_s.pre_sup_iout))
+            # self.msg_res = win32api.MessageBox(
+            #     0, 'press enter if hardware configuration is correct', 'Pre-power on for system test under Vin= ' + str(excel_s.pre_vin) + 'Iin= ' + str(excel_s.pre_sup_iout))
 
         print('pre-power on state finished and ready for next')
         time.sleep(wait_time)

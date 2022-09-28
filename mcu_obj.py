@@ -165,13 +165,30 @@ class MCU_control ():
             pulse_2 = 255
         # pulse = 0 is the issue wait for workaround
         # need to be change in MCU code
-        if pulse_1 == 0:
-            pulse_1 = 255
-        if pulse_2 == 0:
-            pulse_2 = 255
+        # if pulse_1 == 0:
+        #     pulse_1 = 255
+        # if pulse_2 == 0:
+        #     pulse_2 = 255
         self.pulse1 = pulse_1
         self.pulse2 = pulse_2
-        self.mcu_write('swire')
+        if (self.pulse1 == 0) and (self.pulse2 == 0):
+            print('pulse 0 0 is send, MCU no action')
+            print('cute Grace!')
+            pass
+        elif self.pulse1 == 0:
+            if self.pulse2 != 0:
+                self.pulse1 = self.pulse2
+                self.mcu_write('swire')
+                pass
+            pass
+        elif self.pulse2 == 0:
+            self.pulse2 = self.pulse1
+            self.mcu_write('swire')
+            pass
+        elif (self.pulse1 != 0) and (self.pulse2 != 0):
+            self.mcu_write('swire')
+            pass
+
         pass
 
     def pmic_mode(self, mode_index):
@@ -214,6 +231,13 @@ if __name__ == '__main__':
 
     mcu.pulse_out(10, 25)
     input()
+    mcu.pulse_out(0, 10)
+    input()
+    mcu.pulse_out(5, 0)
+    input()
+    mcu.pulse_out(0, 0)
+    input()
+
     mcu.pmic_mode(1)
     input()
     mcu.pmic_mode(4)

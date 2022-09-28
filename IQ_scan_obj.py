@@ -159,8 +159,10 @@ class iq_scan:
 
         if self.excel_ini.en_start_up_check == 1:
             print('window jump out')
-            self.msg_res = win32api.MessageBox(
-                0, 'press enter if hardware configuration is correct', 'Pre-power on for system test under Vin= ' + str(self.excel_ini.pre_vin) + 'Iin= ' + str(self.excel_ini.pre_sup_iout))
+            self.excel_ini.message_box('press enter if hardware configuration is correct', 'Pre-power on for system test under Vin= ' + str(
+                self.excel_ini.pre_vin) + 'Iin= ' + str(self.excel_ini.pre_sup_iout))
+            # self.msg_res = win32api.MessageBox(
+            #     0, 'press enter if hardware configuration is correct', 'Pre-power on for system test under Vin= ' + str(self.excel_ini.pre_vin) + 'Iin= ' + str(self.excel_ini.pre_sup_iout))
 
         print('pre-power on state finished and ready for next')
         time.sleep(self.excel_ini.wait_time)
