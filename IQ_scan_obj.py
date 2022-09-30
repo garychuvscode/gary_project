@@ -235,6 +235,10 @@ class iq_scan:
 
             x_iq = x_iq + 1
             self.excel_ini.excel_save()
+            if self.excel_ini.program_exit == 0:
+                    # exit the program
+                    print('program_exit')
+                    break
         # save the result after each counter finished
         # self.excel_ini.wb_res.save(self.excel_ini.result_book_trace)
         # 220903: end of test only call by main, because
@@ -293,7 +297,7 @@ if __name__ == '__main__':
     iq_test = iq_scan(excel1, pwr, met_i, mcu0)
 
     # generate(or copy) the needed sheet to the result book
-    iq_test.sheet_gen()
+    # iq_test.sheet_gen()
 
     # start the testing
     iq_test.run_verification()

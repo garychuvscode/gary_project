@@ -74,11 +74,11 @@ class excel_parameter ():
         # this is the sheet for wire scan
         self.sh_sw_scan = self.wb.sheets('SWIRE_scan')
         # the sheet used to generate general format of waveform
-        self.sh_format_gen = self.wb.sheets('CTRL_sh_ex')
+        self.sh_format_gen = self.wb.sheets('CTRL_sh_example')
         # the sheet used save the file information
         self.sh_ref_table = self.wb.sheets('table')
         # thesheet for general testing item
-        self.sh_general_test = self.wb.sheets('general')
+        self.sh_general_test = self.wb.sheets('general_example')
 
         # file name from the master excel
         self.new_file_name = str(self.sh_main.range('B8').value)
@@ -321,7 +321,7 @@ class excel_parameter ():
         self.eff_rerun_en = self.sh_main.range(
             self.index_eff + 6, 3).value
 
-        # verification item: eff control parameter
+        # verification item: general testing
         self.gen_chamber_en = self.sh_main.range(
             self.index_general_test + 1, 3).value
         self.gen_loader_en = self.sh_main.range(
@@ -1264,6 +1264,10 @@ class excel_parameter ():
         # only save, not change the result book trace
         # should be only the temp file during program operation
         self.wb_res.save(self.result_book_trace)
+
+        # also update the program exit control for checking
+        self.check_program_exit()
+
         pass
 
     def inst_name_sheet(self, nick_name, full_name):

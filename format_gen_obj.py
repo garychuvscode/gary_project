@@ -121,6 +121,7 @@ class format_gen:
 
         print('sheet name ready')
         self.sheet_name_ready = 1
+        pass
 
     def run_format_gen(self):
 

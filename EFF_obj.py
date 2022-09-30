@@ -1040,8 +1040,10 @@ class eff_mea:
                                 # 220522 add the check inst sub program
                                 if inst_auto_selection == 2:
                                     excel_s.check_inst_update()
+                                excel_s.check_program_exit()
                                 if excel_s.program_exit == 0:
                                     # exit the program
+                                    print('program_exit')
                                     break
                                 # check every time goes to the loop
 
@@ -1050,6 +1052,7 @@ class eff_mea:
 
                             # wb_res.save(result_book_trace)
                             excel_s.excel_save()
+                            excel_s.check_program_exit()
                             if excel_s.program_exit == 0:
                                 # exit the program
                                 break
@@ -1126,9 +1129,10 @@ class eff_mea:
                                 'You can start to operate the computer again', 'Plot request finished ')
                             # msg_res = win32api.MessageBox(
                             #     0, 'You can start to operate the computer again', 'Plot request finished ')
-
+                        excel_s.check_program_exit()
                         if excel_s.program_exit == 0:
                             # exit the program
+                            print('program_exit')
                             break
 
                         # change the sheet name if eff file is set to one file
@@ -1138,8 +1142,12 @@ class eff_mea:
 
                         x_avdd = x_avdd + 1
                         # end of the 2nd loop
+                        pass
+
+                    excel_s.check_program_exit()
                     if excel_s.program_exit == 0:
                         # exit the program
+                        print('program_exit')
                         break
 
                     # 220824 add the exit action for save and turn off the excel
@@ -1170,7 +1178,13 @@ class eff_mea:
 
                     x_sw_i2c = x_sw_i2c + 1
                     # end of the SWIRE/I2C loop
+                    pass
 
+                excel_s.check_program_exit()
+                if excel_s.program_exit == 0:
+                    # exit the program
+                    print('program_exit')
+                    break
                 x_temperature = x_temperature + 1
                 # end of the temperature loop
 
@@ -1262,7 +1276,7 @@ if __name__ == '__main__':
                        mcu_t, src_t, met_i_t, chamber_t)
 
     # generate(or copy) the needed sheet to the result book
-    eff_test.sheet_gen()
+    # eff_test.sheet_gen()
 
     # start the testing
     eff_test.run_verification()
@@ -1270,4 +1284,4 @@ if __name__ == '__main__':
     # remember that this is only call by main, not by  object
     excel1.end_of_file(0)
 
-    print('end of the SWIRE scan object testing program')
+    print('end of the efficiency object testing program')

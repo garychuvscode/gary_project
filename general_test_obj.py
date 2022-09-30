@@ -69,7 +69,7 @@ class general_test ():
         #     self.excel_ini.extra_file_name = '_SWIRE_pulse'
         #     pass
 
-        self.excel_ini.extra_file_name = '_gen'
+        self.excel_ini.extra_file_name = '_general'
 
     pass
 
@@ -102,5 +102,117 @@ class general_test ():
         pre_sup_iout = excel_s.pre_sup_iout
         pre_imax = excel_s.pre_imax
         pre_vin_max = excel_s.pre_vin_max
+
+        en_start_up_check = excel_s.en_start_up_check
+        pre_test_en = excel_s.pre_test_en
+        relay0_ch = excel_s.relay0_ch
+
+
+        chamber_default_tset = excel_s.cham_tset_ini
+
+        # general testing parameter
+        en_chamber_mea = excel_s.gen_chamber_en
+        gen_loader_en = excel_s.gen_loader_en
+        gen_met_i_en = excel_s.gen_met_i_en
+        gen_volt_ch_amount = excel_s.gen_volt_ch_amount
+        gen_pulse_i2x_en = excel_s.gen_pulse_i2x_en
+        gen_loader_ch_amount = excel_s.gen_loader_ch_amount
+        gen_pwr_ch_amount = excel_s.gen_pwr_ch_amount
+        gen_pwr_i_set = excel_s.gen_pwr_i_set
+        gen_col_amount = excel_s.gen_col_amount
+
+
+
+        # power supply OV and OC protection
+        pwr_s.ov_oc_set(pre_vin_max, pre_imax)
+
+        # power supply channel (channel on setting)
+        if pre_test_en == 1:
+            pwr_s.chg_out(pre_vin, pre_sup_iout,
+                            relay0_ch, 'on')
+            print('pre-power on here')
+            # turn off the power and load
+
+            print('also turn all load off')
+
+            if en_start_up_check == 1:
+                excel_s.message_box('press enter if hardware configuration is correct',
+                                    'Pre-power on for system test under Vin= ' + str(pre_vin) + 'Iin= ' + str(pre_sup_iout))
+                # msg_res = win32api.MessageBox(
+                #     0, 'press enter if hardware configuration is correct', 'Pre-power on for system test under Vin= ' + str(pre_vin) + 'Iin= ' + str(pre_sup_iout))
+
+            if en_chamber_mea == 1:
+                    # chamber turn on with default setting, using default temperature
+                    chamber_s.chamber_set(chamber_default_tset)
+
+
+
+
+
+    def set_sheet_name(self, ctrl_sheet_name0):
+
+        # assign the related sheet of each format gen
+        self.ctrl_sheet_name = ctrl_sheet_name0
+
+        # sh_format_gen is the sheet can be access from other object
+        # load the setting value for instrument
+        self.excel_ini.sh_format_gen = self.excel_ini.wb.sheets(
+            str(self.ctrl_sheet_name))
+        self.sh_format_gen = self.excel_ini.wb.sheets(
+            str(self.ctrl_sheet_name))
+
+        # also include the new sheet setting from each different sheet
+
+        # loading the control values
+        # 220926: index of counter need to passed to the excel, so other object or instrument
+        # is able to reference
+
+        self.c_row_item = self.sh_format_gen.range('C31').value
+        self.c_column_item = self.sh_format_gen.range('C32').value
+        # c_data_mea is data count
+        self.c_data_mea = self.sh_format_gen.range('C33').value
+        self.c_ctrl_var1 = self.sh_format_gen.range('D40').value
+        self.c_ctrl_var2 = self.sh_format_gen.range('E40').value
+        self.c_ctrl_var4 = self.sh_format_gen.range('G40').value
+
+        # also need to assign the variable to the excel obj
+        self.excel_ini.c_row_item = self.c_row_item
+        self.excel_ini.c_column_item = self.c_column_item
+        self.excel_ini.c_data_mea = self.c_data_mea
+        self.excel_ini.c_ctrl_var1 = self.c_ctrl_var1
+        self.excel_ini.c_ctrl_var2 = self.c_ctrl_var2
+        self.excel_ini.c_ctrl_var4 = self.c_ctrl_var4
+
+        self.item_str = self.sh_format_gen.range('C28').value
+        self.row_str = self.sh_format_gen.range('C29').value
+        self.col_str = self.sh_format_gen.range('C30').value
+        self.extra_str = self.sh_format_gen.range('C34').value
+        self.color_default = self.sh_format_gen.range('C37').color
+        self.color_target = self.sh_format_gen.range('C38').color
+
+        self.target_width = self.sh_format_gen.range('I2').column_width
+        self.target_heigh = self.sh_format_gen.range('I2').row_height
+        self.default_width = self.sh_format_gen.range('J5').column_width
+        self.default_heigh = self.sh_format_gen.range('J5').row_height
+        # default height and width is used to prevent shape change of the table
+        # target height and width is used to save the waveform capture from scope
+
+        # start to adjust the the format based on the input settings
+
+        self.new_sheet_name = str(self.sh_format_gen.range('C35').value)
+
+        print('sheet name ready')
+        self.sheet_name_ready = 1
+        pass
+
+
+
+
+
+        pass
+
+    def update_inst_settings ():
+
+
 
         pass
