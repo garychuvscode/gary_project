@@ -18,31 +18,32 @@ import locale as lo
 class general_test ():
 
     def __init__(self, excel0, pwr0, met_v0, loader_0, mcu0, src0, met_i0, chamber0):
-
-        # ======== only for object programming
-        # testing used temp instrument
-        # need to become comment when the OBJ is finished
-        import mcu_obj as mcu
-        import inst_pkg_d as inst
-        # initial the object and set to simulation mode
-        pwr0 = inst.LPS_505N(3.7, 0.5, 3, 1, 'off')
-        pwr0.sim_inst = 0
-        # initial the object and set to simulation mode
-        met_v0 = inst.Met_34460(0.0001, 7, 0.000001, 2.5, 21)
-        met_v0.sim_inst = 0
-        loader_0 = inst.chroma_63600(1, 7, 'CCL')
-        loader_0.sim_inst = 0
-        # mcu is also config as simulation mode
-        mcu0 = mcu.MCU_control(0, 3)
-        # using the main control book as default
-        excel0 = par.excel_parameter('obj_main')
-        src0 = inst.Keth_2440(0, 0, 24, 'off', 'CURR', 15)
-        src0.sim_inst = 0
-        met_i0 = inst.Met_34460(0.0001, 7, 0.000001, 2.5, 20)
-        met_i0.sim_inst = 0
-        chamber0 = inst.chamber_su242(25, 10, 'off', -45, 180, 0)
-        chamber0.sim_inst = 0
-        # ======== only for object programming
+        prog_only = 1
+        if prog_only == 0:
+            # ======== only for object programming
+            # testing used temp instrument
+            # need to become comment when the OBJ is finished
+            import mcu_obj as mcu
+            import inst_pkg_d as inst
+            # initial the object and set to simulation mode
+            pwr0 = inst.LPS_505N(3.7, 0.5, 3, 1, 'off')
+            pwr0.sim_inst = 0
+            # initial the object and set to simulation mode
+            met_v0 = inst.Met_34460(0.0001, 7, 0.000001, 2.5, 21)
+            met_v0.sim_inst = 0
+            loader_0 = inst.chroma_63600(1, 7, 'CCL')
+            loader_0.sim_inst = 0
+            # mcu is also config as simulation mode
+            mcu0 = mcu.MCU_control(0, 3)
+            # using the main control book as default
+            excel0 = par.excel_parameter('obj_main')
+            src0 = inst.Keth_2440(0, 0, 24, 'off', 'CURR', 15)
+            src0.sim_inst = 0
+            met_i0 = inst.Met_34460(0.0001, 7, 0.000001, 2.5, 20)
+            met_i0.sim_inst = 0
+            chamber0 = inst.chamber_su242(25, 10, 'off', -45, 180, 0)
+            chamber0.sim_inst = 0
+            # ======== only for object programming
 
         # this is the initialize sub-program for the class and which will operate once class
         # has been defined
@@ -70,20 +71,10 @@ class general_test ():
         #     pass
 
         self.excel_ini.extra_file_name = '_general'
+        # sheet ready or not index
+        self.sheet_name_ready = 0
 
     pass
-
-    def sheet_gen(self):
-
-        # copy the rsult sheet to result book
-        self.excel_ini.sh_general_test.copy(self.excel_ini.sh_ref)
-        # assign the sheet to result book
-        self.excel_ini.sh_general_test = self.excel_ini.wb_res.sheets(
-            'general')
-
-        # this is both the control and result sheet
-
-        pass
 
     def run_verification(self):
 
@@ -107,11 +98,10 @@ class general_test ():
         pre_test_en = excel_s.pre_test_en
         relay0_ch = excel_s.relay0_ch
 
-
         chamber_default_tset = excel_s.cham_tset_ini
 
         # general testing parameter
-        en_chamber_mea = excel_s.gen_chamber_en
+        gen_chamber_mea = excel_s.gen_chamber_en
         gen_loader_en = excel_s.gen_loader_en
         gen_met_i_en = excel_s.gen_met_i_en
         gen_volt_ch_amount = excel_s.gen_volt_ch_amount
@@ -121,15 +111,13 @@ class general_test ():
         gen_pwr_i_set = excel_s.gen_pwr_i_set
         gen_col_amount = excel_s.gen_col_amount
 
-
-
         # power supply OV and OC protection
         pwr_s.ov_oc_set(pre_vin_max, pre_imax)
 
         # power supply channel (channel on setting)
         if pre_test_en == 1:
             pwr_s.chg_out(pre_vin, pre_sup_iout,
-                            relay0_ch, 'on')
+                          relay0_ch, 'on')
             print('pre-power on here')
             # turn off the power and load
 
@@ -141,24 +129,94 @@ class general_test ():
                 # msg_res = win32api.MessageBox(
                 #     0, 'press enter if hardware configuration is correct', 'Pre-power on for system test under Vin= ' + str(pre_vin) + 'Iin= ' + str(pre_sup_iout))
 
-            if en_chamber_mea == 1:
-                    # chamber turn on with default setting, using default temperature
-                    chamber_s.chamber_set(chamber_default_tset)
+            if gen_chamber_mea == 1:
+                # chamber turn on with default setting, using default temperature
+                chamber_s.chamber_set(chamber_default_tset)
 
+        x_count = 0
+        while x_count < self.c_test_amount:
 
+            # load the setting first
+            self.data_loaded(x_count)
 
+            if gen_chamber_mea == 1:
+                # set up chamber temperature
+                chamber_s.chamber_set(self.chamber_target)
 
+            pwr_s.change_V(self.pwr_ch1, 1)
+            pwr_s.change_V(self.pwr_ch2, 2)
+            pwr_s.change_V(self.pwr_ch3, 3)
+
+            if gen_loader_en == 1 or gen_loader_en == 3:
+                # set up all the load current
+                load_s.chg_out_auto_mode(self.load_ch1, 1, 'on')
+                load_s.chg_out_auto_mode(self.load_ch2, 2, 'on')
+                load_s.chg_out_auto_mode(self.load_ch3, 3, 'on')
+                load_s.chg_out_auto_mode(self.load_ch4, 4, 'on')
+
+            if gen_loader_en == 2 or gen_loader_en == 3:
+                # setup src
+                load_src_s.change_I(self.load_src, 'on')
+
+            self.res_met_curr = met_i_s.mea_i()
+            mcu_s.relay_ctrl(0)
+            self.res_met_v1 = met_v_s.mea_v()
+            time.sleep(excel_s.wait_small)
+
+            mcu_s.relay_ctrl(1)
+            self.res_met_v2 = met_v_s.mea_v()
+            time.sleep(excel_s.wait_small)
+
+            mcu_s.relay_ctrl(2)
+            self.res_met_v3 = met_v_s.mea_v()
+            time.sleep(excel_s.wait_small)
+
+            mcu_s.relay_ctrl(3)
+            self.res_met_v4 = met_v_s.mea_v()
+            time.sleep(excel_s.wait_small)
+
+            mcu_s.relay_ctrl(4)
+            self.res_met_v5 = met_v_s.mea_v()
+            time.sleep(excel_s.wait_small)
+
+            mcu_s.relay_ctrl(5)
+            self.res_met_v6 = met_v_s.mea_v()
+            time.sleep(excel_s.wait_small)
+
+            mcu_s.relay_ctrl(6)
+            self.res_met_v7 = met_v_s.mea_v()
+            time.sleep(excel_s.wait_small)
+
+            mcu_s.relay_ctrl(7)
+            self.res_met_v8 = met_v_s.mea_v()
+            time.sleep(excel_s.wait_small)
+
+            self.res_load_curr1 = load_s.read_iout(1)
+            self.res_load_curr2 = load_s.read_iout(2)
+            self.res_load_curr3 = load_s.read_iout(3)
+            self.res_load_curr4 = load_s.read_iout(4)
+            self.res_src_curr = load_src_s.read('CURR')
+            self.res_temp_read = chamber_s.read('temp_mea')
+
+            self.data_latch(x_count)
+            # latch the data to related position
+
+            x_count = x_count + 1
+            pass
+
+        print('program finished')
+        pass
 
     def set_sheet_name(self, ctrl_sheet_name0):
 
         # assign the related sheet of each format gen
         self.ctrl_sheet_name = ctrl_sheet_name0
 
-        # sh_format_gen is the sheet can be access from other object
+        # sh_general_test is the sheet can be access from other object
         # load the setting value for instrument
-        self.excel_ini.sh_format_gen = self.excel_ini.wb.sheets(
+        self.excel_ini.sh_general_test = self.excel_ini.wb.sheets(
             str(self.ctrl_sheet_name))
-        self.sh_format_gen = self.excel_ini.wb.sheets(
+        self.sh_general_test = self.excel_ini.wb.sheets(
             str(self.ctrl_sheet_name))
 
         # also include the new sheet setting from each different sheet
@@ -167,52 +225,224 @@ class general_test ():
         # 220926: index of counter need to passed to the excel, so other object or instrument
         # is able to reference
 
-        self.c_row_item = self.sh_format_gen.range('C31').value
-        self.c_column_item = self.sh_format_gen.range('C32').value
-        # c_data_mea is data count
-        self.c_data_mea = self.sh_format_gen.range('C33').value
-        self.c_ctrl_var1 = self.sh_format_gen.range('D40').value
-        self.c_ctrl_var2 = self.sh_format_gen.range('E40').value
-        self.c_ctrl_var4 = self.sh_format_gen.range('G40').value
-
-        # also need to assign the variable to the excel obj
-        self.excel_ini.c_row_item = self.c_row_item
-        self.excel_ini.c_column_item = self.c_column_item
-        self.excel_ini.c_data_mea = self.c_data_mea
-        self.excel_ini.c_ctrl_var1 = self.c_ctrl_var1
-        self.excel_ini.c_ctrl_var2 = self.c_ctrl_var2
-        self.excel_ini.c_ctrl_var4 = self.c_ctrl_var4
-
-        self.item_str = self.sh_format_gen.range('C28').value
-        self.row_str = self.sh_format_gen.range('C29').value
-        self.col_str = self.sh_format_gen.range('C30').value
-        self.extra_str = self.sh_format_gen.range('C34').value
-        self.color_default = self.sh_format_gen.range('C37').color
-        self.color_target = self.sh_format_gen.range('C38').color
-
-        self.target_width = self.sh_format_gen.range('I2').column_width
-        self.target_heigh = self.sh_format_gen.range('I2').row_height
-        self.default_width = self.sh_format_gen.range('J5').column_width
-        self.default_heigh = self.sh_format_gen.range('J5').row_height
-        # default height and width is used to prevent shape change of the table
-        # target height and width is used to save the waveform capture from scope
+        self.c_test_amount = self.sh_general_test.range('B6').value
+        # only record one loop control variable to prevent error, if none element is
+        # in the blank, try to filled 0 in the blank
 
         # start to adjust the the format based on the input settings
 
-        self.new_sheet_name = str(self.sh_format_gen.range('C35').value)
+        self.new_sheet_name = str(self.sh_general_test.range('B2').value)
 
         print('sheet name ready')
+        # auto update instrument setting after the sheet is assigned
+        self.update_inst_settings()
         self.sheet_name_ready = 1
+
+        # clear all the result saving parameter
+        self.res_met_curr = 0
+        self.res_met_v1 = 0
+        self.res_met_v2 = 0
+        self.res_met_v3 = 0
+        self.res_met_v4 = 0
+        self.res_met_v5 = 0
+        self.res_met_v6 = 0
+        self.res_met_v7 = 0
+        self.res_met_v8 = 0
+        self.res_load_curr1 = 0
+        self.res_load_curr2 = 0
+        self.res_load_curr3 = 0
+        self.res_load_curr4 = 0
+        self.res_src_curr = 0
+        self.res_temp_read = 0
+
+        pass
+
+    def sheet_gen(self):
+
+        if self.sheet_name_ready == 0:
+            print('no proper sheet name set yet, need to set_sheet_name first')
+            pass
+        else:
+            # this function is a must have function to generate the related excel for this verification item
+            # this sub must include:
+            # 2. generate the result sheet in the result book, and setup the format
+            # 3. if plot is needed for this verification, need to integrated the plot in the excel file and call from here
+            # 4. not a new file but an add on sheet to the result workbook
+
+            # copy the rsult sheet to result book
+            self.excel_ini.sh_general_test.copy(self.excel_ini.sh_ref)
+            # assign the sheet to result book
+            self.excel_ini.sh_general_test = self.excel_ini.wb_res.sheets(
+                str(self.ctrl_sheet_name))
+
+            # change the sheet name after finished and save into the excel object
+            self.excel_ini.sh_general_test.name = str(self.new_sheet_name)
+
+            pass
+
+        pass
+
+    def check_blank(self, y_index, x_index):
+        # send the checking index in and check or filled in 0 for none
+        check_temp = self.sh_general_test.range(y_index, x_index).value
+        if check_temp == None:
+            check_temp = 0
+            # return 0 after read and set the blank to 0
+            self.sh_general_test.range(y_index, x_index).value = 0
+            pass
+
+        # return the settings to main program
+        # it should be able to be float or string
+        # auto adjustment after being used from others
+        return check_temp
+
+    def update_inst_settings(self):
+        # setup the instrument after sheet selected
+        print('instrument parameter update')
+        self.pwr_ini.change_I(self.excel_ini.gen_pwr_i_set, 1)
+        self.pwr_ini.change_I(self.excel_ini.gen_pwr_i_set, 2)
+        self.pwr_ini.change_I(self.excel_ini.gen_pwr_i_set, 3)
+        pass
+
+    def table_return(self):
+        # need to recover this sheet: self.excel_ini.sh_ref_table
+        self.excel_ini.sh_general_test = self.excel_ini.wb.sheets(
+            'general_example')
+
+        # reset sheet choice to wait for next sheet name update
+        self.sheet_name_ready = 0
+
+        pass
+
+    def data_latch(self, index):
+
+        # update all the result based on index
+        self.sh_general_test.range(
+            8 + index, 1 + self.excel_ini.gen_col_amount + 0).value = self.res_met_curr
+        self.sh_general_test.range(
+            8 + index, 1 + self.excel_ini.gen_col_amount + 1).value = self.res_met_v1
+        self.sh_general_test.range(
+            8 + index, 1 + self.excel_ini.gen_col_amount + 2).value = self.res_met_v2
+        self.sh_general_test.range(
+            8 + index, 1 + self.excel_ini.gen_col_amount + 3).value = self.res_met_v3
+        self.sh_general_test.range(
+            8 + index, 1 + self.excel_ini.gen_col_amount + 4).value = self.res_met_v4
+        self.sh_general_test.range(
+            8 + index, 1 + self.excel_ini.gen_col_amount + 5).value = self.res_met_v5
+        self.sh_general_test.range(
+            8 + index, 1 + self.excel_ini.gen_col_amount + 6).value = self.res_met_v6
+        self.sh_general_test.range(
+            8 + index, 1 + self.excel_ini.gen_col_amount + 7).value = self.res_met_v7
+        self.sh_general_test.range(
+            8 + index, 1 + self.excel_ini.gen_col_amount + 8).value = self.res_met_v8
+        self.sh_general_test.range(
+            8 + index, 1 + self.excel_ini.gen_col_amount + 9).value = self.res_load_curr1
+        self.sh_general_test.range(
+            8 + index, 1 + self.excel_ini.gen_col_amount + 10).value = self.res_load_curr2
+        self.sh_general_test.range(
+            8 + index, 1 + self.excel_ini.gen_col_amount + 11).value = self.res_load_curr3
+        self.sh_general_test.range(
+            8 + index, 1 + self.excel_ini.gen_col_amount + 12).value = self.res_load_curr4
+        self.sh_general_test.range(
+            8 + index, 1 + self.excel_ini.gen_col_amount + 13).value = self.res_src_curr
+        self.sh_general_test.range(
+            8 + index, 1 + self.excel_ini.gen_col_amount + 14).value = self.res_temp_read
+
+        print('data latch for Grace finished')
+
+        pass
+
+    def data_loaded(self, index):
+
+        # update all the result based on index
+        self.pwr_ch1 = self.check_blank(8 + index, 2)
+        self.pwr_ch2 = self.check_blank(8 + index, 3)
+        self.pwr_ch3 = self.check_blank(8 + index, 4)
+        self.load_ch1 = self.check_blank(8 + index, 5)
+        self.load_ch2 = self.check_blank(8 + index, 6)
+        self.load_ch3 = self.check_blank(8 + index, 7)
+        self.load_ch4 = self.check_blank(8 + index, 8)
+        self.load_src = self.check_blank(8 + index, 9)
+        self.pulse1_reg_cmd = self.check_blank(8 + index, 10)
+        self.pulse2_data_cmd = self.check_blank(8 + index, 11)
+        self.chamber_target = self.check_blank(8 + index, 12)
+
+        # self.pwr_ch1 = self.sh_general_test.range( 8 + index , 2 ).value
+        # self.pwr_ch2 = self.sh_general_test.range( 8 + index , 3 ).value
+        # self.pwr_ch3 = self.sh_general_test.range( 8 + index , 4) .value
+        # self.load_ch1 = self.sh_general_test.range( 8 + index , 5 ).value
+        # self.load_ch2 = self.sh_general_test.range( 8 + index , 6 ).value
+        # self.load_ch3 = self.sh_general_test.range( 8 + index , 7 ).value
+        # self.load_ch4 = self.sh_general_test.range( 8 + index , 8 ).value
+        # self.load_src = self.sh_general_test.range( 8 + index , 9 ).value
+        # self.pulse1_reg_cmd = self.sh_general_test.range( 8 + index , 10 ).value
+        # self.pulse2_data_cmd = self.sh_general_test.range( 8 + index , 11 ).value
+        # self.chamber_target = self.sh_general_test.range( 8 + index , 12 ).value
+
+        print('data loaded for g finished')
+
         pass
 
 
+if __name__ == '__main__':
+    #  the testing code for this file object
 
+    # ======== only for object programming
+    # testing used temp instrument
+    # need to become comment when the OBJ is finished
+    import mcu_obj as mcu
+    import inst_pkg_d as inst
+    # initial the object and set to simulation mode
+    pwr_t = inst.LPS_505N(3.7, 0.5, 3, 1, 'off')
+    pwr_t.sim_inst = 0
+    # initial the object and set to simulation mode
+    met_v_t = inst.Met_34460(0.0001, 7, 0.000001, 2.5, 21)
+    met_v_t.sim_inst = 0
+    load_t = inst.chroma_63600(1, 7, 'CCL')
+    load_t.sim_inst = 0
+    met_i_t = inst.Met_34460(0.0001, 7, 0.000001, 2.5, 21)
+    met_i_t.sim_inst = 0
+    src_t = inst.Keth_2440(0, 0, 24, 'off', 'CURR', 15)
+    src_t.sim_inst = 0
+    chamber_t = inst.chamber_su242(25, 10, 'off', -45, 180, 0)
+    chamber_t.sim_inst = 0
+    # mcu is also config as simulation mode
+    # COM address of Gary_SONY is 3
+    mcu_t = mcu.MCU_control(0, 3)
 
+    # for the single test, need to open obj_main first,
+    # the real situation is: sheet_ctrl_main_obj will start obj_main first
+    # so the file will be open before new excel object benn define
 
-        pass
+    # using the main control book as default
+    excel_t = par.excel_parameter('obj_main')
+    # ======== only for object programming
 
-    def update_inst_settings ():
+    # open the result book for saving result
+    excel_t.open_result_book()
 
+    # change simulation mode delay (in second)
+    excel_t.sim_mode_delay(0.02, 0.01)
+    inst.wait_time = 0.01
+    inst.wait_samll = 0.01
 
+    # and the different verification method can be call below
 
-        pass
+    version_select = 0
+
+    if version_select == 0:
+        # create one object
+
+        general_t = general_test(
+            excel_t, pwr_t, met_v_t, load_t, mcu_t, src_t, met_i_t, chamber_t)
+        general_t.set_sheet_name('general_1')
+        general_t.sheet_gen()
+        general_t.run_verification()
+        general_t.table_return()
+
+        general_t.set_sheet_name('general_2')
+        general_t.sheet_gen()
+        general_t.run_verification()
+        general_t.table_return()
+
+        excel_t.end_of_file(0)

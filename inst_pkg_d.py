@@ -905,6 +905,27 @@ class chroma_63600:
         # self.iout_o = self.iout_o.replace('A', '')
         return str(self.i_out)
 
+    def chg_out_auto_mode (self, iset1, act_ch1, state1):
+
+        if iset1 < 0.2 :
+            self.chg_mode(act_ch1, 'CCL')
+            pass
+        elif iset1 > 0.2 and iset1 < 2 :
+            self.chg_mode(act_ch1, 'CCM')
+            # change mode will turn off first
+            # need to turn on again after change the mode
+            pass
+        elif iset1 > 2 and iset1 < 20 :
+            self.chg_mode(act_ch1, 'CCH')
+            pass
+
+        self.chg_out(iset1, act_ch1, state1)
+        # after changing the mode, any current can be accept for the loader setting
+        # just mode will change
+        # refer to the iset1
+
+        pass
+
     def sim_mode_out(self):
         print(self.act_ch_ini)
         print(self.GP_addr_ini)
