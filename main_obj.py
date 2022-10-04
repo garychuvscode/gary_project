@@ -408,7 +408,7 @@ if __name__ == '__main__':
         # if not off line testing, setup the the instrument needed independently
         # set simulation for the used instrument
         # pwr, met_v, met_i, loader, src, chamber
-        sim_mode_independent(1, 1, 1, 1, 1, 0, main_off_line)
+        sim_mode_independent(1, 1, 1, 1, 0, 0, main_off_line)
 
         # open instrument and add the name
         # must open after simulation mode setting(open real or sim)

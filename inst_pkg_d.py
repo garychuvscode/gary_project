@@ -905,17 +905,17 @@ class chroma_63600:
         # self.iout_o = self.iout_o.replace('A', '')
         return str(self.i_out)
 
-    def chg_out_auto_mode (self, iset1, act_ch1, state1):
+    def chg_out_auto_mode(self, iset1, act_ch1, state1):
 
-        if iset1 < 0.2 :
+        if iset1 < 0.2:
             self.chg_mode(act_ch1, 'CCL')
             pass
-        elif iset1 > 0.2 and iset1 < 2 :
+        elif iset1 > 0.2 and iset1 < 2:
             self.chg_mode(act_ch1, 'CCM')
             # change mode will turn off first
             # need to turn on again after change the mode
             pass
-        elif iset1 > 2 and iset1 < 20 :
+        elif iset1 > 2 and iset1 < 20:
             self.chg_mode(act_ch1, 'CCH')
             pass
 
@@ -1119,7 +1119,7 @@ class chroma_63600:
             x_cal = x_cal + 1
             pass
         calibration_result_offset = result_temp / average
-        calibration_result_leakage = result_temp / average
+        calibration_result_leakage = met_temp / average
 
         self.i_cal_offset_ch[load_channel - 1] = calibration_result_offset
         self.i_cal_leakage_ch[load_channel - 1] = calibration_result_leakage
@@ -1133,7 +1133,7 @@ class chroma_63600:
 
         print('window jump out')
         self.msg_res = win32api.MessageBox(0, 'press enter for next step',
-                                           'the offset and leakage of' + str(load_channel) + ' show in termainal')
+                                           'the offset and leakage of ch' + str(load_channel) + ' show in termainal')
 
         pwr0.chg_out(0, 0.5, pwr_ch, 'off')
         self.chg_out(0, load_channel, 'off')
