@@ -77,6 +77,8 @@ class general_test ():
     pass
 
     def run_verification(self):
+        # give the sheet generation
+        self.sheet_gen()
 
         # slave object in subprogram
         pwr_s = self.pwr_ini
@@ -147,12 +149,32 @@ class general_test ():
             pwr_s.change_V(self.pwr_ch2, 2)
             pwr_s.change_V(self.pwr_ch3, 3)
 
+            if gen_pulse_i2x_en == 0:
+                pass
+            elif gen_pulse_i2x_en == 1:
+                mcu_s.pulse_out(self.pulse1_reg_cmd, self.pulse2_data_cmd)
+                pass
+            elif gen_pulse_i2x_en == 2:
+                mcu_s.i2c_single_write(
+                    self.pulse1_reg_cmd, self.pulse2_data_cmd)
+
             if gen_loader_en == 1 or gen_loader_en == 3:
                 # set up all the load current
-                load_s.chg_out_auto_mode(self.load_ch1, 1, 'on')
-                load_s.chg_out_auto_mode(self.load_ch2, 2, 'on')
-                load_s.chg_out_auto_mode(self.load_ch3, 3, 'on')
-                load_s.chg_out_auto_mode(self.load_ch4, 4, 'on')
+                if gen_loader_ch_amount == 1:
+                    load_s.chg_out_auto_mode(self.load_ch1, 1, 'on')
+                    pass
+
+                if gen_loader_ch_amount > 1:
+                    load_s.chg_out_auto_mode(self.load_ch2, 2, 'on')
+                    pass
+
+                if gen_loader_ch_amount > 2:
+                    load_s.chg_out_auto_mode(self.load_ch3, 3, 'on')
+                    pass
+
+                if gen_loader_ch_amount > 3:
+                    load_s.chg_out_auto_mode(self.load_ch4, 4, 'on')
+                    pass
 
             if gen_loader_en == 2 or gen_loader_en == 3:
                 # setup src
@@ -163,31 +185,31 @@ class general_test ():
             self.res_met_v1 = met_v_s.mea_v()
             time.sleep(excel_s.wait_small)
 
-            mcu_s.relay_ctrl(1)
+            mcu_s.relay_ctrl(6)
             self.res_met_v2 = met_v_s.mea_v()
             time.sleep(excel_s.wait_small)
 
-            mcu_s.relay_ctrl(2)
+            mcu_s.relay_ctrl(7)
             self.res_met_v3 = met_v_s.mea_v()
             time.sleep(excel_s.wait_small)
 
-            mcu_s.relay_ctrl(3)
+            mcu_s.relay_ctrl(1)
             self.res_met_v4 = met_v_s.mea_v()
             time.sleep(excel_s.wait_small)
 
-            mcu_s.relay_ctrl(4)
+            mcu_s.relay_ctrl(2)
             self.res_met_v5 = met_v_s.mea_v()
             time.sleep(excel_s.wait_small)
 
-            mcu_s.relay_ctrl(5)
+            mcu_s.relay_ctrl(3)
             self.res_met_v6 = met_v_s.mea_v()
             time.sleep(excel_s.wait_small)
 
-            mcu_s.relay_ctrl(6)
+            mcu_s.relay_ctrl(4)
             self.res_met_v7 = met_v_s.mea_v()
             time.sleep(excel_s.wait_small)
 
-            mcu_s.relay_ctrl(7)
+            mcu_s.relay_ctrl(5)
             self.res_met_v8 = met_v_s.mea_v()
             time.sleep(excel_s.wait_small)
 
@@ -205,6 +227,8 @@ class general_test ():
             pass
 
         print('program finished')
+        self.inst_off()
+        self.table_return()
         pass
 
     def set_sheet_name(self, ctrl_sheet_name0):
@@ -277,6 +301,7 @@ class general_test ():
 
             # change the sheet name after finished and save into the excel object
             self.excel_ini.sh_general_test.name = str(self.new_sheet_name)
+            self.sh_general_test = self.excel_ini.sh_general_test
 
             pass
 
@@ -304,6 +329,24 @@ class general_test ():
         self.pwr_ini.change_I(self.excel_ini.gen_pwr_i_set, 3)
         pass
 
+    def inst_off(self):
+
+        print('going to turn off all the instrument')
+        self.pwr_ini.chg_out(0, 0, 1, 'off')
+        self.pwr_ini.chg_out(0, 0, 2, 'off')
+        self.pwr_ini.chg_out(0, 0, 3, 'off')
+
+        self.loader_ini.chg_out(0, 1, 'off')
+        self.loader_ini.chg_out(0, 2, 'off')
+        self.loader_ini.chg_out(0, 3, 'off')
+        self.loader_ini.chg_out(0, 4, 'off')
+
+        self.src_ini.load_off()
+
+        self.chamber_ini.chamber_off()
+
+        pass
+
     def table_return(self):
         # need to recover this sheet: self.excel_ini.sh_ref_table
         self.excel_ini.sh_general_test = self.excel_ini.wb.sheets(
@@ -318,35 +361,35 @@ class general_test ():
 
         # update all the result based on index
         self.sh_general_test.range(
-            8 + index, 1 + self.excel_ini.gen_col_amount + 0).value = self.res_met_curr
-        self.sh_general_test.range(
             8 + index, 1 + self.excel_ini.gen_col_amount + 1).value = self.res_met_v1
         self.sh_general_test.range(
             8 + index, 1 + self.excel_ini.gen_col_amount + 2).value = self.res_met_v2
         self.sh_general_test.range(
             8 + index, 1 + self.excel_ini.gen_col_amount + 3).value = self.res_met_v3
         self.sh_general_test.range(
-            8 + index, 1 + self.excel_ini.gen_col_amount + 4).value = self.res_met_v4
+            8 + index, 1 + self.excel_ini.gen_col_amount + 4).value = self.res_met_curr
         self.sh_general_test.range(
-            8 + index, 1 + self.excel_ini.gen_col_amount + 5).value = self.res_met_v5
+            8 + index, 1 + self.excel_ini.gen_col_amount + 5).value = self.res_met_v4
         self.sh_general_test.range(
-            8 + index, 1 + self.excel_ini.gen_col_amount + 6).value = self.res_met_v6
+            8 + index, 1 + self.excel_ini.gen_col_amount + 6).value = self.res_met_v5
         self.sh_general_test.range(
-            8 + index, 1 + self.excel_ini.gen_col_amount + 7).value = self.res_met_v7
+            8 + index, 1 + self.excel_ini.gen_col_amount + 7).value = self.res_met_v6
         self.sh_general_test.range(
-            8 + index, 1 + self.excel_ini.gen_col_amount + 8).value = self.res_met_v8
+            8 + index, 1 + self.excel_ini.gen_col_amount + 8).value = self.res_met_v7
         self.sh_general_test.range(
-            8 + index, 1 + self.excel_ini.gen_col_amount + 9).value = self.res_load_curr1
+            8 + index, 1 + self.excel_ini.gen_col_amount + 9).value = self.res_met_v8
         self.sh_general_test.range(
-            8 + index, 1 + self.excel_ini.gen_col_amount + 10).value = self.res_load_curr2
+            8 + index, 1 + self.excel_ini.gen_col_amount + 10).value = self.res_load_curr1
         self.sh_general_test.range(
-            8 + index, 1 + self.excel_ini.gen_col_amount + 11).value = self.res_load_curr3
+            8 + index, 1 + self.excel_ini.gen_col_amount + 11).value = self.res_load_curr2
         self.sh_general_test.range(
-            8 + index, 1 + self.excel_ini.gen_col_amount + 12).value = self.res_load_curr4
+            8 + index, 1 + self.excel_ini.gen_col_amount + 12).value = self.res_load_curr3
         self.sh_general_test.range(
-            8 + index, 1 + self.excel_ini.gen_col_amount + 13).value = self.res_src_curr
+            8 + index, 1 + self.excel_ini.gen_col_amount + 13).value = self.res_load_curr4
         self.sh_general_test.range(
-            8 + index, 1 + self.excel_ini.gen_col_amount + 14).value = self.res_temp_read
+            8 + index, 1 + self.excel_ini.gen_col_amount + 14).value = self.res_src_curr
+        self.sh_general_test.range(
+            8 + index, 1 + self.excel_ini.gen_col_amount + 15).value = self.res_temp_read
 
         print('data latch for Grace finished')
 
@@ -428,7 +471,7 @@ if __name__ == '__main__':
 
     # and the different verification method can be call below
 
-    version_select = 0
+    version_select = 1
 
     if version_select == 0:
         # create one object
@@ -444,5 +487,22 @@ if __name__ == '__main__':
         general_t.sheet_gen()
         general_t.run_verification()
         general_t.table_return()
+
+        excel_t.end_of_file(0)
+
+    elif version_select == 1:
+        #  reduce the sheet_gen and table rerun function in the main
+
+        general_t = general_test(
+            excel_t, pwr_t, met_v_t, load_t, mcu_t, src_t, met_i_t, chamber_t)
+        general_t.set_sheet_name('general_1')
+        # general_t.sheet_gen()
+        general_t.run_verification()
+        # general_t.table_return()
+
+        general_t.set_sheet_name('general_2')
+        # general_t.sheet_gen()
+        general_t.run_verification()
+        # general_t.table_return()
 
         excel_t.end_of_file(0)
