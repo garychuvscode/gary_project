@@ -437,21 +437,28 @@ if __name__ == '__main__':
     import inst_pkg_d as inst
     # initial the object and set to simulation mode
     pwr_t = inst.LPS_505N(3.7, 0.5, 3, 1, 'off')
-    pwr_t.sim_inst = 0
+    pwr_t.sim_inst = 1
+    pwr_t.open_inst()
     # initial the object and set to simulation mode
     met_v_t = inst.Met_34460(0.0001, 7, 0.000001, 2.5, 21)
     met_v_t.sim_inst = 0
+    met_v_t.open_inst()
     load_t = inst.chroma_63600(1, 7, 'CCL')
-    load_t.sim_inst = 0
+    load_t.sim_inst = 1
+    load_t.open_inst()
     met_i_t = inst.Met_34460(0.0001, 7, 0.000001, 2.5, 21)
-    met_i_t.sim_inst = 0
+    met_i_t.sim_inst = 1
+    met_i_t.open_inst()
     src_t = inst.Keth_2440(0, 0, 24, 'off', 'CURR', 15)
     src_t.sim_inst = 0
+    src_t.open_inst()
     chamber_t = inst.chamber_su242(25, 10, 'off', -45, 180, 0)
     chamber_t.sim_inst = 0
+    chamber_t.open_inst()
     # mcu is also config as simulation mode
     # COM address of Gary_SONY is 3
-    mcu_t = mcu.MCU_control(0, 3)
+    mcu_t = mcu.MCU_control(1, 4)
+    mcu_t.com_open()
 
     # for the single test, need to open obj_main first,
     # the real situation is: sheet_ctrl_main_obj will start obj_main first
