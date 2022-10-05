@@ -27,6 +27,8 @@ import IQ_scan_obj as iq
 import SWIRE_scan_obj as sw
 import EFF_obj as eff
 import instrument_scan_obj as ins_scan
+import format_gen_obj as form_g
+import general_test_obj as gene_t
 
 
 # off line test, set to 1 set all the instrument to simulation mode
@@ -195,6 +197,10 @@ eff_test = eff.eff_mea(excel_m, pwr_m, met_v_m,
                        loader_chr_m, mcu_m, src_m, met_i_m, chamber_m)
 in_scan = ins_scan.instrument_scan(excel_m, pwr_m, met_v_m,
                                    loader_chr_m, mcu_m, src_m, met_i_m, chamber_m)
+format_g = form_g.format_gen(excel_m)
+general_t = gene_t.general_test(excel_m, pwr_m, met_v_m,
+                                loader_chr_m, mcu_m, src_m, met_i_m, chamber_m)
+
 
 # ==============
 
@@ -347,6 +353,17 @@ if __name__ == '__main__':
     # single verification, independent file
     elif program_group == 4.5:
 
+        # single setting of the object need to be 1 => no needed single
+        multi_item = 1
+        # if not off line testing, setup the the instrument needed independently
+        # set simulation for the used instrument
+        # pwr, met_v, met_i, loader, src, chamber
+        sim_mode_independent(1, 1, 1, 1, 1, 0, main_off_line)
+
+        # open instrument and add the name
+        # must open after simulation mode setting(open real or sim)
+        open_inst_and_name()
+
         excel_m.open_result_book()
         iq_test.run_verification()
         excel_m.end_of_file(0)
@@ -442,13 +459,61 @@ if __name__ == '__main__':
         open_inst_and_name()
         print('open instrument with real or simulation mode')
 
+        format_g.set_sheet_name('CTRL_sh_ripple')
+        format_g.sheet_gen()
+        format_g.run_format_gen()
+        # insert related test => the sheet in excel is still active
+
+        # table release after table return
+        format_g.table_return()
+
+        format_g.set_sheet_name('CTRL_sh_line')
+        format_g.sheet_gen()
+        format_g.run_format_gen()
+        # insert related test => the sheet in excel is still active
+
+        # table release after table return
+        format_g.table_return()
+
+        print('finished XX verification')
+
+        # ===========
+        # changeable area
+
+        # remember that this is only call by main, not by  object
+        excel_m.end_of_file(multi_item)
+        # end of file can also be call between each item
+        print('end of the program')
+
+        pass
+
+    # testing for the general test object
+    elif program_group == 8:
+        # fixed part, open one result book and save the book
+        # in temp name
+        excel_m.open_result_book()
+        # auto save after the book is generate
+        # excel_m.excel_save()
+
+        # single setting of the object need to be 1 => no needed single
+        multi_item = 0
+        # if not off line testing, setup the the instrument needed independently
+        # set simulation for the used instrument
+        # pwr, met_v, met_i, loader, src, chamber, main offline
+        sim_mode_independent(1, 1, 1, 1, 1, 0, main_off_line)
+        # open instrument and add the name
+        # must open after simulation mode setting(open real or sim)
+        open_inst_and_name()
+        print('open instrument with real or simulation mode')
+
         # changeable area
         # ===========
 
-        # sheet generation is added in the run verification
+        general_t.set_sheet_name('general_1')
+        general_t.run_verification()
 
-        # start the testing
-        # run_verification() => should be put in here
+        general_t.set_sheet_name('general_2')
+        general_t.run_verification()
 
         print('finished XX verification')
 
