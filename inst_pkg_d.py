@@ -266,6 +266,10 @@ class LPS_505N:
                 if vin_new > excel0.pre_vin_max:
                     vin_new = excel0.pre_vin_max
 
+                if vin_new < 0 :
+                    vin_new = 0
+
+
                 if vin_ch == 0:
                     self.change_V(vin_new, excel0.relay0_ch)
                     # send the new Vin command for the auto testing channel

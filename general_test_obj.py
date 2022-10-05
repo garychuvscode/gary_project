@@ -188,12 +188,12 @@ class general_test ():
                 load_src_s.change_I(self.load_src, 'on')
 
             # add the vin calibration
-            pwr_s.vin_clibrate_singal_met(
-                0, self.pwr_ch1, met_v_s, mcu_s, excel_s)
-            pwr_s.vin_clibrate_singal_met(
+            temp_res = pwr_s.vin_clibrate_singal_met(
+                0, self.pwr_ch3, met_v_s, mcu_s, excel_s)
+            temp_res = pwr_s.vin_clibrate_singal_met(
                 6, self.pwr_ch1, met_v_s, mcu_s, excel_s)
-            pwr_s.vin_clibrate_singal_met(
-                7, self.pwr_ch1, met_v_s, mcu_s, excel_s)
+            temp_res = pwr_s.vin_clibrate_singal_met(
+                7, self.pwr_ch2, met_v_s, mcu_s, excel_s)
 
             self.res_met_curr = met_i_s.mea_i()
 
