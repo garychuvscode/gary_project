@@ -160,7 +160,7 @@ class general_test ():
 
             if gen_loader_en == 1 or gen_loader_en == 3:
                 # set up all the load current
-                if gen_loader_ch_amount == 1:
+                if gen_loader_ch_amount != 1:
                     load_s.chg_out_auto_mode(self.load_ch1, 1, 'on')
                     pass
 
@@ -182,34 +182,42 @@ class general_test ():
 
             self.res_met_curr = met_i_s.mea_i()
             mcu_s.relay_ctrl(0)
+            # time.sleep(excel_s.wait_small)
             self.res_met_v1 = met_v_s.mea_v()
             time.sleep(excel_s.wait_small)
 
             mcu_s.relay_ctrl(6)
+            # time.sleep(excel_s.wait_small)
             self.res_met_v2 = met_v_s.mea_v()
             time.sleep(excel_s.wait_small)
 
             mcu_s.relay_ctrl(7)
+            # time.sleep(excel_s.wait_small)
             self.res_met_v3 = met_v_s.mea_v()
             time.sleep(excel_s.wait_small)
 
             mcu_s.relay_ctrl(1)
+            # time.sleep(excel_s.wait_small)
             self.res_met_v4 = met_v_s.mea_v()
             time.sleep(excel_s.wait_small)
 
             mcu_s.relay_ctrl(2)
+            # time.sleep(excel_s.wait_small)
             self.res_met_v5 = met_v_s.mea_v()
             time.sleep(excel_s.wait_small)
 
             mcu_s.relay_ctrl(3)
+            # time.sleep(excel_s.wait_small)
             self.res_met_v6 = met_v_s.mea_v()
             time.sleep(excel_s.wait_small)
 
             mcu_s.relay_ctrl(4)
+            # time.sleep(excel_s.wait_small)
             self.res_met_v7 = met_v_s.mea_v()
             time.sleep(excel_s.wait_small)
 
             mcu_s.relay_ctrl(5)
+            # time.sleep(excel_s.wait_small)
             self.res_met_v8 = met_v_s.mea_v()
             time.sleep(excel_s.wait_small)
 
@@ -440,8 +448,8 @@ if __name__ == '__main__':
     pwr_t.sim_inst = 1
     pwr_t.open_inst()
     # initial the object and set to simulation mode
-    met_v_t = inst.Met_34460(0.0001, 7, 0.000001, 2.5, 21)
-    met_v_t.sim_inst = 0
+    met_v_t = inst.Met_34460(0.0001, 7, 0.000001, 2.5, 20)
+    met_v_t.sim_inst = 1
     met_v_t.open_inst()
     load_t = inst.chroma_63600(1, 7, 'CCL')
     load_t.sim_inst = 1
