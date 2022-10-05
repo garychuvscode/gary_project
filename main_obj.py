@@ -364,42 +364,42 @@ if __name__ == '__main__':
         # must open after simulation mode setting(open real or sim)
         open_inst_and_name()
 
-        excel_m.open_result_book()
-        iq_test.run_verification()
-        excel_m.end_of_file(0)
+        # excel_m.open_result_book()
+        # iq_test.run_verification()
+        # excel_m.end_of_file(0)
 
-        excel_m.open_result_book()
-        sw_test.run_verification()
-        excel_m.end_of_file(0)
+        # excel_m.open_result_book()
+        # sw_test.run_verification()
+        # excel_m.end_of_file(0)
 
         excel_m.open_result_book()
         eff_test.run_verification()
         excel_m.end_of_file(0)
 
-        excel_m.open_result_book()
-        format_g.set_sheet_name('CTRL_sh_ripple')
-        format_g.sheet_gen()
-        format_g.run_format_gen()
-        # insert related test => the sheet in excel is still active
+        # excel_m.open_result_book()
+        # format_g.set_sheet_name('CTRL_sh_ripple')
+        # format_g.sheet_gen()
+        # format_g.run_format_gen()
+        # # insert related test => the sheet in excel is still active
 
-        # table release after table return
-        format_g.table_return()
-        format_g.set_sheet_name('CTRL_sh_line')
-        format_g.sheet_gen()
-        format_g.run_format_gen()
-        # insert related test => the sheet in excel is still active
+        # # table release after table return
+        # format_g.table_return()
+        # format_g.set_sheet_name('CTRL_sh_line')
+        # format_g.sheet_gen()
+        # format_g.run_format_gen()
+        # # insert related test => the sheet in excel is still active
 
-        # table release after table return
-        format_g.table_return()
-        excel_m.end_of_file(0)
+        # # table release after table return
+        # format_g.table_return()
+        # excel_m.end_of_file(0)
 
-        excel_m.open_result_book()
-        general_t.set_sheet_name('general_1')
-        general_t.run_verification()
+        # excel_m.open_result_book()
+        # general_t.set_sheet_name('general_1')
+        # general_t.run_verification()
 
-        general_t.set_sheet_name('general_2')
-        general_t.run_verification()
-        excel_m.end_of_file(0)
+        # general_t.set_sheet_name('general_2')
+        # general_t.run_verification()
+        # excel_m.end_of_file(0)
 
         pass
 
