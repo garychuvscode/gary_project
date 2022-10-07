@@ -257,6 +257,7 @@ class general_test ():
         self.extra_file_name_setup()
         self.inst_off()
         self.table_return()
+        self.extra_file_name_setup()
         pass
 
     def set_sheet_name(self, ctrl_sheet_name0):
