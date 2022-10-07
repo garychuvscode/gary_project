@@ -1154,6 +1154,7 @@ class eff_mea:
                     # 220911 all the turn off control and setting is in end_of_file
                     if excel_s.eff_single_file == 0:
                         # multi-file is ok with efficiency output
+                        self.extra_file_name_setup()
                         excel_s.end_of_file(0)
                         # to preven the issue of re-run (same file opening and crash)
 

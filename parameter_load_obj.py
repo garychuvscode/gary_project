@@ -1192,9 +1192,10 @@ class excel_parameter ():
 
             # for the other sheet rather than main, will decide to copy to result
             # or not depends on verification item is used or not
+            self.extra_file_name = '_temp'
             self.result_book_status = 'open'
-            pass
             self.excel_save()
+            pass
         else:
             print('result book already open, may have errors')
             time.sleep(3)

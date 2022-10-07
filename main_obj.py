@@ -364,13 +364,13 @@ if __name__ == '__main__':
         # must open after simulation mode setting(open real or sim)
         open_inst_and_name()
 
-        excel_m.open_result_book()
-        iq_test.run_verification()
-        excel_m.end_of_file(0)
+        # excel_m.open_result_book()
+        # iq_test.run_verification()
+        # excel_m.end_of_file(0)
 
-        excel_m.open_result_book()
-        sw_test.run_verification()
-        excel_m.end_of_file(0)
+        # excel_m.open_result_book()
+        # sw_test.run_verification()
+        # excel_m.end_of_file(0)
 
         excel_m.open_result_book()
         eff_test.run_verification()
