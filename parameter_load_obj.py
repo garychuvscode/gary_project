@@ -117,6 +117,9 @@ class excel_parameter ():
         # since save from each round of the eff test file
         self.detail_name = ''
 
+        # the name can be change from main program(different user during program)
+        self.flexible_name = ''
+
         # assign one sheet is not raw out if efficiency test now used
         self.sh_temp = self.sh_volt_curr_cmd
         # the string indicate current items for file name or other adjustmenr reference
@@ -1229,9 +1232,9 @@ class excel_parameter ():
                 self.detail_name = '_eff all in 1'
 
             self.result_book_trace = self.excel_temp + \
-                self.new_file_name + self.extra_file_name + self.detail_name + '.xlsx'
+                self.new_file_name + self.extra_file_name + self.detail_name + self.flexible_name + '.xlsx'
             self.full_result_name = self.new_file_name + \
-                self.extra_file_name + self.detail_name
+                self.extra_file_name + self.detail_name + self.flexible_name
             self.wb_res.save(self.result_book_trace)
 
             if self.book_off_finished == 1:
@@ -1241,12 +1244,13 @@ class excel_parameter ():
             # to reset the sheet after file finished and turn off
             self.sheet_reset()
             self.detail_name = ''
+            self.flexible_name = ''
             self.extra_file_name = '_temp'
             self.new_file_name = str(self.sh_main.range('B8').value)
             self.full_result_name = self.new_file_name + \
-                self.extra_file_name + self.detail_name
+                self.extra_file_name + self.detail_name + self.flexible_name
             self.result_book_trace = self.excel_temp + \
-                self.new_file_name + self.extra_file_name + self.detail_name + '.xlsx'
+                self.new_file_name + self.extra_file_name + self.detail_name + self.flexible_name + '.xlsx'
 
             # reset the sheet count of the one file efficiency when end of file
             self.one_file_sheet_adj = 0
@@ -1258,6 +1262,14 @@ class excel_parameter ():
             print("can't find Grace")
             time.sleep(3)
             pass
+
+        pass
+
+    def flexible_naming(self, name_string):
+
+        # this can be the flexible name of the file name call by main object
+        # to have different file name without changing the excel
+        self.flexible_name = str(name_string)
 
         pass
 
