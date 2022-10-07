@@ -358,7 +358,7 @@ if __name__ == '__main__':
         # if not off line testing, setup the the instrument needed independently
         # set simulation for the used instrument
         # pwr, met_v, met_i, loader, src, chamber
-        sim_mode_independent(1, 1, 1, 1, 1, 0, main_off_line)
+        sim_mode_independent(1, 1, 1, 1, 0, 0, main_off_line)
 
         # open instrument and add the name
         # must open after simulation mode setting(open real or sim)
@@ -374,6 +374,14 @@ if __name__ == '__main__':
 
         excel_m.open_result_book()
         eff_test.run_verification()
+        excel_m.end_of_file(0)
+
+        excel_m.open_result_book()
+        general_t.set_sheet_name('general_1')
+        general_t.run_verification()
+
+        general_t.set_sheet_name('general_2')
+        general_t.run_verification()
         excel_m.end_of_file(0)
 
         pass

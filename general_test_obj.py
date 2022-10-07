@@ -76,6 +76,10 @@ class general_test ():
 
     pass
 
+    def extra_file_name_setup(self):
+        self.excel_ini.extra_file_name = '_general'
+        pass
+
     def run_verification(self):
         # give the sheet generation
         self.sheet_gen()
@@ -252,6 +256,7 @@ class general_test ():
         print('program finished')
         self.inst_off()
         self.table_return()
+        self.extra_file_name_setup()
         pass
 
     def set_sheet_name(self, ctrl_sheet_name0):
