@@ -385,16 +385,19 @@ if __name__ == '__main__':
         format_gen_1.set_sheet_name('CTRL_sh_ripple')
         format_gen_1.sheet_gen()
         format_gen_1.run_format_gen()
+        # return the table after data input finished
         format_gen_1.table_return()
 
         format_gen_1.set_sheet_name('CTRL_sh_line')
         format_gen_1.sheet_gen()
         format_gen_1.run_format_gen()
+        # return the table after data input finished
         format_gen_1.table_return()
 
         format_gen_1.set_sheet_name('CTRL_sh_load')
         format_gen_1.sheet_gen()
         format_gen_1.run_format_gen()
+        # return the table after data input finished
         format_gen_1.table_return()
 
         pass
