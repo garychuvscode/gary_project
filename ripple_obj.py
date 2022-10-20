@@ -16,6 +16,9 @@ import locale as lo
 
 import logging as log
 
+# add the libirary from Geroge
+import Scope_LE6100A as scope
+
 
 class ripple_test ():
 
@@ -73,11 +76,11 @@ class ripple_test ():
         # fixed start point of the format gen (waveform element)
         self.format_start_x = self.excel_ini.format_start_x
         self.format_start_y = self.excel_ini.format_start_y
-        self.en_i2c_mode = self.sh_verification_control.range('B10')
-        self.i2c_group = self.sh_verification_control.range('B11')
-        self.c_i2c = self.sh_verification_control.range('B12')
-        self.avdd_current_3ch = self.sh_verification_control.range('B13')
-        self.ch_index = self.sh_verification_control.range('B14')
+        self.en_i2c_mode = self.sh_verification_control.range('B10').value
+        self.i2c_group = self.sh_verification_control.range('B11').value
+        self.c_i2c = self.sh_verification_control.range('B12').value
+        self.avdd_current_3ch = self.sh_verification_control.range('B13').value
+        self.ch_index = self.sh_verification_control.range('B14').value
 
         self.excel_ini.extra_file_name = '_ripple'
 
@@ -99,7 +102,7 @@ class ripple_test ():
 
             if self.excel_ini.en_start_up_check == 1:
                 self.excel_ini.message_box('press enter if hardware configuration is correct',
-                                           'Pre-power on for system test under Vin= ' + str(pre_vin) + 'Iin= ' + str(pre_sup_iout))
+                                           'Pre-power on for system test under Vin= ' + str(self.excel_ini.pre_vin) + 'Iin= ' + str(self.excel_ini.pre_sup_iout))
 
         pass
 
@@ -367,7 +370,7 @@ class ripple_test ():
 
         pass
 
-    def summary_table():
+    def summary_table(self):
         # this sub plan to generate the summary table for each sheet
 
         pass
@@ -383,17 +386,17 @@ if __name__ == '__main__':
     import inst_pkg_d as inst
     # initial the object and set to simulation mode
     pwr_t = inst.LPS_505N(3.7, 0.5, 3, 1, 'off')
-    pwr_t.sim_inst = 1
+    pwr_t.sim_inst = 0
     pwr_t.open_inst()
     # initial the object and set to simulation mode
     met_v_t = inst.Met_34460(0.0001, 7, 0.000001, 2.5, 20)
-    met_v_t.sim_inst = 1
+    met_v_t.sim_inst = 0
     met_v_t.open_inst()
     load_t = inst.chroma_63600(1, 7, 'CCL')
-    load_t.sim_inst = 1
+    load_t.sim_inst = 0
     load_t.open_inst()
     met_i_t = inst.Met_34460(0.0001, 7, 0.000001, 2.5, 21)
-    met_i_t.sim_inst = 1
+    met_i_t.sim_inst = 0
     met_i_t.open_inst()
     src_t = inst.Keth_2440(0, 0, 24, 'off', 'CURR', 15)
     src_t.sim_inst = 0
@@ -403,7 +406,7 @@ if __name__ == '__main__':
     chamber_t.open_inst()
     # mcu is also config as simulation mode
     # COM address of Gary_SONY is 3
-    mcu_t = mcu.MCU_control(1, 4)
+    mcu_t = mcu.MCU_control(0, 4)
     mcu_t.com_open()
 
     # for the single test, need to open obj_main first,
@@ -422,40 +425,31 @@ if __name__ == '__main__':
     inst.wait_time = 0.01
     inst.wait_samll = 0.01
 
+    import format_gen_obj as form_g
+
+    # for these series of testing, need to add format gen and use format gen
+
     # and the different verification method can be call below
 
-    version_select = 1
+    version_select = 0
+
+    format_g = form_g.format_gen(excel_t)
+    ripple_t = ripple_test(excel_t, pwr_t, met_v_t, load_t,
+                           mcu_t, src_t, met_i_t, chamber_t)
 
     if version_select == 0:
         # create one object
 
-        general_t = general_test(
-            excel_t, pwr_t, met_v_t, load_t, mcu_t, src_t, met_i_t, chamber_t)
-        general_t.set_sheet_name('general_1')
-        general_t.sheet_gen()
-        general_t.run_verification()
-        general_t.table_return()
+        format_g.set_sheet_name('CTRL_sh_ripple')
+        format_g.sheet_gen()
+        format_g.run_format_gen()
 
-        general_t.set_sheet_name('general_2')
-        general_t.sheet_gen()
-        general_t.run_verification()
-        general_t.table_return()
+        ripple_t.run_verification()
+
+        format_g.table_return()
 
         excel_t.end_of_file(0)
 
     elif version_select == 1:
-        #  reduce the sheet_gen and table rerun function in the main
-
-        general_t = general_test(
-            excel_t, pwr_t, met_v_t, load_t, mcu_t, src_t, met_i_t, chamber_t)
-        general_t.set_sheet_name('general_1')
-        # general_t.sheet_gen()
-        general_t.run_verification()
-        # general_t.table_return()
-
-        general_t.set_sheet_name('general_2')
-        # general_t.sheet_gen()
-        general_t.run_verification()
-        # general_t.table_return()
 
         excel_t.end_of_file(0)

@@ -201,7 +201,7 @@ class MCU_control ():
         pass
 
     def relay_ctrl(self, channel_index):
-        self.meter_ch_ctrl = channel_index
+        self.meter_ch_ctrl = int(channel_index)
         self.mcu_write('relay')
         pass
 

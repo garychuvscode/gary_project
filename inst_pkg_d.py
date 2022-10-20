@@ -15,6 +15,17 @@ rm = pyvisa.ResourceManager()
 
 
 class LPS_505N:
+    # comments for the explanation of the power supply
+    '''
+    power supply
+    ========
+    vset0 => initial V;
+    iset => initial I;
+    ach_ch0 => active channel; \n
+    GP_addr0 => GPIB address; \n
+    state => initial state;
+    '''
+
     # initialization is just for default parameter input, may not be able to use sub program
     # need to open and change output at other method in this object
 
