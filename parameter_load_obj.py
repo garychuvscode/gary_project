@@ -414,6 +414,10 @@ class excel_parameter ():
         # fixed start point of the format gen (waveform element)
         self.format_start_x = 5
         self.format_start_y = 2
+        # record the width and height from format gen and can be loaded to
+        # waveform capture related testing
+        self.wave_heigh = 8.38
+        self.wave_width = 15.75
 
         # =============
         # instrument control related
@@ -1232,7 +1236,8 @@ class excel_parameter ():
                 self.detail_name = '_eff all in 1'
 
             self.result_book_trace = self.excel_temp + \
-                self.new_file_name + self.extra_file_name + self.detail_name + self.flexible_name + '.xlsx'
+                self.new_file_name + self.extra_file_name + \
+                self.detail_name + self.flexible_name + '.xlsx'
             self.full_result_name = self.new_file_name + \
                 self.extra_file_name + self.detail_name + self.flexible_name
             self.wb_res.save(self.result_book_trace)
@@ -1250,7 +1255,8 @@ class excel_parameter ():
             self.full_result_name = self.new_file_name + \
                 self.extra_file_name + self.detail_name + self.flexible_name
             self.result_book_trace = self.excel_temp + \
-                self.new_file_name + self.extra_file_name + self.detail_name + self.flexible_name + '.xlsx'
+                self.new_file_name + self.extra_file_name + \
+                self.detail_name + self.flexible_name + '.xlsx'
 
             # reset the sheet count of the one file efficiency when end of file
             self.one_file_sheet_adj = 0
@@ -2082,20 +2088,103 @@ class excel_parameter ():
 
     # sub program for waveform capture
 
-    def scope_capture(self):
+    def scope_capture(self, default_trace, target_sheet, range_index, left, top, width, height):
+        '''
+        capture the waveform from the excel \n
+        key in left to 0 to keep the original dimension and no need to input other
+        '''
         # here is to call the VBA function and get the capture from the scope
         # will need to reference the scope library and see if it can be cover from
         # python only, should be easier
+
+        # left is used to decide if need to adjust dimentions of cell
+        if left == 0:
+            # no need to adjust the dimension
+            target_sheet.pictures.add(str(default_trace), left=range_index.left,
+                                      top=range_index.top, width=range_index.width, height=range_index.height)
+
+            pass
+        else:
+
+            target_sheet.pictures.add(str(default_trace), float(left),
+                                      float(top), float(width), float(height))
+
+            pass
 
         pass
 
 
 if __name__ == '__main__':
     #  the testing code for this file object
+    test_mode = 1.5
+
     excel = excel_parameter('obj_main')
+    if test_mode == 0:
+        input()
 
-    input()
+        excel2 = excel_parameter('other_testing_condition')
 
-    excel2 = excel_parameter('other_testing_condition')
+        input()
 
-    input()
+        # 221020
+        # testing for the input of picture from file to excel
+        # this is the second step for scope capture
+        # need to open the test excel in folder
+
+        pass
+
+    elif test_mode == 1:
+
+        wb_test = xw.Book('c:\\py_gary\\test_excel\\test.xlsx')
+
+        test_sh = wb_test.sheets('test_sh')
+        image_range = test_sh.range('C10')
+
+        test_sh.pictures.add('c:\\py_gary\\test_excel\\test_pic.png', left=image_range.left,
+                             top=image_range.top, width=image_range.width, height=image_range.height)
+
+        print('end of add picture')
+
+        pass
+
+    elif test_mode == 1.5:
+        # testing for the input parameter of the sub program
+        def test(a1=0, *args, **kwargs):
+
+            print(a1)
+
+            print(args)
+            k0 = len(args)
+            if k0 > 0:
+                print('this is args 1' + str(args[0]))
+                print('this is args 2' + str(args[1]))
+
+            print(kwargs)
+            k1 = len(kwargs)
+            if k1 > 0:
+                print('this is kwargs 1 ' + str(kwargs['para1']))
+                print('this is kwargs 2 ' + str(kwargs['para2']))
+
+            print('end')
+
+            pass
+
+        test('test for many parameter - 1', 'ab',
+             'cd', para1=3, para2='par2')
+
+        test('test for many parameter - 2')
+
+
+
+        pass
+
+    elif test_mode == 2:
+
+        wb_test = xw.Book('c:\\py_gary\\test_excel\\test.xlsx')
+        test_sh = wb_test.sheets('test_sh')
+        image_range = test_sh.range('C10')
+
+        excel.scope_capture(
+            'c:\\py_gary\\test_excel\\test_pic.png', test_sh, image_range, 0)
+
+        pass

@@ -21,30 +21,32 @@ class format_gen:
 
     def __init__(self, excel0):
 
-        # # ======== only for object programming
-        # # testing used temp instrument
-        # # need to become comment when the OBJ is finished
-        # import mcu_obj as mcu
-        # import inst_pkg_d as inst
-        # # initial the object and set to simulation mode
-        # pwr0 = inst.LPS_505N(3.7, 0.5, 3, 1, 'off')
-        # pwr0.sim_inst = 0
-        # # initial the object and set to simulation mode
-        # met_v0 = inst.Met_34460(0.0001, 7, 0.000001, 2.5, 21)
-        # met_v0.sim_inst = 0
-        # loader_0 = inst.chroma_63600(1, 7, 'CCL')
-        # loader_0.sim_inst = 0
-        # # mcu is also config as simulation mode
-        # mcu0 = mcu.MCU_control(0, 3)
-        # # using the main control book as default
-        # excel0 = par.excel_parameter('obj_main')
-        # src0 = inst.Keth_2440(0, 0, 24, 'off', 'CURR', 15)
-        # src0.sim_inst = 0
-        # met_i0 = inst.Met_34460(0.0001, 7, 0.000001, 2.5, 20)
-        # met_i0.sim_inst = 0
-        # chamber0 = inst.chamber_su242(25, 10, 'off', -45, 180, 0)
-        # chamber0.sim_inst = 0
-        # # ======== only for object programming
+        prog_only = 1
+        if prog_only == 0:
+            # ======== only for object programming
+            # testing used temp instrument
+            # need to become comment when the OBJ is finished
+            import mcu_obj as mcu
+            import inst_pkg_d as inst
+            # initial the object and set to simulation mode
+            pwr0 = inst.LPS_505N(3.7, 0.5, 3, 1, 'off')
+            pwr0.sim_inst = 0
+            # initial the object and set to simulation mode
+            met_v0 = inst.Met_34460(0.0001, 7, 0.000001, 2.5, 21)
+            met_v0.sim_inst = 0
+            loader_0 = inst.chroma_63600(1, 7, 'CCL')
+            loader_0.sim_inst = 0
+            # mcu is also config as simulation mode
+            mcu0 = mcu.MCU_control(0, 3)
+            # using the main control book as default
+            excel0 = par.excel_parameter('obj_main')
+            src0 = inst.Keth_2440(0, 0, 24, 'off', 'CURR', 15)
+            src0.sim_inst = 0
+            met_i0 = inst.Met_34460(0.0001, 7, 0.000001, 2.5, 20)
+            met_i0.sim_inst = 0
+            chamber0 = inst.chamber_su242(25, 10, 'off', -45, 180, 0)
+            chamber0.sim_inst = 0
+            # ======== only for object programming
 
         # assign the input information to object variable
         self.excel_ini = excel0
@@ -111,7 +113,7 @@ class format_gen:
         self.target_width = self.sh_format_gen.range('I2').column_width
         self.target_heigh = self.sh_format_gen.range('I2').row_height
         self.default_width = self.sh_format_gen.range('J5').column_width
-        self.default_heigh = self.sh_format_gen.range('J5').row_height
+        self.default_height = self.sh_format_gen.range('J5').row_height
         # default height and width is used to prevent shape change of the table
         # target height and width is used to save the waveform capture from scope
 
@@ -130,7 +132,7 @@ class format_gen:
             pass
 
         else:
-
+            self.reload_waveform_dimension()
             # start to adjust the the format based on the input settings
 
             # before changin the format, adjust the color
@@ -228,7 +230,7 @@ class format_gen:
                         (6 + (2 + self.c_data_mea) * x_column_item, 1)).value = excel_temp
                     # keep the added row in the default high, not change due to insert
                     self.sh_ref_table.range(
-                        (6 + (2 + self.c_data_mea) * x_column_item, 1)).row_height = self.default_heigh
+                        (6 + (2 + self.c_data_mea) * x_column_item, 1)).row_height = self.default_height
 
                     x_data_mea = x_data_mea + 1
                     # testing of insert row into related position
@@ -289,6 +291,14 @@ class format_gen:
 
         # reset sheet choice to wait for next sheet name update
         self.sheet_name_ready = 0
+
+        pass
+
+    def reload_waveform_dimension (self) :
+
+        self.excel_ini.wave_height = self.default_height
+        self.excel_ini.wave_width = self.default_width
+        print('update the heigh and width settings')
 
         pass
 
