@@ -4,6 +4,7 @@
 # different pages need to use different index loaded
 
 # excel parameter and settings
+from Scope_LE6100A import Scope_LE6100A
 import parameter_load_obj as par
 # for the jump out window
 # # also for the jump out window, same group with win32con
@@ -16,13 +17,12 @@ import locale as lo
 
 import logging as log
 
-# add the libirary from Geroge
-import Scope_LE6100A as scope
+
 
 
 class ripple_test ():
 
-    def __init__(self, excel0, pwr0, met_v0, loader_0, mcu0, src0, met_i0, chamber0):
+    def __init__(self, excel0, pwr0, met_v0, loader_0, mcu0, src0, met_i0, chamber0, scope0):
         prog_only = 1
         if prog_only == 0:
             # ======== only for object programming
@@ -30,6 +30,8 @@ class ripple_test ():
             # need to become comment when the OBJ is finished
             import mcu_obj as mcu
             import inst_pkg_d as inst
+            # add the libirary from Geroge
+            import Scope_LE6100A as scope
             # initial the object and set to simulation mode
             pwr0 = inst.LPS_505N(3.7, 0.5, 3, 1, 'off')
             pwr0.sim_inst = 0
@@ -48,6 +50,7 @@ class ripple_test ():
             met_i0.sim_inst = 0
             chamber0 = inst.chamber_su242(25, 10, 'off', -45, 180, 0)
             chamber0.sim_inst = 0
+            scope0 = Scope_LE6100A('GPIB: 15', 0, 0)
             # ======== only for object programming
 
         # assign the input information to object variable
@@ -59,6 +62,7 @@ class ripple_test ():
         self.src_ini = src0
         self.met_i_ini = met_i0
         self.chamber_ini = chamber0
+        self.scope_ini = scope0
         # self.single_ini = single0
 
         pass
@@ -81,6 +85,7 @@ class ripple_test ():
         self.c_i2c = self.sh_verification_control.range('B12').value
         self.avdd_current_3ch = self.sh_verification_control.range('B13').value
         self.ch_index = self.sh_verification_control.range('B14').value
+        self.c_data_mea = self.excel_ini.c_data_mea
 
         self.excel_ini.extra_file_name = '_ripple'
 
@@ -108,6 +113,10 @@ class ripple_test ():
 
     def run_verification(self):
 
+        '''
+        run ripple testing verification
+        '''
+
         self.para_loaded()
         # for the control of temperature, now can be loaded from from the main
         # and separate the sheet name
@@ -131,6 +140,7 @@ class ripple_test ():
         load_src_s = self.src_ini
         met_i_s = self.met_i_ini
         chamber_s = self.chamber_ini
+        scope_s = self.scope_ini
 
         # control variable
         if self.en_i2c_mode == 1:
@@ -158,7 +168,7 @@ class ripple_test ():
             #  VCI mode
             extra_comments = extra_comments + '_VCI'
             pass
-        elif self.ch_index == 0:
+        elif self.ch_index == 2:
             #  3-ch mode
             extra_comments = extra_comments + '_3ch'
             pass
@@ -271,6 +281,21 @@ class ripple_test ():
                         excel_s.relay0_ch, v_target, met_v_s, mcu_s, excel_s)
 
                     # measure and capture waveform
+
+                    scope_s.printScreenToPC(0)
+
+                    # select teh related range
+                    '''
+                    here is to choose related cell for the
+
+                    '''
+                    y_index = x_iload
+                    x_index = x_vin
+
+                    active_range = excel_s.sh_format_gen.range(self.format_start_y + y_index * (1 + self.c_data_mea) , self.format_start_x + x_index)
+                    # (1 + ripple_item) is waveform + ripple item
+                    excel_s.scope_capture(0, excel_s.sh_format_gen, active_range)
+                    print('check point')
 
                     # need to have scope read and scope capture here
 

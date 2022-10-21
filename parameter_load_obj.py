@@ -411,13 +411,13 @@ class excel_parameter ():
         self.c_ctrl_var1 = 0
         self.c_ctrl_var2 = 0
         self.c_ctrl_var4 = 0
-        # fixed start point of the format gen (waveform element)
-        self.format_start_x = 5
-        self.format_start_y = 2
+        # fixed start point of the format gen (waveform element), (5, 2)
+        self.format_start_x = 2
+        self.format_start_y = 5
         # record the width and height from format gen and can be loaded to
         # waveform capture related testing
-        self.wave_heigh = 8.38
-        self.wave_width = 15.75
+        self.wave_height = 93.8
+        self.wave_width = 31.36
 
         # =============
         # instrument control related
@@ -2088,11 +2088,18 @@ class excel_parameter ():
 
     # sub program for waveform capture
 
-    def scope_capture(self, default_trace, target_sheet, range_index, left, top, width, height):
+    def scope_capture(self, default_trace , target_sheet, range_index, left=0, top=0, width=0, height=0):
         '''
         capture the waveform from the excel \n
         key in left to 0 to keep the original dimension and no need to input other
         '''
+
+        if default_trace == 0 :
+            # this selection is reserve for the test mode
+            default_trace = 'c:\\py_gary\\test_excel\\test_pic.png'
+
+        # if the parameter not going to use, need to define the default value, dimension can be felxible input
+
         # here is to call the VBA function and get the capture from the scope
         # will need to reference the scope library and see if it can be cover from
         # python only, should be easier
@@ -2116,7 +2123,7 @@ class excel_parameter ():
 
 if __name__ == '__main__':
     #  the testing code for this file object
-    test_mode = 1.5
+    test_mode = 2
 
     excel = excel_parameter('obj_main')
     if test_mode == 0:
@@ -2174,8 +2181,6 @@ if __name__ == '__main__':
 
         test('test for many parameter - 2')
 
-
-
         pass
 
     elif test_mode == 2:
@@ -2184,7 +2189,13 @@ if __name__ == '__main__':
         test_sh = wb_test.sheets('test_sh')
         image_range = test_sh.range('C10')
 
+        # these can't be change from, only loaded from the cell object
+        a = image_range.height
+        b = image_range.width
+        c = image_range.top
+        d = image_range.left
+
         excel.scope_capture(
-            'c:\\py_gary\\test_excel\\test_pic.png', test_sh, image_range, 0)
+            'c:\\py_gary\\test_excel\\test_pic.png', test_sh, image_range)
 
         pass

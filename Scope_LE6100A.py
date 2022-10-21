@@ -135,7 +135,13 @@ class Scope_LE6100A(GInst):
 
         pass
 
-    def printScreenToPC(self, path):
+    def printScreenToPC(self, path = 0):
+
+        if path == 0 :
+            # this is the default path for testing
+            path = 'c:\\py_gary\\test_excel\\test_pic'
+            # since there are already PNG in below command, no need to add '.png'
+            pass
         """
         scope.printScreenToPC(path) -> None
         ================================================================

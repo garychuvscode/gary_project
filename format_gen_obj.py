@@ -111,7 +111,7 @@ class format_gen:
         self.color_target = self.sh_format_gen.range('C38').color
 
         self.target_width = self.sh_format_gen.range('I2').column_width
-        self.target_heigh = self.sh_format_gen.range('I2').row_height
+        self.target_height = self.sh_format_gen.range('I2').row_height
         self.default_width = self.sh_format_gen.range('J5').column_width
         self.default_height = self.sh_format_gen.range('J5').row_height
         # default height and width is used to prevent shape change of the table
@@ -191,7 +191,7 @@ class format_gen:
                 self.sh_ref_table.range(
                     (4 + 1 + y_dim * 3, 1)).value = excel_temp
                 self.sh_ref_table.range(
-                    (4 + 1 + y_dim * 3, 1)).row_height = self.target_heigh
+                    (4 + 1 + y_dim * 3, 1)).row_height = self.target_height
                 # height need to change when modifing the column cells
 
                 x_dim = 0
@@ -294,10 +294,10 @@ class format_gen:
 
         pass
 
-    def reload_waveform_dimension (self) :
+    def reload_waveform_dimension(self):
 
-        self.excel_ini.wave_height = self.default_height
-        self.excel_ini.wave_width = self.default_width
+        self.excel_ini.wave_height = self.target_height
+        self.excel_ini.wave_width = self.target_width
         print('update the heigh and width settings')
 
         pass
