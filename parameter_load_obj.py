@@ -1,6 +1,8 @@
 #  this is the object define for parameter loaded
 
 # import for excel control
+from ast import Pass
+from datetime import date
 import xlwings as xw
 # this import is for the VBA function
 import win32com.client
@@ -411,9 +413,9 @@ class excel_parameter ():
         self.c_ctrl_var1 = 0
         self.c_ctrl_var2 = 0
         self.c_ctrl_var4 = 0
-        # fixed start point of the format gen (waveform element), (5, 2)
-        self.format_start_x = 2
-        self.format_start_y = 5
+        # fixed start point of the format gen (waveform element), (2, 5)
+        self.format_start_x = 5
+        self.format_start_y = 2
         # record the width and height from format gen and can be loaded to
         # waveform capture related testing
         self.wave_height = 93.8
@@ -2088,13 +2090,13 @@ class excel_parameter ():
 
     # sub program for waveform capture
 
-    def scope_capture(self, default_trace , target_sheet, range_index, left=0, top=0, width=0, height=0):
+    def scope_capture(self, default_trace, target_sheet, range_index, left=0, top=0, width=0, height=0):
         '''
         capture the waveform from the excel \n
         key in left to 0 to keep the original dimension and no need to input other
         '''
 
-        if default_trace == 0 :
+        if default_trace == 0:
             # this selection is reserve for the test mode
             default_trace = 'c:\\py_gary\\test_excel\\test_pic.png'
 
@@ -2123,7 +2125,10 @@ class excel_parameter ():
 
 if __name__ == '__main__':
     #  the testing code for this file object
-    test_mode = 2
+
+    import datetime
+
+    test_mode = 1.5
 
     excel = excel_parameter('obj_main')
     if test_mode == 0:
@@ -2175,6 +2180,16 @@ if __name__ == '__main__':
             print('end')
 
             pass
+
+        def get_time_stamp():
+
+            time = datetime.datetime.now()
+            print(time)
+
+            return time
+
+        a = get_time_stamp()
+        print(a)
 
         test('test for many parameter - 1', 'ab',
              'cd', para1=3, para2='par2')

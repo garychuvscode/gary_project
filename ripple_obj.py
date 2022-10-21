@@ -18,8 +18,6 @@ import locale as lo
 import logging as log
 
 
-
-
 class ripple_test ():
 
     def __init__(self, excel0, pwr0, met_v0, loader_0, mcu0, src0, met_i0, chamber0, scope0):
@@ -31,7 +29,7 @@ class ripple_test ():
             import mcu_obj as mcu
             import inst_pkg_d as inst
             # add the libirary from Geroge
-            import Scope_LE6100A as scope
+            import Scope_LE6100A as sco
             # initial the object and set to simulation mode
             pwr0 = inst.LPS_505N(3.7, 0.5, 3, 1, 'off')
             pwr0.sim_inst = 0
@@ -50,7 +48,7 @@ class ripple_test ():
             met_i0.sim_inst = 0
             chamber0 = inst.chamber_su242(25, 10, 'off', -45, 180, 0)
             chamber0.sim_inst = 0
-            scope0 = Scope_LE6100A('GPIB: 15', 0, 0)
+            scope0 = sco.Scope_LE6100A('GPIB: 15', 0, 0)
             # ======== only for object programming
 
         # assign the input information to object variable
@@ -112,7 +110,6 @@ class ripple_test ():
         pass
 
     def run_verification(self):
-
         '''
         run ripple testing verification
         '''
@@ -222,7 +219,7 @@ class ripple_test ():
                 pass
 
             # table should be assign when generation of format gen
-            excel_s.sh_ref_table.range('B1')
+            excel_s.sh_ref_table.range('B1').value = extra_comments
 
             # the loop for vin
             x_vin = 0
@@ -292,9 +289,11 @@ class ripple_test ():
                     y_index = x_iload
                     x_index = x_vin
 
-                    active_range = excel_s.sh_format_gen.range(self.format_start_y + y_index * (1 + self.c_data_mea) , self.format_start_x + x_index)
-                    # (1 + ripple_item) is waveform + ripple item
-                    excel_s.scope_capture(0, excel_s.sh_format_gen, active_range)
+                    active_range = excel_s.sh_ref_table.range(self.format_start_x + x_index * (2 + self.c_data_mea),
+                                                              self.format_start_y + y_index)
+                    # (1 + ripple_item) is waveform + ripple item + one current line
+                    excel_s.scope_capture(
+                        0, excel_s.sh_ref_table, active_range)
                     print('check point')
 
                     # need to have scope read and scope capture here
@@ -409,6 +408,7 @@ if __name__ == '__main__':
     # need to become comment when the OBJ is finished
     import mcu_obj as mcu
     import inst_pkg_d as inst
+    import Scope_LE6100A as sco
     # initial the object and set to simulation mode
     pwr_t = inst.LPS_505N(3.7, 0.5, 3, 1, 'off')
     pwr_t.sim_inst = 0
@@ -429,6 +429,7 @@ if __name__ == '__main__':
     chamber_t = inst.chamber_su242(25, 10, 'off', -45, 180, 0)
     chamber_t.sim_inst = 0
     chamber_t.open_inst()
+    scope_t = sco.Scope_LE6100A('GPIB: 15', 0, 0)
     # mcu is also config as simulation mode
     # COM address of Gary_SONY is 3
     mcu_t = mcu.MCU_control(0, 4)
@@ -460,7 +461,7 @@ if __name__ == '__main__':
 
     format_g = form_g.format_gen(excel_t)
     ripple_t = ripple_test(excel_t, pwr_t, met_v_t, load_t,
-                           mcu_t, src_t, met_i_t, chamber_t)
+                           mcu_t, src_t, met_i_t, chamber_t, scope_t)
 
     if version_select == 0:
         # create one object

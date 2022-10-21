@@ -135,11 +135,15 @@ class Scope_LE6100A(GInst):
 
         pass
 
-    def printScreenToPC(self, path = 0):
+    def printScreenToPC(self, path=0):
 
-        if path == 0 :
+        if path == 0:
             # this is the default path for testing
-            path = 'c:\\py_gary\\test_excel\\test_pic'
+            path = 'c:\\py_gary\\test_excel\\test_pic.png  rf'
+            pure_path = os.path.splitext(path)[0]
+            # . or 'space' will be cut and neglect
+            # only path left
+            print(pure_path)
             # since there are already PNG in below command, no need to add '.png'
             pass
         """
@@ -163,6 +167,7 @@ class Scope_LE6100A(GInst):
 
             pass
         else:
+
             print('simulation mode of the scope, printScreenToPC')
             pass
 
