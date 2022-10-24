@@ -22,14 +22,30 @@ class Scope_LE6100A(GInst):
     ch is no used in scope application
     '''
 
-    def __init__(self, link, ch, sim_inst0):
+    def __init__(self, link, ch, sim_inst0, excel0):
         # this is the function for GInst, call the initial of GInst
         # super is the function using dad's function
         # call the initial of GInst
         super().__init__()
+        prog_only = 1
+        if prog_only == 0:
+            # ======== only for object programming
+            # testing used temp instrument
+            # need to become comment when the OBJ is finished
+            import mcu_obj as mcu
+            import inst_pkg_d as inst
+            import parameter_load_obj as par
+            # for the jump out window
+
+            # initial the object and set to simulation mode
+
+            # using the main control book as default
+            excel0 = par.excel_parameter('obj_main')
+            # ======== only for object programming
 
         self.link = link
         self.ch = ch
+        self.excel_s = excel0
 
         # extra code added to the instrument object
         # simulation mode setting of the insturment
@@ -136,15 +152,22 @@ class Scope_LE6100A(GInst):
         pass
 
     def printScreenToPC(self, path=0):
+        # 0 is using the default path
 
-        if path == 0:
-            # this is the default path for testing
+        if path == 0.5:
+            # this is the sim_mode for testing
             path = 'c:\\py_gary\\test_excel\\test_pic.png  rf'
             pure_path = os.path.splitext(path)[0]
             # . or 'space' will be cut and neglect
             # only path left
             print(pure_path)
             # since there are already PNG in below command, no need to add '.png'
+            pass
+
+        elif path ==0 :
+
+            pure_path = self.excel_s.wave_path + self.excel_s.wave_condition
+
             pass
         """
         scope.printScreenToPC(path) -> None
@@ -162,8 +185,13 @@ class Scope_LE6100A(GInst):
             # path: C://test//picture.png
             # need to be PNG (or will have error)
             pure_path = os.path.splitext(path)[0]
+            # full path is used to connect to the excel and load the capture to
+            # excel
+            full_path = pure_path + '.png'
+            self.excel_s.full_path = full_path
+
             self.inst.StoreHardcopyToFile(
-                "PNG", "BCKG,WHITE,AREA,GRIDAREAONLY", pure_path + ".png")
+                "PNG", "BCKG,WHITE,AREA,GRIDAREAONLY", full_path)
 
             pass
         else:
@@ -281,10 +309,12 @@ class Scope_LE6100A(GInst):
 
 if __name__ == '__main__':
     #  the testing code for this file object
+    import parameter_load_obj as par
+    excel_t = par.excel_parameter('obj_main')
     sim_scope = 0
 
-    scope = Scope_LE6100A('GPIB: 15', 3, sim_scope)
+    scope = Scope_LE6100A('GPIB: 15', 3, sim_scope, excel_t)
     scope.scope_initial()
     # testing for the scope capture
 
-    scope.printScreenToPC()
+    scope.printScreenToPC(path=0.5)

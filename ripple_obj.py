@@ -87,6 +87,15 @@ class ripple_test ():
 
         self.excel_ini.extra_file_name = '_ripple'
 
+        # setup the information for each different sheet
+
+        # path need to be assign after every format gen finished
+        self.wave_path = self.sh_verification_control.range('C36').value
+        self.excel_ini.wave_path = self.wave_path
+        # the sheet name record for the saving waveform
+        self.wave_sheet = self.sh_verification_control.name
+        self.excel_ini.wave_sheet = self.wave_sheet
+
         pass
 
     def pre_test_inst(self):

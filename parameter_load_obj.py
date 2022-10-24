@@ -420,6 +420,14 @@ class excel_parameter ():
         # waveform capture related testing
         self.wave_height = 93.8
         self.wave_width = 31.36
+        # path need to be assign after every format gen finished
+        self.wave_path = ''
+        # the sheet name record for the saving waveform
+        self.wave_sheet = ''
+        # extra name for the testing conditon for waveform name
+        self.wave_condition = ''
+        # the full pat used to load the waveform from HDD
+        self.full_path = ''
 
         # =============
         # instrument control related
@@ -2090,15 +2098,19 @@ class excel_parameter ():
 
     # sub program for waveform capture
 
-    def scope_capture(self, default_trace, target_sheet, range_index, left=0, top=0, width=0, height=0):
+    def scope_capture(self, target_sheet, range_index, default_trace=0, left=0, top=0, width=0, height=0):
         '''
         capture the waveform from the excel \n
         key in left to 0 to keep the original dimension and no need to input other
         '''
 
-        if default_trace == 0:
+        if default_trace == 0.5:
             # this selection is reserve for the test mode
             default_trace = 'c:\\py_gary\\test_excel\\test_pic.png'
+
+        if default_trace == 0:
+
+            default_trace = self.full_path
 
         # if the parameter not going to use, need to define the default value, dimension can be felxible input
 
@@ -2122,13 +2134,51 @@ class excel_parameter ():
 
         pass
 
+    def get_nth_key(self, dictionary, n=0):
+
+        if n < 0:
+            n += len(dictionary)
+        for i, key in enumerate(dictionary.keys()):
+            if i == n:
+                return key
+        raise IndexError("dictionary index out of range")
+
+        pass
+
+    def get_nth_value(self, dictionary, n=0):
+
+        if n < 0:
+            n += len(dictionary)
+        for i, key in enumerate(dictionary.values()):
+            if i == n:
+                return key
+        raise IndexError("dictionary index out of range")
+
+        pass
+
+    def wafe_info_update (self, **kwargs):
+        '''
+        this function should be call by 'run_verification' and input the information of testing in dictionary type:\n
+        EX: Vin= v_target, I_load = i_load ......
+        '''
+
+        # generate the wveform naming string
+        k1 = len(kwargs)
+        x = 0
+        self.wave_condition = '_'
+        while x < k1 :
+            self.wave_condition = self.wave_condition + str(list(kwargs)[x]) + str(list(kwargs.values()[0])) + '_'
+            pass
+
+        pass
+
 
 if __name__ == '__main__':
     #  the testing code for this file object
 
     import datetime
 
-    test_mode = 1.5
+    test_mode = 2.5
 
     excel = excel_parameter('obj_main')
     if test_mode == 0:
@@ -2212,5 +2262,43 @@ if __name__ == '__main__':
 
         excel.scope_capture(
             'c:\\py_gary\\test_excel\\test_pic.png', test_sh, image_range)
+
+        pass
+
+    elif test_mode == 2.5:
+        # this example discuss about how ot use dictionary index
+
+        colors = {"blue": "5", "red": "6", "yellow": "8"}
+
+        first_key = list(colors)[0]
+        first_val = list(colors.values())[0]
+
+        def get_nth_key(dictionary, n=0):
+
+            if n < 0:
+                n += len(dictionary)
+            for i, key in enumerate(dictionary.keys()):
+                if i == n:
+                    return key
+            raise IndexError("dictionary index out of range")
+
+            pass
+
+        def get_nth_value(dictionary, n=0):
+
+            if n < 0:
+                n += len(dictionary)
+            for i, key in enumerate(dictionary.values()):
+                if i == n:
+                    return key
+            raise IndexError("dictionary index out of range")
+
+            pass
+
+        return_key = get_nth_key(colors, 2)
+        print(return_key)
+
+        return_value = get_nth_value(colors, 2)
+        print(return_value)
 
         pass

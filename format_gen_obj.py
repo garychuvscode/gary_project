@@ -288,6 +288,8 @@ class format_gen:
     def table_return(self):
         # need to recover this sheet: self.excel_ini.sh_ref_table
         self.excel_ini.sh_ref_table = self.excel_ini.wb.sheets('table')
+        # reset the waveform information
+        self.excel_ini.wave_condition = ''
 
         # reset sheet choice to wait for next sheet name update
         self.sheet_name_ready = 0
