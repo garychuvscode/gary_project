@@ -2156,7 +2156,7 @@ class excel_parameter ():
 
         pass
 
-    def wafe_info_update (self, **kwargs):
+    def wave_info_update(self, **kwargs):
         '''
         this function should be call by 'run_verification' and input the information of testing in dictionary type:\n
         EX: Vin= v_target, I_load = i_load ......
@@ -2166,8 +2166,14 @@ class excel_parameter ():
         k1 = len(kwargs)
         x = 0
         self.wave_condition = '_'
-        while x < k1 :
-            self.wave_condition = self.wave_condition + str(list(kwargs)[x]) + str(list(kwargs.values()[0])) + '_'
+        while x < k1:
+            a = list(kwargs)[x]
+            b = list(kwargs.values())[x]
+
+            self.wave_condition = self.wave_condition + \
+                str(a) + '=' + str(b) + '_'
+
+            x = x + 1
             pass
 
         pass

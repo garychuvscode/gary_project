@@ -286,6 +286,9 @@ class ripple_test ():
                     pwr_s.vin_clibrate_singal_met(
                         excel_s.relay0_ch, v_target, met_v_s, mcu_s, excel_s)
 
+                    # setup waveform name
+                    excel_s.wave_info_update( vin = v_target,i_load = iload_target )
+
                     # measure and capture waveform
 
                     scope_s.printScreenToPC(0)
