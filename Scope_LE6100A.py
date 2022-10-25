@@ -164,7 +164,7 @@ class Scope_LE6100A(GInst):
             # since there are already PNG in below command, no need to add '.png'
             pass
 
-        elif path ==0 :
+        elif path == 0:
 
             pure_path = self.excel_s.wave_path + self.excel_s.wave_condition
 
@@ -313,7 +313,7 @@ if __name__ == '__main__':
     excel_t = par.excel_parameter('obj_main')
     sim_scope = 0
 
-    scope = Scope_LE6100A('GPIB: 15', 3, sim_scope, excel_t)
+    scope = Scope_LE6100A('GPIB: 5', 3, sim_scope, excel_t)
     scope.scope_initial()
     # testing for the scope capture
 

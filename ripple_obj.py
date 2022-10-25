@@ -301,8 +301,8 @@ class ripple_test ():
                     active_range = excel_s.sh_ref_table.range(self.format_start_x + x_index * (2 + self.c_data_mea),
                                                               self.format_start_y + y_index)
                     # (1 + ripple_item) is waveform + ripple item + one current line
-                    excel_s.scope_capture(
-                        0, excel_s.sh_ref_table, active_range)
+                    excel_s.scope_capture(excel_s.sh_ref_table, active_range,
+                                          0.5)
                     print('check point')
 
                     # need to have scope read and scope capture here
@@ -418,7 +418,9 @@ if __name__ == '__main__':
     import mcu_obj as mcu
     import inst_pkg_d as inst
     import Scope_LE6100A as sco
+    import parameter_load_obj as par
     # initial the object and set to simulation mode
+    excel_t = par.excel_parameter('obj_main')
     pwr_t = inst.LPS_505N(3.7, 0.5, 3, 1, 'off')
     pwr_t.sim_inst = 0
     pwr_t.open_inst()
@@ -438,7 +440,7 @@ if __name__ == '__main__':
     chamber_t = inst.chamber_su242(25, 10, 'off', -45, 180, 0)
     chamber_t.sim_inst = 0
     chamber_t.open_inst()
-    scope_t = sco.Scope_LE6100A('GPIB: 15', 0, 0)
+    scope_t = sco.Scope_LE6100A('GPIB: 15', 0, 0, excel_t)
     # mcu is also config as simulation mode
     # COM address of Gary_SONY is 3
     mcu_t = mcu.MCU_control(0, 4)
