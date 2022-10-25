@@ -164,7 +164,7 @@ class Scope_LE6100A(GInst):
             # since there are already PNG in below command, no need to add '.png'
             pass
 
-        elif path ==0 :
+        elif path == 0:
 
             pure_path = self.excel_s.wave_path + self.excel_s.wave_condition
 
@@ -311,10 +311,23 @@ if __name__ == '__main__':
     #  the testing code for this file object
     import parameter_load_obj as par
     excel_t = par.excel_parameter('obj_main')
-    sim_scope = 0
+    sim_scope = 1
+    default_path = 'C:\\py_gary\\test_excel\\wave_form_raw\\'
 
-    scope = Scope_LE6100A('GPIB: 15', 3, sim_scope, excel_t)
+    scope = Scope_LE6100A('GPIB: 5', 3, sim_scope, excel_t)
     scope.scope_initial()
     # testing for the scope capture
 
     scope.printScreenToPC(path=0.5)
+
+    capture = 5
+    x = 0
+    while x < capture :
+
+        # input path need to include the file name
+        final_path = default_path + str(x)
+        scope.printScreenToPC(path=final_path)
+
+        x = x + 1
+        pass
+
