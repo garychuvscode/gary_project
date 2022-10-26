@@ -165,8 +165,13 @@ class Scope_LE6100A(GInst):
             pass
 
         elif path == 0:
+            if self.sim_inst == 0 :
+                pure_path = self.excel_s.wave_path + self.excel_s.wave_condition
 
-            pure_path = self.excel_s.wave_path + self.excel_s.wave_condition
+            else:
+                path = self.excel_s.wave_path + self.excel_s.wave_condition
+                # replace all the point to p prevent error of the name
+                path = path.replace('.', 'p')
 
             pass
         """

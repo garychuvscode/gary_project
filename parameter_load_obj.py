@@ -2171,7 +2171,7 @@ class excel_parameter ():
             b = list(kwargs.values())[x]
 
             self.wave_condition = self.wave_condition + \
-                str(a) + '=' + str(b) + '_'
+                str(a) + '-' + str(b) + '_'
 
             x = x + 1
             pass

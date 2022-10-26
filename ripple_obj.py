@@ -82,7 +82,7 @@ class ripple_test ():
         self.i2c_group = self.sh_verification_control.range('B11').value
         self.c_i2c = self.sh_verification_control.range('B12').value
         self.avdd_current_3ch = self.sh_verification_control.range('B13').value
-        self.ch_index = self.sh_verification_control.range('B14').value
+        self.ch_index = int(self.sh_verification_control.range('B14').value)
         self.c_data_mea = self.excel_ini.c_data_mea
 
         self.excel_ini.extra_file_name = '_ripple'
@@ -258,6 +258,7 @@ class ripple_test ():
                     print(pro_status_str)
                     excel_s.program_status(pro_status_str)
 
+                    # need to be int, not string for self.ch_index
                     if self.ch_index == 0:
                         # EL power settings
                         load_s.chg_out(iload_target, excel_s.loader_ELch, 'on')
@@ -283,11 +284,12 @@ class ripple_test ():
 
                     # calibration Vin
 
-                    pwr_s.vin_clibrate_singal_met(
-                        excel_s.relay0_ch, v_target, met_v_s, mcu_s, excel_s)
+                    temp_v = pwr_s.vin_clibrate_singal_met(
+                        0, v_target, met_v_s, mcu_s, excel_s)
 
                     # setup waveform name
-                    excel_s.wave_info_update( vin = v_target,i_load = iload_target )
+                    excel_s.wave_info_update(
+                        typ='ripple', v=v_target, i=iload_target)
 
                     # measure and capture waveform
 
@@ -305,7 +307,7 @@ class ripple_test ():
                                                               self.format_start_y + y_index)
                     # (1 + ripple_item) is waveform + ripple item + one current line
                     excel_s.scope_capture(excel_s.sh_ref_table, active_range,
-                                          0.5)
+                                          default_trace=0)
                     print('check point')
 
                     # need to have scope read and scope capture here
@@ -315,6 +317,22 @@ class ripple_test ():
                     # may not need data latch function?
 
                     # turn off load and change condition
+                    if self.ch_index == 0:
+                        # EL power settings
+                        load_s.chg_out(0, excel_s.loader_ELch, 'on')
+                        load_s.chg_out(0, excel_s.loader_VCIch, 'off')
+
+                        pass
+                    elif self.ch_index == 1:
+                        # VCI power settings
+                        load_s.chg_out(
+                            0, excel_s.loader_VCIch, 'on')
+                        load_s.chg_out(0, excel_s.loader_ELch, 'off')
+
+                        pass
+                    elif self.ch_index == 2:
+                        # 3-ch power settings
+                        load_s.chg_out(0, excel_s.loader_ELch, 'on')
 
                     x_iload = x_iload + 1
                     # end of iload loop
@@ -335,6 +353,15 @@ class ripple_test ():
 
         # hope to build the summary table after the test is finished
         self.summary_table()
+        self.end_of_exp()
+
+        pass
+
+    def end_of_exp(self):
+        self.pwr_ini.inst_single_close(self.excel_ini.relay0_ch)
+
+        self.loader_ini.inst_single_close(self.excel_ini.loader_ELch)
+        self.loader_ini.inst_single_close(self.excel_ini.loader_VCIch)
 
         pass
 
@@ -425,14 +452,14 @@ if __name__ == '__main__':
     # initial the object and set to simulation mode
     excel_t = par.excel_parameter('obj_main')
     pwr_t = inst.LPS_505N(3.7, 0.5, 3, 1, 'off')
-    pwr_t.sim_inst = 0
+    pwr_t.sim_inst = 1
     pwr_t.open_inst()
     # initial the object and set to simulation mode
     met_v_t = inst.Met_34460(0.0001, 7, 0.000001, 2.5, 20)
-    met_v_t.sim_inst = 0
+    met_v_t.sim_inst = 1
     met_v_t.open_inst()
     load_t = inst.chroma_63600(1, 7, 'CCL')
-    load_t.sim_inst = 0
+    load_t.sim_inst = 1
     load_t.open_inst()
     met_i_t = inst.Met_34460(0.0001, 7, 0.000001, 2.5, 21)
     met_i_t.sim_inst = 0
@@ -443,10 +470,10 @@ if __name__ == '__main__':
     chamber_t = inst.chamber_su242(25, 10, 'off', -45, 180, 0)
     chamber_t.sim_inst = 0
     chamber_t.open_inst()
-    scope_t = sco.Scope_LE6100A('GPIB: 15', 0, 0, excel_t)
+    scope_t = sco.Scope_LE6100A('GPIB: 5', 0, 1, excel_t)
     # mcu is also config as simulation mode
     # COM address of Gary_SONY is 3
-    mcu_t = mcu.MCU_control(0, 4)
+    mcu_t = mcu.MCU_control(1, 4)
     mcu_t.com_open()
 
     # for the single test, need to open obj_main first,
@@ -454,7 +481,7 @@ if __name__ == '__main__':
     # so the file will be open before new excel object benn define
 
     # using the main control book as default
-    excel_t = par.excel_parameter('obj_main')
+    # excel_t = par.excel_parameter('obj_main')
     # ======== only for object programming
 
     # open the result book for saving result
