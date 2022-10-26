@@ -1,10 +1,14 @@
 
+from GInst import *
 import win32com.client  # import the pywin32 library
 import pythoncom
 import logging
 import os
+import time
+import pyvisa
+# maybe the instrument need the delay time
+rm = pyvisa.ResourceManager()
 
-from GInst import *
 # from .GInst import *
 '''
 the reason not to use .GInst is because all the file now is at the root of python
@@ -46,13 +50,26 @@ class Scope_LE6100A(GInst):
         self.link = link
         self.ch = ch
         self.excel_s = excel0
+        # if = 1, scope object is already link to the real scope
+        self.link_status = 0
 
         # extra code added to the instrument object
         # simulation mode setting of the insturment
         self.sim_inst = sim_inst0
 
-        # this is the index number for the temp saving piture
-        self.pic_index = 0
+        # the information for GPIB resource manager
+        self.GP_addr_ini = self.excel_s.scope_addr
+
+        # the setting for each channel
+        # to be update in the function: ini_setting_select
+        self.ch_c1 = {}
+        self.ch_c2 = {}
+        self.ch_c3 = {}
+        self.ch_c4 = {}
+        self.ch_c5 = {}
+        self.ch_c6 = {}
+        self.ch_c7 = {}
+        self.ch_c8 = {}
 
         if self.sim_inst == 1:
 
@@ -75,6 +92,7 @@ class Scope_LE6100A(GInst):
 
             self.inst.SetRemoteLocal(1)
             self.inst.SetTimeout(20)
+            self.link_status = 1
 
             pass
         else:
@@ -84,6 +102,54 @@ class Scope_LE6100A(GInst):
 
         print('initial of scope object finished')
         pass
+
+    def open_inst(self):
+
+        if self.link == 0:
+            logging.debug(
+                f'Initialize LecroyActiveDSO link={self.link}, ch={self.ch}')
+
+            if Scope_LE6100A.ActiveDSO is None:
+                pythoncom.CoInitialize()
+                # .com component connection standard code (for win32com code)
+                Scope_LE6100A.ActiveDSO = win32com.client.Dispatch(
+                    "LeCroy.ActiveDSOCtrl.1")
+                pythoncom.CoInitialize()
+
+            self.inst = Scope_LE6100A.ActiveDSO
+            r = self.inst.MakeConnection(self.link)
+            logging.debug(f"self.inst.MakeConnection(link) = {r}")
+
+            if r == 0:
+                raise Exception(
+                    '<>< Scope_LE6100A ><> LecroyActiveDSO link fail.')
+
+            self.inst.SetRemoteLocal(1)
+            self.inst.SetTimeout(20)
+            self.link_status = 1
+
+            pass
+        else:
+            if self.sim_inst == 0:
+                print('call scope open inst in simulation mode')
+
+            else:
+                print('scope is already open')
+
+            pass
+
+        print('GPIB0::' + str(int(self.GP_addr_ini)) + '::INSTR')
+        if self.sim_inst == 1:
+            self.inst_obj = rm.open_resource(
+                'GPIB0::' + str(int(self.GP_addr_ini)) + '::INSTR')
+            time.sleep(0.05)
+            pass
+        else:
+            print('now is open the power supply, in address: ' +
+                  str(int(self.GP_addr_ini)))
+            # in simulation mode, inst_obj need to be define for the simuation mode
+            self.inst_obj = 'power supply simulation mode object'
+            pass
 
     def writeVBS(self, cmd):
         """
@@ -104,6 +170,7 @@ class Scope_LE6100A(GInst):
             pass
         else:
             print('simulation mode of the scope, write VBS')
+            print('command is : ' + str(cmd))
 
             pass
 
@@ -124,6 +191,7 @@ class Scope_LE6100A(GInst):
 
         else:
             print('simulation mode of the scope, read VBS')
+            print('command is : ' + str(cmd))
 
             pass
 
@@ -146,6 +214,7 @@ class Scope_LE6100A(GInst):
 
         else:
             print('simulation mode of the scope, read VBS, float')
+            print('command is : ' + str(cmd))
 
             pass
 
@@ -165,7 +234,7 @@ class Scope_LE6100A(GInst):
             pass
 
         elif path == 0:
-            if self.sim_inst == 0 :
+            if self.sim_inst == 0:
                 pure_path = self.excel_s.wave_path + self.excel_s.wave_condition
 
             else:
@@ -301,8 +370,12 @@ class Scope_LE6100A(GInst):
         '''
         socpe initialize function, plan to add loading setting file in scope in the future
         '''
+        # this function used to setup the general part, not the channel
+
         if self.sim_inst == 1:
             # run initial settings
+
+            self.writeVBS('')
 
             pass
         else:
@@ -310,6 +383,131 @@ class Scope_LE6100A(GInst):
             pass
 
         pass
+
+    def ch_default_setting(self):
+
+        # setup channel 1 to 8
+        temp_dict = {}
+        gen_dict = self.set_general
+
+        for i in range(1, 8+1):
+            # assign the mapped dictionary
+            if i == 1:
+                temp_dict = self.ch_c1
+            elif i == 2:
+                temp_dict = self.ch_c2
+            elif i == 3:
+                temp_dict = self.ch_c3
+            elif i == 4:
+                temp_dict = self.ch_c4
+            elif i == 5:
+                temp_dict = self.ch_c5
+            elif i == 6:
+                temp_dict = self.ch_c6
+            elif i == 7:
+                temp_dict = self.ch_c7
+            elif i == 8:
+                temp_dict = self.ch_c8
+
+            if self.sim_inst == 1:
+                self.writeVBS(
+                    f'app.Acquisition.C{i}.View = {temp_dict["ch_view"]}')
+                self.writeVBS(
+                    f'app.Acquisition.C{i}.VerScale = {temp_dict["volt_dev"]}')
+                self.writeVBS(
+                    f'app.Acquisition.C{i}.BandwidthLimit = {temp_dict["BW"]}')
+                self.writeVBS(
+                    f'app.Acquisition.C{i}.EnhanceResTypes = "{temp_dict["filter"]}"')
+                self.writeVBS(
+                    f'app.Acquisition.C{i}.Veroffset = {temp_dict["v_offset"]}')
+                self.writeVBS(
+                    f'app.Acquisition.C{i}.LabelsText = "{temp_dict["label_name"]}"')
+                self.writeVBS(
+                    f'app.Acquisition.C{i}.LabelsPosition = "{temp_dict["label_position"]}"')
+                self.writeVBS(
+                    f'app.Acquisition.C{i}.ViewLabels = {temp_dict["label_view"]}')
+                self.writeVBS(
+                    f'app.Acquisition.C{i}.Coupling = "{temp_dict["coupling"]}"')
+            else:
+                print(f'simulatiuon mode setting the scope channel{i}')
+
+        if self.sim_inst == 1:
+
+            # setting of trigger
+            self.writeVBS(
+                f'app.Acquisition.TriggerMode = "{gen_dict["trigger_mode"]}"')
+            self.writeVBS(
+                f'app.Acquisition.Trigger.Source = "{gen_dict["trigger_source"]}"')
+            self.writeVBS(
+                f'app.Acquisition.Trigger.{gen_dict["trigger_source"]}.Level = {gen_dict["trigger_level"]}')
+            self.writeVBS(
+                f'app.Acquisition.Trigger.{gen_dict["trigger_source"]}.Slope = "{gen_dict["trigger_slope"]}"')
+
+            # setting of x-axis
+            self.writeVBS(
+                f'app.Acquisition.Horizontal.HorScale = {gen_dict["time_scale"]}')
+            self.writeVBS(
+                f'app.Acquisition.Horizontal.HorOffset = {gen_dict["time_offset"]}')
+
+            # setting of sample mode
+            self.writeVBS(
+                f'app.Acquisition.Horizontal.SampleMode = "{gen_dict["sample_mode"]}"')
+
+            pass
+        else:
+            print('setting up general and trigger setting in scope @ simulation mode')
+
+        pass
+
+    def inst_name(self):
+        # get the insturment name
+        if self.sim_inst == 1:
+            self.cmd_str_name = "*IDN?"
+            self.in_name = self.inst_obj.query(self.cmd_str_name)
+            time.sleep(0.05)
+
+            pass
+        else:
+            # for the simulatiom mode of change output
+            print('check the instrument name, sim mode ')
+            print(str(self.cmd_str_name))
+            self.in_name = 'pwr is in sim mode'
+
+            pass
+
+        return self.in_name
+
+    def ini_setting_select(self, setup_index):
+        # this function used to choose different setup for different index
+
+        # should recall general setup in the scope first to makesure the items not update in the setup selection be correct
+
+        if setup_index == 0:
+            # the setting for ripple verification
+            self.ch_c1 = {'ch_view': 'TRUE', 'volt_dev': '0.5', 'BW': '20MHz', 'filter': '2bits', 'v_offset': 0,
+                          'label_name': 'name', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC1M'}
+            self.ch_c2 = {'ch_view': 'TRUE', 'volt_dev': '0.5', 'BW': '20MHz', 'filter': '2bits', 'v_offset': 0,
+                          'label_name': 'name', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC1M'}
+            self.ch_c3 = {'ch_view': 'TRUE', 'volt_dev': '0.5', 'BW': '20MHz', 'filter': '2bits', 'v_offset': 0,
+                          'label_name': 'name', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC1M'}
+            self.ch_c4 = {'ch_view': 'TRUE', 'volt_dev': '0.5', 'BW': '20MHz', 'filter': '2bits', 'v_offset': 0,
+                          'label_name': 'name', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC1M'}
+            self.ch_c5 = {'ch_view': 'TRUE', 'volt_dev': '0.5', 'BW': '20MHz', 'filter': '2bits', 'v_offset': 0,
+                          'label_name': 'name', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC1M'}
+            self.ch_c6 = {'ch_view': 'TRUE', 'volt_dev': '0.5', 'BW': '20MHz', 'filter': '2bits', 'v_offset': 0,
+                          'label_name': 'name', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC1M'}
+            self.ch_c7 = {'ch_view': 'TRUE', 'volt_dev': '0.5', 'BW': '20MHz', 'filter': '2bits', 'v_offset': 0,
+                          'label_name': 'name', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC1M'}
+            self.ch_c8 = {'ch_view': 'TRUE', 'volt_dev': '0.5', 'BW': '20MHz', 'filter': '2bits', 'v_offset': 0,
+                          'label_name': 'name', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC1M'}
+
+            # setting of general
+            self.set_general = {'trigger_mode': 'Auto', 'trigger_source': 'C1', 'trigger_level': '0.5',
+                                'trigger_slope': 'Positive', 'time_scale': '0.001', 'time_offset': '-0.003', 'sample_mode': 'RealTime'}
+
+        # call the 'ch_default_setting' for each channel setting and 'scope_initial'
+        self.ch_default_setting()
+        self.scope_initial()
 
 
 if __name__ == '__main__':
@@ -327,7 +525,7 @@ if __name__ == '__main__':
 
     capture = 5
     x = 0
-    while x < capture :
+    while x < capture:
 
         # input path need to include the file name
         final_path = default_path + str(x)
@@ -335,4 +533,3 @@ if __name__ == '__main__':
 
         x = x + 1
         pass
-

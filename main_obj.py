@@ -16,11 +16,15 @@ import win32com.client
 # for the instrument objects
 import inst_pkg_d as inst
 import mcu_obj as mcu
+
 # for the excel sheet control
 # only the main program use this method to separate the excel and program
 # since here will include the loop structure and overall control of report generation
 import sheet_ctrl_main_obj as sh
 import parameter_load_obj as para
+
+# extra library
+import Scope_LE6100A as sco
 
 # import for the verification object
 import IQ_scan_obj as iq
@@ -29,6 +33,7 @@ import EFF_obj as eff
 import instrument_scan_obj as ins_scan
 import format_gen_obj as form_g
 import general_test_obj as gene_t
+import ripple_obj as rip
 
 
 # off line test, set to 1 set all the instrument to simulation mode
@@ -68,6 +73,7 @@ chamber_m = inst.chamber_su242(excel_m.cham_tset_ini, excel_m.chamber_addr,
 
 # default turn the MCU on
 mcu_m = mcu.MCU_control(1, excel_m.mcu_com_addr)
+scope_m = sco.Scope_LE6100A('GPIB: ' + str(excel_m.scope_addr), 0, 0, excel_m)
 
 
 # instrument startup configuration
@@ -87,6 +93,7 @@ def sim_mode_all(main_off_line0):
         src_m.sim_inst = 1
         chamber_m.sim_inst = 1
         mcu_m.sim_mcu = 1
+        scope_m.sim_inst = 1
 
         pass
     else:
@@ -98,13 +105,14 @@ def sim_mode_all(main_off_line0):
         src_m.sim_inst = 0
         chamber_m.sim_inst = 0
         mcu_m.sim_mcu = 0
+        scope_m.sim_inst = 0
         excel_m.sim_mode_delay(0.02, 0.01)
         pass
 
     pass
 
 
-def sim_mode_independent(pwr, met_v, met_i, loader, src, chamber, main_off_line0):
+def sim_mode_independent(pwr=0, met_v=0, met_i=0, loader=0, src=0, chamber=0, scope=0, main_off_line0=1):
     # independent setting for instrument simulation mode
     if main_off_line0 == 0:
         if pwr == 1:
@@ -143,6 +151,13 @@ def sim_mode_independent(pwr, met_v, met_i, loader, src, chamber, main_off_line0
         else:
             chamber_m.sim_inst = 0
             pass
+        if scope == 1:
+            scope_m.sim_inst = 1
+            pass
+        else:
+            scope_m.sim_inst = 0
+            pass
+
         pass
 
     pass
@@ -160,6 +175,7 @@ def open_inst_and_name():
     src_m.open_inst()
     chamber_m.open_inst()
     mcu_m.com_open()
+    scope_m.open_inst()
 
     # for the instrument in simulation mode, name will be set to simulation mode
 
@@ -170,6 +186,9 @@ def open_inst_and_name():
     excel_m.inst_name_sheet('LOAD1', loader_chr_m.inst_name())
     excel_m.inst_name_sheet('LOADSR', src_m.inst_name())
     excel_m.inst_name_sheet('chamber', chamber_m.inst_name())
+    excel_m.inst_name_sheet('scope', scope_m.inst_name())
+
+    # pending: think about the name of scope, how to input?
 
     pass
 
@@ -200,7 +219,8 @@ in_scan = ins_scan.instrument_scan(excel_m, pwr_m, met_v_m,
 format_g = form_g.format_gen(excel_m)
 general_t = gene_t.general_test(excel_m, pwr_m, met_v_m,
                                 loader_chr_m, mcu_m, src_m, met_i_m, chamber_m)
-
+ripple_t = rip.ripple_test(excel_m, pwr_m, met_v_m,
+                           loader_chr_m, mcu_m, src_m, met_i_m, chamber_m, scope_m)
 
 # ==============
 

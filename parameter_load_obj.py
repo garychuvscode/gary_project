@@ -207,6 +207,8 @@ class excel_parameter ():
             (self.index_GPIB_inst + 5, 3)).value
         self.chamber_addr = self.sh_main.range(
             (self.index_GPIB_inst + 6, 3)).value
+        self.scope_addr = self.sh_main.range(
+            (self.index_GPIB_inst + 7, 3)).value
 
         # initialization for all the object, based on the input parameter of the index
 
@@ -1330,6 +1332,10 @@ class excel_parameter ():
         elif nick_name == 'chamber':
             self.sh_main.range(
                 (self.index_GPIB_inst + 6, 4)).value = full_name
+
+        elif nick_name == 'scope':
+            self.sh_main.range(
+                (self.index_GPIB_inst + 7, 4)).value = full_name
 
         pass
 

@@ -63,6 +63,9 @@ class ripple_test ():
         self.scope_ini = scope0
         # self.single_ini = single0
 
+        # object sumulation mode, defaut active (sim mode change to 0)
+        self.obj_sim_mode = 1
+
         pass
 
     def para_loaded(self):
@@ -306,12 +309,14 @@ class ripple_test ():
                     active_range = excel_s.sh_ref_table.range(self.format_start_x + x_index * (2 + self.c_data_mea),
                                                               self.format_start_y + y_index)
                     # (1 + ripple_item) is waveform + ripple item + one current line
-                    excel_s.scope_capture(excel_s.sh_ref_table, active_range,
-<<<<<<< HEAD
-                                          default_trace = 0.5)
-=======
-                                          default_trace=0)
->>>>>>> df56c8a8add2fd4ffdd4968b95300a4de8273991
+                    if self.obj_sim_mode == 0:
+                        excel_s.scope_capture(
+                            excel_s.sh_ref_table, active_range, default_trace=0.5)
+                    else:
+                        excel_s.scope_capture(
+                            excel_s.sh_ref_table, active_range, default_trace=0)
+                        pass
+
                     print('check point')
 
                     # need to have scope read and scope capture here
@@ -445,6 +450,7 @@ class ripple_test ():
 
 if __name__ == '__main__':
     #  the testing code for this file object
+    sim_test_set = 0
 
     # ======== only for object programming
     # testing used temp instrument
@@ -456,14 +462,14 @@ if __name__ == '__main__':
     # initial the object and set to simulation mode
     excel_t = par.excel_parameter('obj_main')
     pwr_t = inst.LPS_505N(3.7, 0.5, 3, 1, 'off')
-    pwr_t.sim_inst = 1
+    pwr_t.sim_inst = sim_test_set
     pwr_t.open_inst()
     # initial the object and set to simulation mode
     met_v_t = inst.Met_34460(0.0001, 7, 0.000001, 2.5, 20)
-    met_v_t.sim_inst = 1
+    met_v_t.sim_inst = sim_test_set
     met_v_t.open_inst()
     load_t = inst.chroma_63600(1, 7, 'CCL')
-    load_t.sim_inst = 1
+    load_t.sim_inst = sim_test_set
     load_t.open_inst()
     met_i_t = inst.Met_34460(0.0001, 7, 0.000001, 2.5, 21)
     met_i_t.sim_inst = 0
@@ -474,10 +480,10 @@ if __name__ == '__main__':
     chamber_t = inst.chamber_su242(25, 10, 'off', -45, 180, 0)
     chamber_t.sim_inst = 0
     chamber_t.open_inst()
-    scope_t = sco.Scope_LE6100A('GPIB: 5', 0, 1, excel_t)
+    scope_t = sco.Scope_LE6100A('GPIB: 5', 0, sim_test_set, excel_t)
     # mcu is also config as simulation mode
     # COM address of Gary_SONY is 3
-    mcu_t = mcu.MCU_control(1, 4)
+    mcu_t = mcu.MCU_control(sim_test_set, 4)
     mcu_t.com_open()
 
     # for the single test, need to open obj_main first,
@@ -507,6 +513,9 @@ if __name__ == '__main__':
     format_g = form_g.format_gen(excel_t)
     ripple_t = ripple_test(excel_t, pwr_t, met_v_t, load_t,
                            mcu_t, src_t, met_i_t, chamber_t, scope_t)
+
+    # define the simulation mode of ibject
+    ripple_t.obj_sim_mode = sim_test_set
 
     if version_select == 0:
         # create one object
