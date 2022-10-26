@@ -233,6 +233,11 @@ class LPS_505N:
         # met_v0.sim_inst = 0
         # excel0 = par.excel_parameter('obj_main')
 
+        # make sure all the type is correct
+        vin_target = float(vin_target)
+        vin_ch = int(vin_ch)
+
+
         # need to return the channel after the calibration is finished
         temp_mcu_channel = mcu0.meter_ch_ctrl
         v_res_temp = 0
@@ -765,6 +770,11 @@ class chroma_63600:
         # update the current and state setting in related channel for record in the class
         # record in class can prevent error change or setting when not refresh
         # only change one in each sub program call, adjust one channel at a time
+
+        # need to make sure all the input become correct type
+        iset1 = float(iset1)
+        act_ch1 = int(act_ch1)
+
 
         # filter iset before update current into the array, based on the CCx mode
         # CCL => 200mA, CCM => 2A, CCH => 20A
