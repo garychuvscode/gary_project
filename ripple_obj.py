@@ -305,7 +305,7 @@ class ripple_test ():
                                                               self.format_start_y + y_index)
                     # (1 + ripple_item) is waveform + ripple item + one current line
                     excel_s.scope_capture(excel_s.sh_ref_table, active_range,
-                                          0.5)
+                                          default_trace = 0.5)
                     print('check point')
 
                     # need to have scope read and scope capture here
