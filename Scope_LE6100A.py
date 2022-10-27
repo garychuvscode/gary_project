@@ -399,11 +399,11 @@ class Scope_LE6100A(GInst):
             self.writeVBS(
                 f'app.Acquisition.C{i}.VerScale = {temp_dict["volt_dev"]}')
             self.writeVBS(
-                f'app.Acquisition.C{i}.BandwidthLimit = {temp_dict["BW"]}')
+                f'app.Acquisition.C{i}.BandwidthLimit = "{temp_dict["BW"]}"')
             self.writeVBS(
-                f'app.Acquisition.C{i}.EnhanceResTypes = "{temp_dict["filter"]}"')
+                f'app.Acquisition.C{i}.EnhanceResType = "{temp_dict["filter"]}"')
             self.writeVBS(
-                f'app.Acquisition.C{i}.Veroffset = {temp_dict["v_offset"]}')
+                f'app.Acquisition.C{i}.VerOffset = {temp_dict["v_offset"]}')
             self.writeVBS(
                 f'app.Acquisition.C{i}.LabelsText = "{temp_dict["label_name"]}"')
             self.writeVBS(
@@ -576,7 +576,7 @@ class Scope_LE6100A(GInst):
         if ver_offset != None:
             # change ver offset
             self.writeVBS(
-                f'app.Acquisition.{ch}.Veroffset = {ver_offset}')
+                f'app.Acquisition.{ch}.VerOffset = {ver_offset}')
             print(f'change {ch} to {ver_offset}')
 
         pass
@@ -586,7 +586,7 @@ if __name__ == '__main__':
     #  the testing code for this file object
     import parameter_load_obj as par
     excel_t = par.excel_parameter('obj_main')
-    sim_scope = 0
+    sim_scope = 1
     default_path = 'C:\\py_gary\\test_excel\\wave_form_raw\\'
 
     scope = Scope_LE6100A('GPIB: 5', 3, sim_scope, excel_t)
