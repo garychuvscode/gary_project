@@ -1,4 +1,5 @@
 
+
 from GInst import *
 import win32com.client  # import the pywin32 library
 import pythoncom
@@ -6,6 +7,8 @@ import logging
 import os
 import time
 import pyvisa
+
+
 # maybe the instrument need the delay time
 rm = pyvisa.ResourceManager()
 
@@ -169,8 +172,8 @@ class Scope_LE6100A(GInst):
 
             pass
         else:
-            print('simulation mode of the scope, write VBS')
-            print('command is : ' + str(cmd))
+            # print('simulation mode of the scope, write VBS')
+            print('write, command is : ' + str(cmd))
 
             pass
 
@@ -190,8 +193,8 @@ class Scope_LE6100A(GInst):
             return self.inst.ReadString(256)  # reads a maximum of 256 bytes
 
         else:
-            print('simulation mode of the scope, read VBS')
-            print('command is : ' + str(cmd))
+            # print('simulation mode of the scope, read VBS')
+            print('read, command is : ' + str(cmd))
 
             pass
 
@@ -213,8 +216,8 @@ class Scope_LE6100A(GInst):
                 return -999
 
         else:
-            print('simulation mode of the scope, read VBS, float')
-            print('command is : ' + str(cmd))
+            # print('simulation mode of the scope, read VBS, float')
+            print('read_float, command is : ' + str(cmd))
 
             pass
 
@@ -366,24 +369,6 @@ class Scope_LE6100A(GInst):
         else:
             print('sim mode for scope, find fit scale')
 
-    def scope_initial(self):
-        '''
-        socpe initialize function, plan to add loading setting file in scope in the future
-        '''
-        # this function used to setup the general part, not the channel
-
-        if self.sim_inst == 1:
-            # run initial settings
-
-            self.writeVBS('')
-
-            pass
-        else:
-            print('sim mode scope, initial settings')
-            pass
-
-        pass
-
     def ch_default_setting(self):
 
         # setup channel 1 to 8
@@ -409,58 +394,56 @@ class Scope_LE6100A(GInst):
             elif i == 8:
                 temp_dict = self.ch_c8
 
-            if self.sim_inst == 1:
-                self.writeVBS(
-                    f'app.Acquisition.C{i}.View = {temp_dict["ch_view"]}')
-                self.writeVBS(
-                    f'app.Acquisition.C{i}.VerScale = {temp_dict["volt_dev"]}')
-                self.writeVBS(
-                    f'app.Acquisition.C{i}.BandwidthLimit = {temp_dict["BW"]}')
-                self.writeVBS(
-                    f'app.Acquisition.C{i}.EnhanceResTypes = "{temp_dict["filter"]}"')
-                self.writeVBS(
-                    f'app.Acquisition.C{i}.Veroffset = {temp_dict["v_offset"]}')
-                self.writeVBS(
-                    f'app.Acquisition.C{i}.LabelsText = "{temp_dict["label_name"]}"')
-                self.writeVBS(
-                    f'app.Acquisition.C{i}.LabelsPosition = "{temp_dict["label_position"]}"')
-                self.writeVBS(
-                    f'app.Acquisition.C{i}.ViewLabels = {temp_dict["label_view"]}')
-                self.writeVBS(
-                    f'app.Acquisition.C{i}.Coupling = "{temp_dict["coupling"]}"')
-            else:
+            self.writeVBS(
+                f'app.Acquisition.C{i}.View = {temp_dict["ch_view"]}')
+            self.writeVBS(
+                f'app.Acquisition.C{i}.VerScale = {temp_dict["volt_dev"]}')
+            self.writeVBS(
+                f'app.Acquisition.C{i}.BandwidthLimit = {temp_dict["BW"]}')
+            self.writeVBS(
+                f'app.Acquisition.C{i}.EnhanceResTypes = "{temp_dict["filter"]}"')
+            self.writeVBS(
+                f'app.Acquisition.C{i}.Veroffset = {temp_dict["v_offset"]}')
+            self.writeVBS(
+                f'app.Acquisition.C{i}.LabelsText = "{temp_dict["label_name"]}"')
+            self.writeVBS(
+                f'app.Acquisition.C{i}.LabelsPosition = "{temp_dict["label_position"]}"')
+            self.writeVBS(
+                f'app.Acquisition.C{i}.ViewLabels = {temp_dict["label_view"]}')
+            self.writeVBS(
+                f'app.Acquisition.C{i}.Coupling = "{temp_dict["coupling"]}"')
+
+            if self.sim_inst == 0:
                 print(f'simulatiuon mode setting the scope channel{i}')
 
-        if self.sim_inst == 1:
+        # setting of trigger
+        self.writeVBS(
+            f'app.Acquisition.TriggerMode = "{gen_dict["trigger_mode"]}"')
+        self.writeVBS(
+            f'app.Acquisition.Trigger.Source = "{gen_dict["trigger_source"]}"')
+        self.writeVBS(
+            f'app.Acquisition.Trigger.{gen_dict["trigger_source"]}.Level = {gen_dict["trigger_level"]}')
+        self.writeVBS(
+            f'app.Acquisition.Trigger.{gen_dict["trigger_source"]}.Slope = "{gen_dict["trigger_slope"]}"')
 
-            # setting of trigger
-            self.writeVBS(
-                f'app.Acquisition.TriggerMode = "{gen_dict["trigger_mode"]}"')
-            self.writeVBS(
-                f'app.Acquisition.Trigger.Source = "{gen_dict["trigger_source"]}"')
-            self.writeVBS(
-                f'app.Acquisition.Trigger.{gen_dict["trigger_source"]}.Level = {gen_dict["trigger_level"]}')
-            self.writeVBS(
-                f'app.Acquisition.Trigger.{gen_dict["trigger_source"]}.Slope = "{gen_dict["trigger_slope"]}"')
+        # setting of x-axis
+        self.writeVBS(
+            f'app.Acquisition.Horizontal.HorScale = {gen_dict["time_scale"]}')
+        self.writeVBS(
+            f'app.Acquisition.Horizontal.HorOffset = {gen_dict["time_offset"]}')
 
-            # setting of x-axis
-            self.writeVBS(
-                f'app.Acquisition.Horizontal.HorScale = {gen_dict["time_scale"]}')
-            self.writeVBS(
-                f'app.Acquisition.Horizontal.HorOffset = {gen_dict["time_offset"]}')
+        # setting of sample mode
+        self.writeVBS(
+            f'app.Acquisition.Horizontal.SampleMode = "{gen_dict["sample_mode"]}"')
 
-            # setting of sample mode
-            self.writeVBS(
-                f'app.Acquisition.Horizontal.SampleMode = "{gen_dict["sample_mode"]}"')
-
-            pass
-        else:
+        if self.sim_inst == 0:
             print('setting up general and trigger setting in scope @ simulation mode')
 
         pass
 
     def inst_name(self):
         # get the insturment name
+        self.cmd_str_name = ''
         if self.sim_inst == 1:
             self.cmd_str_name = "*IDN?"
             self.in_name = self.inst_obj.query(self.cmd_str_name)
@@ -471,13 +454,16 @@ class Scope_LE6100A(GInst):
             # for the simulatiom mode of change output
             print('check the instrument name, sim mode ')
             print(str(self.cmd_str_name))
-            self.in_name = 'pwr is in sim mode'
+            self.in_name = 'scope is in sim mode'
 
             pass
 
         return self.in_name
 
-    def ini_setting_select(self, setup_index):
+    def scope_initial(self, setup_index):
+        '''
+        socpe initialize function, plan to add loading setting file in scope in the future
+        '''
         # this function used to choose different setup for different index
 
         # should recall general setup in the scope first to makesure the items not update in the setup selection be correct
@@ -507,29 +493,148 @@ class Scope_LE6100A(GInst):
 
         # call the 'ch_default_setting' for each channel setting and 'scope_initial'
         self.ch_default_setting()
-        self.scope_initial()
+
+    def trigger_adj(self, mode=None, source=None, level=None, slope=None):
+        # this function is used to adjust the trigger function
+        '''
+        choose which trigger to adjust: \n
+        mode: 'Auto', 'Normal', 'Single', 'Stopped' \n
+        source: 'Cx' \n
+        level: 'number' \n
+        slope: 'Positive', 'Negative' \n
+        '''
+
+        if mode != None:
+            self.writeVBS(
+                f'app.Acquisition.TriggerMode = "{mode}"')
+            # also change the setting after setting updated
+            self.set_general["trigger_mode"] = mode
+            pass
+        if source != None:
+            self.writeVBS(
+                f'app.Acquisition.Trigger.Source = "{source}"')
+            # also change the setting after setting updated
+            self.set_general["trigger_source"] = source
+            pass
+        if level != None and source == None:
+            self.writeVBS(
+                f'app.Acquisition.Trigger.{self.set_general["trigger_source"]}.Level = {level}')
+            # also change the setting after setting updated
+            self.set_general["trigger_source"] = level
+            pass
+        elif level != None and source != None:
+            self.writeVBS(
+                f'app.Acquisition.Trigger.{source}.Level = {level}')
+            # also change the setting after setting updated
+            self.set_general["trigger_level"] = level
+            self.set_general["trigger_source"] = source
+
+            pass
+        if slope != None and source == None:
+            self.writeVBS(
+                f'app.Acquisition.Trigger.{self.set_general["trigger_source"]}.Slope = "{slope}"')
+            # also change the setting after setting updated
+            self.set_general["trigger_source"] = slope
+            pass
+        elif slope != None and source != None:
+            self.writeVBS(
+                f'app.Acquisition.Trigger.{source}.Slope = "{slope}"')
+            # also change the setting after setting updated
+            self.set_general["trigger_slope"] = slope
+            self.set_general["trigger_source"] = source
+
+            pass
+
+        pass
+
+    def Hor_scale_adj(self, div=None, offset=None):
+        # this program used to adjust the time scale
+        'to adjust time scale, enter (/div, offset)'
+
+        if div != None:
+            # change the time scale for the scope
+            self.writeVBS(
+                f'app.Acquisition.Horizontal.HorScale = {div}')
+            self.set_general['time_scale'] = div
+
+        if offset != None:
+            # hcange the offset of zero point in the scope
+            self.writeVBS(
+                f'app.Acquisition.Horizontal.HorOffset = {offset}')
+            self.set_general['time_offset'] = offset
+
+        pass
+
+    def single_ch_change(self, ch, ver_scale=None, ver_offset=None):
+
+        if ver_scale != None:
+            # change the ver div
+            self.writeVBS(
+                f'app.Acquisition.{ch}.VerScale = {ver_scale}')
+            print(f'change {ch} to {ver_scale}')
+
+        if ver_offset != None:
+            # change ver offset
+            self.writeVBS(
+                f'app.Acquisition.{ch}.Veroffset = {ver_offset}')
+            print(f'change {ch} to {ver_offset}')
+
+        pass
 
 
 if __name__ == '__main__':
     #  the testing code for this file object
     import parameter_load_obj as par
     excel_t = par.excel_parameter('obj_main')
-    sim_scope = 1
+    sim_scope = 0
     default_path = 'C:\\py_gary\\test_excel\\wave_form_raw\\'
 
     scope = Scope_LE6100A('GPIB: 5', 3, sim_scope, excel_t)
-    scope.scope_initial()
-    # testing for the scope capture
 
-    scope.printScreenToPC(path=0.5)
+    test_index = 2
 
-    capture = 5
-    x = 0
-    while x < capture:
+    if test_index == 0:
 
-        # input path need to include the file name
-        final_path = default_path + str(x)
-        scope.printScreenToPC(path=final_path)
+        # testing for the scope capture
 
-        x = x + 1
+        scope.printScreenToPC(path=0.5)
+
+        capture = 5
+        x = 0
+        while x < capture:
+
+            # input path need to include the file name
+            final_path = default_path + str(x)
+            scope.printScreenToPC(path=final_path)
+
+            x = x + 1
+            pass
+
+    elif test_index == 1:
+        # teting for the initial setting of scope
+
+        scope.scope_initial(0)
+        scope.open_inst()
+        scope.inst_name()
+        scope.printScreenToPC()
+        scope.triggerSingle()
+        scope.waitTriggered()
+        scope.trigger_adj('Auto', 'C9', '0.56', 'Positive')
+        scope.Hor_scale_adj('div_test', 'offset_test')
+        scope.single_ch_change('C9', 'ver_div_test', 'ver_off_test')
+
         pass
+
+    elif test_index == 2:
+        # real testing with scope
+
+        scope.scope_initial(0)
+        scope.open_inst()
+        temp_name = scope.inst_name()
+        print(temp_name)
+        scope.printScreenToPC(0.5)
+        scope.triggerSingle()
+        scope.waitTriggered()
+        scope.trigger_adj('Stopped', 'C3', '1', 'Negative')
+        scope.Hor_scale_adj('0.001', '0.00002')
+        scope.single_ch_change('C2', '2', '0.25')
