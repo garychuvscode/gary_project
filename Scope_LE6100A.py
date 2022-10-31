@@ -74,6 +74,9 @@ class Scope_LE6100A(GInst):
         self.ch_c7 = {}
         self.ch_c8 = {}
 
+        self.g_string_a = ["'s smile is attractive.", "'s hair is beautiful.", "'s face is cute.", "'s eyes are shining",
+                           " usually comes at 9:30 XD", " likes to play stock. ", " hates to work overtime. ", " is a really good girl XD"]
+
         if self.sim_inst == 1:
 
             logging.debug(f'Initialize LecroyActiveDSO link={link}, ch={ch}')
@@ -413,6 +416,8 @@ class Scope_LE6100A(GInst):
             self.writeVBS(
                 f'app.Acquisition.C{i}.Coupling = "{temp_dict["coupling"]}"')
 
+            print(f"Grace{self.g_string_a[i-1]}")
+
             if self.sim_inst == 0:
                 print(f'simulatiuon mode setting the scope channel{i}')
 
@@ -491,6 +496,25 @@ class Scope_LE6100A(GInst):
             self.set_general = {'trigger_mode': 'Auto', 'trigger_source': 'C1', 'trigger_level': '0.5',
                                 'trigger_slope': 'Positive', 'time_scale': '0.001', 'time_offset': '-0.003', 'sample_mode': 'RealTime'}
 
+            # setting of measurement
+            self.p1 = {"param": "max", "source": "C1", "view": "TRUE"}
+            self.p2 = {"param": "min", "source": "C2", "view": "FALSE"}
+            self.p3 = {"param": "pkpk", "source": "C3", "view": "TRUE"}
+            self.p4 = {"param": "mean", "source": "C4", "view": "FALSE"}
+            self.p5 = {"param": "max", "source": "C5", "view": "TRUE"}
+            self.p6 = {"param": "min", "source": "C6", "view": "FALSE"}
+            self.p7 = {"param": "pkpk", "source": "C7", "view": "TRUE"}
+            self.p8 = {"param": "mean", "source": "C6", "view": "FALSE"}
+            self.p9 = {"param": "max", "source": "C5", "view": "TRUE"}
+            self.p10 = {"param": "min", "source": "C4", "view": "FALSE"}
+            self.p11 = {"param": "pkpk", "source": "C3", "view": "TRUE"}
+            self.p12 = {"param": "mean", "source": "C2", "view": "FALSE"}
+
+            # this dictionary is used to assign related measurement
+            self.mea_set = {'P1': self.p1, 'P2': self.p2, 'P3': self.p3, 'P4': self.p4,
+                            'P5': self.p5, 'P6': self.p6, 'P7': self.p7, 'P8': self.p8, 'P9': self.p9,
+                            'P10': self.p10, 'P11': self.p11, 'P12': self.p12}
+
         # call the 'ch_default_setting' for each channel setting and 'scope_initial'
         self.ch_default_setting()
 
@@ -545,6 +569,9 @@ class Scope_LE6100A(GInst):
 
             pass
 
+        # send current trigger setting for the scope
+        print(self.set_general)
+
         pass
 
     def Hor_scale_adj(self, div=None, offset=None):
@@ -581,17 +608,81 @@ class Scope_LE6100A(GInst):
 
         pass
 
+    def mea_default_setup(self):
+
+        # initial all the measurement channel based on the setting array in scope_initial
+
+        for i in range(1, 12+1):
+
+            self.mea_single(list(self.mea_set)[i-1], (list(self.mea_set.values())[i-1])[
+                            "param"], (list(self.mea_set.values())[i-1])["source"], (list(self.mea_set.values())[i-1])["view"])
+
+            print(list(self.mea_set)[i-1])
+            print((list(self.mea_set.values())[i-1])["param"])
+            print((list(self.mea_set.values())[i-1])["source"])
+            print((list(self.mea_set.values())[i-1])["view"])
+
+            pass
+
+        pass
+
+    def mea_single(self, mea_ch, parameter, ch=0, view='TRUE'):
+        '''
+        mea_ch: P1-P8, measurement channel \n
+        parameter: measurement type \n
+        ch default 0, turn off measurment, use 'Cx' as input \n
+        view default true, used for initialization \n
+        '''
+        # setup for single channel of measurement
+
+        # turn off measurement if ch set to 0
+        if ch != 0:
+            # change parameter
+            self.writeVBS(
+                f'app.Measure.{mea_ch}.ParamEngine = "{parameter}"')
+            # setup mapped scope channel
+            self.writeVBS(
+                f'app.Measure.{mea_ch}.Source1 = "{ch}"')
+
+            self.writeVBS(
+                f'app.Measure.{mea_ch}.View = {view}')
+
+        # turn off measurment if ch  is set to 0
+        else:
+            # visible or not
+            self.writeVBS(
+                f'app.Measure.{mea_ch}.View = FALSE')
+
+        pass
+
+    def read_mea(self, mea_ch, m_type, return_float=0):
+        '''
+        mea_ch is measured channel \n
+        m_type is max, mean, min, exc... \n
+        '''
+
+        if return_float == 0:
+            # choose to return the string for read
+            mea_result = self.readVBS(
+                f'app.Measure.{mea_ch}.{m_type}.Result.Value')
+        else:
+            # choose to return the float result
+            mea_result = self.readVBS_float(
+                f'app.Measure.{mea_ch}.{m_type}.Result.Value')
+
+        return mea_result
+
 
 if __name__ == '__main__':
     #  the testing code for this file object
     import parameter_load_obj as par
     excel_t = par.excel_parameter('obj_main')
-    sim_scope = 1
+    sim_scope = 0
     default_path = 'C:\\py_gary\\test_excel\\wave_form_raw\\'
 
     scope = Scope_LE6100A('GPIB: 5', 3, sim_scope, excel_t)
 
-    test_index = 2
+    test_index = 3
 
     if test_index == 0:
 
@@ -638,3 +729,16 @@ if __name__ == '__main__':
         scope.trigger_adj('Stopped', 'C3', '1', 'Negative')
         scope.Hor_scale_adj('0.001', '0.00002')
         scope.single_ch_change('C2', '2', '0.25')
+
+        pass
+
+    elif test_index == 3:
+        # testing for the measurement setup
+
+        scope.scope_initial(0)
+        scope.open_inst()
+        temp_name = scope.inst_name()
+        print(temp_name)
+        scope.mea_default_setup()
+
+        pass

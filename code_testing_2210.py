@@ -24,9 +24,28 @@ class test_calass():
 
         pass
 
+    def two_dim_dict(self):
+
+        self.p1 = {"param": "max", "source": "C1", "view": "TRUE"}
+        self.p2 = {"param": "min", "source": "C2", "view": "FALSE"}
+
+        self.mea_ch = {"P1": self.p1, "P2": self.p2, }
+
+        # multi layer of the list (dictionary)
+
+        temp = list(self.mea_ch)[0]
+        temp3 = list(self.mea_ch.values())[0]
+        trmp2 = list(list(self.mea_ch.values())[0])[0]
+        temp4 = (list(self.mea_ch.values())[0])["param"]
+
+        print(
+            f"app.Measure.{list(self.mea_ch)[0]}.ParamEngine = '{(list(self.mea_ch.values())[0])['param']}'")
+
+        pass
+
 
 t_s = test_calass()
-testing_index = 0
+testing_index = 1
 
 if testing_index == 0:
     print('a')
@@ -39,3 +58,14 @@ if testing_index == 0:
         print(i)
 
         t_s.scope_ch()
+
+elif testing_index == 1:
+    # testing for the 2 dimension dictionary
+
+    t_s.two_dim_dict()
+
+    pass
+
+elif testing_index == 1:
+
+    pass
