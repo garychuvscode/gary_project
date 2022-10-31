@@ -9,6 +9,10 @@ import time
 import pyvisa
 
 
+import scope_set_index as sc_set
+
+
+
 # maybe the instrument need the delay time
 rm = pyvisa.ResourceManager()
 
@@ -73,6 +77,8 @@ class Scope_LE6100A(GInst):
         self.ch_c6 = {}
         self.ch_c7 = {}
         self.ch_c8 = {}
+
+        self.sc_config = sc_set.scope_config()
 
         self.g_string_a = ["'s smile is attractive.", "'s hair is beautiful.", "'s face is cute.", "'s eyes are shining.",
                            " usually comes at 9:30 XD", " likes to play stock. ", " hates to work overtime. ", " is a really good girl XD"]
@@ -511,7 +517,7 @@ class Scope_LE6100A(GInst):
             self.p11 = {"param": "pkpk", "source": "C3", "view": "TRUE"}
             self.p12 = {"param": "mean", "source": "C2", "view": "FALSE"}
 
-        if setup_index == 'ripple_50374':
+        elif setup_index == 'ripple_50374':
             # index 0 only for functional test
             # the setting for ripple verification
             self.ch_c1 = {'ch_view': 'TRUE', 'volt_dev': '0.02', 'BW': '20MHz', 'filter': '2bits', 'v_offset': -3.3,
@@ -533,7 +539,7 @@ class Scope_LE6100A(GInst):
 
             # setting of general
             self.set_general = {'trigger_mode': 'Auto', 'trigger_source': 'C3', 'trigger_level': '-3.2',
-                                'trigger_slope': 'Positive', 'time_scale': '0.0001', 'time_offset': '-0.0004', 'sample_mode': 'RealTime'}
+                                'trigger_slope': 'Positive', 'time_scale': '0.0001', 'time_offset': '-0.0004', 'sample_mode': 'RealTime', 'fixed_sample_rate': '1.25GS/s'}
 
             # setting of measurement
             self.p1 = {"param": "pkpk", "source": "C1", "view": "TRUE"}
@@ -549,14 +555,62 @@ class Scope_LE6100A(GInst):
             self.p11 = {"param": "mean", "source": "C6", "view": "TRUE"}
             self.p12 = {"param": "mean", "source": "C2", "view": "TRUE"}
 
+        else:
+            # for all the other index, look for setting from the setting object
+            self.config_loaded(setup_index)
+
+
         # this dictionary is used to assign related measurement
         self.mea_set = {'P1': self.p1, 'P2': self.p2, 'P3': self.p3, 'P4': self.p4,
                         'P5': self.p5, 'P6': self.p6, 'P7': self.p7, 'P8': self.p8, 'P9': self.p9,
                         'P10': self.p10, 'P11': self.p11, 'P12': self.p12}
 
         # call the 'ch_default_setting' for each channel setting and 'scope_initial'
+
+        # to speed up the adjustment of scope, need to change sample rate
+        self.writeVBS(
+            f'app.Acquisition.Horizontal.Maximize = "FixedSampleRate"')
+        self.writeVBS(f'app.Acquisition.Horizontal.SampleRate = "2.5MS/s"')
+
         self.ch_default_setting()
         self.mea_default_setup()
+
+        self.writeVBS(
+            f'app.Acquisition.Horizontal.Maximize = "FixedSampleRate"')
+        self.writeVBS(f'app.Acquisition.Horizontal.SampleRate = "{self.set_general["fixed_sample_rate"]}"')
+
+    def config_loaded(self, setup_index) :
+        # loaded the configuration from external setting object
+        self.sc_config.setting_mapping(setup_index)
+        # index 0 only for functional test
+        # the setting for ripple verification
+        self.ch_c1 = self.sc_config.ch_c1
+        self.ch_c2 = self.sc_config.ch_c2
+        self.ch_c3 = self.sc_config.ch_c3
+        self.ch_c4 = self.sc_config.ch_c4
+        self.ch_c5 = self.sc_config.ch_c5
+        self.ch_c6 = self.sc_config.ch_c6
+        self.ch_c7 = self.sc_config.ch_c7
+        self.ch_c8 = self.sc_config.ch_c8
+
+        # setting of general
+        self.set_general = self.sc_config.set_general
+        # setting of measurement
+        self.p1 = self.sc_config.p1
+        self.p2 = self.sc_config.p2
+        self.p3 = self.sc_config.p3
+        self.p4 = self.sc_config.p4
+        self.p5 = self.sc_config.p5
+        self.p6 = self.sc_config.p6
+        self.p7 = self.sc_config.p7
+        self.p8 = self.sc_config.p8
+        self.p9 = self.sc_config.p9
+        self.p10 = self.sc_config.p10
+        self.p11 = self.sc_config.p11
+        self.p12 = self.sc_config.p12
+
+        pass
+
 
     def trigger_adj(self, mode=None, source=None, level=None, slope=None):
         # this function is used to adjust the trigger function
