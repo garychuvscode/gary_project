@@ -74,7 +74,7 @@ class Scope_LE6100A(GInst):
         self.ch_c7 = {}
         self.ch_c8 = {}
 
-        self.g_string_a = ["'s smile is attractive.", "'s hair is beautiful.", "'s face is cute.", "'s eyes are shining",
+        self.g_string_a = ["'s smile is attractive.", "'s hair is beautiful.", "'s face is cute.", "'s eyes are shining.",
                            " usually comes at 9:30 XD", " likes to play stock. ", " hates to work overtime. ", " is a really good girl XD"]
 
         if self.sim_inst == 1:
@@ -416,7 +416,7 @@ class Scope_LE6100A(GInst):
             self.writeVBS(
                 f'app.Acquisition.C{i}.Coupling = "{temp_dict["coupling"]}"')
 
-            print(f"Grace{self.g_string_a[i-1]}")
+            print(f"Grace{self.g_string_a[i-1]}_C{i}")
 
             if self.sim_inst == 0:
                 print(f'simulatiuon mode setting the scope channel{i}')
@@ -474,6 +474,7 @@ class Scope_LE6100A(GInst):
         # should recall general setup in the scope first to makesure the items not update in the setup selection be correct
 
         if setup_index == 0:
+            # index 0 only for functional test
             # the setting for ripple verification
             self.ch_c1 = {'ch_view': 'TRUE', 'volt_dev': '0.5', 'BW': '20MHz', 'filter': '2bits', 'v_offset': 0,
                           'label_name': 'name', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC1M'}
@@ -510,13 +511,52 @@ class Scope_LE6100A(GInst):
             self.p11 = {"param": "pkpk", "source": "C3", "view": "TRUE"}
             self.p12 = {"param": "mean", "source": "C2", "view": "FALSE"}
 
-            # this dictionary is used to assign related measurement
-            self.mea_set = {'P1': self.p1, 'P2': self.p2, 'P3': self.p3, 'P4': self.p4,
-                            'P5': self.p5, 'P6': self.p6, 'P7': self.p7, 'P8': self.p8, 'P9': self.p9,
-                            'P10': self.p10, 'P11': self.p11, 'P12': self.p12}
+        if setup_index == 'ripple_50374':
+            # index 0 only for functional test
+            # the setting for ripple verification
+            self.ch_c1 = {'ch_view': 'TRUE', 'volt_dev': '0.02', 'BW': '20MHz', 'filter': '2bits', 'v_offset': -3.3,
+                          'label_name': 'AVDD', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC1M'}
+            self.ch_c2 = {'ch_view': 'TRUE', 'volt_dev': '0.02', 'BW': '20MHz', 'filter': '2bits', 'v_offset': 3.3,
+                          'label_name': 'OVSS', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC1M'}
+            self.ch_c3 = {'ch_view': 'TRUE', 'volt_dev': '0.2', 'BW': '20MHz', 'filter': '2bits', 'v_offset': 3.5,
+                          'label_name': 'VON', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC1M'}
+            self.ch_c4 = {'ch_view': 'TRUE', 'volt_dev': '1', 'BW': '20MHz', 'filter': '2bits', 'v_offset': -3,
+                          'label_name': 'Vin', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC1M'}
+            self.ch_c5 = {'ch_view': 'TRUE', 'volt_dev': '0.02', 'BW': '20MHz', 'filter': '2bits', 'v_offset': -0.06,
+                          'label_name': 'I_load', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC50'}
+            self.ch_c6 = {'ch_view': 'TRUE', 'volt_dev': '0.02', 'BW': '20MHz', 'filter': '2bits', 'v_offset': -3.3,
+                          'label_name': 'OVDD', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC1M'}
+            self.ch_c7 = {'ch_view': 'TRUE', 'volt_dev': '0.2', 'BW': '20MHz', 'filter': '2bits', 'v_offset': -3.5,
+                          'label_name': 'VOP', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC1M'}
+            self.ch_c8 = {'ch_view': 'FALSE', 'volt_dev': '0.5', 'BW': '20MHz', 'filter': '2bits', 'v_offset': 0,
+                          'label_name': 'name', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC1M'}
+
+            # setting of general
+            self.set_general = {'trigger_mode': 'Auto', 'trigger_source': 'C3', 'trigger_level': '-3.2',
+                                'trigger_slope': 'Positive', 'time_scale': '0.0001', 'time_offset': '-0.0004', 'sample_mode': 'RealTime'}
+
+            # setting of measurement
+            self.p1 = {"param": "pkpk", "source": "C1", "view": "TRUE"}
+            self.p2 = {"param": "pkpk", "source": "C2", "view": "TRUE"}
+            self.p3 = {"param": "pkpk", "source": "C6", "view": "TRUE"}
+            self.p4 = {"param": "max", "source": "C3", "view": "TRUE"}
+            self.p5 = {"param": "min", "source": "C7", "view": "TRUE"}
+            self.p6 = {"param": "mean", "source": "C5", "view": "TRUE"}
+            self.p7 = {"param": "pkpk", "source": "C7", "view": "TRUE"}
+            self.p8 = {"param": "pkpk", "source": "C3", "view": "TRUE"}
+            self.p9 = {"param": "mean", "source": "C3", "view": "TRUE"}
+            self.p10 = {"param": "mean", "source": "C4", "view": "TRUE"}
+            self.p11 = {"param": "mean", "source": "C6", "view": "TRUE"}
+            self.p12 = {"param": "mean", "source": "C2", "view": "TRUE"}
+
+        # this dictionary is used to assign related measurement
+        self.mea_set = {'P1': self.p1, 'P2': self.p2, 'P3': self.p3, 'P4': self.p4,
+                        'P5': self.p5, 'P6': self.p6, 'P7': self.p7, 'P8': self.p8, 'P9': self.p9,
+                        'P10': self.p10, 'P11': self.p11, 'P12': self.p12}
 
         # call the 'ch_default_setting' for each channel setting and 'scope_initial'
         self.ch_default_setting()
+        self.mea_default_setup()
 
     def trigger_adj(self, mode=None, source=None, level=None, slope=None):
         # this function is used to adjust the trigger function
@@ -735,10 +775,10 @@ if __name__ == '__main__':
     elif test_index == 3:
         # testing for the measurement setup
 
-        scope.scope_initial(0)
+        scope.scope_initial('ripple_50374')
         scope.open_inst()
         temp_name = scope.inst_name()
         print(temp_name)
-        scope.mea_default_setup()
+        # scope.mea_default_setup()
 
         pass
