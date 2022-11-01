@@ -1,6 +1,9 @@
 # this file is mainly for the testing of coding
 
 
+import locale as lo
+
+
 class test_calass():
 
     def __init__(self):
@@ -43,6 +46,41 @@ class test_calass():
 
         pass
 
+    def float_format(self):
+
+        # this fuction used to test format output for the float
+        a = 0.123456789
+        dig = 5
+        b = float("{:.2f}".format(a))
+        # c = float(f"{:.{dig}f}".format(a)) => error format
+        d = "{:.4f}".format(a)
+        e = lo.atof("{:.2f}".format(a))
+
+        print(b)
+
+        pass
+
+    def float_gene(self, input, scaling=1000, digit=2):
+        '''
+        transfer the digit of float \n
+        input can be string or float \n
+        default scaling to mV
+        '''
+        a = float(input)
+        a = a * scaling
+        if digit == 0:
+            b = float("{:.0f}".format(a))
+        elif digit == 1:
+            b = float("{:.1f}".format(a))
+        elif digit == 2:
+            b = float("{:.2f}".format(a))
+        elif digit == 3:
+            b = float("{:.3f}".format(a))
+        elif digit == 4:
+            b = float("{:.4f}".format(a))
+        print(b)
+        return b
+
 
 t_s = test_calass()
 testing_index = 1
@@ -63,6 +101,13 @@ elif testing_index == 1:
     # testing for the 2 dimension dictionary
 
     t_s.two_dim_dict()
+    t_s.float_format()
+    t_s.float_gene('0.123456789', 100)
+    t_s.float_gene('0.123456789', digit=0)
+    t_s.float_gene('0.123456789', digit=1)
+    t_s.float_gene('0.123456789', digit=2)
+    t_s.float_gene('0.123456789', digit=3)
+    t_s.float_gene('0.123456789', digit=4)
 
     pass
 
