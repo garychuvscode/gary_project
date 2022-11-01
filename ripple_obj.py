@@ -94,6 +94,7 @@ class ripple_test ():
 
         # path need to be assign after every format gen finished
         self.wave_path = self.sh_verification_control.range('C36').value
+        self.scope_setting = self.sh_verification_control.range('C39').value
         self.excel_ini.wave_path = self.wave_path
         # the sheet name record for the saving waveform
         self.wave_sheet = self.sh_verification_control.name
@@ -150,6 +151,9 @@ class ripple_test ():
         met_i_s = self.met_i_ini
         chamber_s = self.chamber_ini
         scope_s = self.scope_ini
+
+        # scope initialization
+        scope_s.scope_initial(self.scope_setting)
 
         # control variable
         if self.en_i2c_mode == 1:
