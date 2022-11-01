@@ -850,6 +850,91 @@ class chroma_63600:
         # return error when there are load current setting error
         # it should also be ok to not setting the return variable
 
+    def chg_out2(self, iset1, act_ch1, state1):
+        '''
+        202211 new version, auto change CCH, CCM and CCL based on iset
+        '''
+        self.act_ch_o = act_ch1
+        # update the current and state setting in related channel for record in the class
+        # record in class can prevent error change or setting when not refresh
+        # only change one in each sub program call, adjust one channel at a time
+
+        # need to make sure all the input become correct type
+        iset1 = float(iset1)
+        act_ch1 = int(act_ch1)
+
+        # CCL => 200mA, CCM => 2A, CCH => 20A
+        # auto change iset based on different loading requirement
+        if iset1 > 2 :
+            # this should be CCM mode
+            self.chg_mode(act_ch1, "CCH")
+            if iset1 > 20 :
+                iset1 = 20
+        elif iset1 > 0.2 :
+            # this should be CCM mode
+            self.chg_mode(act_ch1, "CCM")
+        else :
+            # this should be CCL mode
+            self.chg_mode(act_ch1, "CCL")
+
+        self.i_sel_ch[int(self.act_ch_o) - 1] = iset1
+        print(self.i_sel_ch)
+        self.state_o[int(self.act_ch_o) - 1] = state1
+        print(self.state_o)
+        # decide witch channel to use first
+        self.cmd_str_ch_set = "CHAN " + str(int(self.act_ch_o))
+        print(self.cmd_str_ch_set)
+        # mode setting update map with the array
+        self.cmd_str_mode_set = "MODE " + \
+            str(self.mode_o[int(self.act_ch_o) - 1])
+        print(self.cmd_str_mode_set)
+        # update the string for current definition (map from the related array element)
+
+        # 220921: reduce the error cause from leakage
+        self.cmd_str_I_load = "curr:stat:L1 " + \
+            str(self.i_sel_ch[int(self.act_ch_o) - 1])
+        print(self.cmd_str_I_load)
+
+        if self.cal_mode_en == 1:
+            self.cmd_str_I_load = "curr:stat:L1 " + \
+                str(self.i_sel_ch[int(self.act_ch_o) - 1] -
+                    self.i_cal_leakage_ch[int(self.act_ch_o) - 1])
+            print('after calibration')
+            print(self.cmd_str_I_load)
+
+        # update the status of on and off
+        self.cmd_str_status = ("Load " + self.state_o[int(self.act_ch_o) - 1])
+        print(self.cmd_str_status)
+        # all command string using self because you can reference after the function is over,
+        # it will left in the object, not disappear
+
+        if self.sim_inst == 1:
+            # 220830 update for the independent simulation mode
+            # write the command string for change power supply output
+            # writring sequence: channel => current setting => status update
+            # check if it changes like power supply? need to update status to refresh command
+            self.inst_obj.write(self.cmd_str_ch_set)
+            self.inst_obj.write(self.cmd_str_mode_set)
+            self.inst_obj.write(self.cmd_str_I_load)
+            self.inst_obj.write(self.cmd_str_status)
+            # add the break point here to double if the command update based on the write command of status
+            time.sleep(wait_samll)
+
+            pass
+        else:
+            # for the simulatiom mode of change output
+            print('change loader output now with below GPIB string')
+            print(str(self.cmd_str_ch_set))
+            print(str(self.cmd_str_mode_set))
+            print(str(self.cmd_str_I_load))
+            print(str(self.cmd_str_status))
+
+            pass
+
+        return self.errflag
+        # return error when there are load current setting error
+        # it should also be ok to not setting the return variable
+
     # this function used to read the feedback voltage measurement
 
     def read_vout(self, act_ch1):

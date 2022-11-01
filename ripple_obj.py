@@ -271,24 +271,24 @@ class ripple_test ():
                     # need to be int, not string for self.ch_index
                     if self.ch_index == 0:
                         # EL power settings
-                        load_s.chg_out(iload_target, excel_s.loader_ELch, 'on')
-                        load_s.chg_out(0, excel_s.loader_VCIch, 'off')
+                        load_s.chg_out2(iload_target, excel_s.loader_ELch, 'on')
+                        load_s.chg_out2(0, excel_s.loader_VCIch, 'off')
 
                         pass
                     elif self.ch_index == 1:
                         # VCI power settings
-                        load_s.chg_out(
+                        load_s.chg_out2(
                             iload_target, excel_s.loader_VCIch, 'on')
-                        load_s.chg_out(0, excel_s.loader_ELch, 'off')
+                        load_s.chg_out2(0, excel_s.loader_ELch, 'off')
 
                         pass
                     elif self.ch_index == 2:
                         # 3-ch power settings
-                        load_s.chg_out(iload_target, excel_s.loader_ELch, 'on')
+                        load_s.chg_out2(iload_target, excel_s.loader_ELch, 'on')
 
                         # load other target for VCI
                         i_VCI_target = excel_s.sh_format_gen.range('B13')
-                        load_s.chg_out(
+                        load_s.chg_out2(
                             i_VCI_target, excel_s.loader_VCIch, 'on')
                         pass
 
@@ -328,14 +328,55 @@ class ripple_test ():
 
                     # to capture waveforms
                     scope_s.trigger_adj('Stopped')
-                    buck_ripple = scope_s.read_mea('P1', "last")
-                    buck_ripple2 = scope_s.read_mea('P1', "mean")
-                    buck_ripple3 = scope_s.read_mea('P2', "mas")
-                    buck_ripple4 = scope_s.read_mea('P1', "last")
-                    buck_ripple = excel_s.float_gene(buck_ripple)
 
-                    excel_s.sh_ref_table.range(self.format_start_x + x_index * (2 + self.c_data_mea) + 1,
-                                               self.format_start_y + y_index).value = buck_ripple
+                    # need to be int, not string for self.ch_index
+                    if self.ch_index == 0:
+                        # EL channel get measure and record to excel
+                        # OVDD is at P6, OVSS is at P4
+                        ovdd_r = scope_s.read_mea('P6', "last")
+                        ovss_r = scope_s.read_mea('P2', "last")
+                        ovdd_r = excel_s.float_gene(ovdd_r)
+                        ovss_r = excel_s.float_gene(ovss_r)
+                        excel_s.sh_ref_table.range(self.format_start_x + x_index * (2 + self.c_data_mea) + 1,
+                                               self.format_start_y + y_index).value = ovdd_r
+                        excel_s.sh_ref_table.range(self.format_start_x + x_index * (2 + self.c_data_mea) + 2,
+                                               self.format_start_y + y_index).value = ovss_r
+
+                        pass
+                    elif self.ch_index == 1:
+                        # VCI channel get measure and record to excel
+                        # or the items for single buck
+                        avdd_r = scope_s.read_mea('P1', "last")
+                        avdd_r = excel_s.float_gene(avdd_r)
+                        excel_s.sh_ref_table.range(self.format_start_x + x_index * (2 + self.c_data_mea) + 1,
+                                               self.format_start_y + y_index).value = avdd_r
+
+                        pass
+                    elif self.ch_index == 2:
+                        # 3-ch get measure and record
+                        ovdd_r = scope_s.read_mea('P6', "last")
+                        ovss_r = scope_s.read_mea('P2', "last")
+                        ovdd_r = excel_s.float_gene(ovdd_r)
+                        ovss_r = excel_s.float_gene(ovss_r)
+                        excel_s.sh_ref_table.range(self.format_start_x + x_index * (2 + self.c_data_mea) + 1,
+                                               self.format_start_y + y_index).value = ovdd_r
+                        excel_s.sh_ref_table.range(self.format_start_x + x_index * (2 + self.c_data_mea) + 2,
+                                               self.format_start_y + y_index).value = ovss_r
+                        avdd_r = scope_s.read_mea('P1', "last")
+                        avdd_r = excel_s.float_gene(avdd_r)
+                        excel_s.sh_ref_table.range(self.format_start_x + x_index * (2 + self.c_data_mea) + 3,
+                                               self.format_start_y + y_index).value = avdd_r
+                        pass
+
+
+                    # buck_ripple = scope_s.read_mea('P1', "last")
+                    # buck_ripple2 = scope_s.read_mea('P1', "mean")
+                    # buck_ripple3 = scope_s.read_mea('P2', "max")
+                    # buck_ripple4 = scope_s.read_mea('P1', "last")
+                    # buck_ripple = excel_s.float_gene(buck_ripple)
+
+                    # excel_s.sh_ref_table.range(self.format_start_x + x_index * (2 + self.c_data_mea) + 1,
+                    #                            self.format_start_y + y_index).value = buck_ripple
 
                     scope_s.trigger_adj('Auto')
                     # need to have scope read and scope capture here
@@ -347,20 +388,20 @@ class ripple_test ():
                     # turn off load and change condition
                     if self.ch_index == 0:
                         # EL power settings
-                        load_s.chg_out(0, excel_s.loader_ELch, 'on')
-                        load_s.chg_out(0, excel_s.loader_VCIch, 'off')
+                        load_s.chg_out2(0, excel_s.loader_ELch, 'on')
+                        load_s.chg_out2(0, excel_s.loader_VCIch, 'off')
 
                         pass
                     elif self.ch_index == 1:
                         # VCI power settings
-                        load_s.chg_out(
+                        load_s.chg_out2(
                             0, excel_s.loader_VCIch, 'on')
-                        load_s.chg_out(0, excel_s.loader_ELch, 'off')
+                        load_s.chg_out2(0, excel_s.loader_ELch, 'off')
 
                         pass
                     elif self.ch_index == 2:
                         # 3-ch power settings
-                        load_s.chg_out(0, excel_s.loader_ELch, 'on')
+                        load_s.chg_out2(0, excel_s.loader_ELch, 'on')
 
                     x_iload = x_iload + 1
                     # end of iload loop
@@ -558,7 +599,7 @@ if __name__ == '__main__':
 
         # add the change current mode for HV buck testing,
         # current setting of loder need to change
-        load_t.chg_mode(1, 'CCM')
+        # load_t.chg_mode(1, 'CCM')
 
         ripple_t.run_verification()
 

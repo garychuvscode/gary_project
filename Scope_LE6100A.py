@@ -204,7 +204,7 @@ class Scope_LE6100A(GInst):
             # print('simulation mode of the scope, read VBS')
             print('read, command is : ' + str(cmd))
 
-            pass
+            return '0.123456789'
 
         pass
 
@@ -227,7 +227,7 @@ class Scope_LE6100A(GInst):
             # print('simulation mode of the scope, read VBS, float')
             print('read_float, command is : ' + str(cmd))
 
-            pass
+            return 0.123456789
 
         pass
 
