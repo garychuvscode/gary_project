@@ -2184,6 +2184,27 @@ class excel_parameter ():
 
         pass
 
+    def float_gene(self, input, scaling=1000, digit=2):
+        '''
+        transfer the digit of float \n
+        input can be string or float \n
+        default scaling to mV
+        '''
+        a = float(input)
+        a = a * scaling
+        if digit == 0:
+            b = float("{:.0f}".format(a))
+        elif digit == 1:
+            b = float("{:.1f}".format(a))
+        elif digit == 2:
+            b = float("{:.2f}".format(a))
+        elif digit == 3:
+            b = float("{:.3f}".format(a))
+        elif digit == 4:
+            b = float("{:.4f}".format(a))
+        print(b)
+        return b
+
 
 if __name__ == '__main__':
     #  the testing code for this file object
@@ -2314,3 +2335,5 @@ if __name__ == '__main__':
         print(return_value)
 
         pass
+
+

@@ -34,7 +34,7 @@ class ripple_test ():
             pwr0 = inst.LPS_505N(3.7, 0.5, 3, 1, 'off')
             pwr0.sim_inst = 0
             # initial the object and set to simulation mode
-            met_v0 = inst.Met_34460(0.0001, 7, 0.000001, 2.5, 21)
+            met_v0 = inst.Met_34460(0.0001, 30, 0.000001, 2.5, 21)
             met_v0.sim_inst = 0
             loader_0 = inst.chroma_63600(1, 7, 'CCL')
             loader_0.sim_inst = 0
@@ -154,6 +154,9 @@ class ripple_test ():
 
         # scope initialization
         scope_s.scope_initial(self.scope_setting)
+
+        # pwr ovoc setting
+        # pwr_s.ov_oc_set(excel_s.pre_vin_max, excel_s.pre_imax)
 
         # control variable
         if self.en_i2c_mode == 1:
@@ -323,6 +326,18 @@ class ripple_test ():
 
                     print('check point')
 
+                    # to capture waveforms
+                    scope_s.trigger_adj('Stopped')
+                    buck_ripple = scope_s.read_mea('P1', "last")
+                    buck_ripple2 = scope_s.read_mea('P1', "mean")
+                    buck_ripple3 = scope_s.read_mea('P2', "mas")
+                    buck_ripple4 = scope_s.read_mea('P1', "last")
+                    buck_ripple = excel_s.float_gene(buck_ripple)
+
+                    excel_s.sh_ref_table.range(self.format_start_x + x_index * (2 + self.c_data_mea) + 1,
+                                               self.format_start_y + y_index).value = buck_ripple
+
+                    scope_s.trigger_adj('Auto')
                     # need to have scope read and scope capture here
 
                     # need to have all measure data process
@@ -469,7 +484,7 @@ if __name__ == '__main__':
     pwr_t.sim_inst = sim_test_set
     pwr_t.open_inst()
     # initial the object and set to simulation mode
-    met_v_t = inst.Met_34460(0.0001, 7, 0.000001, 2.5, 20)
+    met_v_t = inst.Met_34460(0.0001, 30, 0.000001, 2.5, 20)
     met_v_t.sim_inst = sim_test_set
     met_v_t.open_inst()
     load_t = inst.chroma_63600(1, 7, 'CCL')
@@ -512,7 +527,7 @@ if __name__ == '__main__':
 
     # and the different verification method can be call below
 
-    version_select = 0
+    version_select = 1
 
     format_g = form_g.format_gen(excel_t)
     ripple_t = ripple_test(excel_t, pwr_t, met_v_t, load_t,
@@ -524,6 +539,7 @@ if __name__ == '__main__':
     if version_select == 0:
         # create one object
 
+        # this riple is for 374 ripple testing
         format_g.set_sheet_name('CTRL_sh_ripple')
         format_g.sheet_gen()
         format_g.run_format_gen()
@@ -535,5 +551,19 @@ if __name__ == '__main__':
         excel_t.end_of_file(0)
 
     elif version_select == 1:
+
+        format_g.set_sheet_name('CTRL_sh_ex')
+        format_g.sheet_gen()
+        format_g.run_format_gen()
+
+        # add the change current mode for HV buck testing,
+        # current setting of loder need to change
+        load_t.chg_mode(1, 'CCM')
+
+        ripple_t.run_verification()
+
+        format_g.table_return()
+
+        excel_t.end_of_file(0)
 
         excel_t.end_of_file(0)

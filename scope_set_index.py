@@ -49,18 +49,18 @@ class scope_config():
 
             pass
 
-        elif setup_index == 'SY8386C':
+        elif setup_index == 'SY8386C_ripple':
             # index 0 only for functional test
             # the setting for ripple verification
             self.ch_c1 = {'ch_view': 'TRUE', 'volt_dev': '0.02', 'BW': '20MHz', 'filter': 'None', 'v_offset': 0,
                           'label_name': 'Buck', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'AC1M'}
-            self.ch_c2 = {'ch_view': 'TRUE', 'volt_dev': '0.02', 'BW': '20MHz', 'filter': 'None', 'v_offset': 0.04,
+            self.ch_c2 = {'ch_view': 'TRUE', 'volt_dev': '0.02', 'BW': '20MHz', 'filter': 'None', 'v_offset': 0.045,
                           'label_name': 'LDO', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'AC1M'}
             self.ch_c3 = {'ch_view': 'TRUE', 'volt_dev': '0.02', 'BW': '20MHz', 'filter': 'None', 'v_offset': -0.04,
                           'label_name': 'VCC', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'AC1M'}
             self.ch_c4 = {'ch_view': 'TRUE', 'volt_dev': '5', 'BW': '20MHz', 'filter': 'None', 'v_offset': -15,
                           'label_name': 'Vin', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC1M'}
-            self.ch_c5 = {'ch_view': 'TRUE', 'volt_dev': '2', 'BW': '20MHz', 'filter': 'None', 'v_offset': -6.5,
+            self.ch_c5 = {'ch_view': 'TRUE', 'volt_dev': '2', 'BW': '20MHz', 'filter': 'None', 'v_offset': -3.5,
                           'label_name': 'I_load', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC50'}
             self.ch_c6 = {'ch_view': 'FALSE', 'volt_dev': '1', 'BW': '20MHz', 'filter': 'None', 'v_offset': -3.3,
                           'label_name': 'OVDD', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC1M'}
@@ -74,7 +74,7 @@ class scope_config():
                                 'trigger_slope': 'Positive', 'time_scale': '0.0005', 'time_offset': '0', 'sample_mode': 'RealTime', 'fixed_sample_rate': '5GS/s'}
             # note: ripple measurement follow robert's measurement
 
-            # setting of measurement
+            # setting of measurementsinjfij
             self.p1 = {"param": "pkpk", "source": "C1", "view": "TRUE"}
             self.p2 = {"param": "pkpk", "source": "C2", "view": "TRUE"}
             self.p3 = {"param": "pkpk", "source": "C3", "view": "TRUE"}

@@ -12,7 +12,6 @@ import pyvisa
 import scope_set_index as sc_set
 
 
-
 # maybe the instrument need the delay time
 rm = pyvisa.ResourceManager()
 
@@ -559,7 +558,6 @@ class Scope_LE6100A(GInst):
             # for all the other index, look for setting from the setting object
             self.config_loaded(setup_index)
 
-
         # this dictionary is used to assign related measurement
         self.mea_set = {'P1': self.p1, 'P2': self.p2, 'P3': self.p3, 'P4': self.p4,
                         'P5': self.p5, 'P6': self.p6, 'P7': self.p7, 'P8': self.p8, 'P9': self.p9,
@@ -577,9 +575,10 @@ class Scope_LE6100A(GInst):
 
         self.writeVBS(
             f'app.Acquisition.Horizontal.Maximize = "FixedSampleRate"')
-        self.writeVBS(f'app.Acquisition.Horizontal.SampleRate = "{self.set_general["fixed_sample_rate"]}"')
+        self.writeVBS(
+            f'app.Acquisition.Horizontal.SampleRate = "{self.set_general["fixed_sample_rate"]}"')
 
-    def config_loaded(self, setup_index) :
+    def config_loaded(self, setup_index):
         # loaded the configuration from external setting object
         self.sc_config.setting_mapping(setup_index)
         # index 0 only for functional test
@@ -610,7 +609,6 @@ class Scope_LE6100A(GInst):
         self.p12 = self.sc_config.p12
 
         pass
-
 
     def trigger_adj(self, mode=None, source=None, level=None, slope=None):
         # this function is used to adjust the trigger function
@@ -752,17 +750,17 @@ class Scope_LE6100A(GInst):
     def read_mea(self, mea_ch, m_type, return_float=0):
         '''
         mea_ch is measured channel \n
-        m_type is max, mean, min, exc... \n
+        m_type is last(value), mean, max, exc... \n
         '''
 
         if return_float == 0:
             # choose to return the string for read
             mea_result = self.readVBS(
-                f'app.Measure.{mea_ch}.{m_type}.Result.Value')
+                f'return = app.Measure.{mea_ch}.{m_type}.Result.Value')
         else:
             # choose to return the float result
             mea_result = self.readVBS_float(
-                f'app.Measure.{mea_ch}.{m_type}.Result.Value')
+                f'return = app.Measure.{mea_ch}.{m_type}.Result.Value')
 
         return mea_result
 
@@ -771,7 +769,7 @@ if __name__ == '__main__':
     #  the testing code for this file object
     import parameter_load_obj as par
     excel_t = par.excel_parameter('obj_main')
-    sim_scope = 0
+    sim_scope = 1
     default_path = 'C:\\py_gary\\test_excel\\wave_form_raw\\'
 
     scope = Scope_LE6100A('GPIB: 5', 3, sim_scope, excel_t)
@@ -829,7 +827,7 @@ if __name__ == '__main__':
     elif test_index == 3:
         # testing for the measurement setup
 
-        scope.scope_initial('ripple_50374')
+        scope.scope_initial('SY8386C_ripple')
         scope.open_inst()
         temp_name = scope.inst_name()
         print(temp_name)
