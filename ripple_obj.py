@@ -261,7 +261,7 @@ class ripple_test ():
 
                     # assign i_load on related channel
                     iload_target = excel_s.sh_format_gen.range(
-                        (43 + x_iload, 1)).value
+                        (43 + x_iload, 7)).value
 
                     pro_status_str = 'setting iload_target current'
                     excel_s.i_el_status = str(iload_target)
@@ -271,7 +271,8 @@ class ripple_test ():
                     # need to be int, not string for self.ch_index
                     if self.ch_index == 0:
                         # EL power settings
-                        load_s.chg_out2(iload_target, excel_s.loader_ELch, 'on')
+                        load_s.chg_out2(
+                            iload_target, excel_s.loader_ELch, 'on')
                         load_s.chg_out2(0, excel_s.loader_VCIch, 'off')
 
                         pass
@@ -284,7 +285,8 @@ class ripple_test ():
                         pass
                     elif self.ch_index == 2:
                         # 3-ch power settings
-                        load_s.chg_out2(iload_target, excel_s.loader_ELch, 'on')
+                        load_s.chg_out2(
+                            iload_target, excel_s.loader_ELch, 'on')
 
                         # load other target for VCI
                         i_VCI_target = excel_s.sh_format_gen.range('B13')
@@ -307,8 +309,9 @@ class ripple_test ():
 
                     # select teh related range
                     '''
-                    here is to choose related cell for the scope capture
-                    x and y are reverse => key in range will be range(x, y) but in excel is x-y inverse
+                    here is to choose related cell for wafeform capture, x is x axis and y is y axis,
+                    need to input (y, x) for the range input, and x y define is not reverse
+
                     '''
                     y_index = x_iload
                     x_index = x_vin
@@ -338,9 +341,9 @@ class ripple_test ():
                         ovdd_r = excel_s.float_gene(ovdd_r)
                         ovss_r = excel_s.float_gene(ovss_r)
                         excel_s.sh_ref_table.range(self.format_start_x + x_index * (2 + self.c_data_mea) + 1,
-                                               self.format_start_y + y_index).value = ovdd_r
+                                                   self.format_start_y + y_index).value = ovdd_r
                         excel_s.sh_ref_table.range(self.format_start_x + x_index * (2 + self.c_data_mea) + 2,
-                                               self.format_start_y + y_index).value = ovss_r
+                                                   self.format_start_y + y_index).value = ovss_r
 
                         pass
                     elif self.ch_index == 1:
@@ -349,7 +352,7 @@ class ripple_test ():
                         avdd_r = scope_s.read_mea('P1', "last")
                         avdd_r = excel_s.float_gene(avdd_r)
                         excel_s.sh_ref_table.range(self.format_start_x + x_index * (2 + self.c_data_mea) + 1,
-                                               self.format_start_y + y_index).value = avdd_r
+                                                   self.format_start_y + y_index).value = avdd_r
 
                         pass
                     elif self.ch_index == 2:
@@ -359,15 +362,14 @@ class ripple_test ():
                         ovdd_r = excel_s.float_gene(ovdd_r)
                         ovss_r = excel_s.float_gene(ovss_r)
                         excel_s.sh_ref_table.range(self.format_start_x + x_index * (2 + self.c_data_mea) + 1,
-                                               self.format_start_y + y_index).value = ovdd_r
+                                                   self.format_start_y + y_index).value = ovdd_r
                         excel_s.sh_ref_table.range(self.format_start_x + x_index * (2 + self.c_data_mea) + 2,
-                                               self.format_start_y + y_index).value = ovss_r
+                                                   self.format_start_y + y_index).value = ovss_r
                         avdd_r = scope_s.read_mea('P1', "last")
                         avdd_r = excel_s.float_gene(avdd_r)
                         excel_s.sh_ref_table.range(self.format_start_x + x_index * (2 + self.c_data_mea) + 3,
-                                               self.format_start_y + y_index).value = avdd_r
+                                                   self.format_start_y + y_index).value = avdd_r
                         pass
-
 
                     # buck_ripple = scope_s.read_mea('P1', "last")
                     # buck_ripple2 = scope_s.read_mea('P1', "mean")

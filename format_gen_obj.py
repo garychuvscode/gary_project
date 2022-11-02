@@ -186,6 +186,9 @@ class format_gen:
                 # need to check every cell in the effective operating range
                 # from the sheet setting in CTRL sheet
                 str_temp = self.sh_format_gen.range((43 + y_dim, 2)).value
+
+                # 221102 insert for summary table
+
                 excel_temp = col_str + '\n' + \
                     str(str_temp) + item_str + '\n' + extra_str
                 self.sh_ref_table.range(
