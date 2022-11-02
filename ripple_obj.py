@@ -336,7 +336,7 @@ class ripple_test ():
                     if self.ch_index == 0:
                         # EL channel get measure and record to excel
                         # OVDD is at P6, OVSS is at P4
-                        ovdd_r = scope_s.read_mea('P6', "last")
+                        ovdd_r = scope_s.read_mea('P3', "last")
                         ovss_r = scope_s.read_mea('P2', "last")
                         ovdd_r = excel_s.float_gene(ovdd_r)
                         ovss_r = excel_s.float_gene(ovss_r)
@@ -363,7 +363,7 @@ class ripple_test ():
                         pass
                     elif self.ch_index == 2:
                         # 3-ch get measure and record
-                        ovdd_r = scope_s.read_mea('P6', "last")
+                        ovdd_r = scope_s.read_mea('P3', "last")
                         ovss_r = scope_s.read_mea('P2', "last")
                         ovdd_r = excel_s.float_gene(ovdd_r)
                         ovss_r = excel_s.float_gene(ovss_r)
