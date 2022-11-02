@@ -188,6 +188,9 @@ class format_gen:
                 str_temp = self.sh_format_gen.range((43 + y_dim, 2)).value
 
                 # 221102 insert for summary table
+                # self.excel_ini.sum_table_gen(self.excel_ini.summary_start_x, self.excel_ini.summary_start_y, 0, y_dim + 1, content = str_temp)
+                self.summary_fo_gen(
+                    0, y_dim + 1, self.c_row_item, self.c_data_mea, str_temp)
 
                 excel_temp = col_str + '\n' + \
                     str(str_temp) + item_str + '\n' + extra_str
@@ -202,6 +205,11 @@ class format_gen:
                 while x_dim < c_x_dim:
 
                     str_temp = self.sh_format_gen.range((43 + x_dim, 1)).value
+                    # 221102 insert for summary table
+                    # self.excel_ini.sum_table_gen(self.excel_ini.summary_start_x, self.excel_ini.summary_start_y, x_dim + 1, 0, content = str_temp)
+                    self.summary_fo_gen(
+                        x_dim + 1, 0, self.c_row_item, self.c_data_mea, str_temp)
+
                     excel_temp = row_str + str(str_temp)
                     self.sh_ref_table.range(
                         (4 + y_dim * 3, 1 + 1 + x_dim)).value = excel_temp
@@ -229,6 +237,12 @@ class format_gen:
                     # then assign the related data name for related row ( in reverse order )
                     excel_temp = self.sh_format_gen.range(
                         (43 + self.c_data_mea - x_data_mea - 1, 3)).value
+
+                    if x_column_item == 0:
+                        # 221102 insert for summary table
+                        self.excel_ini.sum_table_gen(self.excel_ini.summary_start_x, self.excel_ini.summary_start_y,
+                                                     0 + (self.c_data_mea - x_data_mea - 1) * (c_x_dim + self.excel_ini.summary_gap), 0, content=excel_temp)
+
                     self.sh_ref_table.range(
                         (6 + (2 + self.c_data_mea) * x_column_item, 1)).value = excel_temp
                     # keep the added row in the default high, not change due to insert
@@ -244,6 +258,18 @@ class format_gen:
             self.excel_ini.excel_save()
             # wb_res.save(result_book_trace)
             # save the result after program is finished
+            pass
+
+        pass
+
+    def summary_fo_gen(self, x_ind, y_ind, c_x_item, c_mea=1, content=0):
+
+        for i in range(0, int(c_mea)):
+
+            # 221102 insert for summary table
+            self.excel_ini.sum_table_gen(
+                self.excel_ini.summary_start_x, self.excel_ini.summary_start_y, x_ind + i * (c_x_item + self.excel_ini.summary_gap), y_ind, content)
+
             pass
 
         pass

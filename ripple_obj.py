@@ -79,8 +79,8 @@ class ripple_test ():
         # record the mapped sheet have related command
         self.sh_verification_control = self.excel_ini.sh_format_gen
         # fixed start point of the format gen (waveform element)
-        self.format_start_x = self.excel_ini.format_start_x
         self.format_start_y = self.excel_ini.format_start_y
+        self.format_start_x = self.excel_ini.format_start_x
         self.en_i2c_mode = self.sh_verification_control.range('B10').value
         self.i2c_group = self.sh_verification_control.range('B11').value
         self.c_i2c = self.sh_verification_control.range('B12').value
@@ -289,7 +289,7 @@ class ripple_test ():
                             iload_target, excel_s.loader_ELch, 'on')
 
                         # load other target for VCI
-                        i_VCI_target = excel_s.sh_format_gen.range('B13')
+                        i_VCI_target = excel_s.sh_format_gen.range('B13').value
                         load_s.chg_out2(
                             i_VCI_target, excel_s.loader_VCIch, 'on')
                         pass
@@ -313,11 +313,11 @@ class ripple_test ():
                     need to input (y, x) for the range input, and x y define is not reverse
 
                     '''
-                    y_index = x_iload
-                    x_index = x_vin
+                    x_index = x_iload
+                    y_index = x_vin
 
-                    active_range = excel_s.sh_ref_table.range(self.format_start_x + x_index * (2 + self.c_data_mea),
-                                                              self.format_start_y + y_index)
+                    active_range = excel_s.sh_ref_table.range(self.format_start_y + y_index * (2 + self.c_data_mea),
+                                                              self.format_start_x + x_index)
                     # (1 + ripple_item) is waveform + ripple item + one current line
                     if self.obj_sim_mode == 0:
                         excel_s.scope_capture(
@@ -340,10 +340,14 @@ class ripple_test ():
                         ovss_r = scope_s.read_mea('P2', "last")
                         ovdd_r = excel_s.float_gene(ovdd_r)
                         ovss_r = excel_s.float_gene(ovss_r)
-                        excel_s.sh_ref_table.range(self.format_start_x + x_index * (2 + self.c_data_mea) + 1,
-                                                   self.format_start_y + y_index).value = ovdd_r
-                        excel_s.sh_ref_table.range(self.format_start_x + x_index * (2 + self.c_data_mea) + 2,
-                                                   self.format_start_y + y_index).value = ovss_r
+                        excel_s.sh_ref_table.range(self.format_start_y + y_index * (2 + self.c_data_mea) + 1,
+                                                   self.format_start_x + x_index).value = ovdd_r
+                        excel_s.sh_ref_table.range(self.format_start_y + y_index * (2 + self.c_data_mea) + 2,
+                                                   self.format_start_x + x_index).value = ovss_r
+                        excel_s.sum_table_gen(
+                            excel_s.summary_start_x, excel_s.summary_start_y, 1 + x_index, 1 + y_index, ovdd_r)
+                        excel_s.sum_table_gen(excel_s.summary_start_x, excel_s.summary_start_y,
+                                              1 + x_index + c_load_curr + c_vin, 1 + y_index, ovss_r)
 
                         pass
                     elif self.ch_index == 1:
@@ -351,8 +355,10 @@ class ripple_test ():
                         # or the items for single buck
                         avdd_r = scope_s.read_mea('P1', "last")
                         avdd_r = excel_s.float_gene(avdd_r)
-                        excel_s.sh_ref_table.range(self.format_start_x + x_index * (2 + self.c_data_mea) + 1,
-                                                   self.format_start_y + y_index).value = avdd_r
+                        excel_s.sh_ref_table.range(self.format_start_y + y_index * (2 + self.c_data_mea) + 1,
+                                                   self.format_start_x + x_index).value = avdd_r
+                        excel_s.sum_table_gen(
+                            excel_s.summary_start_x, excel_s.summary_start_y, 1 + x_index, 1 + y_index, avdd_r)
 
                         pass
                     elif self.ch_index == 2:
@@ -361,14 +367,20 @@ class ripple_test ():
                         ovss_r = scope_s.read_mea('P2', "last")
                         ovdd_r = excel_s.float_gene(ovdd_r)
                         ovss_r = excel_s.float_gene(ovss_r)
-                        excel_s.sh_ref_table.range(self.format_start_x + x_index * (2 + self.c_data_mea) + 1,
-                                                   self.format_start_y + y_index).value = ovdd_r
-                        excel_s.sh_ref_table.range(self.format_start_x + x_index * (2 + self.c_data_mea) + 2,
-                                                   self.format_start_y + y_index).value = ovss_r
+                        excel_s.sh_ref_table.range(self.format_start_y + y_index * (2 + self.c_data_mea) + 1,
+                                                   self.format_start_x + x_index).value = ovdd_r
+                        excel_s.sh_ref_table.range(self.format_start_y + y_index * (2 + self.c_data_mea) + 2,
+                                                   self.format_start_x + x_index).value = ovss_r
                         avdd_r = scope_s.read_mea('P1', "last")
                         avdd_r = excel_s.float_gene(avdd_r)
-                        excel_s.sh_ref_table.range(self.format_start_x + x_index * (2 + self.c_data_mea) + 3,
-                                                   self.format_start_y + y_index).value = avdd_r
+                        excel_s.sh_ref_table.range(self.format_start_y + y_index * (2 + self.c_data_mea) + 3,
+                                                   self.format_start_x + x_index).value = avdd_r
+                        excel_s.sum_table_gen(
+                            excel_s.summary_start_x, excel_s.summary_start_y, 1 + x_index, 1 + y_index, ovdd_r)
+                        excel_s.sum_table_gen(excel_s.summary_start_x, excel_s.summary_start_y,
+                                              1 + x_index + 1 * (c_load_curr + c_vin), 1 + y_index, ovss_r)
+                        excel_s.sum_table_gen(excel_s.summary_start_x, excel_s.summary_start_y,
+                                              1 + x_index + 2 * (c_load_curr + c_vin), 1 + y_index, avdd_r)
                         pass
 
                     # buck_ripple = scope_s.read_mea('P1', "last")
@@ -377,8 +389,8 @@ class ripple_test ():
                     # buck_ripple4 = scope_s.read_mea('P1', "last")
                     # buck_ripple = excel_s.float_gene(buck_ripple)
 
-                    # excel_s.sh_ref_table.range(self.format_start_x + x_index * (2 + self.c_data_mea) + 1,
-                    #                            self.format_start_y + y_index).value = buck_ripple
+                    # excel_s.sh_ref_table.range(self.format_start_y + y_index * (2 + self.c_data_mea) + 1,
+                    #                            self.format_start_x + x_index).value = buck_ripple
 
                     scope_s.trigger_adj('Auto')
                     # need to have scope read and scope capture here

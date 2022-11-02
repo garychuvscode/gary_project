@@ -416,12 +416,14 @@ class excel_parameter ():
         self.c_ctrl_var2 = 0
         self.c_ctrl_var4 = 0
         # fixed start point of the format gen (waveform element), (2, 5)
-        self.format_start_x = 5
-        self.format_start_y = 2
+        self.format_start_x = 2
+        self.format_start_y = 5
         # record the width and height from format gen and can be loaded to
         # 221102: the summary table at format gen control sheet, (13, 7) M7, L6 move
-        self.summary_start_x = 7
-        self.summary_start_y = 13
+        self.summary_start_x = 13
+        self.summary_start_y = 7
+        # gap for the summary table from left to right
+        self.summary_gap = 4
 
 
         # waveform capture related testing
@@ -2210,7 +2212,7 @@ class excel_parameter ():
         print(b)
         return b
 
-    def sum_table_gen (self, ind_x, ind_y, x_axis = 0 , y_axis = 0 , sheet = 0, content = 0):
+    def sum_table_gen (self, ind_x, ind_y, x_axis = 0 , y_axis = 0 , content = 0, sheet = 0):
 
         '''
         this function is used to generate the summary table of testing result \n
