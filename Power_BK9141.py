@@ -6,6 +6,11 @@ import time
 
 
 class Power_BK9141(GInst):
+    '''
+    Class library from Geroge is channel based instrument, need to define by channel
+    not a single instrument \n
+    for parallel operation, need to setup by hand and use the channel 1 as control window
+    '''
 
     def __init__(self, link, ch):
         super().__init__()

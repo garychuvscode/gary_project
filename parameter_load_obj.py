@@ -2205,6 +2205,31 @@ class excel_parameter ():
         print(b)
         return b
 
+    def sum_table_gen (self, ind_x, ind_y, x_axis = 0 , y_axis = 0 , sheet = 0, content = 0):
+
+        '''
+        this function is used to generate the summary table of testing result \n
+        ind_x, ind_y are the index coordinate of table; status: 'build' or 'fill';
+        content: string input; x_axis , y_axis are the coordinate for build input;
+        count is the fill input; sheet is default set to mapped fomat gen sheet,
+        change with verification items
+        '''
+
+        # if sheet set ot 0 is to used original control sheet
+        if sheet == 0 :
+            sheet = self.sh_format_gen
+            print('default sheet selected for g')
+
+        sheet.range((ind_y + y_axis, ind_x + x_axis)).value = content
+
+
+
+
+
+
+
+        pass
+
 
 if __name__ == '__main__':
     #  the testing code for this file object
