@@ -419,6 +419,11 @@ class excel_parameter ():
         self.format_start_x = 5
         self.format_start_y = 2
         # record the width and height from format gen and can be loaded to
+        # 221102: the summary table at format gen control sheet, (13, 7) M7, L6 move
+        self.summary_start_x = 7
+        self.summary_start_y = 13
+
+
         # waveform capture related testing
         self.wave_height = 93.8
         self.wave_width = 31.36
@@ -428,7 +433,7 @@ class excel_parameter ():
         self.wave_sheet = ''
         # extra name for the testing conditon for waveform name
         self.wave_condition = ''
-        # the full pat used to load the waveform from HDD
+        # the full path used to load the waveform from HDD
         self.full_path = ''
 
         # =============
@@ -2221,12 +2226,6 @@ class excel_parameter ():
             print('default sheet selected for g')
 
         sheet.range((ind_y + y_axis, ind_x + x_axis)).value = content
-
-
-
-
-
-
 
         pass
 

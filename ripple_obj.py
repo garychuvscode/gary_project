@@ -307,8 +307,8 @@ class ripple_test ():
 
                     # select teh related range
                     '''
-                    here is to choose related cell for the
-
+                    here is to choose related cell for the scope capture
+                    x and y are reverse => key in range will be range(x, y) but in excel is x-y inverse
                     '''
                     y_index = x_iload
                     x_index = x_vin
