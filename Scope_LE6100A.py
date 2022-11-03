@@ -287,6 +287,10 @@ class Scope_LE6100A(GInst):
         pass
 
     def triggerSingle(self):
+        '''
+        this single will clear swqqp after single
+        which means that the sample of data will only be once
+        '''
 
         if self.sim_inst == 1:
             #logging.debug(f': {cmd}')
@@ -671,6 +675,21 @@ class Scope_LE6100A(GInst):
         'to adjust time scale, enter (/div, offset)'
 
         if div != None:
+            if div > 0.001 :
+                # for higher than 1ms, need to set to maximum memory
+                self.writeVBS(
+                    f'app.Acquisition.Horizontal.Maximize = "SetMaximumMemory"')
+                # self.writeVBS(f'app.Acquisition.Horizontal.SampleRate = "2.5GS/s"')
+
+
+            else:
+                # for <= 1ms, using fixed sample rate and set to 2.5G/s
+
+                self.writeVBS(
+                    f'app.Acquisition.Horizontal.Maximize = "FixedSampleRate"')
+                self.writeVBS(f'app.Acquisition.Horizontal.SampleRate = "2.5GS/s"')
+
+
             # change the time scale for the scope
             self.writeVBS(
                 f'app.Acquisition.Horizontal.HorScale = {div}')
@@ -764,6 +783,24 @@ class Scope_LE6100A(GInst):
 
         return mea_result
 
+    def capture_full (self, wait_time_s = 5, path_t = 0):
+        '''
+        this function is the fully scope process, include: clear sweep => Auto =>
+        wait time => set to single(trigger) => when trigged stop and capture
+
+        '''
+
+        self.writeVBS('app.ClearSweeps')
+        self.trigger_adj(mode = 'Auto')
+        time.sleep(wait_time_s)
+
+        self.trigger_adj(mode='Single')
+        self.waitTriggered()
+        self.printScreenToPC(path=path_t)
+
+
+        pass
+
 
 if __name__ == '__main__':
     #  the testing code for this file object
@@ -832,5 +869,10 @@ if __name__ == '__main__':
         temp_name = scope.inst_name()
         print(temp_name)
         # scope.mea_default_setup()
+
+        scope.Hor_scale_adj(0.005, 0)
+        scope.Hor_scale_adj(0.0005, 0.0003)
+        scope.Hor_scale_adj(0.00025, 0.0001)
+
 
         pass

@@ -274,6 +274,8 @@ class ripple_test ():
                         load_s.chg_out2(
                             iload_target, excel_s.loader_ELch, 'on')
                         load_s.chg_out2(0, excel_s.loader_VCIch, 'off')
+                        # trigger OVDD
+                        scope_s.trigger_adj(mode='Auto', source='C6', level=0)
 
                         pass
                     elif self.ch_index == 1:
@@ -281,6 +283,8 @@ class ripple_test ():
                         load_s.chg_out2(
                             iload_target, excel_s.loader_VCIch, 'on')
                         load_s.chg_out2(0, excel_s.loader_ELch, 'off')
+                        # trigger AVDD
+                        scope_s.trigger_adj(mode='Auto', source='C1', level=0)
 
                         pass
                     elif self.ch_index == 2:
@@ -292,6 +296,9 @@ class ripple_test ():
                         i_VCI_target = excel_s.sh_format_gen.range('B13').value
                         load_s.chg_out2(
                             i_VCI_target, excel_s.loader_VCIch, 'on')
+
+                        # trigger OVDD
+                        scope_s.trigger_adj(mode='Auto', source='C6', level=0)
                         pass
 
                     # calibration Vin
@@ -305,7 +312,9 @@ class ripple_test ():
 
                     # measure and capture waveform
 
-                    scope_s.printScreenToPC(0)
+                    scope_s.capture_full(path_t=0)
+                    # for simulation path using path_t=0.5
+                    # scope_s.printScreenToPC(0)
 
                     # select teh related range
                     '''
@@ -329,8 +338,8 @@ class ripple_test ():
 
                     print('check point')
 
-                    # to capture waveforms
-                    scope_s.trigger_adj('Stopped')
+                    # # to capture waveforms
+                    # scope_s.trigger_adj('Stopped')
 
                     # need to be int, not string for self.ch_index
                     if self.ch_index == 0:
