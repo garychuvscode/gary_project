@@ -345,8 +345,8 @@ class ripple_test ():
                     if self.ch_index == 0:
                         # EL channel get measure and record to excel
                         # OVDD is at P6, OVSS is at P4
-                        ovdd_r = scope_s.read_mea('P3', "last")
-                        ovss_r = scope_s.read_mea('P2', "last")
+                        ovdd_r = scope_s.read_mea('P3', "mean")
+                        ovss_r = scope_s.read_mea('P2', "mean")
                         ovdd_r = excel_s.float_gene(ovdd_r)
                         ovss_r = excel_s.float_gene(ovss_r)
                         excel_s.sh_ref_table.range(self.format_start_y + y_index * (2 + self.c_data_mea) + 1,
@@ -356,13 +356,13 @@ class ripple_test ():
                         excel_s.sum_table_gen(
                             excel_s.summary_start_x, excel_s.summary_start_y, 1 + x_index, 1 + y_index, ovdd_r)
                         excel_s.sum_table_gen(excel_s.summary_start_x, excel_s.summary_start_y,
-                                              1 + x_index + c_load_curr + c_vin, 1 + y_index, ovss_r)
+                                              1 + x_index + (c_load_curr + c_vin - 1), 1 + y_index, ovss_r)
 
                         pass
                     elif self.ch_index == 1:
                         # VCI channel get measure and record to excel
                         # or the items for single buck
-                        avdd_r = scope_s.read_mea('P1', "last")
+                        avdd_r = scope_s.read_mea('P1', "mean")
                         avdd_r = excel_s.float_gene(avdd_r)
                         excel_s.sh_ref_table.range(self.format_start_y + y_index * (2 + self.c_data_mea) + 1,
                                                    self.format_start_x + x_index).value = avdd_r
@@ -372,24 +372,24 @@ class ripple_test ():
                         pass
                     elif self.ch_index == 2:
                         # 3-ch get measure and record
-                        ovdd_r = scope_s.read_mea('P3', "last")
-                        ovss_r = scope_s.read_mea('P2', "last")
+                        ovdd_r = scope_s.read_mea('P3', "mean")
+                        ovss_r = scope_s.read_mea('P2', "mean")
                         ovdd_r = excel_s.float_gene(ovdd_r)
                         ovss_r = excel_s.float_gene(ovss_r)
                         excel_s.sh_ref_table.range(self.format_start_y + y_index * (2 + self.c_data_mea) + 1,
                                                    self.format_start_x + x_index).value = ovdd_r
                         excel_s.sh_ref_table.range(self.format_start_y + y_index * (2 + self.c_data_mea) + 2,
                                                    self.format_start_x + x_index).value = ovss_r
-                        avdd_r = scope_s.read_mea('P1', "last")
+                        avdd_r = scope_s.read_mea('P1', "mean")
                         avdd_r = excel_s.float_gene(avdd_r)
                         excel_s.sh_ref_table.range(self.format_start_y + y_index * (2 + self.c_data_mea) + 3,
                                                    self.format_start_x + x_index).value = avdd_r
                         excel_s.sum_table_gen(
                             excel_s.summary_start_x, excel_s.summary_start_y, 1 + x_index, 1 + y_index, ovdd_r)
                         excel_s.sum_table_gen(excel_s.summary_start_x, excel_s.summary_start_y,
-                                              1 + x_index + 1 * (c_load_curr + c_vin), 1 + y_index, ovss_r)
+                                              1 + x_index + 1 * (c_load_curr + c_vin - 1), 1 + y_index, ovss_r)
                         excel_s.sum_table_gen(excel_s.summary_start_x, excel_s.summary_start_y,
-                                              1 + x_index + 2 * (c_load_curr + c_vin), 1 + y_index, avdd_r)
+                                              1 + x_index + 2 * (c_load_curr + c_vin - 1), 1 + y_index, avdd_r)
                         pass
 
                     # buck_ripple = scope_s.read_mea('P1', "last")
