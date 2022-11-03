@@ -670,12 +670,17 @@ class Scope_LE6100A(GInst):
 
         pass
 
-    def Hor_scale_adj(self, div=None, offset=None):
+    def Hor_scale_adj(self, div=None, offset=None, sample_rate = 0):
         # this program used to adjust the time scale
-        'to adjust time scale, enter (/div, offset)'
+        '''
+        to adjust time scale, enter (/div, offset) \n
+        sample rate will be default if not setting \n
+        sample rate: 1.25GS/s, 2.5GS/s, 5GS/s, 100MS/s, 500MS/s...
+        '''
+
 
         if div != None:
-            if div > 0.001 :
+            if float(div) > 0.001 :
                 # for higher than 1ms, need to set to maximum memory
                 self.writeVBS(
                     f'app.Acquisition.Horizontal.Maximize = "SetMaximumMemory"')
@@ -687,19 +692,24 @@ class Scope_LE6100A(GInst):
 
                 self.writeVBS(
                     f'app.Acquisition.Horizontal.Maximize = "FixedSampleRate"')
-                self.writeVBS(f'app.Acquisition.Horizontal.SampleRate = "2.5GS/s"')
+                if sample_rate == 0 :
+                    self.writeVBS(f'app.Acquisition.Horizontal.SampleRate = "{self.set_general["fixed_sample_rate"]}"')
+                else:
+                    self.writeVBS(f'app.Acquisition.Horizontal.SampleRate = "{str(sample_rate)}"')
 
 
             # change the time scale for the scope
             self.writeVBS(
                 f'app.Acquisition.Horizontal.HorScale = {div}')
-            self.set_general['time_scale'] = div
+            # self.set_general['time_scale'] = div
+            # this should be default not change
 
         if offset != None:
             # hcange the offset of zero point in the scope
             self.writeVBS(
                 f'app.Acquisition.Horizontal.HorOffset = {offset}')
-            self.set_general['time_offset'] = offset
+            # self.set_general['time_offset'] = offset
+            # this should be default not change
 
         pass
 

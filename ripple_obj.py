@@ -259,6 +259,12 @@ class ripple_test ():
                 x_iload = 0
                 while x_iload < c_load_curr:
 
+                    if x_iload == 0:
+                        scope_s.Hor_scale_adj(0.01)
+                    else:
+                        scope_s.Hor_scale_adj(
+                            scope_s.set_general['time_scale'], scope_s.set_general['time_offset'])
+
                     # assign i_load on related channel
                     iload_target = excel_s.sh_format_gen.range(
                         (43 + x_iload, 7)).value
@@ -533,7 +539,7 @@ class ripple_test ():
 
 if __name__ == '__main__':
     #  the testing code for this file object
-    sim_test_set = 0
+    sim_test_set = 1
 
     # ======== only for object programming
     # testing used temp instrument
