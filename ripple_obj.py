@@ -351,8 +351,8 @@ class ripple_test ():
                     if self.ch_index == 0:
                         # EL channel get measure and record to excel
                         # OVDD is at P6, OVSS is at P4
-                        ovdd_r = scope_s.read_mea('P3', "mean")
-                        ovss_r = scope_s.read_mea('P2', "mean")
+                        ovdd_r = scope_s.read_mea('P3', excel_s.scope_value)
+                        ovss_r = scope_s.read_mea('P2', excel_s.scope_value)
                         ovdd_r = excel_s.float_gene(ovdd_r)
                         ovss_r = excel_s.float_gene(ovss_r)
                         excel_s.sh_ref_table.range(self.format_start_y + y_index * (2 + self.c_data_mea) + 1,
@@ -368,7 +368,7 @@ class ripple_test ():
                     elif self.ch_index == 1:
                         # VCI channel get measure and record to excel
                         # or the items for single buck
-                        avdd_r = scope_s.read_mea('P1', "mean")
+                        avdd_r = scope_s.read_mea('P1', excel_s.scope_value)
                         avdd_r = excel_s.float_gene(avdd_r)
                         excel_s.sh_ref_table.range(self.format_start_y + y_index * (2 + self.c_data_mea) + 1,
                                                    self.format_start_x + x_index).value = avdd_r
@@ -378,15 +378,15 @@ class ripple_test ():
                         pass
                     elif self.ch_index == 2:
                         # 3-ch get measure and record
-                        ovdd_r = scope_s.read_mea('P3', "mean")
-                        ovss_r = scope_s.read_mea('P2', "mean")
+                        ovdd_r = scope_s.read_mea('P3', excel_s.scope_value)
+                        ovss_r = scope_s.read_mea('P2', excel_s.scope_value)
                         ovdd_r = excel_s.float_gene(ovdd_r)
                         ovss_r = excel_s.float_gene(ovss_r)
                         excel_s.sh_ref_table.range(self.format_start_y + y_index * (2 + self.c_data_mea) + 1,
                                                    self.format_start_x + x_index).value = ovdd_r
                         excel_s.sh_ref_table.range(self.format_start_y + y_index * (2 + self.c_data_mea) + 2,
                                                    self.format_start_x + x_index).value = ovss_r
-                        avdd_r = scope_s.read_mea('P1', "mean")
+                        avdd_r = scope_s.read_mea('P1', excel_s.scope_value)
                         avdd_r = excel_s.float_gene(avdd_r)
                         excel_s.sh_ref_table.range(self.format_start_y + y_index * (2 + self.c_data_mea) + 3,
                                                    self.format_start_x + x_index).value = avdd_r
@@ -539,7 +539,7 @@ class ripple_test ():
 
 if __name__ == '__main__':
     #  the testing code for this file object
-    sim_test_set = 1
+    sim_test_set = 0
 
     # ======== only for object programming
     # testing used temp instrument

@@ -171,7 +171,7 @@ class LPS_505N:
             # must change both voltage and current together for every update
             # so the power supply will change output
             self.cmd_str_V = ("PROG:VSET" + str(int(self.act_ch_o)) +
-                          ":" + str(self.vset_o))
+                              ":" + str(self.vset_o))
             self.inst_obj.write(self.cmd_str_V)
             self.inst_obj.write(self.cmd_str_I)
             # when the source is already on, need to have the turn on command to update the final
@@ -179,7 +179,7 @@ class LPS_505N:
             # (only change the output voltage but not the current)
             # use another command to update at the same time
             self.cmd_str_out_sw = "OUT" + \
-            str(int(self.act_ch_o)) + ":" + str(self.state_o)
+                str(int(self.act_ch_o)) + ":" + str(self.state_o)
             self.inst_obj.write(self.cmd_str_out_sw)
             time.sleep(wait_samll)
 
@@ -237,7 +237,6 @@ class LPS_505N:
         vin_target = float(vin_target)
         vin_ch = int(vin_ch)
 
-
         # need to return the channel after the calibration is finished
         temp_mcu_channel = mcu0.meter_ch_ctrl
         v_res_temp = 0
@@ -282,9 +281,8 @@ class LPS_505N:
                 if vin_new > excel0.pre_vin_max:
                     vin_new = excel0.pre_vin_max
 
-                if vin_new < 0 :
+                if vin_new < 0:
                     vin_new = 0
-
 
                 if vin_ch == 0:
                     self.change_V(vin_new, excel0.relay0_ch)
@@ -775,7 +773,6 @@ class chroma_63600:
         iset1 = float(iset1)
         act_ch1 = int(act_ch1)
 
-
         # filter iset before update current into the array, based on the CCx mode
         # CCL => 200mA, CCM => 2A, CCH => 20A
         # to limit the iset at selected range and is able to find out wrong
@@ -865,15 +862,15 @@ class chroma_63600:
 
         # CCL => 200mA, CCM => 2A, CCH => 20A
         # auto change iset based on different loading requirement
-        if iset1 > 2 :
+        if iset1 > 2:
             # this should be CCM mode
             self.chg_mode(act_ch1, "CCH")
-            if iset1 > 20 :
+            if iset1 > 20:
                 iset1 = 20
-        elif iset1 > 0.2 :
+        elif iset1 > 0.2:
             # this should be CCM mode
             self.chg_mode(act_ch1, "CCM")
-        else :
+        else:
             # this should be CCL mode
             self.chg_mode(act_ch1, "CCL")
 
@@ -1761,7 +1758,7 @@ class chamber_su242:
         elif tset0 < self.temp_L_limt:
             tset0 = self.temp_L_limt
 
-        print('now is going to turn on, tset:' + str(tset0))
+        print('now is going to turn on, tset: ' + str(tset0))
         # self.inst_obj.write(self.mode_set_str + self.end_str)
         self.only_write(self.mode_set_str + self.end_str)
         self.only_write(self.temp_set_str +

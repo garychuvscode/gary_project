@@ -14,7 +14,7 @@ import numpy as np
 import parameter_load_obj as par
 
 
-class format_gen:
+class format_gen ():
 
     # this class is used to measure IQ from the DUT, based on the I/O setting and different Vin
     # measure the IQ

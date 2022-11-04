@@ -1,10 +1,15 @@
 import pyvisa
 import re
+import time
+import locale as lo
 
 from .GInst import *
 import time
 
+wait_samll = 0.05
+wait_time = 0.2
 
+rm = pyvisa.ResourceManager()
 class Power_BK9141(GInst):
     '''
     Class library from Geroge is channel based instrument, need to define by channel
@@ -12,51 +17,79 @@ class Power_BK9141(GInst):
     for parallel operation, need to setup by hand and use the channel 1 as control window
     '''
 
-    def __init__(self, link, ch):
+    def __init__(self, link = '', ch = 'CH1', sim_inst0 = 1, excel0 = 0, ini = 0, addr = 0):
         super().__init__()
+        '''
+        ini = 0 is not to use geroge's open instrument, and it's been define as single channel
+        add other function of operate as a whole instrument
 
-        rm = pyvisa.ResourceManager()
+        '''
+        self.sim_inst = sim_inst0
+        self.GP_addr_ini = addr
+        prog_only = 1
+        if prog_only == 0:
+            # ======== only for object programming
+            # testing used temp instrument
+            # need to become comment when the OBJ is finished
+            import parameter_load_obj as par
+            # for the jump out window
 
-        self.link = link
-        self.ch = ch
+            # initial the object and set to simulation mode
 
-        self.chConvert = {'CH1': '0', 'CH2': '1', 'CH3': '2', 'ALL': ':ALL'}
+            # using the main control book as default
+            excel0 = par.excel_parameter('obj_main')
+            # ======== only for object programming
 
-        try:
-            self.inst = rm.open_resource(link)
-            self.inst.read_termination = '\n'
-            self.inst.write_termination = '\n'
-            self.inst.baud_rate = 38400
-            self.inst.timeout = 500
 
-        except Exception as e:
-            raise Exception(
-                f'<>< Power_BK9141 ><> open 3-CH Power Fail {str(e)}!')
+        if ini == 1 :
+        # move the rm of Geroge to the top, since there will be other way to open instrument
+        # rm = pyvisa.ResourceManager()
 
-        idn = self.inst.query('*IDN?')
+            self.link = link
+            # link is the GPIB string for pyvisa resource manager
+            self.ch = ch
+            # ch is the channel index for in below dictionary
+            self.chConvert = {'CH1': '0', 'CH2': '1', 'CH3': '2', 'ALL': ':ALL'}
 
-        if '9141' not in idn:
-            raise Exception(f'<>< Power_BK9141 ><> "9141" not fit in "{idn}"!')
+            try:
+                self.inst = rm.open_resource(link)
+                self.inst.read_termination = '\n'
+                self.inst.write_termination = '\n'
+                self.inst.baud_rate = 38400
+                self.inst.timeout = 500
+
+            except Exception as e:
+                raise Exception(
+                    f'<>< Power_BK9141 ><> open 3-CH Power Fail {str(e)}!')
+
+            idn = self.inst.query('*IDN?')
+
+            if '9141' not in idn:
+                raise Exception(f'<>< Power_BK9141 ><> "9141" not fit in "{idn}"!')
 
     # @GInstSetMethod(unit = 'V')
 
-    def setVoltage(self, voltage):
+    def setVoltage(self, voltage, ch_str = 0):
         """
         power.setVoltage(voltage) -> None
         ================================================================
         [power(channel) set Voltage]
         :param voltage:
-        :return: None.
+        :return: None. \n
+        ch_str can set other channel: CHx
         """
         if voltage is None:
             return
 
-        self.inst.write(f'INST {self.chConvert[self.ch]}')
+        if ch_str == 0 :
+            self.inst.write(f'INST {self.chConvert[self.ch]}')
+        else:
+            self.inst.write(f'INST {str(ch_str)}')
         self.inst.write(f'VOLT {abs(voltage):3g}')
 
     # @GInstSetMethod(unit = 'A')
 
-    def setCurrent(self, current):
+    def setCurrent(self, current, ch_str = 0):
         """
         power.setCurrent(current) -> None
         ================================================================
@@ -67,12 +100,15 @@ class Power_BK9141(GInst):
         if current is None:
             return
 
-        self.inst.write(f'INST {self.chConvert[self.ch]}')
+        if ch_str == 0 :
+            self.inst.write(f'INST {self.chConvert[self.ch]}')
+        else:
+            self.inst.write(f'INST {str(ch_str)}')
         self.inst.write(f'CURR {current:3g}')
 
     # @GInstOnMethod()
 
-    def outputON(self):
+    def outputON(self, ch_str = 0):
         """
         power.outputON() -> None
         ================================================================
@@ -80,12 +116,15 @@ class Power_BK9141(GInst):
         :param None:
         :return: None.
         """
-        self.inst.write(f'INST {self.chConvert[self.ch]}')
+        if ch_str == 0 :
+            self.inst.write(f'INST {self.chConvert[self.ch]}')
+        else:
+            self.inst.write(f'INST {str(ch_str)}')
         self.inst.write(f'OUTP 1')
 
     # @GInstOffMethod()
 
-    def outputOFF(self):
+    def outputOFF(self, ch_str = 0):
         """
         power.outputOFF() -> None
         ================================================================
@@ -93,21 +132,28 @@ class Power_BK9141(GInst):
         :param None:
         :return: None.
         """
-        self.inst.write(f'INST {self.chConvert[self.ch]}')
+        if ch_str == 0 :
+            self.inst.write(f'INST {self.chConvert[self.ch]}')
+        else:
+            self.inst.write(f'INST {str(ch_str)}')
         self.inst.write(f'OUTP 0')
 
     # @GInstGetMethod(unit = 'V')
 
-    def measureVoltage(self):
+    def measureVoltage(self, ch_str = 0):
         """
         power.measureVoltage() -> Voltage
         ================================================================
         [power(channel) measure Voltage]
         :param None:
-        :return: Voltage.
+        :return: Voltage. \n
+        ch_str = 'CH1'
         """
         try:
-            self.inst.write(f'INST {self.chConvert[self.ch]}')
+            if ch_str == 0 :
+                self.inst.write(f'INST {self.chConvert[self.ch]}')
+            else:
+                self.inst.write(f'INST {str(ch_str)}')
             valstr = self.inst.query(f'MEAS:SCAL:VOLTage:DC?')
         except pyvisa.errors.VisaIOError:
             valstr = self.inst.query(f'MEAS:SCAL:VOLTage:DC?')
@@ -117,19 +163,226 @@ class Power_BK9141(GInst):
 
     # @GInstGetMethod(unit = 'A')
 
-    def measureCurrent(self):
+    def measureCurrent(self, ch_str = 0):
         """
         power.measureCurrent() -> Current
         ================================================================
         [power(channel) measure Current]
         :param None:
-        :return: Current.
+        :return: Current.\n
+        ch_str = 'CH1'
         """
         try:
-            self.inst.write(f'INST {self.chConvert[self.ch]}')
+            if ch_str == 0 :
+                self.inst.write(f'INST {self.chConvert[self.ch]}')
+            else:
+                self.inst.write(f'INST {str(ch_str)}')
             valstr = self.inst.query(f'MEAS:SCAL:CURR:DC?')
         except pyvisa.errors.VisaIOError:
             valstr = self.inst.query(f'MEAS:SCAL:CURR:DC?')
             self.inst.query(f'*CLS?')
 
         return float(re.search(r"[-+]?\d*\.\d+|\d+", valstr).group(0))
+
+    def chg_out(self, act_ch1, vset1='NA', iset1='NA', state1='NA'):
+
+        if vset1 != 'NA' :
+            self.setVoltage(vset1, str(act_ch1))
+        if iset1 != 'NA' :
+            self.setCurrent(iset1, str(act_ch1))
+
+        if state1 != 'NA' :
+            if state1 == 'on' :
+                self.outputON(act_ch1)
+            else:
+                self.outputOFF(act_ch1)
+
+        pass
+
+
+    def vin_calibrate_singal_met(self, vin_ch, vin_target, met_v0, mcu0, excel0):
+        '''
+        vin_ch is the channel of relay
+        '''
+        # # stuff support coding
+        # import inst_pkg_d as inst
+        # import parameter_load_obj as par
+        # import mcu_obj as mcu_main
+        # mcu0 = mcu_main.MCU_control(0, 4)
+        # # initial the object and set to simulation mode
+        # met_v0 = inst.Met_34460(0.0001, 7, 0.000001, 2.5, 21)
+        # met_v0.sim_inst = 0
+        # excel0 = par.excel_parameter('obj_main')
+
+        # make sure all the type is correct
+        vin_target = float(vin_target)
+        vin_ch = int(vin_ch)
+
+        # need to return the channel after the calibration is finished
+        temp_mcu_channel = mcu0.meter_ch_ctrl
+        v_res_temp = 0
+        vin_diff = 0
+        v_res_temp_f = 0
+        # 20220103 add the Vin adjustment function
+        # change the measure channel to the Vin channel (No.3)
+        # this part added after the load turned on for better Vin setting
+
+        mcu0.relay_ctrl(vin_ch)
+
+        v_res_temp = met_v0.mea_v()
+        v_res_temp_f = lo.atof(v_res_temp)
+        # enter the calibration with real mode, otherwise pass the test and
+        # go to the result directly
+        if self.sim_inst == 1:
+
+            # # measure the first Vin after relay change
+            # if vin_ch == 0:
+            #     v_res_temp = met_v0.mea_v()
+            #     v_res_temp_f = lo.atof(v_res_temp)
+            #     # the Vin calibration starts from here
+            #     pass
+
+            # elif vin_ch == 6:
+            #     v_res_pwr_ch1 = met_v0.mea_v()
+            #     v_res_temp_f = lo.atof(v_res_pwr_ch1)
+            #     # the Vin calibration starts from here
+            #     pass
+
+            # elif vin_ch == 7:
+            #     v_res_pwr_ch2 = met_v0.mea_v()
+            #     v_res_temp_f = lo.atof(v_res_pwr_ch2)
+            #     # the Vin calibration starts from here
+            #     pass
+
+            vin_diff = vin_target - v_res_temp_f
+            vin_new = vin_target
+            while vin_diff > excel0.vin_diff_set or vin_diff < (-1 * excel0.vin_diff_set):
+                vin_new = vin_new + 0.5 * (vin_target - v_res_temp_f)
+                # clamp for the Vin maximum
+                if vin_new > excel0.pre_vin_max:
+                    vin_new = excel0.pre_vin_max
+
+                if vin_new < 0:
+                    vin_new = 0
+
+                if vin_ch == 0:
+                    # self.change_V(vin_new, excel0.relay0_ch)
+                    self.chg_out(act_ch1=excel0.relay0_ch, vset1=vin_new)
+                    # send the new Vin command for the auto testing channel
+                    pass
+
+                elif vin_ch == 6:
+                    # self.change_V(vin_new, excel0.relay6_ch)
+                    self.chg_out(act_ch1=excel0.relay6_ch, vset1=vin_new)
+                    # change the vsetting of channel 1 (mapped in program)
+                    pass
+
+                elif vin_ch == 7:
+                    # self.change_V(vin_new, excel0.relay7_ch)
+                    self.chg_out(act_ch1=excel0.relay7_ch, vset1=vin_new)
+                    # change the vsetting of channel 2 (mapped in program)
+                    pass
+
+                time.sleep(wait_time)
+                # # measure the Vin change result
+                # v_res_temp = met_v0.mea_v()
+                # v_res_temp_f = lo.atof(v_res_temp)
+
+                # 220524: update the calibration result to status variable
+
+                v_res_temp = met_v0.mea_v()
+                v_res_temp_f = lo.atof(v_res_temp)
+
+                # if vin_ch == 0:
+                #     v_res_temp = met_v0.mea_v()
+                #     v_res_temp_f = lo.atof(v_res_temp)
+                #     # the Vin calibration starts from here
+                #     pass
+
+                # elif vin_ch == 6:
+                #     v_res_pwr_ch1 = met_v0.mea_v()
+                #     v_res_temp_f = lo.atof(v_res_pwr_ch1)
+                #     # the Vin calibration starts from here
+                #     pass
+
+                # elif vin_ch == 7:
+                #     v_res_pwr_ch2 = met_v0.mea_v()
+                #     v_res_temp_f = lo.atof(v_res_pwr_ch2)
+                #     # the Vin calibration starts from here
+                #     pass
+
+                vin_diff = vin_target - v_res_temp_f
+
+            # after the loop is finished, record the Vin meausred result (for full load) at the end
+            # excel0.sh_org_tab.range((10, 9)).value = lo.atof(v_res_temp)
+            # the Vin calibration ends from here
+
+            # after the Vin calibration is finished, change the measure channel back
+            # mcu0.meter_ch_ctrl = temp_mcu_channel
+            # mcu0.relay_ctrl(mcu0.meter_ch_ctrl)
+            mcu0.relay_ctrl(temp_mcu_channel)
+            time.sleep(wait_time)
+            # finished getting back to the initial state
+        else:
+            v_res_temp = int(v_res_temp)
+            v_res_temp = v_res_temp + 1
+        # need to return the channel after the calibration is finished
+
+        # the last measured value can also find in the meter result
+        return str(v_res_temp)
+
+    def open_inst(self):
+        # maybe no need to define rm for global variable
+        # global rm
+        print('GPIB0::' + str(int(self.GP_addr_ini)) + '::INSTR')
+        if self.sim_inst == 1:
+            self.inst_obj = rm.open_resource(
+                'GPIB0::' + str(int(self.GP_addr_ini)) + '::INSTR')
+            time.sleep(wait_samll)
+            pass
+        else:
+            print('now is open the power supply, in address: ' +
+                  str(int(self.GP_addr_ini)))
+            # in simulation mode, inst_obj need to be define for the simuation mode
+            self.inst_obj = 'power supply simulation mode object'
+            pass
+
+
+
+if __name__ == '__main__':
+    # testing for the 9141
+    test_mode = 1
+    sim_test_set = 0
+
+    import mcu_obj as mcu
+    import inst_pkg_d as inst
+
+    import parameter_load_obj as par
+    excel_t = par.excel_parameter('obj_main')
+
+    met_v_t = inst.Met_34460(0.0001, 30, 0.000001, 2.5, 20)
+    met_v_t.sim_inst = sim_test_set
+    met_v_t.open_inst()
+
+    mcu_t = mcu.MCU_control(sim_test_set, 4)
+    mcu_t.com_open()
+
+    bk_9141 = Power_BK9141(sim_inst0=1, excel0=excel_t, addr=2)
+
+    if test_mode == 1 :
+
+        bk_9141.open_inst()
+        bk_9141.chg_out('CH1', 3.7, 1, 'on')
+        bk_9141.chg_out('CH1', 3.7, 1, 'off')
+        bk_9141.chg_out('CH1', 3.7, 2, 'on')
+        bk_9141.chg_out('CH1', 4, 1, 'on')
+
+        bk_9141.vin_calibrate_singal_met('CH1', 4.5, met_v0=met_v_t,mcu0=mcu_t, excel0=excel_t)
+
+        bk_9141.chg_out('CH2', 2, 1, 'on')
+        bk_9141.chg_out('CH3', 1.5, 2, 'on')
+
+        pass
+
+
+

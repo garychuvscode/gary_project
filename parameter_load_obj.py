@@ -171,6 +171,7 @@ class excel_parameter ():
         self.index_IQ_scan = self.sh_main.range((3, 15)).value
         self.index_eff = self.sh_main.range((4, 15)).value
         self.index_general_test = self.sh_main.range((5, 15)).value
+        self.index_waveform_capture = self.sh_main.range((6, 15)).value
 
         # self.index_meter_inst = self.sh_main.range((5, 15)).value
         # self.index_chamber_inst = self.sh_main.range((6, 15)).value
@@ -348,6 +349,12 @@ class excel_parameter ():
         self.gen_col_amount = self.sh_main.range(
             self.index_general_test + 9, 3).value
 
+        # waveform capture object parameter in main
+        self.pwr_select = self.sh_main.range(
+            self.index_waveform_capture + 1, 3).value
+        self.scope_value = str(self.sh_main.range(
+            self.index_waveform_capture + 2, 3).value)
+
         # add the loop control for each items
 
         # counteer is usually use c_ in opening
@@ -424,7 +431,6 @@ class excel_parameter ():
         self.summary_start_y = 7
         # gap for the summary table from left to right
         self.summary_gap = 4
-
 
         # waveform capture related testing
         self.wave_height = 93.8
@@ -1376,7 +1382,7 @@ class excel_parameter ():
         # prevent logic error of the wrong indexing of program parameter
         check_str = 'settings'
         index_correction = 0
-        item_array = np.full([10], 1)
+        item_array = np.full([11], 1)
         check_ctrl = self.sum_array(item_array)
 
         while(check_ctrl > 0):
@@ -1530,6 +1536,40 @@ class excel_parameter ():
                 print('the new index number input:')
                 index_correction = lo.atof(input())
                 self.sh_main.range((4, 15)).value = index_correction
+                self.index_eff = index_correction
+                pass
+            # update while loop value
+            check_ctrl = self.sum_array(item_array)
+
+            if self.sh_main.range((int(self.index_general_test), 3)).value == check_str:
+                # index pass if value is loaded as settings
+                print('general_test check done')
+                item_array[10] = 0
+                print(item_array)
+                pass
+            else:
+                print('general_test check fail')
+                print('correct value in: (5, 15)')
+                print('the new index number input:')
+                index_correction = lo.atof(input())
+                self.sh_main.range((5, 15)).value = index_correction
+                self.index_eff = index_correction
+                pass
+            # update while loop value
+            check_ctrl = self.sum_array(item_array)
+
+            if self.sh_main.range((int(self.index_waveform_capture), 3)).value == check_str:
+                # index pass if value is loaded as settings
+                print('waveform_capture check done')
+                item_array[10] = 0
+                print(item_array)
+                pass
+            else:
+                print('waveform_capture check fail')
+                print('correct value in: (6, 15)')
+                print('the new index number input:')
+                index_correction = lo.atof(input())
+                self.sh_main.range((5, 15)).value = index_correction
                 self.index_eff = index_correction
                 pass
             # update while loop value
@@ -2212,8 +2252,7 @@ class excel_parameter ():
         print(b)
         return b
 
-    def sum_table_gen (self, ind_x, ind_y, x_axis = 0 , y_axis = 0 , content = 0, sheet = 0):
-
+    def sum_table_gen(self, ind_x, ind_y, x_axis=0, y_axis=0, content=0, sheet=0):
         '''
         this function is used to generate the summary table of testing result \n
         ind_x, ind_y are the index coordinate of table; status: 'build' or 'fill';
@@ -2223,7 +2262,7 @@ class excel_parameter ():
         '''
 
         # if sheet set ot 0 is to used original control sheet
-        if sheet == 0 :
+        if sheet == 0:
             sheet = self.sh_format_gen
             print('default sheet selected for g')
 
@@ -2361,5 +2400,3 @@ if __name__ == '__main__':
         print(return_value)
 
         pass
-
-
