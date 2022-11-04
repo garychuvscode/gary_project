@@ -3,13 +3,15 @@ import re
 import time
 import locale as lo
 
-from .GInst import *
+from GInst import *
 import time
 
 wait_samll = 0.05
 wait_time = 0.2
 
 rm = pyvisa.ResourceManager()
+
+
 class Power_BK9141(GInst):
     '''
     Class library from Geroge is channel based instrument, need to define by channel
@@ -17,7 +19,7 @@ class Power_BK9141(GInst):
     for parallel operation, need to setup by hand and use the channel 1 as control window
     '''
 
-    def __init__(self, link = '', ch = 'CH1', sim_inst0 = 1, excel0 = 0, ini = 0, addr = 0):
+    def __init__(self, link='', ch='CH1', sim_inst0=1, excel0=0, ini=0, addr=0):
         super().__init__()
         '''
         ini = 0 is not to use geroge's open instrument, and it's been define as single channel
@@ -40,16 +42,16 @@ class Power_BK9141(GInst):
             excel0 = par.excel_parameter('obj_main')
             # ======== only for object programming
 
-
-        if ini == 1 :
-        # move the rm of Geroge to the top, since there will be other way to open instrument
-        # rm = pyvisa.ResourceManager()
+        if ini == 1:
+            # move the rm of Geroge to the top, since there will be other way to open instrument
+            # rm = pyvisa.ResourceManager()
 
             self.link = link
             # link is the GPIB string for pyvisa resource manager
             self.ch = ch
             # ch is the channel index for in below dictionary
-            self.chConvert = {'CH1': '0', 'CH2': '1', 'CH3': '2', 'ALL': ':ALL'}
+            self.chConvert = {'CH1': '0', 'CH2': '1',
+                              'CH3': '2', 'ALL': ':ALL'}
 
             try:
                 self.inst = rm.open_resource(link)
@@ -65,11 +67,12 @@ class Power_BK9141(GInst):
             idn = self.inst.query('*IDN?')
 
             if '9141' not in idn:
-                raise Exception(f'<>< Power_BK9141 ><> "9141" not fit in "{idn}"!')
+                raise Exception(
+                    f'<>< Power_BK9141 ><> "9141" not fit in "{idn}"!')
 
     # @GInstSetMethod(unit = 'V')
 
-    def setVoltage(self, voltage, ch_str = 0):
+    def setVoltage(self, voltage, ch_str=0):
         """
         power.setVoltage(voltage) -> None
         ================================================================
@@ -81,7 +84,7 @@ class Power_BK9141(GInst):
         if voltage is None:
             return
 
-        if ch_str == 0 :
+        if ch_str == 0:
             self.inst.write(f'INST {self.chConvert[self.ch]}')
         else:
             self.inst.write(f'INST {str(ch_str)}')
@@ -89,7 +92,7 @@ class Power_BK9141(GInst):
 
     # @GInstSetMethod(unit = 'A')
 
-    def setCurrent(self, current, ch_str = 0):
+    def setCurrent(self, current, ch_str=0):
         """
         power.setCurrent(current) -> None
         ================================================================
@@ -100,7 +103,7 @@ class Power_BK9141(GInst):
         if current is None:
             return
 
-        if ch_str == 0 :
+        if ch_str == 0:
             self.inst.write(f'INST {self.chConvert[self.ch]}')
         else:
             self.inst.write(f'INST {str(ch_str)}')
@@ -108,7 +111,7 @@ class Power_BK9141(GInst):
 
     # @GInstOnMethod()
 
-    def outputON(self, ch_str = 0):
+    def outputON(self, ch_str=0):
         """
         power.outputON() -> None
         ================================================================
@@ -116,7 +119,7 @@ class Power_BK9141(GInst):
         :param None:
         :return: None.
         """
-        if ch_str == 0 :
+        if ch_str == 0:
             self.inst.write(f'INST {self.chConvert[self.ch]}')
         else:
             self.inst.write(f'INST {str(ch_str)}')
@@ -124,7 +127,7 @@ class Power_BK9141(GInst):
 
     # @GInstOffMethod()
 
-    def outputOFF(self, ch_str = 0):
+    def outputOFF(self, ch_str=0):
         """
         power.outputOFF() -> None
         ================================================================
@@ -132,7 +135,7 @@ class Power_BK9141(GInst):
         :param None:
         :return: None.
         """
-        if ch_str == 0 :
+        if ch_str == 0:
             self.inst.write(f'INST {self.chConvert[self.ch]}')
         else:
             self.inst.write(f'INST {str(ch_str)}')
@@ -140,7 +143,7 @@ class Power_BK9141(GInst):
 
     # @GInstGetMethod(unit = 'V')
 
-    def measureVoltage(self, ch_str = 0):
+    def measureVoltage(self, ch_str=0):
         """
         power.measureVoltage() -> Voltage
         ================================================================
@@ -150,7 +153,7 @@ class Power_BK9141(GInst):
         ch_str = 'CH1'
         """
         try:
-            if ch_str == 0 :
+            if ch_str == 0:
                 self.inst.write(f'INST {self.chConvert[self.ch]}')
             else:
                 self.inst.write(f'INST {str(ch_str)}')
@@ -163,7 +166,7 @@ class Power_BK9141(GInst):
 
     # @GInstGetMethod(unit = 'A')
 
-    def measureCurrent(self, ch_str = 0):
+    def measureCurrent(self, ch_str=0):
         """
         power.measureCurrent() -> Current
         ================================================================
@@ -173,7 +176,7 @@ class Power_BK9141(GInst):
         ch_str = 'CH1'
         """
         try:
-            if ch_str == 0 :
+            if ch_str == 0:
                 self.inst.write(f'INST {self.chConvert[self.ch]}')
             else:
                 self.inst.write(f'INST {str(ch_str)}')
@@ -186,19 +189,20 @@ class Power_BK9141(GInst):
 
     def chg_out(self, act_ch1, vset1='NA', iset1='NA', state1='NA'):
 
-        if vset1 != 'NA' :
-            self.setVoltage(vset1, str(act_ch1))
-        if iset1 != 'NA' :
-            self.setCurrent(iset1, str(act_ch1))
+        act_ch1 = int(act_ch1)
 
-        if state1 != 'NA' :
-            if state1 == 'on' :
-                self.outputON(act_ch1)
+        if vset1 != 'NA':
+            self.setVoltage(vset1, 'CH' + str(act_ch1))
+        if iset1 != 'NA':
+            self.setCurrent(iset1, 'CH' + str(act_ch1))
+
+        if state1 != 'NA':
+            if state1 == 'on':
+                self.outputON('CH' + str(act_ch1))
             else:
-                self.outputOFF(act_ch1)
+                self.outputOFF('CH' + str(act_ch1))
 
         pass
-
 
     def vin_calibrate_singal_met(self, vin_ch, vin_target, met_v0, mcu0, excel0):
         '''
@@ -267,19 +271,22 @@ class Power_BK9141(GInst):
 
                 if vin_ch == 0:
                     # self.change_V(vin_new, excel0.relay0_ch)
-                    self.chg_out(act_ch1=excel0.relay0_ch, vset1=vin_new)
+                    self.chg_out(act_ch1=excel0.relay0_ch,
+                                 vset1=vin_new, state1='on')
                     # send the new Vin command for the auto testing channel
                     pass
 
                 elif vin_ch == 6:
                     # self.change_V(vin_new, excel0.relay6_ch)
-                    self.chg_out(act_ch1=excel0.relay6_ch, vset1=vin_new)
+                    self.chg_out(act_ch1=excel0.relay6_ch,
+                                 vset1=vin_new, state1='on')
                     # change the vsetting of channel 1 (mapped in program)
                     pass
 
                 elif vin_ch == 7:
                     # self.change_V(vin_new, excel0.relay7_ch)
-                    self.chg_out(act_ch1=excel0.relay7_ch, vset1=vin_new)
+                    self.chg_out(act_ch1=excel0.relay7_ch,
+                                 vset1=vin_new, state1='on')
                     # change the vsetting of channel 2 (mapped in program)
                     pass
 
@@ -336,23 +343,22 @@ class Power_BK9141(GInst):
         # global rm
         print('GPIB0::' + str(int(self.GP_addr_ini)) + '::INSTR')
         if self.sim_inst == 1:
-            self.inst_obj = rm.open_resource(
+            self.inst = rm.open_resource(
                 'GPIB0::' + str(int(self.GP_addr_ini)) + '::INSTR')
             time.sleep(wait_samll)
             pass
         else:
             print('now is open the power supply, in address: ' +
                   str(int(self.GP_addr_ini)))
-            # in simulation mode, inst_obj need to be define for the simuation mode
-            self.inst_obj = 'power supply simulation mode object'
+            # in simulation mode, inst need to be define for the simuation mode
+            self.inst = 'power supply simulation mode object'
             pass
-
 
 
 if __name__ == '__main__':
     # testing for the 9141
     test_mode = 1
-    sim_test_set = 0
+    sim_test_set = 1
 
     import mcu_obj as mcu
     import inst_pkg_d as inst
@@ -364,25 +370,25 @@ if __name__ == '__main__':
     met_v_t.sim_inst = sim_test_set
     met_v_t.open_inst()
 
-    mcu_t = mcu.MCU_control(sim_test_set, 4)
+    mcu_t = mcu.MCU_control(0, 4)
     mcu_t.com_open()
 
-    bk_9141 = Power_BK9141(sim_inst0=1, excel0=excel_t, addr=2)
+    bk_9141 = Power_BK9141(sim_inst0=sim_test_set, excel0=excel_t, addr=2)
 
-    if test_mode == 1 :
+    if test_mode == 1:
 
         bk_9141.open_inst()
-        bk_9141.chg_out('CH1', 3.7, 1, 'on')
-        bk_9141.chg_out('CH1', 3.7, 1, 'off')
-        bk_9141.chg_out('CH1', 3.7, 2, 'on')
-        bk_9141.chg_out('CH1', 4, 1, 'on')
+        bk_9141.chg_out(1, 3.7, 1, 'on')
+        bk_9141.chg_out(1, 3.7, 1, 'off')
+        bk_9141.chg_out(1, 3.7, 2, 'on')
+        bk_9141.chg_out(1, 4, 1, 'on')
 
-        bk_9141.vin_calibrate_singal_met('CH1', 4.5, met_v0=met_v_t,mcu0=mcu_t, excel0=excel_t)
+        bk_9141.vin_calibrate_singal_met(
+            0, 4.5, met_v0=met_v_t, mcu0=mcu_t, excel0=excel_t)
 
-        bk_9141.chg_out('CH2', 2, 1, 'on')
-        bk_9141.chg_out('CH3', 1.5, 2, 'on')
+        bk_9141.chg_out(2, 2, 1, 'on')
+        bk_9141.chg_out(3, 1.5, 2, 'on')
+        bk_9141.chg_out(3, 1.7, 2)
+        bk_9141.chg_out(2, 1.9, 2)
 
         pass
-
-
-
