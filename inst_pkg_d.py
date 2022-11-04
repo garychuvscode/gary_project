@@ -1713,7 +1713,7 @@ class chamber_su242:
 
         if self.sim_inst == 1:
             # 220830 update for the independent simulation mode
-            return_str = self.inst_obj.query(cmd_str0)
+            return_str = self.inst_obj.query(cmd_str0, 0.5)
 
             pass
         else:
@@ -1722,7 +1722,7 @@ class chamber_su242:
             return_str = 'chamber_sim_mode return query'
 
             pass
-
+        print(return_str)
         return return_str
 
     def only_write(self, cmd_str1):
@@ -1761,13 +1761,17 @@ class chamber_su242:
         print('now is going to turn on, tset: ' + str(tset0))
         # self.inst_obj.write(self.mode_set_str + self.end_str)
         self.only_write(self.mode_set_str + self.end_str)
-        self.only_write(self.temp_set_str +
-                        str(round(tset0, 1)) + self.end_str)
+        # self.only_write(self.temp_set_str +
+        #                 str(round(tset0, 1)) + self.end_str)
+        no_save = self.query_write(self.temp_set_str +
+                         str(round(tset0, 1)) + self.end_str)
         # remember to change the state variable so change type won't have error
         self.state_o = 'on'
         self.tset_o = tset0
         # when the temperature is not ready yet, need to wait for the
         # temperature to get ready
+        # to prevent read error
+        time.sleep(1)
         read_temp = self.read('temp_mea')
 
         # variable used to break the loop in simulation mode
