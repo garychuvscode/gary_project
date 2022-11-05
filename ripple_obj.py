@@ -4,7 +4,6 @@
 # different pages need to use different index loaded
 
 # excel parameter and settings
-from Scope_LE6100A import Scope_LE6100A
 import parameter_load_obj as par
 # for the jump out window
 # # also for the jump out window, same group with win32con
