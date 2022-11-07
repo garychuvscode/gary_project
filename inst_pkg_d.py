@@ -515,7 +515,7 @@ class Met_34460:
         # return the result back to main program, should be able to access again in this object
         return str(self.mea_v_out)
 
-    def mea_v2(self, v_max, v_level):
+    def mea_v2(self, v_max=0, v_level=0):
         # 220520: if input 0, it will be same with the original version
         # definie the command string and send the command string out to GPIB
         if v_max == 0:
@@ -526,7 +526,7 @@ class Met_34460:
             pass
         if v_level == 0:
             # if there are no vmax setting input, set to default when meter is defined
-            v_level = self.max_mea_v_ini
+            v_level = self.mea_v_res_ini
         else:
             # if there are vmax setting input, follow the parameter input
             pass
@@ -583,7 +583,7 @@ class Met_34460:
         # return back and save in object
         return str(self.mea_i_out)
 
-    def mea_i2(self, i_max, i_level):
+    def mea_i2(self, i_max=0, i_level=0):
 
         if i_max == 0:
             # if there are no vmax setting input, set to default when meter is defined
@@ -593,7 +593,7 @@ class Met_34460:
             pass
         if i_level == 0:
             # if there are no vmax setting input, set to default when meter is defined
-            i_level = self.max_mea_i_ini
+            i_level = self.mea_i_res_ini
         else:
             # if there are vmax setting input, follow the parameter input
             pass
@@ -1350,7 +1350,7 @@ class Keth_2440:
 
             pass
 
-        return self.return_str
+        return str(self.return_str)
 
     def only_write(self, cmd_str1):
         print(cmd_str1)
@@ -1764,7 +1764,7 @@ class chamber_su242:
         # self.only_write(self.temp_set_str +
         #                 str(round(tset0, 1)) + self.end_str)
         no_save = self.query_write(self.temp_set_str +
-                         str(round(tset0, 1)) + self.end_str)
+                                   str(round(tset0, 1)) + self.end_str)
         # remember to change the state variable so change type won't have error
         self.state_o = 'on'
         self.tset_o = tset0
@@ -1916,7 +1916,7 @@ class chamber_su242:
         return self.in_name
 
 
-class inst_obj_gen_sub:
+class Rigo_DM3086 ():
     # this class used to simplify the general used function or
     # the parameter of the instrument
 
@@ -1925,15 +1925,351 @@ class inst_obj_gen_sub:
     # 1. collect the open_inst, inst_name, query_write, only_write ...
     # 2. the sharing control variable: GPIB_address, simulation mode ...
 
+    def __init__(self, mea_v_res0, max_mea_v0, mea_i_res0, max_mea_i0, GP_addr0):
+        '''
+        please make sure the command is set to aligent 34401 for the regio meter
+        '''
+
+        # assign the variable into object for saving
+        self.mea_v_res_ini = mea_v_res0
+        self.max_mea_v_ini = max_mea_v0
+        self.mea_i_res_ini = mea_i_res0
+        self.max_mea_i_ini = max_mea_i0
+        self.GP_addr_ini = GP_addr0
+        # better to define all the parameter at the initialization
+        # to prevent error at runt time or the simulation mode
+        self.cmd_str_mea_v = 0
+        self.cmd_str_mea_i = 0
+        self.mea_v_out = 0
+        self.mea_i_out = 0
+        self.cmd_str_name = 0
+
+        # set the default impedance to 10M ohm for Rigo
+        self.impedance_o = '10G'
+
+        self.sim_inst = 1
+        # simulation mode for the instrument
+        # default set to high, in real mode, for the simulation mode,
+        # change the control varable to 0
+        # this will be put in each instrument object independently
+        # and you will be able to switch to simulation mode any time you want
+
+        pass
+
+    def open_inst(self):
+        # maybe no need to define rm for global variable
+        # global rm
+        print('GPIB0::' + str(int(self.GP_addr_ini)) + '::INSTR')
+        if self.sim_inst == 1:
+            self.inst_obj = rm.open_resource(
+                'GPIB0::' + str(int(self.GP_addr_ini)) + '::INSTR')
+            time.sleep(wait_samll)
+            pass
+        else:
+            print('now is open the Rigo, in address: ' +
+                  str(int(self.GP_addr_ini)))
+            # in simulation mode, inst_obj need to be define for the simuation mode
+            self.inst_obj = 'Rigo simulation mode object'
+            pass
+
+        pass
+
+    def sim_mode_out(self):
+        # this sub used to check the variable in therterminal when call function
+
+        pass
+
+    def inst_close(self):
+        print('to turn off all output and close GPIB device')
+
+        if self.sim_inst == 1:
+            # turn off the output if needed
+
+            # GPIB device close
+            time.sleep(wait_samll)
+            self.inst_obj.close()
+
+            pass
+        else:
+            # for the simulatiom mode of change output
+            print('all the channel turn off now')
+
+            pass
+        pass
+
+    def inst_name(self):
+        # get the insturment name
+        if self.sim_inst == 1:
+            self.cmd_str_name = "*IDN?"
+            # self.in_name = self.inst_obj.query(self.cmd_str_name)
+            self.in_name = self.query_write(self.cmd_str_name)
+            time.sleep(wait_samll)
+
+            pass
+        else:
+            # for the simulatiom mode of change output
+            print('check the instrument name, sim mode ')
+            print(str(self.cmd_str_name))
+            self.in_name = 'instrument is in sim mode'
+
+            pass
+
+        return self.in_name
+
+    def mea_i2(self, i_max='Auto', i_level='Auto'):
+        '''
+        give max value auto to prevent default effect \n
+        0 to use the default on excel
+        '''
+
+        if i_max == 0:
+            # if there are no vmax setting input, set to default when meter is defined
+            i_max = self.max_mea_i_ini
+        else:
+            # if there are vmax setting input, follow the parameter input
+            pass
+        if i_level == 0:
+            # if there are no vmax setting input, set to default when meter is defined
+            i_level = self.mea_i_res_ini
+        else:
+            # if there are vmax setting input, follow the parameter input
+            pass
+
+        # define command string
+        self.cmd_str_mea_i = (
+            'MEASure:CURR:DC? ' + str(i_max))
+        # save result to below
+        # self.mea_i_out = 0
+        # not to set to 0, definition create at the initialization function, so can keep the old result from last measurement
+        # self.mea_i_out = self.mea_i_out + 1
+        if self.sim_inst == 1:
+            # 220830 update for the independent simulation mode
+            # self.mea_i_out = self.inst_obj.query(self.cmd_str_mea_i)
+            self.mea_i_out = self.query_write(self.cmd_str_mea_i)
+            print('I measure V2 is: ' + self.mea_i_out)
+            time.sleep(wait_samll)
+
+            pass
+        else:
+            # for the simulatiom mode of change output
+            print('measure current with below GPIB string (mea_I2)')
+            print(str(self.cmd_str_mea_i))
+            self.mea_i_out = self.mea_i_out + 1
+            print(self.mea_i_out)
+
+            pass
+        # return back and save in object
+        return str(self.mea_i_out)
+
+    def mea_v2(self, v_max='Auto', v_level='Auto', impedance=0):
+        '''
+        give max value auto to prevent default effect \n
+        0 to use the default on excel
+        34401 can also operate without level, only max(range)
+        '''
+        # 220520: if input 0, it will be same with the original version
+        # definie the command string and send the command string out to GPIB
+        if v_max == 0:
+            # if there are no vmax setting input, set to default when meter is defined
+            v_max = self.max_mea_v_ini
+        else:
+            # if there are vmax setting input, follow the parameter input
+            pass
+        if v_level == 0:
+            # if there are no vmax setting input, set to default when meter is defined
+            v_level = self.mea_v_res_ini
+        else:
+            # if there are vmax setting input, follow the parameter input
+            pass
+
+        # since don't know how to change inpedance, disable impedance function
+        # if impedance != 0:
+        #     # update and record final impedance
+        #     self.impedance_set(impedance)
+
+        self.cmd_str_mea_v = (
+            'MEASure:VOLT:DC? ' + str(v_max))
+        # save the result to below variable
+        # self.mea_v_out = 0
+        # not to set to 0, definition create at the initialization function, so can keep the old result from last measurement
+        # self.mea_v_out = self.mea_v_out + 1
+        if self.sim_inst == 1:
+            # 220830 update for the independent simulation mode
+            # self.mea_v_out = self.inst_obj.query(self.cmd_str_mea_v)
+            self.mea_v_out = self.query_write(self.cmd_str_mea_v)
+            print('V measure V2 is: ' + self.mea_v_out)
+            time.sleep(wait_samll)
+
+            pass
+        else:
+            # for the simulatiom mode of change output
+            print('measure votlage with below GPIB string (mea_V2)')
+            print(str(self.cmd_str_mea_v))
+            self.mea_v_out = self.mea_v_out + 1
+            print(self.mea_v_out)
+
+            pass
+        # return the result back to main program, should be able to access again in this object
+        return str(self.mea_v_out)
+
+    # def impedance_set(self, impedance='10G'):
+    #     '''
+    #     the impedance selection will be from 10M to 10G, default
+    #     is set to 10G and can be change by call this function, 10G for
+    #     default is lesser loading effect
+    #     '''
+    #     self.impedance_o = impedance
+    #     self.cmd_str_impedance = 'MEASure:VOLT:DC:IMPEdance ' + \
+    #         str(self.impedance_o)
+
+    #     res_str = self.query_write(self.cmd_str_impedance)
+    #     print('the impedance setting become: ' + res_str)
+
+    #     pass
+
+    def query_write(self, cmd, dly=0):
+        '''
+        send the query command into the instrument object,\n
+        cmd is the command string, dly is the delay time(default=0);
+        which also include the pring command string
+        '''
+        # send the command and print the string
+        if self.sim_inst == 1:
+            # 220830 update for the independent simulation mode
+
+            self.return_str = self.inst_obj.query(cmd, dly)
+
+            pass
+        else:
+            # for the simulatiom mode of change output
+            print('query write for sub program')
+            self.return_str = self.return_str + 1
+
+            pass
+        self.last_cmd = cmd
+        print('command string send: ' + cmd)
+
+        return str(self.return_str)
+
+    def only_write(self, cmd):
+        '''
+        send the write command into the instrument object,\n
+        cmd is the command string, dly is the delay time(default=0);
+        which also include the pring command string
+        '''
+        # send the command and print the string
+
+        if self.sim_inst == 1:
+            # 220830 update for the independent simulation mode
+            self.inst_obj.write(cmd)
+
+            pass
+        else:
+            # for the simulatiom mode of change output
+            print('only write for sub program')
+
+            pass
+
+        self.last_cmd = cmd
+        print('command string send: ' + cmd)
+
+
+class inst_obj_gen_sub ():
+    # this class used to simplify the general used function or
+    # the parameter of the instrument
+
+    # think about how to build... 220830
+    # the next stage of refactoring can be
+    # 1. collect the open_inst, inst_name, query_write, only_write ...
+    # 2. the sharing control variable: GPIB_address, simulation mode ...
+
+    def __init__(self, GP_addr0):
+        # assign the variable into object for saving
+
+        self.GP_addr_ini = GP_addr0
+
+        self.sim_inst = 1
+        # simulation mode for the instrument
+        # default set to high, in real mode, for the simulation mode,
+        # change the control varable to 0
+        # this will be put in each instrument object independently
+        # and you will be able to switch to simulation mode any time you want
+
+        pass
+
+    def open_inst(self):
+        # maybe no need to define rm for global variable
+        # global rm
+        print('GPIB0::' + str(int(self.GP_addr_ini)) + '::INSTR')
+        if self.sim_inst == 1:
+            self.inst_obj = rm.open_resource(
+                'GPIB0::' + str(int(self.GP_addr_ini)) + '::INSTR')
+            time.sleep(wait_samll)
+            pass
+        else:
+            print('now is open the power supply, in address: ' +
+                  str(int(self.GP_addr_ini)))
+            # in simulation mode, inst_obj need to be define for the simuation mode
+            self.inst_obj = 'power supply simulation mode object'
+            pass
+
+        pass
+
+    def sim_mode_out(self):
+        # this sub used to check the variable in therterminal when call function
+
+        pass
+
+    def inst_close(self):
+        print('to turn off all output and close GPIB device')
+
+        if self.sim_inst == 1:
+            # turn off the output if needed
+
+            # GPIB device close
+            time.sleep(wait_samll)
+            self.inst_obj.close()
+
+            pass
+        else:
+            # for the simulatiom mode of change output
+            print('all the channel turn off now')
+
+            pass
+        pass
+
+    def inst_name(self):
+        # get the insturment name
+        if self.sim_inst == 1:
+            self.cmd_str_name = "*IDN?"
+            self.in_name = self.inst_obj.query(self.cmd_str_name)
+            time.sleep(wait_samll)
+
+            pass
+        else:
+            # for the simulatiom mode of change output
+            print('check the instrument name, sim mode ')
+            print(str(self.cmd_str_name))
+            self.in_name = 'instrument is in sim mode'
+
+            pass
+
+        return self.in_name
+
+    # end of the example class of instrument object
     pass
+
+
+pass
 
 
 if __name__ == '__main__':
     # add more if selection for different instrument testing
-    inst_test_ctrl = 4
+    inst_test_ctrl = 5
     # 0 => power supply, LPS505N; 1 => meter, 34460; 2 => chroma 63600
     # 3 => source meter 2440
     # 4 => chamber su242
+    # 5 => DM3068 meter
 
     # only run the code below when this is main program
     # can used for the testing of import, otherwise it will
@@ -1995,7 +2331,7 @@ if __name__ == '__main__':
     if inst_test_ctrl == 1:
 
         # definition of meter
-        M1_v_in = Met_34460(0.0001, 7, 0.000001, 1, 22)
+        M1_v_in = Met_34460(0.0001, 7, 0.000001, 1, 17)
         M1_v_in.sim_inst = 0
         # simulation control for the meter
 
@@ -2383,5 +2719,30 @@ if __name__ == '__main__':
         cham.ini_inst()
         cham.sim_mode_out()
         input()
+
+        pass
+
+    # DM3068 testing
+    if inst_test_ctrl == 5:
+
+        rigo_m = Rigo_DM3086(0.0001, 7, 0.000001, 1, 20)
+        rigo_m.open_inst()
+        temp_str = rigo_m.inst_name()
+        print(temp_str)
+
+        temp_str = rigo_m.mea_v2()
+        print(temp_str)
+        temp_str = rigo_m.mea_i2()
+        print(temp_str)
+        # temp_str = rigo_m.impedance_o
+        temp_str = rigo_m.mea_v2(0)
+        print(temp_str)
+        # temp_str = rigo_m.mea_v2(30, 0.000001, '10M')
+        temp_str = rigo_m.mea_i2(0)
+        print(temp_str)
+
+        # rigo_m.impedance_set('10M')
+        # temp_str = rigo_m.impedance_o
+        # print(temp_str)
 
         pass
