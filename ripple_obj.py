@@ -157,6 +157,19 @@ class ripple_test ():
         # pwr ovoc setting
         # pwr_s.ov_oc_set(excel_s.pre_vin_max, excel_s.pre_imax)
 
+        # change power and loader sim mode setting based on the line or load transient
+        # selection
+        if excel_s.ripple_lin_load == 1:
+            # line transient need to disable input PWR supply control
+            # not going to change the output voltage
+            pwr_s.sim_inst = 0
+        elif excel_s.ripple_lin_load == 2:
+            # load transient need to disable loader control
+            # not going to adjust loader, should also be ok to control
+            # loader but just disconnect
+            load_s.sim_inst = 0
+            load_src_s.sim_inst = 0
+
         # control variable
         if self.en_i2c_mode == 1:
             # I2C mode enable
@@ -248,7 +261,7 @@ class ripple_test ():
                     (43 + x_vin, 4)).value
 
                 pwr_s.chg_out(v_target, excel_s.pre_imax,
-                              excel_s.relay0_ch, 'on')
+                            excel_s.relay0_ch, 'on')
 
                 pro_status_str = 'Vin:' + str(v_target)
                 excel_s.vin_status = str(v_target)
@@ -547,11 +560,15 @@ if __name__ == '__main__':
     import inst_pkg_d as inst
     import Scope_LE6100A as sco
     import parameter_load_obj as par
+    import Power_BK9141 as bk
     # initial the object and set to simulation mode
     excel_t = par.excel_parameter('obj_main')
     pwr_t = inst.LPS_505N(3.7, 0.5, 3, 1, 'off')
     pwr_t.sim_inst = sim_test_set
     pwr_t.open_inst()
+    pwr_bk_t = bk.Power_BK9141(sim_inst0=sim_test_set, excel0=excel_t, addr=2)
+    pwr_bk_t.open_inst()
+
     # initial the object and set to simulation mode
     met_v_t = inst.Met_34460(0.0001, 30, 0.000001, 2.5, 20)
     met_v_t.sim_inst = sim_test_set
@@ -599,9 +616,15 @@ if __name__ == '__main__':
     version_select = 1
 
     format_g = form_g.format_gen(excel_t)
-    ripple_t = ripple_test(excel_t, pwr_t, met_v_t, load_t,
-                           mcu_t, src_t, met_i_t, chamber_t, scope_t)
 
+    if excel_t.pwr_select == 0 :
+    # set to 0 is to use LPS505
+        ripple_t = ripple_test(excel_t, pwr_t, met_v_t, load_t,
+                            mcu_t, src_t, met_i_t, chamber_t, scope_t)
+    elif excel_t.pwr_select == 1 :
+    # set to 1 is to use BK9141
+        ripple_t = ripple_test(excel_t, pwr_bk_t, met_v_t, load_t,
+                            mcu_t, src_t, met_i_t, chamber_t, scope_t)
     # define the simulation mode of ibject
     ripple_t.obj_sim_mode = sim_test_set
 

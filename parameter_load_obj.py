@@ -210,6 +210,8 @@ class excel_parameter ():
             (self.index_GPIB_inst + 6, 3)).value
         self.scope_addr = self.sh_main.range(
             (self.index_GPIB_inst + 7, 3)).value
+        self.pwr_bk_addr = self.sh_main.range(
+            (self.index_GPIB_inst + 8, 3)).value
 
         # initialization for all the object, based on the input parameter of the index
 
@@ -349,12 +351,13 @@ class excel_parameter ():
         self.gen_col_amount = self.sh_main.range(
             self.index_general_test + 9, 3).value
 
-        # waveform capture object parameter in main
-        self.pwr_select = self.sh_main.range(
-            self.index_waveform_capture + 1, 3).value
+        # verification item: waveform capture object parameter in main
+        self.pwr_select = int(self.sh_main.range(
+            self.index_waveform_capture + 1, 3).value)
         self.scope_value = str(self.sh_main.range(
             self.index_waveform_capture + 2, 3).value)
-
+        self.ripple_lin_load = int(self.sh_main.range(
+            self.index_waveform_capture + 1, 3).value)
         # add the loop control for each items
 
         # counteer is usually use c_ in opening

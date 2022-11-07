@@ -25,6 +25,7 @@ import parameter_load_obj as para
 
 # extra library
 import Scope_LE6100A as sco
+import Power_BK9141 as bk
 
 # import for the verification object
 import IQ_scan_obj as iq
@@ -71,9 +72,16 @@ src_m = inst.Keth_2440(excel_m.src_vset, excel_m.src_iset, excel_m.loader_src_ad
 chamber_m = inst.chamber_su242(excel_m.cham_tset_ini, excel_m.chamber_addr,
                                excel_m.cham_ini_state, excel_m.cham_l_limt, excel_m.cham_h_limt, excel_m.cham_hyst)
 
+
+
 # default turn the MCU on
 mcu_m = mcu.MCU_control(1, excel_m.mcu_com_addr)
-scope_m = sco.Scope_LE6100A('GPIB: ' + str(excel_m.scope_addr), 0, 0, excel_m)
+scope_m = sco.Scope_LE6100A('GPIB: ' + str(excel_m.scope_addr), 0, sim_inst0=1, excel0=excel_m)
+# set to simulation mode for testing
+if main_off_line == 1 :
+    scope_m.sim_inst = 0
+
+pwr_bk_m = bk.Power_BK9141('GPIB0::' + str(int(excel_m.pwr_bk_addr)) + '::INSTR', sim_inst0=1, excel0=excel_m, addr=excel_m.pwr_bk_addr)
 
 
 # instrument startup configuration
@@ -219,8 +227,18 @@ in_scan = ins_scan.instrument_scan(excel_m, pwr_m, met_v_m,
 format_g = form_g.format_gen(excel_m)
 general_t = gene_t.general_test(excel_m, pwr_m, met_v_m,
                                 loader_chr_m, mcu_m, src_m, met_i_m, chamber_m)
-ripple_t = rip.ripple_test(excel_m, pwr_m, met_v_m,
-                           loader_chr_m, mcu_m, src_m, met_i_m, chamber_m, scope_m)
+
+if excel_m.pwr_select == 0 :
+    # set to 0 is to use LPS505
+    ripple_t = rip.ripple_test(excel_m, pwr_m, met_v_m,
+                            loader_chr_m, mcu_m, src_m, met_i_m, chamber_m, scope_m)
+elif excel_m.pwr_select == 1 :
+    # set to 1 is to use BK9141
+    ripple_t = rip.ripple_test(excel_m, pwr_bk_m, met_v_m,
+                            loader_chr_m, mcu_m, src_m, met_i_m, chamber_m, scope_m)
+
+
+
 
 # ==============
 
