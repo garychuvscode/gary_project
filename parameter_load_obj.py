@@ -356,8 +356,9 @@ class excel_parameter ():
             self.index_waveform_capture + 1, 3).value)
         self.scope_value = str(self.sh_main.range(
             self.index_waveform_capture + 2, 3).value)
-        self.ripple_lin_load = int(self.sh_main.range(
-            self.index_waveform_capture + 1, 3).value)
+        # change this setting to single verification control sheet
+        # self.ripple_line_load = int(self.sh_main.range(
+        #     self.index_waveform_capture + 1, 3).value)
         # add the loop control for each items
 
         # counteer is usually use c_ in opening
