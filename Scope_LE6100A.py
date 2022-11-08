@@ -802,7 +802,10 @@ class Scope_LE6100A(GInst):
 
         self.writeVBS('app.ClearSweeps')
         self.trigger_adj(mode = 'Auto')
-        time.sleep(wait_time_s)
+        if self.sim_inst == 0 :
+            pass
+        else:
+            time.sleep(wait_time_s)
 
         self.trigger_adj(mode='Single')
         self.waitTriggered()

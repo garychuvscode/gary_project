@@ -88,6 +88,8 @@ class ripple_test ():
         self.ripple_line_load = int(
             self.sh_verification_control.range('B15').value)
         self.c_data_mea = self.excel_ini.c_data_mea
+        self.scope_initial_en = self.ripple_line_load = int(
+            self.sh_verification_control.range('B16').value)
 
         self.excel_ini.extra_file_name = '_ripple'
 
@@ -154,7 +156,8 @@ class ripple_test ():
         scope_s = self.scope_ini
 
         # scope initialization
-        scope_s.scope_initial(self.scope_setting)
+        if self.scope_initial_en == 1:
+            scope_s.scope_initial(self.scope_setting)
 
         # pwr ovoc setting
         # pwr_s.ov_oc_set(excel_s.pre_vin_max, excel_s.pre_imax)
@@ -205,6 +208,7 @@ class ripple_test ():
 
         # the loop for pulse and i2c control
         x_sw_i2c = 0
+        extra_comments2 = ''
         while x_sw_i2c < c_sw_i2c:
 
             # assign pulse or i2c command
@@ -225,7 +229,7 @@ class ripple_test ():
                     print('data: ' + data_i2c)
 
                     mcu_s.i2c_single_write(reg_i2c, data_i2c)
-                    extra_comments = extra_comments + '_' + \
+                    extra_comments2 = extra_comments2 + '_' + \
                         str(reg_i2c) + '-' + str(data_i2c)
                     pass
 
@@ -246,13 +250,19 @@ class ripple_test ():
 
                 mcu_s.pulse_out(pulse1, pulse2)
 
-                extra_comments = extra_comments + '_' + \
+                extra_comments2 = extra_comments2 + '_' + \
                     str(int(pulse1)) + '_' + str(int(pulse2))
 
                 pass
 
+            if x_sw_i2c > 0:
+                # there are more than 1 group of pulse command or I2C command needed
+                # re-generate the sheet
+                excel_s.sh_ref_table = excel_s.ref_table_list[x_sw_i2c]
+
             # table should be assign when generation of format gen
-            excel_s.sh_ref_table.range('B1').value = extra_comments
+            excel_s.sh_ref_table.range(
+                'B1').value = extra_comments + extra_comments2
 
             # the loop for vin
             x_vin = 0
@@ -320,6 +330,11 @@ class ripple_test ():
                         # trigger OVDD
                         scope_s.trigger_adj(mode='Auto', source='C6', level=0)
                         pass
+
+                    # add auto exception for line/load transient testing
+                    if self.ripple_line_load == 1:
+                        excel_s.message_box(
+                            'change condition of function and press enter', 'To g: stop for transient', auto_expection=1)
 
                     # calibration Vin
 
@@ -553,7 +568,7 @@ class ripple_test ():
 
 if __name__ == '__main__':
     #  the testing code for this file object
-    sim_test_set = 1
+    sim_test_set = 0
 
     # ======== only for object programming
     # testing used temp instrument
@@ -647,8 +662,9 @@ if __name__ == '__main__':
     elif version_select == 1:
 
         format_g.set_sheet_name('CTRL_sh_ex')
-        format_g.sheet_gen()
-        format_g.run_format_gen()
+        # 221108: integrated sheet_gen() and run_format_gen() into set_sheet_name()
+        # format_g.sheet_gen()
+        # format_g.run_format_gen()
 
         # add the change current mode for HV buck testing,
         # current setting of loder need to change

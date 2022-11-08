@@ -73,15 +73,16 @@ chamber_m = inst.chamber_su242(excel_m.cham_tset_ini, excel_m.chamber_addr,
                                excel_m.cham_ini_state, excel_m.cham_l_limt, excel_m.cham_h_limt, excel_m.cham_hyst)
 
 
-
 # default turn the MCU on
 mcu_m = mcu.MCU_control(1, excel_m.mcu_com_addr)
-scope_m = sco.Scope_LE6100A('GPIB: ' + str(excel_m.scope_addr), 0, sim_inst0=1, excel0=excel_m)
+scope_m = sco.Scope_LE6100A(
+    'GPIB: ' + str(excel_m.scope_addr), 0, sim_inst0=1, excel0=excel_m)
 # set to simulation mode for testing
-if main_off_line == 1 :
+if main_off_line == 1:
     scope_m.sim_inst = 0
 
-pwr_bk_m = bk.Power_BK9141('GPIB0::' + str(int(excel_m.pwr_bk_addr)) + '::INSTR', sim_inst0=1, excel0=excel_m, addr=excel_m.pwr_bk_addr)
+pwr_bk_m = bk.Power_BK9141('GPIB0::' + str(int(excel_m.pwr_bk_addr)) +
+                           '::INSTR', sim_inst0=1, excel0=excel_m, addr=excel_m.pwr_bk_addr)
 
 
 # instrument startup configuration
@@ -228,16 +229,14 @@ format_g = form_g.format_gen(excel_m)
 general_t = gene_t.general_test(excel_m, pwr_m, met_v_m,
                                 loader_chr_m, mcu_m, src_m, met_i_m, chamber_m)
 
-if excel_m.pwr_select == 0 :
+if excel_m.pwr_select == 0:
     # set to 0 is to use LPS505
     ripple_t = rip.ripple_test(excel_m, pwr_m, met_v_m,
-                            loader_chr_m, mcu_m, src_m, met_i_m, chamber_m, scope_m)
-elif excel_m.pwr_select == 1 :
+                               loader_chr_m, mcu_m, src_m, met_i_m, chamber_m, scope_m)
+elif excel_m.pwr_select == 1:
     # set to 1 is to use BK9141
     ripple_t = rip.ripple_test(excel_m, pwr_bk_m, met_v_m,
-                            loader_chr_m, mcu_m, src_m, met_i_m, chamber_m, scope_m)
-
-
+                               loader_chr_m, mcu_m, src_m, met_i_m, chamber_m, scope_m)
 
 
 # ==============
@@ -402,13 +401,13 @@ if __name__ == '__main__':
         # must open after simulation mode setting(open real or sim)
         open_inst_and_name()
 
-        # excel_m.open_result_book()
-        # iq_test.run_verification()
-        # excel_m.end_of_file(0)
+        excel_m.open_result_book()
+        iq_test.run_verification()
+        excel_m.end_of_file(0)
 
-        # excel_m.open_result_book()
-        # sw_test.run_verification()
-        # excel_m.end_of_file(0)
+        excel_m.open_result_book()
+        sw_test.run_verification()
+        excel_m.end_of_file(0)
 
         excel_m.open_result_book()
         eff_test.run_verification()
@@ -560,6 +559,47 @@ if __name__ == '__main__':
 
         general_t.set_sheet_name('general_2')
         general_t.run_verification()
+
+        print('finished XX verification')
+
+        # ===========
+        # changeable area
+
+        # remember that this is only call by main, not by  object
+        excel_m.end_of_file(multi_item)
+        # end of file can also be call between each item
+        print('end of the program')
+
+        pass
+
+    # this is going to test for ripple with multi setting and multi items
+    # IQ, SWIRE scan, efficiency, ripple => fully auto
+    # ISD pending
+    elif program_group == 9:
+        # fixed part, open one result book and save the book
+        # in temp name
+        excel_m.open_result_book()
+        # auto save after the book is generate
+        excel_m.excel_save()
+
+        # single setting of the object need to be 1 => no needed single
+        multi_item = 0
+        # if not off line testing, setup the the instrument needed independently
+        # set simulation for the used instrument
+        # pwr, met_v, met_i, loader, src, chamber, main offline
+        sim_mode_independent(1, 1, 1, 1, 1, 0, main_off_line)
+        # open instrument and add the name
+        # must open after simulation mode setting(open real or sim)
+        open_inst_and_name()
+        print('open instrument with real or simulation mode')
+
+        # changeable area
+        # ===========
+
+        # sheet generation is added in the run verification
+
+        # start the testing
+        # run_verification() => should be put in here
 
         print('finished XX verification')
 

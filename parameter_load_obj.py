@@ -435,6 +435,7 @@ class excel_parameter ():
         self.summary_start_y = 7
         # gap for the summary table from left to right
         self.summary_gap = 4
+        self.ref_table_list = [None] * 100
 
         # waveform capture related testing
         self.wave_height = 93.8
@@ -1889,10 +1890,10 @@ class excel_parameter ():
         sh_temp.delete()
         # don't need the original raw output format, remove the output
 
-    def message_box(self, content_str, title_str):
+    def message_box(self, content_str, title_str, auto_expection=0):
         content_str = str(content_str)
         title_str = str(title_str)
-        if self.en_fully_auto == 0:
+        if self.en_fully_auto == 0 and auto_expection == 0:
             msg_res = win32api.MessageBox(0, content_str, title_str)
         # 0 to 3 is different type of message box and can sen different return value
         # detail check on the internet

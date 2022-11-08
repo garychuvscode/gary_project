@@ -123,6 +123,9 @@ class format_gen ():
 
         print('sheet name ready')
         self.sheet_name_ready = 1
+        self.sheet_gen()
+        self.run_format_gen()
+
         pass
 
     def run_format_gen(self):
@@ -135,125 +138,139 @@ class format_gen ():
             self.reload_waveform_dimension()
             # start to adjust the the format based on the input settings
 
-            # before changin the format, adjust the color
-            y_dim = 0
-            c_y_dim = 3 * self.c_column_item
-            # y dimension 3*c_column_item, because not adding c_data_mea yet
-            # knowing the amount is enough
-            while y_dim < c_y_dim:
-                # need to check every cell in the effective operating range
-                # from the sheet setting in CTRL sheet
+            x_sheets = 0
+            # add one more loop for the multi pulse or i2c command generation
+            while x_sheets < self.c_sheets:
+                self.sh_ref_table = self.excel_ini.ref_table_list[x_sheets]
 
-                x_dim = 0
-                c_x_dim = self.c_row_item + 1
-                while x_dim < c_x_dim:
-                    color_temp = self.sh_ref_table.range(
-                        (4 + y_dim, 1 + x_dim)).color
+                # before changing the format, adjust the color
+                y_dim = 0
+                c_y_dim = 3 * self.c_column_item
+                # y dimension 3*c_column_item, because not adding c_data_mea yet
+                # knowing the amount is enough
+                while y_dim < c_y_dim:
+                    # need to check every cell in the effective operating range
+                    # from the sheet setting in CTRL sheet
 
-                    if color_temp == self.color_default:
-                        self.sh_ref_table.range(
-                            (4 + y_dim, 1 + x_dim)).color = self.color_target
-                        # change the needed place with default color to the target color
+                    x_dim = 0
+                    c_x_dim = self.c_row_item + 1
+                    while x_dim < c_x_dim:
+                        color_temp = self.sh_ref_table.range(
+                            (4 + y_dim, 1 + x_dim)).color
 
-                    x_dim = x_dim + 1
+                        if color_temp == self.color_default:
+                            self.sh_ref_table.range(
+                                (4 + y_dim, 1 + x_dim)).color = self.color_target
+                            # change the needed place with default color to the target color
 
-                y_dim = y_dim + 1
+                        x_dim = x_dim + 1
 
-            # before insert the row, add the content into realted row and column
-            # use the same definition but different action
-            y_dim = 0
-            c_y_dim = self.c_column_item
-            # y dimension 3*c_column_item, because not adding c_data_mea yet
-            # knowing the amount is enough
+                    y_dim = y_dim + 1
 
-            # filter the error of extra_str = none (error handling for the no input cells)
-            extra_str = self.extra_str
-            item_str = self.item_str
-            row_str = self.row_str
-            col_str = self.col_str
+                # before insert the row, add the content into realted row and column
+                # use the same definition but different action
+                y_dim = 0
+                c_y_dim = self.c_column_item
+                # y dimension 3*c_column_item, because not adding c_data_mea yet
+                # knowing the amount is enough
 
-            if extra_str == None:
-                extra_str = ''
-            if item_str == None:
-                item_str = ''
-            if row_str == None:
-                row_str = ''
-            if col_str == None:
-                col_str = ''
+                # filter the error of extra_str = none (error handling for the no input cells)
+                extra_str = self.extra_str
+                item_str = self.item_str
+                row_str = self.row_str
+                col_str = self.col_str
 
-            # x_dim, y_dim are the dimension counter for modifing the table
-            while y_dim < c_y_dim:
-                # need to check every cell in the effective operating range
-                # from the sheet setting in CTRL sheet
-                str_temp = self.sh_format_gen.range((43 + y_dim, 2)).value
+                if extra_str == None:
+                    extra_str = ''
+                if item_str == None:
+                    item_str = ''
+                if row_str == None:
+                    row_str = ''
+                if col_str == None:
+                    col_str = ''
 
-                # 221102 insert for summary table
-                # self.excel_ini.sum_table_gen(self.excel_ini.summary_start_x, self.excel_ini.summary_start_y, 0, y_dim + 1, content = str_temp)
-                self.summary_fo_gen(
-                    0, y_dim + 1, self.c_row_item, self.c_data_mea, str_temp)
 
-                excel_temp = col_str + '\n' + \
-                    str(str_temp) + item_str + '\n' + extra_str
-                self.sh_ref_table.range(
-                    (4 + 1 + y_dim * 3, 1)).value = excel_temp
-                self.sh_ref_table.range(
-                    (4 + 1 + y_dim * 3, 1)).row_height = self.target_height
-                # height need to change when modifing the column cells
 
-                x_dim = 0
-                c_x_dim = self.c_row_item
-                while x_dim < c_x_dim:
+                # x_dim, y_dim are the dimension counter for modifing the table
+                while y_dim < c_y_dim:
+                    # need to check every cell in the effective operating range
+                    # from the sheet setting in CTRL sheet
+                    str_temp = self.sh_format_gen.range((43 + y_dim, 2)).value
 
-                    str_temp = self.sh_format_gen.range((43 + x_dim, 1)).value
                     # 221102 insert for summary table
-                    # self.excel_ini.sum_table_gen(self.excel_ini.summary_start_x, self.excel_ini.summary_start_y, x_dim + 1, 0, content = str_temp)
+                    # self.excel_ini.sum_table_gen(self.excel_ini.summary_start_x, self.excel_ini.summary_start_y, 0, y_dim + 1, content = str_temp)
                     self.summary_fo_gen(
-                        x_dim + 1, 0, self.c_row_item, self.c_data_mea, str_temp)
+                        0, y_dim + 1, self.c_row_item, self.c_data_mea, str_temp)
 
-                    excel_temp = row_str + str(str_temp)
+                    excel_temp = col_str + '\n' + \
+                        str(str_temp) + item_str + '\n' + extra_str
                     self.sh_ref_table.range(
-                        (4 + y_dim * 3, 1 + 1 + x_dim)).value = excel_temp
-                    self.sh_ref_table.range((4 + y_dim * 3, 1 + 1 + x_dim)
-                                            ).column_width = self.target_width
-                    # width need to change when modifing the row cells
+                        (4 + 1 + y_dim * 3, 1)).value = excel_temp
+                    self.sh_ref_table.range(
+                        (4 + 1 + y_dim * 3, 1)).row_height = self.target_height
+                    # height need to change when modifing the column cells
 
-                    x_dim = x_dim + 1
+                    x_dim = 0
+                    c_x_dim = self.c_row_item
+                    while x_dim < c_x_dim:
 
-                y_dim = y_dim + 1
-
-            # add the new row to the related position
-            x_column_item = 0
-            while x_column_item < self.c_column_item:
-                # each column item need to have related data result row
-
-                x_data_mea = 0
-                while x_data_mea < self.c_data_mea:
-                    # will need to insert the row and assign the row index at the same time
-                    # first to insert the related row with new color
-                    if x_data_mea > 0:
-                        self.sh_ref_table.api.Rows(
-                            6 + (2 + self.c_data_mea) * x_column_item).Insert()
-
-                    # then assign the related data name for related row ( in reverse order )
-                    excel_temp = self.sh_format_gen.range(
-                        (43 + self.c_data_mea - x_data_mea - 1, 3)).value
-
-                    if x_column_item == 0:
+                        str_temp = self.sh_format_gen.range(
+                            (43 + x_dim, 1)).value
                         # 221102 insert for summary table
-                        self.excel_ini.sum_table_gen(self.excel_ini.summary_start_x, self.excel_ini.summary_start_y,
-                                                     0 + (self.c_data_mea - x_data_mea - 1) * (c_x_dim + self.excel_ini.summary_gap), 0, content=excel_temp)
+                        # self.excel_ini.sum_table_gen(self.excel_ini.summary_start_x, self.excel_ini.summary_start_y, x_dim + 1, 0, content = str_temp)
+                        self.summary_fo_gen(
+                            x_dim + 1, 0, self.c_row_item, self.c_data_mea, str_temp)
 
-                    self.sh_ref_table.range(
-                        (6 + (2 + self.c_data_mea) * x_column_item, 1)).value = excel_temp
-                    # keep the added row in the default high, not change due to insert
-                    self.sh_ref_table.range(
-                        (6 + (2 + self.c_data_mea) * x_column_item, 1)).row_height = self.default_height
+                        excel_temp = row_str + str(str_temp)
+                        self.sh_ref_table.range(
+                            (4 + y_dim * 3, 1 + 1 + x_dim)).value = excel_temp
+                        self.sh_ref_table.range((4 + y_dim * 3, 1 + 1 + x_dim)
+                                                ).column_width = self.target_width
+                        # width need to change when modifing the row cells
 
-                    x_data_mea = x_data_mea + 1
-                    # testing of insert row into related position
-                    # self.sh_ref_table.api.Rows(6).Insert()
+                        x_dim = x_dim + 1
+                        pass
 
-                x_column_item = x_column_item + 1
+                    y_dim = y_dim + 1
+                    pass
+
+                # add the new row to the related position
+                x_column_item = 0
+                while x_column_item < self.c_column_item:
+                    # each column item need to have related data result row
+
+                    x_data_mea = 0
+                    while x_data_mea < self.c_data_mea:
+                        # will need to insert the row and assign the row index at the same time
+                        # first to insert the related row with new color
+                        if x_data_mea > 0:
+                            self.sh_ref_table.api.Rows(
+                                6 + (2 + self.c_data_mea) * x_column_item).Insert()
+
+                        # then assign the related data name for related row ( in reverse order )
+                        excel_temp = self.sh_format_gen.range(
+                            (43 + self.c_data_mea - x_data_mea - 1, 3)).value
+
+                        if x_column_item == 0:
+                            # 221102 insert for summary table
+                            self.excel_ini.sum_table_gen(self.excel_ini.summary_start_x, self.excel_ini.summary_start_y,
+                                                         0 + (self.c_data_mea - x_data_mea - 1) * (c_x_dim + self.excel_ini.summary_gap), 0, content=excel_temp)
+
+                        self.sh_ref_table.range(
+                            (6 + (2 + self.c_data_mea) * x_column_item, 1)).value = excel_temp
+                        # keep the added row in the default high, not change due to insert
+                        self.sh_ref_table.range(
+                            (6 + (2 + self.c_data_mea) * x_column_item, 1)).row_height = self.default_height
+
+                        x_data_mea = x_data_mea + 1
+                        # testing of insert row into related position
+                        # self.sh_ref_table.api.Rows(6).Insert()
+                        pass
+
+                    x_column_item = x_column_item + 1
+                    pass
+                x_sheets = x_sheets + 1
+                pass
 
             self.excel_ini.excel_save()
             # wb_res.save(result_book_trace)
@@ -286,30 +303,48 @@ class format_gen ():
             # 3. if plot is needed for this verification, need to integrated the plot in the excel file and call from here
             # 4. not a new file but an add on sheet to the result workbook
 
-            # copy the rsult sheet to result book
+            # copy the result sheet to result book
             self.excel_ini.sh_format_gen.copy(self.excel_ini.sh_ref)
             # assign the sheet to result book
             self.excel_ini.sh_format_gen = self.excel_ini.wb_res.sheets(
                 str(self.ctrl_sheet_name))
-            # copy the rsult sheet to result book
-            self.excel_ini.sh_ref_table.copy(self.excel_ini.sh_ref)
-            # assign the sheet to result book
-            self.excel_ini.sh_ref_table = self.excel_ini.wb_res.sheets('table')
+            i2c_en = int(self.excel_ini.sh_format_gen.range('B10').value)
 
-            # change the sheet name after finished and save into the excel object
-            self.excel_ini.sh_ref_table.name = str(self.new_sheet_name)
-            self.sh_ref_table = self.excel_ini.sh_ref_table
+            if i2c_en == 0:
+                self.c_sheets = int(
+                    self.excel_ini.sh_format_gen.range('E40').value)
+            else:
+                self.c_sheets = int(
+                    self.excel_ini.sh_format_gen.range('B12').value)
 
-            # # 220914 move to build file to prevent error of delete and end of file
-            # # copy the result sheet to result book
-            # self.excel_ini.sh_raw_out.copy(self.excel_ini.sh_ref)
-            # # assign the sheet to result book
-            # self.excel_ini.sh_raw_out = self.excel_ini.wb_res.sheets('raw_out')
+            x_sheets = 0
+            while x_sheets < self.c_sheets:
+                # copy the result sheet to result book (reference table)
+                self.excel_ini.sh_ref_table.copy(self.excel_ini.sh_ref)
+                # assign the sheet to result book
+                temp_sheet = self.excel_ini.wb_res.sheets(
+                    'table')
 
-            # # copy the sheets to new book
-            # # for the new sheet generation, located in sheet_gen
-            # self.excel_s.sh_main.copy(self.sh_ref_condition)
-            # self.sh_result.copy(self.sh_ref)
+                # change the sheet name after finished and save into the excel object
+                temp_sheet.name = str(
+                    self.new_sheet_name + str(x_sheets))
+                self.excel_ini.ref_table_list[x_sheets] = temp_sheet
+                # self.sh_ref_table = self.excel_ini.sh_ref_table
+
+                # # 220914 move to build file to prevent error of delete and end of file
+                # # copy the result sheet to result book
+                # self.excel_ini.sh_raw_out.copy(self.excel_ini.sh_ref)
+                # # assign the sheet to result book
+                # self.excel_ini.sh_raw_out = self.excel_ini.wb_res.sheets('raw_out')
+
+                # # copy the sheets to new book
+                # # for the new sheet generation, located in sheet_gen
+                # self.excel_s.sh_main.copy(self.sh_ref_condition)
+                # self.sh_result.copy(self.sh_ref)
+                x_sheets = x_sheets + 1
+                pass
+                # assign to the first sheet after the generation
+            self.excel_ini.sh_ref_table = self.excel_ini.ref_table_list[0]
             pass
 
         pass
