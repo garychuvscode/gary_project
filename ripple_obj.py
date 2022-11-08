@@ -553,7 +553,7 @@ class ripple_test ():
 
 if __name__ == '__main__':
     #  the testing code for this file object
-    sim_test_set = 0
+    sim_test_set = 1
 
     # ======== only for object programming
     # testing used temp instrument

@@ -340,9 +340,9 @@ class LPS_505N:
             time.sleep(wait_time)
             # finished getting back to the initial state
         else:
-            v_res_temp = int(v_res_temp)
+            v_res_temp = lo.atof(v_res_temp)
             v_res_temp = v_res_temp + 1
-            print('vin calibration sim mode, ' + v_res_temp +' round ')
+            print('vin calibration sim mode, ' + str(v_res_temp) +' round ')
         # need to return the channel after the calibration is finished
 
         # the last measured value can also find in the meter result
