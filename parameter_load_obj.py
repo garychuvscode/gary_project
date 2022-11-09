@@ -212,6 +212,7 @@ class excel_parameter ():
             (self.index_GPIB_inst + 7, 3)).value
         self.pwr_bk_addr = self.sh_main.range(
             (self.index_GPIB_inst + 8, 3)).value
+        # self.main_off_line = int(self.sh_main.range('A32').value)
 
         # initialization for all the object, based on the input parameter of the index
 

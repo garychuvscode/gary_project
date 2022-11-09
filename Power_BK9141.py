@@ -19,15 +19,14 @@ class Power_BK9141(GInst):
     for parallel operation, need to setup by hand and use the channel 1 as control window
     '''
 
-    def __init__(self, link='', ch='CH1', sim_inst0=1, excel0=0, ini=0, addr=0):
+    def __init__(self, link='', ch='CH1', excel0=0, ini=0):
         super().__init__()
         '''
         ini = 0 is not to use geroge's open instrument, and it's been define as single channel
         add other function of operate as a whole instrument
 
         '''
-        self.sim_inst = sim_inst0
-        self.GP_addr_ini = addr
+
         prog_only = 1
         if prog_only == 0:
             # ======== only for object programming
@@ -41,6 +40,18 @@ class Power_BK9141(GInst):
             # using the main control book as default
             excel0 = par.excel_parameter('obj_main')
             # ======== only for object programming
+
+        self.excel_s = excel0
+        # the information for GPIB resource manager
+        self.GP_addr_ini = self.excel_s.pwr_bk_addr
+
+        if self.GP_addr_ini != 100:
+            self.sim_inst = 1
+            link = 'GPIB0::' + str(int(self.excel_s.pwr_bk_addr)) + '::INSTR'
+        else:
+            self.sim_inst = 0
+
+        self.open_inst()
 
         if ini == 1:
             # move the rm of Geroge to the top, since there will be other way to open instrument
@@ -373,7 +384,8 @@ if __name__ == '__main__':
     mcu_t = mcu.MCU_control(0, 4)
     mcu_t.com_open()
 
-    bk_9141 = Power_BK9141(sim_inst0=sim_test_set, excel0=excel_t, addr=2)
+    # bk_9141 = Power_BK9141(sim_inst0=sim_test_set, excel0=excel_t, addr=2)
+    bk_9141 = Power_BK9141(excel0=excel_t)
 
     if test_mode == 1:
 

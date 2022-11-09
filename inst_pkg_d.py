@@ -56,13 +56,16 @@ class LPS_505N:
         self.sup_ocp = 0
         self.cmd_str_ovp = ''
         self.cmd_str_ocp = ''
-
-        self.sim_inst = 1
+        if self.GP_addr_ini != 100:
+            self.sim_inst = 1
+        else:
+            self.sim_inst = 0
         # simulation mode for the instrument
         # default set to high, in real mode, for the simulation mode,
         # change the control varable to 0
         # this will be put in each instrument object independently
         # and you will be able to switch to simulation mode any time you want
+        # self.open_inst()
 
     def open_inst(self):
         # maybe no need to define rm for global variable
@@ -342,7 +345,7 @@ class LPS_505N:
         else:
             v_res_temp = lo.atof(v_res_temp)
             v_res_temp = v_res_temp + 1
-            print('vin calibration sim mode, ' + str(v_res_temp) +' round ')
+            print('vin calibration sim mode, ' + str(v_res_temp) + ' round ')
         # need to return the channel after the calibration is finished
 
         # the last measured value can also find in the meter result
@@ -466,13 +469,16 @@ class Met_34460:
         self.mea_v_out = 0
         self.mea_i_out = 0
         self.cmd_str_name = 0
-
-        self.sim_inst = 1
+        if self.GP_addr_ini != 100:
+            self.sim_inst = 1
+        else:
+            self.sim_inst = 0
         # simulation mode for the instrument
         # default set to high, in real mode, for the simulation mode,
         # change the control varable to 0
         # this will be put in each instrument object independently
         # and you will be able to switch to simulation mode any time you want
+        # self.open_inst()
 
     def open_inst(self):
         print('GPIB0::' + str(int(self.GP_addr_ini)) + '::INSTR')
@@ -725,13 +731,16 @@ class chroma_63600:
         # other definition
         self.errflag = 0
         # error flag indicate => 0 is ok and 1 is error
-
-        self.sim_inst = 1
+        if self.GP_addr_ini != 100:
+            self.sim_inst = 1
+        else:
+            self.sim_inst = 0
         # simulation mode for the instrument
         # default set to high, in real mode, for the simulation mode,
         # change the control varable to 0
         # this will be put in each instrument object independently
         # and you will be able to switch to simulation mode any time you want
+        # self.open_inst()
 
     # need to watch out if the power limit, current limit need to be set and config through
     # the different mode of the load setting, to prevent crash of the load during auto testing
@@ -1322,7 +1331,10 @@ class Keth_2440:
         self.clamp_VI_o = 0
         self.read_mode = self.source_type_ini
 
-        self.sim_inst = 1
+        if self.GP_addr_ini != 100:
+            self.sim_inst = 1
+        else:
+            self.sim_inst = 0
         # simulation mode for the instrument
         # default set to high, in real mode, for the simulation mode,
         # change the control varable to 0
@@ -1331,6 +1343,7 @@ class Keth_2440:
 
         #  this is the result string for the result return of simulation mode
         self.return_str = 0
+        # self.open_inst()
 
     # start from the source meter, to get a better efficiency when coding,
     # refresh the query and write to sub program(which include command print)
@@ -1700,12 +1713,16 @@ class chamber_su242:
         self.temp_read_str = "TEMP?"
         self.turn_off_str = 'MODE, STANDBY'
 
-        self.sim_inst = 1
+        if self.GP_addr_ini != 100:
+            self.sim_inst = 1
+        else:
+            self.sim_inst = 0
         # simulation mode for the instrument
         # default set to high, in real mode, for the simulation mode,
         # change the control varable to 0
         # this will be put in each instrument object independently
         # and you will be able to switch to simulation mode any time you want
+        # self.open_inst()
 
         self.cmd_str_name = ''
 
@@ -1948,12 +1965,16 @@ class Rigo_DM3086 ():
         # set the default impedance to 10M ohm for Rigo
         self.impedance_o = '10G'
 
-        self.sim_inst = 1
+        if self.GP_addr_ini != 100:
+            self.sim_inst = 1
+        else:
+            self.sim_inst = 0
         # simulation mode for the instrument
         # default set to high, in real mode, for the simulation mode,
         # change the control varable to 0
         # this will be put in each instrument object independently
         # and you will be able to switch to simulation mode any time you want
+        # self.open_inst()
 
         pass
 
@@ -2189,12 +2210,16 @@ class inst_obj_gen_sub ():
 
         self.GP_addr_ini = GP_addr0
 
-        self.sim_inst = 1
+        if self.GP_addr_ini != 100:
+            self.sim_inst = 1
+        else:
+            self.sim_inst = 0
         # simulation mode for the instrument
         # default set to high, in real mode, for the simulation mode,
         # change the control varable to 0
         # this will be put in each instrument object independently
         # and you will be able to switch to simulation mode any time you want
+        # self.open_inst()
 
         pass
 

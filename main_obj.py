@@ -75,14 +75,12 @@ chamber_m = inst.chamber_su242(excel_m.cham_tset_ini, excel_m.chamber_addr,
 
 # default turn the MCU on
 mcu_m = mcu.MCU_control(1, excel_m.mcu_com_addr)
-scope_m = sco.Scope_LE6100A(
-    'GPIB: ' + str(excel_m.scope_addr), 0, sim_inst0=0, excel0=excel_m)
+scope_m = sco.Scope_LE6100A(excel0=excel_m)
 # set to simulation mode for testing
 if main_off_line == 0:
     scope_m.sim_inst = 1
 
-pwr_bk_m = bk.Power_BK9141('GPIB0::' + str(int(excel_m.pwr_bk_addr)) +
-                           '::INSTR', sim_inst0=1, excel0=excel_m, addr=excel_m.pwr_bk_addr)
+pwr_bk_m = bk.Power_BK9141(excel0=excel_m)
 
 
 # instrument startup configuration
@@ -185,6 +183,7 @@ def open_inst_and_name():
     chamber_m.open_inst()
     mcu_m.com_open()
     scope_m.open_inst()
+    pwr_bk_m.open_inst()
 
     # for the instrument in simulation mode, name will be set to simulation mode
 

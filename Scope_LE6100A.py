@@ -32,7 +32,7 @@ class Scope_LE6100A(GInst):
     ch is no used in scope application
     '''
 
-    def __init__(self, link, ch, sim_inst0, excel0):
+    def __init__(self, excel0, link='', ch=0):
         # this is the function for GInst, call the initial of GInst
         # super is the function using dad's function
         # call the initial of GInst
@@ -52,19 +52,25 @@ class Scope_LE6100A(GInst):
             # using the main control book as default
             excel0 = par.excel_parameter('obj_main')
             # ======== only for object programming
-
+        self.excel_s = excel0
+        link = 'GPIB: ' + str(self.excel_s.scope_addr)
         self.link = link
         self.ch = ch
-        self.excel_s = excel0
+
         # if = 1, scope object is already link to the real scope
         self.link_status = 0
 
-        # extra code added to the instrument object
-        # simulation mode setting of the insturment
-        self.sim_inst = sim_inst0
-
         # the information for GPIB resource manager
         self.GP_addr_ini = self.excel_s.scope_addr
+        '''
+        for the GPIB address should be able to loaded from the excel input to the
+        instrument, and open automatically
+        '''
+
+        if self.GP_addr_ini != 100 and self.excel_s.main_off_line == 0:
+            self.sim_inst = 1
+        else:
+            self.sim_inst = 0
 
         # the setting for each channel
         # to be update in the function: ini_setting_select
@@ -78,8 +84,7 @@ class Scope_LE6100A(GInst):
         self.ch_c8 = {}
 
         self.set_general = {'trigger_mode': 'Auto', 'trigger_source': 'C3', 'trigger_level': '-3.2',
-                                'trigger_slope': 'Positive', 'time_scale': '0.0001', 'time_offset': '-0.0004', 'sample_mode': 'RealTime', 'fixed_sample_rate': '1.25GS/s'}
-
+                            'trigger_slope': 'Positive', 'time_scale': '0.0001', 'time_offset': '-0.0004', 'sample_mode': 'RealTime', 'fixed_sample_rate': '1.25GS/s'}
 
         self.sc_config = sc_set.scope_config()
 
@@ -116,6 +121,8 @@ class Scope_LE6100A(GInst):
             pass
 
         print('initial of scope object finished')
+        self.open_inst()
+
         pass
 
     def open_inst(self):
@@ -674,7 +681,7 @@ class Scope_LE6100A(GInst):
 
         pass
 
-    def Hor_scale_adj(self, div=None, offset=None, sample_rate = 0):
+    def Hor_scale_adj(self, div=None, offset=None, sample_rate=0):
         # this program used to adjust the time scale
         '''
         to adjust time scale, enter (/div, offset) \n
@@ -682,25 +689,24 @@ class Scope_LE6100A(GInst):
         sample rate: 1.25GS/s, 2.5GS/s, 5GS/s, 100MS/s, 500MS/s...
         '''
 
-
         if div != None:
-            if float(div) > 0.001 :
+            if float(div) > 0.001:
                 # for higher than 1ms, need to set to maximum memory
                 self.writeVBS(
                     f'app.Acquisition.Horizontal.Maximize = "SetMaximumMemory"')
                 # self.writeVBS(f'app.Acquisition.Horizontal.SampleRate = "2.5GS/s"')
-
 
             else:
                 # for <= 1ms, using fixed sample rate and set to 2.5G/s
 
                 self.writeVBS(
                     f'app.Acquisition.Horizontal.Maximize = "FixedSampleRate"')
-                if sample_rate == 0 :
-                    self.writeVBS(f'app.Acquisition.Horizontal.SampleRate = "{self.set_general["fixed_sample_rate"]}"')
+                if sample_rate == 0:
+                    self.writeVBS(
+                        f'app.Acquisition.Horizontal.SampleRate = "{self.set_general["fixed_sample_rate"]}"')
                 else:
-                    self.writeVBS(f'app.Acquisition.Horizontal.SampleRate = "{str(sample_rate)}"')
-
+                    self.writeVBS(
+                        f'app.Acquisition.Horizontal.SampleRate = "{str(sample_rate)}"')
 
             # change the time scale for the scope
             self.writeVBS(
@@ -797,7 +803,7 @@ class Scope_LE6100A(GInst):
 
         return mea_result
 
-    def capture_full (self, wait_time_s = 5, path_t = 0):
+    def capture_full(self, wait_time_s=5, path_t=0):
         '''
         this function is the fully scope process, include: clear sweep => Auto =>
         wait time => set to single(trigger) => when trigged stop and capture
@@ -805,8 +811,8 @@ class Scope_LE6100A(GInst):
         '''
 
         self.writeVBS('app.ClearSweeps')
-        self.trigger_adj(mode = 'Auto')
-        if self.sim_inst == 0 :
+        self.trigger_adj(mode='Auto')
+        if self.sim_inst == 0:
             pass
         else:
             time.sleep(wait_time_s)
@@ -814,7 +820,6 @@ class Scope_LE6100A(GInst):
         self.trigger_adj(mode='Single')
         self.waitTriggered()
         self.printScreenToPC(path=path_t)
-
 
         pass
 
@@ -826,7 +831,8 @@ if __name__ == '__main__':
     sim_scope = 1
     default_path = 'C:\\py_gary\\test_excel\\wave_form_raw\\'
 
-    scope = Scope_LE6100A('GPIB: 5', 3, sim_scope, excel_t)
+    # scope = Scope_LE6100A('GPIB: 5', 3, sim_scope, excel_t)
+    scope = Scope_LE6100A(excel0=excel_t)
 
     test_index = 3
 
@@ -890,6 +896,5 @@ if __name__ == '__main__':
         scope.Hor_scale_adj(0.005, 0)
         scope.Hor_scale_adj(0.0005, 0.0003)
         scope.Hor_scale_adj(0.00025, 0.0001)
-
 
         pass
