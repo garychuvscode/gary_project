@@ -563,8 +563,8 @@ if __name__ == '__main__':
         general_t.set_sheet_name('general_1')
         general_t.run_verification()
 
-        general_t.set_sheet_name('general_2')
-        general_t.run_verification()
+        # general_t.set_sheet_name('general_2')
+        # general_t.run_verification()
 
         print('finished XX verification')
 

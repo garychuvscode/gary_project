@@ -153,9 +153,15 @@ class general_test ():
             # pwr_s.change_V(self.pwr_ch1, 1)
             # pwr_s.change_V(self.pwr_ch2, 2)
             # pwr_s.change_V(self.pwr_ch3, 3)
-            pwr_s.chg_out(self.pwr_ch1, self.excel_ini.gen_pwr_i_set, 1, 'on')
-            pwr_s.chg_out(self.pwr_ch2, self.excel_ini.gen_pwr_i_set, 2, 'on')
-            pwr_s.chg_out(self.pwr_ch3, self.excel_ini.gen_pwr_i_set, 3, 'on')
+            if gen_pwr_ch_amount >= 1:
+                pwr_s.chg_out(
+                    self.pwr_ch1, self.excel_ini.gen_pwr_i_set, 1, 'on')
+            if gen_pwr_ch_amount > 1:
+                pwr_s.chg_out(
+                    self.pwr_ch2, self.excel_ini.gen_pwr_i_set, 2, 'on')
+            if gen_pwr_ch_amount > 2:
+                pwr_s.chg_out(
+                    self.pwr_ch3, self.excel_ini.gen_pwr_i_set, 3, 'on')
 
             if gen_pulse_i2x_en == 0:
                 pass
@@ -168,7 +174,7 @@ class general_test ():
 
             if gen_loader_en == 1 or gen_loader_en == 3:
                 # set up all the load current
-                if gen_loader_ch_amount != 1:
+                if gen_loader_ch_amount >= 1:
                     load_s.chg_out_auto_mode(self.load_ch1, 1, 'on')
                     pass
 
@@ -189,12 +195,15 @@ class general_test ():
                 load_src_s.change_I(self.load_src, 'on')
 
             # add the vin calibration
-            temp_res = pwr_s.vin_clibrate_singal_met(
-                0, self.pwr_ch3, met_v_s, mcu_s, excel_s)
-            temp_res = pwr_s.vin_clibrate_singal_met(
-                6, self.pwr_ch1, met_v_s, mcu_s, excel_s)
-            temp_res = pwr_s.vin_clibrate_singal_met(
-                7, self.pwr_ch2, met_v_s, mcu_s, excel_s)
+            if gen_pwr_ch_amount >= 1:
+                temp_res = pwr_s.vin_clibrate_singal_met(
+                    6, self.pwr_ch1, met_v_s, mcu_s, excel_s)
+            if gen_pwr_ch_amount > 1:
+                temp_res = pwr_s.vin_clibrate_singal_met(
+                    7, self.pwr_ch2, met_v_s, mcu_s, excel_s)
+            if gen_pwr_ch_amount > 2:
+                temp_res = pwr_s.vin_clibrate_singal_met(
+                    0, self.pwr_ch3, met_v_s, mcu_s, excel_s)
 
             self.res_met_curr = met_i_s.mea_i()
 
