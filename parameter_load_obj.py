@@ -1893,7 +1893,7 @@ class excel_parameter ():
     def message_box(self, content_str, title_str, auto_expection=0):
         content_str = str(content_str)
         title_str = str(title_str)
-        if self.en_fully_auto == 0 and auto_expection == 0:
+        if self.en_fully_auto == 0 or auto_expection == 1:
             msg_res = win32api.MessageBox(0, content_str, title_str)
         # 0 to 3 is different type of message box and can sen different return value
         # detail check on the internet

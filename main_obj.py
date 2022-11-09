@@ -76,10 +76,10 @@ chamber_m = inst.chamber_su242(excel_m.cham_tset_ini, excel_m.chamber_addr,
 # default turn the MCU on
 mcu_m = mcu.MCU_control(1, excel_m.mcu_com_addr)
 scope_m = sco.Scope_LE6100A(
-    'GPIB: ' + str(excel_m.scope_addr), 0, sim_inst0=1, excel0=excel_m)
+    'GPIB: ' + str(excel_m.scope_addr), 0, sim_inst0=0, excel0=excel_m)
 # set to simulation mode for testing
-if main_off_line == 1:
-    scope_m.sim_inst = 0
+if main_off_line == 0:
+    scope_m.sim_inst = 1
 
 pwr_bk_m = bk.Power_BK9141('GPIB0::' + str(int(excel_m.pwr_bk_addr)) +
                            '::INSTR', sim_inst0=1, excel0=excel_m, addr=excel_m.pwr_bk_addr)
@@ -238,6 +238,11 @@ elif excel_m.pwr_select == 1:
     ripple_t = rip.ripple_test(excel_m, pwr_bk_m, met_v_m,
                                loader_chr_m, mcu_m, src_m, met_i_m, chamber_m, scope_m)
 
+# scope cpature setting for waveform related testing item
+if main_off_line == 1:
+    ripple_t.obj_sim_mode = 0
+else:
+    ripple_t.obj_sim_mode = 1
 
 # ==============
 
@@ -268,7 +273,7 @@ if __name__ == '__main__':
         multi_item = 0
         # set simulation for the used instrument
         # pwr, met_v, met_i, loader, src, chamber
-        sim_mode_independent(1, 0, 1, 0, 0, 0, main_off_line)
+        sim_mode_independent(1, 0, 1, 0, 0, 0, main_off_line0=main_off_line)
         # open instrument and add the name
         open_inst_and_name()
 
@@ -289,7 +294,7 @@ if __name__ == '__main__':
         multi_item = 0
         # set simulation for the used instrument
         # pwr, met_v, met_i, loader, src, chamber
-        sim_mode_independent(1, 0, 1, 0, 0, 0, main_off_line)
+        sim_mode_independent(1, 0, 1, 0, 0, 0, main_off_line0=main_off_line)
         # open instrument and add the name
         open_inst_and_name()
 
@@ -312,7 +317,7 @@ if __name__ == '__main__':
         # if not off line testing, setup the the instrument needed independently
         # set simulation for the used instrument
         # pwr, met_v, met_i, loader, src, chamber
-        sim_mode_independent(1, 1, 1, 1, 0, 0, main_off_line)
+        sim_mode_independent(1, 1, 1, 1, 0, 0, main_off_line0=main_off_line)
         # open instrument and add the name
         open_inst_and_name()
 
@@ -333,7 +338,7 @@ if __name__ == '__main__':
         multi_item = 0
         # set simulation for the used instrument
         # pwr, met_v, met_i, loader, src, chamber
-        sim_mode_independent(1, 1, 1, 1, 1, 0, main_off_line)
+        sim_mode_independent(1, 1, 1, 1, 1, 0, main_off_line0=main_off_line)
         # open instrument and add the name
         open_inst_and_name()
 
@@ -358,7 +363,7 @@ if __name__ == '__main__':
         # if not off line testing, setup the the instrument needed independently
         # set simulation for the used instrument
         # pwr, met_v, met_i, loader, src, chamber
-        sim_mode_independent(1, 1, 1, 1, 1, 0, main_off_line)
+        sim_mode_independent(1, 1, 1, 1, 1, 0, main_off_line0=main_off_line)
 
         # open instrument and add the name
         # must open after simulation mode setting(open real or sim)
@@ -395,7 +400,7 @@ if __name__ == '__main__':
         # if not off line testing, setup the the instrument needed independently
         # set simulation for the used instrument
         # pwr, met_v, met_i, loader, src, chamber
-        sim_mode_independent(1, 1, 1, 1, 0, 0, main_off_line)
+        sim_mode_independent(1, 1, 1, 1, 0, 0, main_off_line0=main_off_line)
 
         # open instrument and add the name
         # must open after simulation mode setting(open real or sim)
@@ -437,7 +442,8 @@ if __name__ == '__main__':
         if main_off_line == 0:
             # set simulation for the used instrument
             # pwr, met_v, met_i, loader, src, chamber
-            sim_mode_independent(1, 1, 1, 1, 1, 0, main_off_line)
+            sim_mode_independent(
+                1, 1, 1, 1, 1, 0, main_off_line0=main_off_line)
             pass
 
         # open instrument and add the name
@@ -470,7 +476,7 @@ if __name__ == '__main__':
         # if not off line testing, setup the the instrument needed independently
         # set simulation for the used instrument
         # pwr, met_v, met_i, loader, src, chamber
-        sim_mode_independent(1, 1, 1, 1, 0, 0, main_off_line)
+        sim_mode_independent(1, 1, 1, 1, 0, 0, main_off_line0=main_off_line)
 
         # open instrument and add the name
         # must open after simulation mode setting(open real or sim)
@@ -498,7 +504,7 @@ if __name__ == '__main__':
         # if not off line testing, setup the the instrument needed independently
         # set simulation for the used instrument
         # pwr, met_v, met_i, loader, src, chamber, main offline
-        sim_mode_independent(1, 1, 1, 1, 1, 0, main_off_line)
+        sim_mode_independent(1, 1, 1, 1, 1, 0, main_off_line0=main_off_line)
         # open instrument and add the name
         # must open after simulation mode setting(open real or sim)
         open_inst_and_name()
@@ -545,7 +551,7 @@ if __name__ == '__main__':
         # if not off line testing, setup the the instrument needed independently
         # set simulation for the used instrument
         # pwr, met_v, met_i, loader, src, chamber, main offline
-        sim_mode_independent(1, 1, 1, 1, 0, 0, main_off_line)
+        sim_mode_independent(1, 1, 1, 1, 0, 0, main_off_line0=main_off_line)
         # open instrument and add the name
         # must open after simulation mode setting(open real or sim)
         open_inst_and_name()
@@ -587,7 +593,7 @@ if __name__ == '__main__':
         # if not off line testing, setup the the instrument needed independently
         # set simulation for the used instrument
         # pwr, met_v, met_i, loader, src, chamber, main offline
-        sim_mode_independent(1, 1, 1, 1, 1, 0, main_off_line)
+        sim_mode_independent(1, 1, 1, 1, 1, 0, main_off_line0=main_off_line)
         # open instrument and add the name
         # must open after simulation mode setting(open real or sim)
         open_inst_and_name()
@@ -599,9 +605,55 @@ if __name__ == '__main__':
         # sheet generation is added in the run verification
 
         # start the testing
-        # run_verification() => should be put in here
 
-        print('finished XX verification')
+        iq_test.run_verification()
+        print('IQ test finished')
+        sw_test.run_verification()
+        print('SW test finished')
+        eff_test.run_verification()
+        print('efficiency test finished')
+        format_g.set_sheet_name('CTRL_sh_ex')
+        ripple_t.run_verification()
+        format_g.table_return()
+
+        # ===========
+        # changeable area
+
+        # remember that this is only call by main, not by  object
+        excel_m.end_of_file(multi_item)
+        # end of file can also be call between each item
+        print('end of the program')
+
+        pass
+
+    elif program_group == 10:
+        # fixed part, open one result book and save the book
+        # in temp name
+        excel_m.open_result_book()
+        # auto save after the book is generate
+        excel_m.excel_save()
+
+        # single setting of the object need to be 1 => no needed single
+        multi_item = 0
+        # if not off line testing, setup the the instrument needed independently
+        # set simulation for the used instrument
+        # pwr, met_v, met_i, loader, src, chamber, main offline
+        sim_mode_independent(1, 1, 1, 1, 1, 0, main_off_line0=main_off_line)
+        # open instrument and add the name
+        # must open after simulation mode setting(open real or sim)
+        open_inst_and_name()
+        print('open instrument with real or simulation mode')
+
+        # changeable area
+        # ===========
+
+        # sheet generation is added in the run verification
+
+        # start the testing
+
+        format_g.set_sheet_name('CTRL_sh_ex')
+        ripple_t.run_verification()
+        format_g.table_return()
 
         # ===========
         # changeable area
@@ -626,7 +678,7 @@ if __name__ == '__main__':
         # if not off line testing, setup the the instrument needed independently
         # set simulation for the used instrument
         # pwr, met_v, met_i, loader, src, chamber, main offline
-        sim_mode_independent(1, 1, 1, 1, 1, 0, main_off_line)
+        sim_mode_independent(1, 1, 1, 1, 1, 0, main_off_line0=main_off_line)
         # open instrument and add the name
         # must open after simulation mode setting(open real or sim)
         open_inst_and_name()

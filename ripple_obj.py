@@ -88,7 +88,7 @@ class ripple_test ():
         self.ripple_line_load = int(
             self.sh_verification_control.range('B15').value)
         self.c_data_mea = self.excel_ini.c_data_mea
-        self.scope_initial_en = self.ripple_line_load = int(
+        self.scope_initial_en = int(
             self.sh_verification_control.range('B16').value)
 
         self.excel_ini.extra_file_name = '_ripple'
@@ -263,7 +263,8 @@ class ripple_test ():
             # table should be assign when generation of format gen
             excel_s.sh_ref_table.range(
                 'B1').value = extra_comments + extra_comments2
-
+            # reset extra_comments2 after setting into the condition
+            extra_comments2 = ''
             # the loop for vin
             x_vin = 0
             while x_vin < c_vin:
@@ -332,7 +333,8 @@ class ripple_test ():
                         pass
 
                     # add auto exception for line/load transient testing
-                    if self.ripple_line_load == 1:
+
+                    if self.ripple_line_load == 1 or self.ripple_line_load == 2:
                         excel_s.message_box(
                             'change condition of function and press enter', 'To g: stop for transient', auto_expection=1)
 

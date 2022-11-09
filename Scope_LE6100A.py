@@ -77,6 +77,10 @@ class Scope_LE6100A(GInst):
         self.ch_c7 = {}
         self.ch_c8 = {}
 
+        self.set_general = {'trigger_mode': 'Auto', 'trigger_source': 'C3', 'trigger_level': '-3.2',
+                                'trigger_slope': 'Positive', 'time_scale': '0.0001', 'time_offset': '-0.0004', 'sample_mode': 'RealTime', 'fixed_sample_rate': '1.25GS/s'}
+
+
         self.sc_config = sc_set.scope_config()
 
         self.g_string_a = ["'s smile is attractive.", "'s hair is beautiful.", "'s face is cute.", "'s eyes are shining.",
@@ -503,8 +507,8 @@ class Scope_LE6100A(GInst):
                           'label_name': 'name', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC1M'}
 
             # setting of general
-            self.set_general = {'trigger_mode': 'Auto', 'trigger_source': 'C1', 'trigger_level': '0.5',
-                                'trigger_slope': 'Positive', 'time_scale': '0.001', 'time_offset': '-0.003', 'sample_mode': 'RealTime'}
+            self.set_general = {'trigger_mode': 'Auto', 'trigger_source': 'C3', 'trigger_level': '-3.2',
+                                'trigger_slope': 'Positive', 'time_scale': '0.0001', 'time_offset': '-0.0004', 'sample_mode': 'RealTime', 'fixed_sample_rate': '1.25GS/s'}
 
             # setting of measurement
             self.p1 = {"param": "max", "source": "C1", "view": "TRUE"}
