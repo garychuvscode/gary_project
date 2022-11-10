@@ -91,34 +91,34 @@ class Scope_LE6100A(GInst):
         self.g_string_a = ["'s smile is attractive.", "'s hair is beautiful.", "'s face is cute.", "'s eyes are shining.",
                            " usually comes at 9:30 XD", " likes to play stock. ", " hates to work overtime. ", " is a really good girl XD"]
 
-        if self.sim_inst == 1:
+        # if self.sim_inst == 1:
 
-            logging.debug(f'Initialize LecroyActiveDSO link={link}, ch={ch}')
+        #     logging.debug(f'Initialize LecroyActiveDSO link={link}, ch={ch}')
 
-            if Scope_LE6100A.ActiveDSO is None:
-                pythoncom.CoInitialize()
-                # .com component connection standard code (for win32com code)
-                Scope_LE6100A.ActiveDSO = win32com.client.Dispatch(
-                    "LeCroy.ActiveDSOCtrl.1")
-                pythoncom.CoInitialize()
+        #     if Scope_LE6100A.ActiveDSO is None:
+        #         pythoncom.CoInitialize()
+        #         # .com component connection standard code (for win32com code)
+        #         Scope_LE6100A.ActiveDSO = win32com.client.Dispatch(
+        #             "LeCroy.ActiveDSOCtrl.1")
+        #         pythoncom.CoInitialize()
 
-            self.inst = Scope_LE6100A.ActiveDSO
-            r = self.inst.MakeConnection(link)
-            logging.debug(f"self.inst.MakeConnection(link) = {r}")
+        #     self.inst = Scope_LE6100A.ActiveDSO
+        #     r = self.inst.MakeConnection(link)
+        #     logging.debug(f"self.inst.MakeConnection(link) = {r}")
 
-            if r == 0:
-                raise Exception(
-                    '<>< Scope_LE6100A ><> LecroyActiveDSO link fail.')
+        #     if r == 0:
+        #         raise Exception(
+        #             '<>< Scope_LE6100A ><> LecroyActiveDSO link fail.')
 
-            self.inst.SetRemoteLocal(1)
-            self.inst.SetTimeout(20)
-            self.link_status = 1
+        #     self.inst.SetRemoteLocal(1)
+        #     self.inst.SetTimeout(20)
+        #     self.link_status = 1
 
-            pass
-        else:
-            print('simulation mode of the scope, initialize function')
+        #     pass
+        # else:
+        #     print('simulation mode of the scope, initialize function')
 
-            pass
+        #     pass
 
         print('initial of scope object finished')
         # self.open_inst()
@@ -127,7 +127,7 @@ class Scope_LE6100A(GInst):
 
     def open_inst(self):
 
-        if self.link == 0:
+        if self.sim_inst == 1:
             logging.debug(
                 f'Initialize LecroyActiveDSO link={self.link}, ch={self.ch}')
 
@@ -152,26 +152,22 @@ class Scope_LE6100A(GInst):
 
             pass
         else:
-            if self.sim_inst == 0:
-                print('call scope open inst in simulation mode')
-
-            else:
-                print('scope is already open')
+            print('call scope open inst')
 
             pass
-
         print('GPIB0::' + str(int(self.GP_addr_ini)) + '::INSTR')
-        if self.sim_inst == 1:
-            self.inst_obj = rm.open_resource(
-                'GPIB0::' + str(int(self.GP_addr_ini)) + '::INSTR')
-            time.sleep(0.05)
-            pass
-        else:
-            print('now is open the power supply, in address: ' +
-                  str(int(self.GP_addr_ini)))
-            # in simulation mode, inst_obj need to be define for the simuation mode
-            self.inst_obj = 'power supply simulation mode object'
-            pass
+
+        # if self.sim_inst == 1:
+        #     self.inst_obj = rm.open_resource(
+        #         'GPIB0::' + str(int(self.GP_addr_ini)) + '::INSTR')
+        #     time.sleep(0.05)
+        #     pass
+        # else:
+        #     print('now is open the power supply, in address: ' +
+        #           str(int(self.GP_addr_ini)))
+        #     # in simulation mode, inst_obj need to be define for the simuation mode
+        #     self.inst_obj = 'power supply simulation mode object'
+        #     pass
 
     def writeVBS(self, cmd):
         """
