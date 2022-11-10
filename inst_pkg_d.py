@@ -55,6 +55,7 @@ class LPS_505N:
         self.sup_ocp = 0
         self.cmd_str_ovp = ''
         self.cmd_str_ocp = ''
+
         if self.GP_addr_ini != 100:
             self.sim_inst = 1
         else:
@@ -69,6 +70,7 @@ class LPS_505N:
     def open_inst(self):
         # maybe no need to define rm for global variable
         # global rm
+
         print('GPIB0::' + str(int(self.GP_addr_ini)) + '::INSTR')
         if self.sim_inst == 1:
             self.inst_obj = rm.open_resource(
@@ -276,7 +278,7 @@ class LPS_505N:
             #     pass
 
             vin_diff = vin_target - v_res_temp_f
-            vin_new = vin_target
+            vin_new = vin_target + excel0.pre_inc_vin
             while vin_diff > excel0.vin_diff_set or vin_diff < (-1 * excel0.vin_diff_set):
                 vin_new = vin_new + 0.5 * (vin_target - v_res_temp_f)
                 # clamp for the Vin maximum
@@ -468,10 +470,12 @@ class Met_34460:
         self.mea_v_out = 0
         self.mea_i_out = 0
         self.cmd_str_name = 0
+
         if self.GP_addr_ini != 100:
             self.sim_inst = 1
         else:
             self.sim_inst = 0
+
         # simulation mode for the instrument
         # default set to high, in real mode, for the simulation mode,
         # change the control varable to 0
@@ -480,6 +484,9 @@ class Met_34460:
         # self.open_inst()
 
     def open_inst(self):
+
+
+
         print('GPIB0::' + str(int(self.GP_addr_ini)) + '::INSTR')
         if self.sim_inst == 1:
             self.inst_obj = rm.open_resource(
@@ -730,22 +737,24 @@ class chroma_63600:
         # other definition
         self.errflag = 0
         # error flag indicate => 0 is ok and 1 is error
-        if self.GP_addr_ini != 100:
-            self.sim_inst = 1
-        else:
-            self.sim_inst = 0
+
         # simulation mode for the instrument
         # default set to high, in real mode, for the simulation mode,
         # change the control varable to 0
         # this will be put in each instrument object independently
         # and you will be able to switch to simulation mode any time you want
         # self.open_inst()
+        if self.GP_addr_ini != 100:
+            self.sim_inst = 1
+        else:
+            self.sim_inst = 0
 
     # need to watch out if the power limit, current limit need to be set and config through
     # the different mode of the load setting, to prevent crash of the load during auto testing
     # the accuracy and current operating range will also be different for the different mode
 
     def open_inst(self):
+
         # maybe no need to define rm for global variable
         # global rm
         # here is to define object map to the loader
@@ -1176,6 +1185,14 @@ class chroma_63600:
         pass
 
     def current_calibration(self, met_v0, pwr0, pwr_ch, load_channel, v_test):
+        '''
+        this test include offset and leakage of loader
+        leakage: current will leak when loader is set to 0 output current
+        I_measure get by the meter
+        offset: difference between the loader i_read with the meter i_read
+        i_read_loader - i_read_meter => use to calibrate reading error of chroma loader while
+        current is small
+        '''
         # current calubration function for loader
         # meed meter(met0) amd power supply(pwr0)
         # object input for control
@@ -1445,6 +1462,7 @@ class Keth_2440:
 
     def open_inst(self):
         str_temp = ''
+
         # maybe no need to define rm for global variable
         # global rm
         print('GPIB0::' + str(int(self.GP_addr_ini)) + '::INSTR')
@@ -1840,6 +1858,7 @@ class chamber_su242:
 
     def open_inst(self):
 
+
         print('GPIB0::' + str(int(self.GP_addr_ini)) + '::INSTR')
         if self.sim_inst == 1:
             self.inst_obj = rm.open_resource(
@@ -1978,6 +1997,7 @@ class Rigo_DM3086 ():
         pass
 
     def open_inst(self):
+
         # maybe no need to define rm for global variable
         # global rm
         print('GPIB0::' + str(int(self.GP_addr_ini)) + '::INSTR')
@@ -2223,6 +2243,8 @@ class inst_obj_gen_sub ():
         pass
 
     def open_inst(self):
+
+
         # maybe no need to define rm for global variable
         # global rm
         print('GPIB0::' + str(int(self.GP_addr_ini)) + '::INSTR')

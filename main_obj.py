@@ -75,12 +75,9 @@ chamber_m = inst.chamber_su242(excel_m.cham_tset_ini, excel_m.chamber_addr,
 
 # default turn the MCU on
 mcu_m = mcu.MCU_control(1, excel_m.mcu_com_addr)
-scope_m = sco.Scope_LE6100A(excel0=excel_m)
-# set to simulation mode for testing
-if main_off_line == 0:
-    scope_m.sim_inst = 1
-
-pwr_bk_m = bk.Power_BK9141(excel0=excel_m, GP_addr0=excel_m.pwr_bk_addr)
+scope_m = sco.Scope_LE6100A(excel0=excel_m, main_off_line0=main_off_line)
+pwr_bk_m = bk.Power_BK9141(
+    excel0=excel_m, GP_addr0=excel_m.pwr_bk_addr, main_off_line0=main_off_line)
 
 
 # instrument startup configuration
@@ -116,6 +113,7 @@ def sim_mode_all(main_off_line0):
         chamber_m.sim_inst = 0
         mcu_m.sim_mcu = 0
         scope_m.sim_inst = 0
+        pwr_bk_m.sim_inst = 0
         excel_m.sim_mode_delay(0.02, 0.01)
         pass
 
@@ -182,6 +180,10 @@ def sim_mode_independent(pwr=0, met_v=0, met_i=0, loader=0, src=0, chamber=0, sc
 def open_inst_and_name():
     # this used to turn all the instrument on after program start
     # setup simulation mode help to prevent error
+
+    if main_off_line == 1:
+        sim_mode_all(main_off_line)
+        # all instrument turn to simulation mode
 
     # open instrument
     pwr_m.open_inst()
@@ -250,8 +252,10 @@ elif excel_m.pwr_select == 1:
 # scope cpature setting for waveform related testing item
 if main_off_line == 1:
     ripple_t.obj_sim_mode = 0
+    general_t.obj_sim_mode = 0
 else:
     ripple_t.obj_sim_mode = 1
+    general_t.obj_sim_mode = 1
 
 # ==============
 
@@ -282,7 +286,7 @@ if __name__ == '__main__':
         multi_item = 0
         # set simulation for the used instrument
         # pwr, met_v, met_i, loader, src, chamber
-        sim_mode_independent(1, 0, 1, 0, 0, 0, main_off_line0=main_off_line)
+        sim_mode_independent(pwr=1, met_i=1, main_off_line0=main_off_line)
         # open instrument and add the name
         open_inst_and_name()
 
@@ -303,7 +307,8 @@ if __name__ == '__main__':
         multi_item = 0
         # set simulation for the used instrument
         # pwr, met_v, met_i, loader, src, chamber
-        sim_mode_independent(1, 0, 1, 0, 0, 0, main_off_line0=main_off_line)
+        sim_mode_independent(pwr=1, met_v=1, met_i=1,
+                             loader=1, main_off_line0=main_off_line)
         # open instrument and add the name
         open_inst_and_name()
 
@@ -326,7 +331,10 @@ if __name__ == '__main__':
         # if not off line testing, setup the the instrument needed independently
         # set simulation for the used instrument
         # pwr, met_v, met_i, loader, src, chamber
-        sim_mode_independent(1, 1, 1, 1, 0, 0, main_off_line0=main_off_line)
+        sim_mode_independent(pwr=1, met_v=1, met_i=1,
+                             loader=1, main_off_line0=main_off_line)
+        # sim_mode_independent(pwr=1, met_v=1, met_i=1, loader=1, src=1, chamber=1,scope=1, bk_pwr=1, main_off_line0=main_off_line)
+
         # open instrument and add the name
         open_inst_and_name()
 
@@ -339,6 +347,7 @@ if __name__ == '__main__':
         print('end of the IQ and SWIRE object testing program')
         pass
 
+    # single test for efficiency chamber option
     elif program_group == 3:
         excel_m.open_result_book()
         excel_m.excel_save()
@@ -347,7 +356,8 @@ if __name__ == '__main__':
         multi_item = 0
         # set simulation for the used instrument
         # pwr, met_v, met_i, loader, src, chamber
-        sim_mode_independent(1, 1, 1, 1, 1, 0, main_off_line0=main_off_line)
+        sim_mode_independent(pwr=1, met_v=1, met_i=1, loader=1,
+                             src=1, chamber=1, main_off_line0=main_off_line)
         # open instrument and add the name
         open_inst_and_name()
 
@@ -372,7 +382,9 @@ if __name__ == '__main__':
         # if not off line testing, setup the the instrument needed independently
         # set simulation for the used instrument
         # pwr, met_v, met_i, loader, src, chamber
-        sim_mode_independent(1, 1, 1, 1, 1, 0, main_off_line0=main_off_line)
+        # sim_mode_independent(1, 1, 1, 1, 1, 0, main_off_line0=main_off_line)
+        sim_mode_independent(pwr=1, met_v=1, met_i=1, loader=1,
+                             src=1, chamber=1, main_off_line0=main_off_line)
 
         # open instrument and add the name
         # must open after simulation mode setting(open real or sim)
@@ -448,12 +460,13 @@ if __name__ == '__main__':
         multi_item = 0
 
         # if not off line testing, setup the the instrument needed independently
-        if main_off_line == 0:
-            # set simulation for the used instrument
-            # pwr, met_v, met_i, loader, src, chamber
-            sim_mode_independent(
-                1, 1, 1, 1, 1, 0, main_off_line0=main_off_line)
-            pass
+        # 221110: using GPIB address to decide simulation mode
+        # if main_off_line == 0:
+        #     # set simulation for the used instrument
+        #     # pwr, met_v, met_i, loader, src, chamber
+        #     sim_mode_independent(
+        #         1, 1, 1, 1, 1, 0, main_off_line0=main_off_line)
+        #     pass
 
         # open instrument and add the name
         # must open after simulation mode setting(open real or sim)
@@ -569,11 +582,11 @@ if __name__ == '__main__':
         # changeable area
         # ===========
 
-        general_t.set_sheet_name('general_1')
-        general_t.run_verification()
-
-        # general_t.set_sheet_name('general_2')
+        # general_t.set_sheet_name('general_1')
         # general_t.run_verification()
+
+        general_t.set_sheet_name('general_2')
+        general_t.run_verification()
 
         print('finished XX verification')
 

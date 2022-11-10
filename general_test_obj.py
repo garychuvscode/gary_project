@@ -73,6 +73,8 @@ class general_test ():
         self.excel_ini.extra_file_name = '_general'
         # sheet ready or not index
         self.sheet_name_ready = 0
+        # set to 0 for simulation mode
+        self.obj_sim_mode = 1
 
     pass
 
@@ -257,7 +259,7 @@ class general_test ():
             self.res_src_curr = load_src_s.read('CURR')
             self.res_temp_read = chamber_s.read('temp_mea')
 
-            self.data_latch(x_count)
+            self.data_latch(x_count, self.obj_sim_mode)
             # latch the data to related position
 
             # save the result and also check program exit
@@ -399,17 +401,28 @@ class general_test ():
 
         pass
 
-    def data_latch(self, index):
+    def data_latch(self, index, test_mode_b=1):
+        '''
+        test_mode_b is the main_off_line used for debug
+        '''
 
         # update all the result based on index
+
+        # 221110 send 0 as result for data latch if the instrument is in simulation mode
         self.sh_general_test.range(
             8 + index, 1 + self.excel_ini.gen_col_amount + 1).value = lo.atof(self.res_met_v1)
         self.sh_general_test.range(
             8 + index, 1 + self.excel_ini.gen_col_amount + 2).value = lo.atof(self.res_met_v2)
         self.sh_general_test.range(
             8 + index, 1 + self.excel_ini.gen_col_amount + 3).value = lo.atof(self.res_met_v3)
-        self.sh_general_test.range(
-            8 + index, 1 + self.excel_ini.gen_col_amount + 4).value = lo.atof(self.res_met_curr)
+
+        if self.met_i_ini.sim_inst == 1 or test_mode_b == 0:
+            self.sh_general_test.range(
+                8 + index, 1 + self.excel_ini.gen_col_amount + 4).value = lo.atof(self.res_met_curr)
+        else:
+            self.sh_general_test.range(
+                8 + index, 1 + self.excel_ini.gen_col_amount + 4).value = 0
+
         self.sh_general_test.range(
             8 + index, 1 + self.excel_ini.gen_col_amount + 5).value = lo.atof(self.res_met_v4)
         self.sh_general_test.range(
@@ -420,21 +433,42 @@ class general_test ():
             8 + index, 1 + self.excel_ini.gen_col_amount + 8).value = lo.atof(self.res_met_v7)
         self.sh_general_test.range(
             8 + index, 1 + self.excel_ini.gen_col_amount + 9).value = lo.atof(self.res_met_v8)
-        self.sh_general_test.range(
-            8 + index, 1 + self.excel_ini.gen_col_amount + 10).value = lo.atof(self.res_load_curr1)
-        self.sh_general_test.range(
-            8 + index, 1 + self.excel_ini.gen_col_amount + 11).value = lo.atof(self.res_load_curr2)
-        self.sh_general_test.range(
-            8 + index, 1 + self.excel_ini.gen_col_amount + 12).value = lo.atof(self.res_load_curr3)
-        self.sh_general_test.range(
-            8 + index, 1 + self.excel_ini.gen_col_amount + 13).value = lo.atof(self.res_load_curr4)
-        self.sh_general_test.range(
-            8 + index, 1 + self.excel_ini.gen_col_amount + 14).value = lo.atof(self.res_src_curr)
-        # temperature return is already float, no need to change
-        self.sh_general_test.range(
-            8 + index, 1 + self.excel_ini.gen_col_amount + 15).value = self.res_temp_read
 
-        print('data latch for Grace finished')
+        if self.loader_ini.sim_inst == 1 or test_mode_b == 0:
+            self.sh_general_test.range(
+                8 + index, 1 + self.excel_ini.gen_col_amount + 10).value = lo.atof(self.res_load_curr1)
+            self.sh_general_test.range(
+                8 + index, 1 + self.excel_ini.gen_col_amount + 11).value = lo.atof(self.res_load_curr2)
+            self.sh_general_test.range(
+                8 + index, 1 + self.excel_ini.gen_col_amount + 12).value = lo.atof(self.res_load_curr3)
+            self.sh_general_test.range(
+                8 + index, 1 + self.excel_ini.gen_col_amount + 13).value = lo.atof(self.res_load_curr4)
+        else:
+            self.sh_general_test.range(
+                8 + index, 1 + self.excel_ini.gen_col_amount + 10).value = 0
+            self.sh_general_test.range(
+                8 + index, 1 + self.excel_ini.gen_col_amount + 11).value = 0
+            self.sh_general_test.range(
+                8 + index, 1 + self.excel_ini.gen_col_amount + 12).value = 0
+            self.sh_general_test.range(
+                8 + index, 1 + self.excel_ini.gen_col_amount + 13).value = 0
+
+        if self.src_ini.sim_inst == 1 or test_mode_b == 0:
+            self.sh_general_test.range(
+                8 + index, 1 + self.excel_ini.gen_col_amount + 14).value = lo.atof(self.res_src_curr)
+        else:
+            self.sh_general_test.range(
+                8 + index, 1 + self.excel_ini.gen_col_amount + 14).value = 0
+
+        if self.chamber_ini.sim_inst == 1 or test_mode_b == 0:
+            # temperature return is already float, no need to change
+            self.sh_general_test.range(
+                8 + index, 1 + self.excel_ini.gen_col_amount + 15).value = self.res_temp_read
+        else:
+            self.sh_general_test.range(
+                8 + index, 1 + self.excel_ini.gen_col_amount + 15).value = 0
+
+        print('data latch for g finished')
 
         pass
 

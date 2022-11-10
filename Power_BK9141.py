@@ -19,7 +19,7 @@ class Power_BK9141(GInst):
     for parallel operation, need to setup by hand and use the channel 1 as control window
     '''
 
-    def __init__(self, link='', ch='CH1', excel0=0, ini=0, GP_addr0=0):
+    def __init__(self, link='', ch='CH1', excel0=0, ini=0, GP_addr0=0, main_off_line0=0):
         super().__init__()
         '''
         ini = 0 is not to use geroge's open instrument, and it's been define as single channel
@@ -42,6 +42,7 @@ class Power_BK9141(GInst):
             # ======== only for object programming
 
         self.excel_s = excel0
+        self.cmd_str_name = ''
         # the information for GPIB resource manager
         if GP_addr0 == 0:
             # which means no GPIB address input for object
@@ -49,13 +50,13 @@ class Power_BK9141(GInst):
         else:
             self.GP_addr_ini = GP_addr0
 
-        if self.GP_addr_ini != 100:
+        if self.GP_addr_ini != 100 and main_off_line0 == 0:
             self.sim_inst = 1
             link = 'GPIB0::' + str(int(self.excel_s.pwr_bk_addr)) + '::INSTR'
         else:
             self.sim_inst = 0
 
-        self.open_inst()
+        # self.open_inst()
 
         if ini == 1:
             # move the rm of Geroge to the top, since there will be other way to open instrument
@@ -274,7 +275,7 @@ class Power_BK9141(GInst):
             #     pass
 
             vin_diff = vin_target - v_res_temp_f
-            vin_new = vin_target
+            vin_new = vin_target + excel0.pre_inc_vin
             while vin_diff > excel0.vin_diff_set or vin_diff < (-1 * excel0.vin_diff_set):
                 vin_new = vin_new + 0.5 * (vin_target - v_res_temp_f)
                 # clamp for the Vin maximum
@@ -368,6 +369,24 @@ class Power_BK9141(GInst):
             # in simulation mode, inst need to be define for the simuation mode
             self.inst = 'power supply simulation mode object'
             pass
+
+    def inst_name(self):
+        # get the insturment name
+        if self.sim_inst == 1:
+            self.cmd_str_name = "*IDN?"
+            self.in_name = self.inst_obj.query(self.cmd_str_name)
+            time.sleep(wait_samll)
+
+            pass
+        else:
+            # for the simulatiom mode of change output
+            print('check the instrument name, sim mode ')
+            print(str(self.cmd_str_name))
+            self.in_name = 'pwr is in sim mode'
+
+            pass
+
+        return self.in_name
 
 
 if __name__ == '__main__':

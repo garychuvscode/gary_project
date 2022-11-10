@@ -2151,8 +2151,10 @@ class excel_parameter ():
         # the sub add for checking the program exit
         #  can be uased to skip the loop and prevent dead loop
         self.progrm_exit = self.sh_main.range('B12').value
-        if self.progrm_exit == 1 :
+        if self.progrm_exit == 0:
             # get out the program after saving the temp file
+            print('always stop when Grace want to talk, forever and ever')
+            time.sleep(0.20)
             sys.exit()
 
         pass

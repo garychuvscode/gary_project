@@ -32,7 +32,7 @@ class Scope_LE6100A(GInst):
     ch is no used in scope application
     '''
 
-    def __init__(self, excel0, link='', ch=0):
+    def __init__(self, excel0, link='', ch=0, main_off_line0=0):
         # this is the function for GInst, call the initial of GInst
         # super is the function using dad's function
         # call the initial of GInst
@@ -67,7 +67,7 @@ class Scope_LE6100A(GInst):
         instrument, and open automatically
         '''
 
-        if self.GP_addr_ini != 100 and self.excel_s.main_off_line == 0:
+        if self.GP_addr_ini != 100 and main_off_line0 == 0:
             self.sim_inst = 1
         else:
             self.sim_inst = 0
@@ -121,7 +121,7 @@ class Scope_LE6100A(GInst):
             pass
 
         print('initial of scope object finished')
-        self.open_inst()
+        # self.open_inst()
 
         pass
 
