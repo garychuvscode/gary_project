@@ -80,7 +80,7 @@ scope_m = sco.Scope_LE6100A(excel0=excel_m)
 if main_off_line == 0:
     scope_m.sim_inst = 1
 
-pwr_bk_m = bk.Power_BK9141(excel0=excel_m)
+pwr_bk_m = bk.Power_BK9141(excel0=excel_m, GP_addr0=excel_m.pwr_bk_addr)
 
 
 # instrument startup configuration
@@ -93,14 +93,17 @@ def sim_mode_all(main_off_line0):
     # set all the stuff inst into simulation mode
     if main_off_line0 == 0:
         # all the stuff set to experiment mode
-        pwr_m.sim_inst = 1
-        met_v_m.sim_inst = 1
-        met_i_m.sim_inst = 1
-        loader_chr_m.sim_inst = 1
-        src_m.sim_inst = 1
-        chamber_m.sim_inst = 1
-        mcu_m.sim_mcu = 1
-        scope_m.sim_inst = 1
+
+        # 221110: leave the setting based on GPIB address and only
+        # operat thwne the main_off_line is 1
+        # pwr_m.sim_inst = 1
+        # met_v_m.sim_inst = 1
+        # met_i_m.sim_inst = 1
+        # loader_chr_m.sim_inst = 1
+        # src_m.sim_inst = 1
+        # chamber_m.sim_inst = 1
+        # mcu_m.sim_mcu = 1
+        # scope_m.sim_inst = 1
 
         pass
     else:
@@ -119,7 +122,7 @@ def sim_mode_all(main_off_line0):
     pass
 
 
-def sim_mode_independent(pwr=0, met_v=0, met_i=0, loader=0, src=0, chamber=0, scope=0, main_off_line0=1):
+def sim_mode_independent(pwr=0, met_v=0, met_i=0, loader=0, src=0, chamber=0, scope=0, bk_pwr=0, main_off_line0=1):
     # independent setting for instrument simulation mode
     if main_off_line0 == 0:
         if pwr == 1:
@@ -164,6 +167,12 @@ def sim_mode_independent(pwr=0, met_v=0, met_i=0, loader=0, src=0, chamber=0, sc
         else:
             scope_m.sim_inst = 0
             pass
+        if bk_pwr == 1:
+            pwr_bk_m.sim_inst = 1
+            pass
+        else:
+            pwr_bk_m.sim_inst = 0
+            pass
 
         pass
 
@@ -195,6 +204,7 @@ def open_inst_and_name():
     excel_m.inst_name_sheet('LOADSR', src_m.inst_name())
     excel_m.inst_name_sheet('chamber', chamber_m.inst_name())
     excel_m.inst_name_sheet('scope', scope_m.inst_name())
+    excel_m.inst_name_sheet('bkpwr', pwr_bk_m.inst_name())
 
     # pending: think about the name of scope, how to input?
 

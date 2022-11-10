@@ -1,4 +1,3 @@
-from os import supports_bytes_environ
 import pyvisa
 # # also for the jump out window, same group with win32con
 import win32api

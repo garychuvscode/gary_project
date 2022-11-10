@@ -260,6 +260,9 @@ class general_test ():
             self.data_latch(x_count)
             # latch the data to related position
 
+            # save the result and also check program exit
+            excel_s.excel_save()
+
             x_count = x_count + 1
             pass
 

@@ -19,7 +19,7 @@ class Power_BK9141(GInst):
     for parallel operation, need to setup by hand and use the channel 1 as control window
     '''
 
-    def __init__(self, link='', ch='CH1', excel0=0, ini=0):
+    def __init__(self, link='', ch='CH1', excel0=0, ini=0, GP_addr0=0):
         super().__init__()
         '''
         ini = 0 is not to use geroge's open instrument, and it's been define as single channel
@@ -43,7 +43,11 @@ class Power_BK9141(GInst):
 
         self.excel_s = excel0
         # the information for GPIB resource manager
-        self.GP_addr_ini = self.excel_s.pwr_bk_addr
+        if GP_addr0 == 0:
+            # which means no GPIB address input for object
+            self.GP_addr_ini = self.excel_s.pwr_bk_addr
+        else:
+            self.GP_addr_ini = GP_addr0
 
         if self.GP_addr_ini != 100:
             self.sim_inst = 1

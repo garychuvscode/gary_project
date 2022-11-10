@@ -21,30 +21,33 @@ class eff_mea:
 
     def __init__(self, excel0, pwr0, met_v0, loader_0, mcu0, src0, met_i0, chamber0):
 
-        # # ======== only for object programming
-        # # testing used temp instrument
-        # # need to become comment when the OBJ is finished
-        # import mcu_obj as mcu
-        # import inst_pkg_d as inst
-        # # initial the object and set to simulation mode
-        # pwr0 = inst.LPS_505N(3.7, 0.5, 3, 1, 'off')
-        # pwr0.sim_inst = 0
-        # # initial the object and set to simulation mode
-        # met_v0 = inst.Met_34460(0.0001, 7, 0.000001, 2.5, 21)
-        # met_v0.sim_inst = 0
-        # loader_0 = inst.chroma_63600(1, 7, 'CCL')
-        # loader_0.sim_inst = 0
-        # # mcu is also config as simulation mode
-        # mcu0 = mcu.MCU_control(0, 3)
-        # # using the main control book as default
-        # excel0 = par.excel_parameter('obj_main')
-        # src0 = inst.Keth_2440(0, 0, 24, 'off', 'CURR', 15)
-        # src0.sim_inst = 0
-        # met_i0 = inst.Met_34460(0.0001, 7, 0.000001, 2.5, 20)
-        # met_i0.sim_inst = 0
-        # chamber0 = inst.chamber_su242(25, 10, 'off', -45, 180, 0)
-        # chamber0.sim_inst = 0
-        # # ======== only for object programming
+
+        prog_only = 1
+        if prog_only == 0:
+            # ======== only for object programming
+            # testing used temp instrument
+            # need to become comment when the OBJ is finished
+            import mcu_obj as mcu
+            import inst_pkg_d as inst
+            # initial the object and set to simulation mode
+            pwr0 = inst.LPS_505N(3.7, 0.5, 3, 1, 'off')
+            pwr0.sim_inst = 0
+            # initial the object and set to simulation mode
+            met_v0 = inst.Met_34460(0.0001, 7, 0.000001, 2.5, 21)
+            met_v0.sim_inst = 0
+            loader_0 = inst.chroma_63600(1, 7, 'CCL')
+            loader_0.sim_inst = 0
+            # mcu is also config as simulation mode
+            mcu0 = mcu.MCU_control(0, 3)
+            # using the main control book as default
+            excel0 = par.excel_parameter('obj_main')
+            src0 = inst.Keth_2440(0, 0, 24, 'off', 'CURR', 15)
+            src0.sim_inst = 0
+            met_i0 = inst.Met_34460(0.0001, 7, 0.000001, 2.5, 20)
+            met_i0.sim_inst = 0
+            chamber0 = inst.chamber_su242(25, 10, 'off', -45, 180, 0)
+            chamber0.sim_inst = 0
+            # ======== only for object programming
 
         # this is the initialize sub-program for the class and which will operate once class
         # has been defined
@@ -615,7 +618,8 @@ class eff_mea:
                                 (20 + raw_gap * x_vin, 2)).value = 'VON'
 
                             # adjust the vin voltage
-                            pwr_s.chg_out(v_target, pre_imax,
+                            # 221110 add the pre-increase setting for power supply
+                            pwr_s.chg_out(v_target + excel_s.pre_inc_vin, pre_imax,
                                           relay0_ch, 'on')
                             time.sleep(wait_small)
                             print('vin setting change: ' + str(v_target))

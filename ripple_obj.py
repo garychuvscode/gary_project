@@ -467,6 +467,9 @@ class ripple_test ():
                     # end of iload loop
                     pass
 
+                # save the result and also check program exit
+                excel_s.excel_save()
+
                 x_vin = x_vin + 1
                 # the end of vin loop
                 pass

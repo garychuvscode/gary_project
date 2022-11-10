@@ -2,6 +2,8 @@
 
 
 import locale as lo
+import sys
+import time
 
 
 class test_calass():
@@ -83,7 +85,7 @@ class test_calass():
 
 
 t_s = test_calass()
-testing_index = 1
+testing_index = 2
 
 if testing_index == 0:
     print('a')
@@ -111,6 +113,31 @@ elif testing_index == 1:
 
     pass
 
-elif testing_index == 1:
+elif testing_index == 2:
+
+    # testing for exit function of system
+
+    x = 0
+    while x < 100:
+
+        if x == 50:
+            sys.exit()
+
+        print(f'now is {x}')
+
+        x = x + 1
+
+        pass
+
+    pass
+
+elif testing_index == 2:
+
+    # testing for exit function of system
+
+    x = 0
+    while x < 100:
+
+        pass
 
     pass
