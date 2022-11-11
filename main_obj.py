@@ -39,6 +39,7 @@ import ripple_obj as rip
 
 # off line test, set to 1 set all the instrument to simulation mode
 main_off_line = 1
+single_mode = 0
 # this is the variable control file name, single or the multi item
 # adjust after the if selection of program_group
 multi_item = 0
@@ -119,10 +120,13 @@ def sim_mode_all(main_off_line0):
 
     pass
 
+# sim_mode_independent(pwr=1, met_v=1, met_i=1, loader=1, src=1, chamber=1,
+# scope=1, bk_pwr=1, main_off_line0=main_off_line, single_mode0=single_mode)
 
-def sim_mode_independent(pwr=0, met_v=0, met_i=0, loader=0, src=0, chamber=0, scope=0, bk_pwr=0, main_off_line0=1):
+
+def sim_mode_independent(pwr=0, met_v=0, met_i=0, loader=0, src=0, chamber=0, scope=0, bk_pwr=0, main_off_line0=1, single_mode0=0):
     # independent setting for instrument simulation mode
-    if main_off_line0 == 0:
+    if main_off_line0 == 0 and single_mode0 == 1:
         if pwr == 1:
             pwr_m.sim_inst = 1
             pass
@@ -333,7 +337,7 @@ if __name__ == '__main__':
         # pwr, met_v, met_i, loader, src, chamber
         sim_mode_independent(pwr=1, met_v=1, met_i=1,
                              loader=1, main_off_line0=main_off_line)
-        # sim_mode_independent(pwr=1, met_v=1, met_i=1, loader=1, src=1, chamber=1,scope=1, bk_pwr=1, main_off_line0=main_off_line)
+        # sim_mode_independent(pwr=1, met_v=1, met_i=1, loader=1, src=1, chamber=1, scope=1, bk_pwr=1, main_off_line0=main_off_line, single_mode0=single_mode)
 
         # open instrument and add the name
         open_inst_and_name()
@@ -573,7 +577,8 @@ if __name__ == '__main__':
         # if not off line testing, setup the the instrument needed independently
         # set simulation for the used instrument
         # pwr, met_v, met_i, loader, src, chamber, main offline
-        sim_mode_independent(1, 1, 1, 1, 0, 0, main_off_line0=main_off_line)
+        sim_mode_independent(pwr=1, met_v=1, met_i=1, loader=1,
+                             src=1, chamber=1, main_off_line0=main_off_line)
         # open instrument and add the name
         # must open after simulation mode setting(open real or sim)
         open_inst_and_name()

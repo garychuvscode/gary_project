@@ -118,14 +118,23 @@ class general_test ():
         gen_pwr_ch_amount = excel_s.gen_pwr_ch_amount
         gen_pwr_i_set = excel_s.gen_pwr_i_set
         gen_col_amount = excel_s.gen_col_amount
+        # 221111 disable extra enable control, use the simulation mode of GPIB to
+        # control the instrument
 
         # power supply OV and OC protection
         pwr_s.ov_oc_set(pre_vin_max, pre_imax)
 
         # power supply channel (channel on setting)
         if pre_test_en == 1:
-            pwr_s.chg_out(pre_vin, pre_sup_iout,
-                          relay0_ch, 'on')
+            # if gen_pwr_ch_amount >= 1:
+            pwr_s.chg_out(
+                pre_vin, pre_sup_iout, 1, 'on')
+            # if gen_pwr_ch_amount > 1:
+            pwr_s.chg_out(
+                pre_vin, pre_sup_iout, 2, 'on')
+            # if gen_pwr_ch_amount > 2:
+            pwr_s.chg_out(
+                pre_vin, pre_sup_iout, 3, 'on')
             print('pre-power on here')
             # turn off the power and load
 
@@ -148,22 +157,22 @@ class general_test ():
             # load the setting first
             self.data_loaded(x_count)
 
-            if gen_chamber_mea == 1:
-                # set up chamber temperature
-                chamber_s.chamber_set(self.chamber_target)
+            # if gen_chamber_mea == 1:
+            # set up chamber temperature
+            chamber_s.chamber_set(self.chamber_target)
 
             # pwr_s.change_V(self.pwr_ch1, 1)
             # pwr_s.change_V(self.pwr_ch2, 2)
             # pwr_s.change_V(self.pwr_ch3, 3)
-            if gen_pwr_ch_amount >= 1:
-                pwr_s.chg_out(
-                    self.pwr_ch1, self.excel_ini.gen_pwr_i_set, 1, 'on')
-            if gen_pwr_ch_amount > 1:
-                pwr_s.chg_out(
-                    self.pwr_ch2, self.excel_ini.gen_pwr_i_set, 2, 'on')
-            if gen_pwr_ch_amount > 2:
-                pwr_s.chg_out(
-                    self.pwr_ch3, self.excel_ini.gen_pwr_i_set, 3, 'on')
+            # if gen_pwr_ch_amount >= 1:
+            pwr_s.chg_out(
+                self.pwr_ch1, self.excel_ini.gen_pwr_i_set, 1, 'on')
+            # if gen_pwr_ch_amount > 1:
+            pwr_s.chg_out(
+                self.pwr_ch2, self.excel_ini.gen_pwr_i_set, 2, 'on')
+            # if gen_pwr_ch_amount > 2:
+            pwr_s.chg_out(
+                self.pwr_ch3, self.excel_ini.gen_pwr_i_set, 3, 'on')
 
             if gen_pulse_i2x_en == 0:
                 pass
@@ -174,38 +183,38 @@ class general_test ():
                 mcu_s.i2c_single_write(
                     self.pulse1_reg_cmd, self.pulse2_data_cmd)
 
-            if gen_loader_en == 1 or gen_loader_en == 3:
-                # set up all the load current
-                if gen_loader_ch_amount >= 1:
-                    load_s.chg_out_auto_mode(self.load_ch1, 1, 'on')
-                    pass
+            # if gen_loader_en == 1 or gen_loader_en == 3:
+            # set up all the load current
+            # if gen_loader_ch_amount >= 1:
+            load_s.chg_out_auto_mode(self.load_ch1, 1, 'on')
+            #     pass
 
-                if gen_loader_ch_amount > 1:
-                    load_s.chg_out_auto_mode(self.load_ch2, 2, 'on')
-                    pass
+            # if gen_loader_ch_amount > 1:
+            load_s.chg_out_auto_mode(self.load_ch2, 2, 'on')
+            #     pass
 
-                if gen_loader_ch_amount > 2:
-                    load_s.chg_out_auto_mode(self.load_ch3, 3, 'on')
-                    pass
+            # if gen_loader_ch_amount > 2:
+            load_s.chg_out_auto_mode(self.load_ch3, 3, 'on')
+            #     pass
 
-                if gen_loader_ch_amount > 3:
-                    load_s.chg_out_auto_mode(self.load_ch4, 4, 'on')
-                    pass
+            # if gen_loader_ch_amount > 3:
+            load_s.chg_out_auto_mode(self.load_ch4, 4, 'on')
+            #     pass
 
-            if gen_loader_en == 2 or gen_loader_en == 3:
-                # setup src
-                load_src_s.change_I(self.load_src, 'on')
+            # if gen_loader_en == 2 or gen_loader_en == 3:
+            # setup src
+            load_src_s.change_I(self.load_src, 'on')
 
             # add the vin calibration
-            if gen_pwr_ch_amount >= 1:
-                temp_res = pwr_s.vin_clibrate_singal_met(
-                    6, self.pwr_ch1, met_v_s, mcu_s, excel_s)
-            if gen_pwr_ch_amount > 1:
-                temp_res = pwr_s.vin_clibrate_singal_met(
-                    7, self.pwr_ch2, met_v_s, mcu_s, excel_s)
-            if gen_pwr_ch_amount > 2:
-                temp_res = pwr_s.vin_clibrate_singal_met(
-                    0, self.pwr_ch3, met_v_s, mcu_s, excel_s)
+            # if gen_pwr_ch_amount >= 1:
+            temp_res = pwr_s.vin_clibrate_singal_met(
+                6, self.pwr_ch1, met_v_s, mcu_s, excel_s)
+            # if gen_pwr_ch_amount > 1:
+            temp_res = pwr_s.vin_clibrate_singal_met(
+                7, self.pwr_ch2, met_v_s, mcu_s, excel_s)
+            # if gen_pwr_ch_amount > 2:
+            temp_res = pwr_s.vin_clibrate_singal_met(
+                0, self.pwr_ch3, met_v_s, mcu_s, excel_s)
 
             self.res_met_curr = met_i_s.mea_i()
 
