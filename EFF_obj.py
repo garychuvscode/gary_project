@@ -21,7 +21,6 @@ class eff_mea:
 
     def __init__(self, excel0, pwr0, met_v0, loader_0, mcu0, src0, met_i0, chamber0):
 
-
         prog_only = 1
         if prog_only == 0:
             # ======== only for object programming
@@ -913,8 +912,11 @@ class eff_mea:
                                         'i_el', v_res_temp, x_vin, x_iload, value_i_offset1, value_i_offset2)
                                     if channel_mode == 2 or channel_mode == 0:
                                         # if now is 3-channel mode, also need to latch the current at AVDD
-                                        v_res_temp = load_s.read_iout(
-                                            loader_VCIch)
+                                        if load_s.sim_inst == 0:
+                                            v_res_temp = '0'
+                                        else:
+                                            v_res_temp = load_s.read_iout(
+                                                loader_VCIch)
                                         excel_s.data_latch(
                                             'i_avdd', v_res_temp, x_vin, x_iload, value_i_offset1, value_i_offset2)
                                 elif source_meter_channel == 2:
