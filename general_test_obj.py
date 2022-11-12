@@ -159,7 +159,7 @@ class general_test ():
 
             # if gen_chamber_mea == 1:
             # set up chamber temperature
-            chamber_s.chamber_set(self.chamber_target)
+            self.res_temp_read = chamber_s.chamber_set(self.chamber_target)
 
             # pwr_s.change_V(self.pwr_ch1, 1)
             # pwr_s.change_V(self.pwr_ch2, 2)
@@ -267,7 +267,7 @@ class general_test ():
             self.res_load_curr3 = load_s.read_iout(3)
             self.res_load_curr4 = load_s.read_iout(4)
             self.res_src_curr = load_src_s.read('CURR')
-            self.res_temp_read = chamber_s.read('temp_mea')
+            # self.res_temp_read = chamber_s.read('temp_mea')
 
             self.data_latch(x_count, self.obj_sim_mode)
             # latch the data to related position
