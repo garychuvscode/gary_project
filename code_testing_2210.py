@@ -4,6 +4,10 @@
 import locale as lo
 import sys
 import time
+#  add MCU testing for old version board
+import mcu_obj as m
+mcu_s = m.MCU_control(1, 3)
+mcu_s.com_open()
 
 
 class test_calass():
@@ -85,7 +89,7 @@ class test_calass():
 
 
 t_s = test_calass()
-testing_index = 2
+testing_index = 3
 
 if testing_index == 0:
     print('a')
@@ -131,13 +135,22 @@ elif testing_index == 2:
 
     pass
 
-elif testing_index == 2:
+elif testing_index == 3:
 
     # testing for exit function of system
 
     x = 0
-    while x < 100:
+    while x < 80000:
+        a = 0
+        while a < 8:
+            mcu_s.relay_ctrl(a)
+            # testing for the crash of relay control @ MCU
+            print(a)
+            a = a+1
 
+        x = x+1
+        print(f'x now is {x}')
+        time.sleep(0.3)
         pass
 
     pass

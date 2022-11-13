@@ -99,7 +99,7 @@ class MCU_control ():
             print('call grace in MCU, reset the I/O channel to all low')
             print('grace is so cute~')
         else:
-            print('wrong command on MCU, double check')
+            print('wrong command on MCU, double check g')
             print('re-send the PMIC mode for instead')
             self.uart_cmd_str = (chr(self.mcu_mode_sw_en) +
                                  chr(int(self.mode_set)) + chr(1))
@@ -111,8 +111,11 @@ class MCU_control ():
         print(self.uart_cmd_str)
         if self.sim_mcu == 1:
             # now is real mode, output the MCU command from COM port
-            self.mcu_com.write(self.uart_cmd_str)
-            print('command sent')
+            # self.mcu_com.write(self.uart_cmd_str)
+            # 221113: since for the old version board may have error,
+            # use query instead (MCU will also reply the command)
+            return_str = self.mcu_com.query(self.uart_cmd_str)
+            print(f'command sent with return {return_str}')
         else:
             print('now is sending the MCU command with below string:')
             print(str(index))

@@ -1830,10 +1830,12 @@ class chamber_su242:
                 time.sleep(0.05)
                 if sim_count == 3:
                     break
+            pass
 
         # getting out of the loop after temperature is ready
         print('temperature ok, go to the next step')
         print('Just want Grace to be happy :)')
+        return read_temp
 
     def ini_inst(self):
         self.chamber_off()

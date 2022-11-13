@@ -245,7 +245,12 @@ class eff_mea:
 
                 if en_chamber_mea == 1:
                     # chamber turn on with default setting, using default temperature
-                    chamber_s.chamber_set(chamber_default_tset)
+                    # 221113: no need for the being default temp at first, cancel and replace
+                    # with a print with delat
+                    # chamber_s.chamber_set(chamber_default_tset)
+                    print('chamber enable and set to default')
+                    time.sleep(wait_small)
+
 
             # the power will change from initial state directly, not turn off between transition
 
