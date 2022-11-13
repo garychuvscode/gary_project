@@ -126,6 +126,11 @@ def sim_mode_all(main_off_line0):
 
 def sim_mode_independent(pwr=0, met_v=0, met_i=0, loader=0, src=0, chamber=0, scope=0, bk_pwr=0, main_off_line0=1, single_mode0=0):
     # independent setting for instrument simulation mode
+    '''
+    if the test mode = 0, default disable all the single simulation mode function\n
+    only based on the setting of GPIB address to decide the setting of simulation mode
+    for the
+    '''
     if main_off_line0 == 0 and single_mode0 == 1:
         if pwr == 1:
             pwr_m.sim_inst = 1
@@ -283,6 +288,9 @@ if __name__ == '__main__':
 
     # Single IQ
     if program_group == 0:
+        '''
+        item for exe file operaing, don't change after confirm with experiment
+        '''
         excel_m.open_result_book()
         excel_m.excel_save()
         # here is the single test for IQ
@@ -304,6 +312,9 @@ if __name__ == '__main__':
 
     # single SWIRE
     elif program_group == 1:
+        '''
+        item for exe file operaing, don't change after confirm with experiment
+        '''
         excel_m.open_result_book()
         excel_m.excel_save()
         # SWIRE scan single verififcation
@@ -326,6 +337,9 @@ if __name__ == '__main__':
 
     # SWIRE + IQ testing
     elif program_group == 2:
+        '''
+        item for exe file operaing, don't change after confirm with experiment
+        '''
         excel_m.open_result_book()
         excel_m.excel_save()
         # SWIRE + IQ testing
@@ -353,6 +367,9 @@ if __name__ == '__main__':
 
     # single test for efficiency chamber option
     elif program_group == 3:
+        '''
+        item for exe file operaing, don't change after confirm with experiment
+        '''
         excel_m.open_result_book()
         excel_m.excel_save()
         # efficiency testing ( I2C and SWIRE-normal mode )
@@ -375,8 +392,11 @@ if __name__ == '__main__':
 
         pass
 
-    # IQ + SWIRE + efficiency (eff can be in 1 or multi file)
+    # IQ + SWIRE + efficiency (eff default in 1 file)
     elif program_group == 4:
+        '''
+        item for exe file operaing, don't change after confirm with experiment
+        '''
         excel_m.open_result_book()
         # excel_m.excel_save()
         # verification items
@@ -406,6 +426,9 @@ if __name__ == '__main__':
         print('IQ test finished')
         sw_test.run_verification()
         print('SW test finished')
+        # cancel this line if make eff single file available
+        # single file = 1 => all in same file, 0 => all in different file
+        excel_m.eff_single_file = 1
         eff_test.run_verification()
         print('efficiency test finished')
 
@@ -413,8 +436,8 @@ if __name__ == '__main__':
         # changeable area
 
         # remember that this is only call by main, not by  object
-        excel_m.end_of_file(0)
-        print('end of the program')
+        excel_m.end_of_file(multi_item)
+        print('end of the program 4')
         pass
 
     # single verification, independent file
@@ -455,6 +478,9 @@ if __name__ == '__main__':
 
     # instrument control panel only
     elif program_group == 5:
+        '''
+        item for exe file operaing, don't change after confirm with experiment
+        '''
         # fixed part, open one result book and save the book
         # in temp name
         # excel_m.open_result_book()
@@ -496,7 +522,7 @@ if __name__ == '__main__':
         pass
 
     # testing for current calibration (chroma 63600)
-    elif program_group == 6:
+    elif program_group == 5.5:
         # testing for the current calibration of the chroma loader
 
         # if not off line testing, setup the the instrument needed independently
@@ -521,8 +547,89 @@ if __name__ == '__main__':
 
         pass
 
-    # for the scpoe command testing and format gen
+    # single test for general test
+    elif program_group == 6:
+        # fixed part, open one result book and save the book
+        # in temp name
+        excel_m.open_result_book()
+        # auto save after the book is generate
+        excel_m.excel_save()
+
+        # single setting of the object need to be 1 => no needed single
+        multi_item = 0
+        # if not off line testing, setup the the instrument needed independently
+        # set simulation for the used instrument
+        # pwr, met_v, met_i, loader, src, chamber, main offline
+        sim_mode_independent(pwr=1, met_v=1, met_i=1, loader=1, src=1, chamber=1,
+                             scope=1, bk_pwr=1, main_off_line0=main_off_line, single_mode0=single_mode)
+        # open instrument and add the name
+        # must open after simulation mode setting(open real or sim)
+        open_inst_and_name()
+        print('open instrument with real or simulation mode')
+
+        # changeable area
+        # ===========
+
+        temp_str = str(excel_m.single_test_mapped_general)
+        print(f'now is single test for {temp_str}')
+        general_t.set_sheet_name(temp_str)
+        general_t.run_verification()
+
+        print('finished general_test verification')
+
+        # ===========
+        # changeable area
+
+        # remember that this is only call by main, not by  object
+        excel_m.end_of_file(multi_item)
+        # end of file can also be call between each item
+        print('end of the program')
+
+        pass
+
+    # single test for waveform capture
     elif program_group == 7:
+        # fixed part, open one result book and save the book
+        # in temp name
+        excel_m.open_result_book()
+        # auto save after the book is generate
+        excel_m.excel_save()
+
+        # single setting of the object need to be 1 => no needed single
+        multi_item = 0
+        # if not off line testing, setup the the instrument needed independently
+        # set simulation for the used instrument
+        # pwr, met_v, met_i, loader, src, chamber, main offline
+        sim_mode_independent(pwr=1, met_v=1, met_i=1, loader=1, src=1, chamber=1,
+                             scope=1, bk_pwr=1, main_off_line0=main_off_line, single_mode0=single_mode)
+        # open instrument and add the name
+        # must open after simulation mode setting(open real or sim)
+        open_inst_and_name()
+        print('open instrument with real or simulation mode')
+
+        # changeable area
+        # ===========
+        temp_str = str(excel_m.single_test_mapped_wave)
+        print(f'now is single test for {temp_str}')
+
+        format_g.set_sheet_name(temp_str)
+        ripple_t.run_verification()
+        format_g.table_return()
+
+        print('finished waveform test verification')
+
+        # ===========
+        # changeable area
+
+        # remember that this is only call by main, not by  object
+        excel_m.end_of_file(multi_item)
+        # end of file can also be call between each item
+        print('end of the program')
+
+        pass
+
+    # for the scpoe command testing and format gen
+    elif program_group == 7.5:
         excel_m.open_result_book()
 
         # single setting of the object need to be 1 => no needed single
@@ -566,6 +673,12 @@ if __name__ == '__main__':
 
     # testing for the general test object
     elif program_group == 8:
+        '''
+        thie is the testing can be modify in the program
+        by using different code and test \n
+        function reserve for VScode control interface,
+        don't change previous setting once the testing is ok for items for exe file
+        '''
         # fixed part, open one result book and save the book
         # in temp name
         excel_m.open_result_book()
@@ -607,7 +720,7 @@ if __name__ == '__main__':
 
     # this is going to test for ripple with multi setting and multi items
     # IQ, SWIRE scan, efficiency, ripple => fully auto
-    # ISD pending
+    # ISD pending, eff is forced to one file
     elif program_group == 9:
         # fixed part, open one result book and save the book
         # in temp name
@@ -616,7 +729,7 @@ if __name__ == '__main__':
         excel_m.excel_save()
 
         # single setting of the object need to be 1 => no needed single
-        multi_item = 0
+        multi_item = 1
         # if not off line testing, setup the the instrument needed independently
         # set simulation for the used instrument
         # pwr, met_v, met_i, loader, src, chamber, main offline
@@ -637,9 +750,14 @@ if __name__ == '__main__':
         print('IQ test finished')
         sw_test.run_verification()
         print('SW test finished')
+        # cancel this line if make eff single file available
+        # single file = 1 => all in same file, 0 => all in different file
+        excel_m.eff_single_file = 1
         eff_test.run_verification()
         print('efficiency test finished')
-        format_g.set_sheet_name('CTRL_sh_ex')
+        temp_str = str(excel_m.single_test_mapped_wave)
+        print(f'now is single test for {temp_str}')
+        format_g.set_sheet_name(temp_str)
         ripple_t.run_verification()
         format_g.table_return()
 
@@ -649,7 +767,7 @@ if __name__ == '__main__':
         # remember that this is only call by main, not by  object
         excel_m.end_of_file(multi_item)
         # end of file can also be call between each item
-        print('end of the program')
+        print('end of the program IQ + SW + eff + ripple')
 
         pass
 
@@ -705,7 +823,8 @@ if __name__ == '__main__':
         # if not off line testing, setup the the instrument needed independently
         # set simulation for the used instrument
         # pwr, met_v, met_i, loader, src, chamber, main offline
-        sim_mode_independent(1, 1, 1, 1, 1, 0, main_off_line0=main_off_line)
+        sim_mode_independent(pwr=1, met_v=1, met_i=1, loader=1, src=1, chamber=1,
+                             scope=1, bk_pwr=1, main_off_line0=main_off_line, single_mode0=single_mode)
         # open instrument and add the name
         # must open after simulation mode setting(open real or sim)
         open_inst_and_name()

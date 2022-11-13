@@ -1,7 +1,6 @@
 #  this is the object define for parameter loaded
 
 # import for excel control
-from ast import Pass
 from datetime import date
 import xlwings as xw
 # this import is for the VBA function
@@ -353,6 +352,8 @@ class excel_parameter ():
             self.index_general_test + 8, 3).value
         self.gen_col_amount = self.sh_main.range(
             self.index_general_test + 9, 3).value
+        self.single_test_mapped_general = self.sh_main.range(
+            self.index_general_test + 10, 3).value
 
         # verification item: waveform capture object parameter in main
         self.pwr_select = int(self.sh_main.range(
@@ -363,6 +364,8 @@ class excel_parameter ():
         # self.ripple_line_load = int(self.sh_main.range(
         #     self.index_waveform_capture + 1, 3).value)
         # add the loop control for each items
+        self.single_test_mapped_wave = self.sh_main.range(
+            self.index_waveform_capture + 3, 3).value
 
         # counteer is usually use c_ in opening
 
@@ -1229,6 +1232,9 @@ class excel_parameter ():
             self.sh_main.copy(self.sh_ref)
             # assign sheet to the new sheets in result book
             self.sh_main = self.wb_res.sheets('main')
+
+            # 221113: assign the setting file name to the related file
+            self.sh_main.range('B14').value = self.wb.name
 
             # for the other sheet rather than main, will decide to copy to result
             # or not depends on verification item is used or not

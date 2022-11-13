@@ -91,7 +91,13 @@ class ripple_test ():
         self.scope_initial_en = int(
             self.sh_verification_control.range('B16').value)
 
-        self.excel_ini.extra_file_name = '_ripple'
+        # add selection for the line and load transient selection
+        if self.ripple_line_load == 0:
+            self.excel_ini.extra_file_name = '_ripple'
+        elif self.ripple_line_load == 1:
+            self.excel_ini.extra_file_name = '_line_tran'
+        elif self.ripple_line_load == 2:
+            self.excel_ini.extra_file_name = 'load_tran'
 
         # setup the information for each different sheet
 
@@ -561,7 +567,12 @@ class ripple_test ():
         pass
 
     def extra_file_name_setup(self):
-        self.excel_ini.extra_file_name = '_ripple'
+        if self.ripple_line_load == 0:
+            self.excel_ini.extra_file_name = '_ripple'
+        elif self.ripple_line_load == 1:
+            self.excel_ini.extra_file_name = '_line_tran'
+        elif self.ripple_line_load == 2:
+            self.excel_ini.extra_file_name = '_load_tran'
 
         pass
 

@@ -339,6 +339,10 @@ class eff_mea:
                             pulse2 = pulse1
                             extra_file_name = '_t' + \
                                 str(tset_now) + 'C_' + 'pulse_AVDD_'
+                            # adjust for the pulse name of AVDD pulse
+                            extra_file_name = extra_file_name + \
+                            str(int(pulse1))
+
                         elif channel_mode == 0 or channel_mode == 2:
                             # for the SWIRE pulse, need 2 pulse for ELVDD and ELVSS
                             pulse1 = excel_s.sh_volt_curr_cmd.range(
@@ -347,6 +351,8 @@ class eff_mea:
                                 (3 + x_sw_i2c, 6)).value
                             extra_file_name = '_t' + \
                                 str(tset_now) + 'C_' + 'pulse_EL_'
+                            extra_file_name = extra_file_name + \
+                            str(int(pulse1)) + '_' + str(int(pulse2))
                         print('pulse1: ' + str(pulse1) +
                               '; and pulse2: ' + str(pulse2) + 'under mode ' + str(channel_mode))
                         # send the pulse out through MCU
@@ -354,8 +360,9 @@ class eff_mea:
 
                         # call the build file to build new file to save result
                         # for the SWIRE pulse control
-                        extra_file_name = extra_file_name + \
-                            str(int(pulse1)) + '_' + str(int(pulse2))
+                        # 221113: move to the fromt to prevent 2 pulse index at AVDD operation
+                        # extra_file_name = extra_file_name + \
+                        #     str(int(pulse1)) + '_' + str(int(pulse2))
                         excel_s.sw_i2c_status = str(
                             int(pulse1)) + '_' + str(int(pulse2))
                         # build_file(str(extra_file_name))
