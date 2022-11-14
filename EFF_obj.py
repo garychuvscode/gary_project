@@ -251,7 +251,6 @@ class eff_mea:
                     print('chamber enable and set to default')
                     time.sleep(wait_small)
 
-
             # the power will change from initial state directly, not turn off between transition
 
             # should not need the extra Vin in the change
@@ -273,10 +272,13 @@ class eff_mea:
             # calculated of c_open_new is below after c_sw_i2c is ready
             x_open_new = 0
 
-            count_temperature = c_tempature
+            # count_temperature = c_tempature
             if en_chamber_mea == 0:
                 # cancel the temperature counter if en_chamber is disable
                 count_temperature = 1
+            else:
+                # 221114 change temperature counting assignment
+                count_temperature = c_tempature
             # calculated of c_open_new is below after c_sw_i2c is ready
             # c_open_new = count_temperature * c_sw_i2c
             while x_temperature < count_temperature:
@@ -341,7 +343,7 @@ class eff_mea:
                                 str(tset_now) + 'C_' + 'pulse_AVDD_'
                             # adjust for the pulse name of AVDD pulse
                             extra_file_name = extra_file_name + \
-                            str(int(pulse1))
+                                str(int(pulse1))
 
                         elif channel_mode == 0 or channel_mode == 2:
                             # for the SWIRE pulse, need 2 pulse for ELVDD and ELVSS
@@ -352,7 +354,7 @@ class eff_mea:
                             extra_file_name = '_t' + \
                                 str(tset_now) + 'C_' + 'pulse_EL_'
                             extra_file_name = extra_file_name + \
-                            str(int(pulse1)) + '_' + str(int(pulse2))
+                                str(int(pulse1)) + '_' + str(int(pulse2))
                         print('pulse1: ' + str(pulse1) +
                               '; and pulse2: ' + str(pulse2) + 'under mode ' + str(channel_mode))
                         # send the pulse out through MCU
@@ -1213,6 +1215,8 @@ class eff_mea:
             pwr_s.chg_out(0, pre_imax, relay0_ch, 'off')
             load_s.chg_out(0, loader_ELch, 'off')
             load_s.chg_out(0, loader_VCIch, 'off')
+            # 221114: add chamber turn off command
+            chamber_s.chamber_off()
 
             if source_meter_channel == 1 or source_meter_channel == 2:
                 load_src_s.load_off()

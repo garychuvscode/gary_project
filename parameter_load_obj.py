@@ -77,7 +77,7 @@ class excel_parameter ():
         # this is the sheet for wire scan
         self.sh_sw_scan = self.wb.sheets('SWIRE_scan')
         # the sheet used to generate general format of waveform
-        self.sh_format_gen = self.wb.sheets('CTRL_sh_example')
+        self.sh_format_gen = self.wb.sheets('CTRL_sh_ex_ripple')
         # the sheet used save the file information
         self.sh_ref_table = self.wb.sheets('table')
         # thesheet for general testing item

@@ -150,6 +150,10 @@ class Scope_LE6100A(GInst):
             self.inst.SetTimeout(20)
             self.link_status = 1
 
+            # also turn on the resource manager for IDN or other string operation
+            self.inst_obj = rm.open_resource(
+                'GPIB0::' + str(int(self.GP_addr_ini)) + '::INSTR')
+
             pass
         else:
             print('call scope open inst')

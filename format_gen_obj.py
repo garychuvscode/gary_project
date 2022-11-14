@@ -327,7 +327,7 @@ class format_gen ():
 
                 # change the sheet name after finished and save into the excel object
                 temp_sheet.name = str(
-                    self.new_sheet_name + str(x_sheets))
+                    self.new_sheet_name + '_' + str(x_sheets))
                 self.excel_ini.ref_table_list[x_sheets] = temp_sheet
                 # self.sh_ref_table = self.excel_ini.sh_ref_table
 

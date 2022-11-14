@@ -181,6 +181,8 @@ class ripple_test ():
             load_s.sim_inst = 0
             load_src_s.sim_inst = 0
 
+        # 221114: change the control of instrument for load transient test
+
         # control variable
         if self.en_i2c_mode == 1:
             # I2C mode enable
@@ -198,6 +200,10 @@ class ripple_test ():
 
         c_vin = self.c_vin
         c_load_curr = self.c_iload
+        if self.ripple_line_load == 2:
+            # reverse counter setting for load transient
+            c_vin = self.c_iload
+            c_load_curr = self.c_vin
 
         if self.ch_index == 0:
             #  EL mode
@@ -276,19 +282,34 @@ class ripple_test ():
             while x_vin < c_vin:
 
                 # assign vin command on power supply and ideal V
-                v_target = excel_s.sh_format_gen.range(
-                    (43 + x_vin, 4)).value
 
-                pwr_s.chg_out(v_target, excel_s.pre_imax,
-                              excel_s.relay0_ch, 'on')
+                # 221114: change for load transient
+                if self.ripple_line_load == 1 or self.ripple_line_load == 0:
+                    v_target = excel_s.sh_format_gen.range(
+                        (43 + x_vin, 4)).value
 
-                pro_status_str = 'Vin:' + str(v_target)
-                excel_s.vin_status = str(v_target)
-                excel_s.program_status(pro_status_str)
+                    pwr_s.chg_out(v_target, excel_s.pre_imax,
+                                  excel_s.relay0_ch, 'on')
+
+                    pro_status_str = 'Vin:' + str(v_target)
+                    excel_s.vin_status = str(v_target)
+                    excel_s.program_status(pro_status_str)
 
                 # the loop for different i load
                 x_iload = 0
                 while x_iload < c_load_curr:
+
+                    # 221114: change for load transient
+                    if self.ripple_line_load == 2:
+                        v_target = excel_s.sh_format_gen.range(
+                            (43 + x_iload, 4)).value
+
+                        pwr_s.chg_out(v_target, excel_s.pre_imax,
+                                      excel_s.relay0_ch, 'on')
+
+                        pro_status_str = 'Vin:' + str(v_target)
+                        excel_s.vin_status = str(v_target)
+                        excel_s.program_status(pro_status_str)
 
                     if x_iload == 0:
                         scope_s.Hor_scale_adj(0.01)
@@ -297,8 +318,12 @@ class ripple_test ():
                             scope_s.set_general['time_scale'], scope_s.set_general['time_offset'])
 
                     # assign i_load on related channel
-                    iload_target = excel_s.sh_format_gen.range(
-                        (43 + x_iload, 7)).value
+                    # 221114: to prevent error of load transient
+                    if self.ripple_line_load != 2:
+                        iload_target = excel_s.sh_format_gen.range(
+                            (43 + x_iload, 7)).value
+                    else:
+                        iload_target = 0
 
                     pro_status_str = 'setting iload_target current'
                     excel_s.i_el_status = str(iload_target)
@@ -340,9 +365,10 @@ class ripple_test ():
 
                     # add auto exception for line/load transient testing
 
-                    if self.ripple_line_load == 1 or self.ripple_line_load == 2:
-                        excel_s.message_box(
-                            'change condition of function and press enter', 'To g: stop for transient', auto_expection=1)
+                    if (self.ripple_line_load == 1 or self.ripple_line_load == 2):
+                        if self.obj_sim_mode == 1:
+                            excel_s.message_box(
+                                'change condition of function and press enter', 'g: stop for transient', auto_expection=1)
 
                     # calibration Vin
 
@@ -371,6 +397,10 @@ class ripple_test ():
                     active_range = excel_s.sh_ref_table.range(self.format_start_y + y_index * (2 + self.c_data_mea),
                                                               self.format_start_x + x_index)
                     # (1 + ripple_item) is waveform + ripple item + one current line
+
+                    # add the setting of condition in the blank
+                    active_range.value = f'Vin={v_target}_i_load={iload_target}'
+
                     if self.obj_sim_mode == 0:
                         excel_s.scope_capture(
                             excel_s.sh_ref_table, active_range, default_trace=0.5)

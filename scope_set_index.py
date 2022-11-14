@@ -31,7 +31,8 @@ class scope_config():
 
             # setting of general
             self.set_general = {'trigger_mode': 'Auto', 'trigger_source': 'C3', 'trigger_level': '-3.2',
-                                'trigger_slope': 'Positive', 'time_scale': '0.0001', 'time_offset': '-0.0004', 'sample_mode': 'RealTime', 'fixed_sample_rate': '1.25GS/s'}
+                                'trigger_slope': 'Positive', 'time_scale': '0.0001',
+                                'time_offset': '-0.0004', 'sample_mode': 'RealTime', 'fixed_sample_rate': '1.25GS/s'}
 
             # setting of measurement
             self.p1 = {"param": "pkpk", "source": "C1", "view": "TRUE"}
