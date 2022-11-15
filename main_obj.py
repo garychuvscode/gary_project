@@ -643,17 +643,19 @@ if __name__ == '__main__':
         open_inst_and_name()
         print('open instrument with real or simulation mode')
 
-        format_g.set_sheet_name('CTRL_sh_ripple')
-        format_g.sheet_gen()
-        format_g.run_format_gen()
+        format_g.set_sheet_name('CTRL_sh_ex_ripple')
+        # 221115: set_sheet_name already include the sheet_and run_format_gen, no need for
+        # these command
+        # format_g.sheet_gen()
+        # format_g.run_format_gen()
         # insert related test => the sheet in excel is still active
 
         # table release after table return
         format_g.table_return()
 
-        format_g.set_sheet_name('CTRL_sh_line')
-        format_g.sheet_gen()
-        format_g.run_format_gen()
+        format_g.set_sheet_name('CTRL_sh_ex_line')
+        # format_g.sheet_gen()
+        # format_g.run_format_gen()
         # insert related test => the sheet in excel is still active
 
         # table release after table return
@@ -796,7 +798,7 @@ if __name__ == '__main__':
 
         # start the testing
 
-        format_g.set_sheet_name('CTRL_sh_ex')
+        format_g.set_sheet_name('CTRL_sh_ex_ripple')
         ripple_t.run_verification()
         format_g.table_return()
 
@@ -817,33 +819,25 @@ if __name__ == '__main__':
         excel_m.open_result_book()
         # auto save after the book is generate
         excel_m.excel_save()
-
         # single setting of the object need to be 1 => no needed single
         multi_item = 0
-        # if not off line testing, setup the the instrument needed independently
-        # set simulation for the used instrument
-        # pwr, met_v, met_i, loader, src, chamber, main offline
+        # setup instruement for test mode, only for debug, no need to change)
         sim_mode_independent(pwr=1, met_v=1, met_i=1, loader=1, src=1, chamber=1,
                              scope=1, bk_pwr=1, main_off_line0=main_off_line, single_mode0=single_mode)
-        # open instrument and add the name
-        # must open after simulation mode setting(open real or sim)
+        # open instrument and add the name to result book
         open_inst_and_name()
         print('open instrument with real or simulation mode')
 
         # changeable area
         # ===========
 
-        # sheet generation is added in the run verification
-
-        # start the testing
         # run_verification() => should be put in here
-
-        print('finished XX verification')
+        print('finished verification')
 
         # ===========
         # changeable area
 
-        # remember that this is only call by main, not by  object
+        # remember that this is only call by main, not by object
         excel_m.end_of_file(multi_item)
         # end of file can also be call between each item
         print('end of the program')
