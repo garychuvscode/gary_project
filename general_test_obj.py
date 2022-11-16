@@ -159,63 +159,77 @@ class general_test ():
 
             # if gen_chamber_mea == 1:
             # set up chamber temperature
-            self.res_temp_read = chamber_s.chamber_set(self.chamber_target)
+            if self.chamber_target != 'x':
+                self.res_temp_read = chamber_s.chamber_set(self.chamber_target)
 
             # pwr_s.change_V(self.pwr_ch1, 1)
             # pwr_s.change_V(self.pwr_ch2, 2)
             # pwr_s.change_V(self.pwr_ch3, 3)
             # if gen_pwr_ch_amount >= 1:
             if gen_pwr_ch_amount >= 1:
-                pwr_s.chg_out(
-                    self.pwr_ch1, self.excel_ini.gen_pwr_i_set, 1, 'on')
+                if self.pwr_ch1 != 'x':
+                    pwr_s.chg_out(
+                        self.pwr_ch1, self.excel_ini.gen_pwr_i_set, 1, 'on')
             if gen_pwr_ch_amount > 1:
-                pwr_s.chg_out(
-                    self.pwr_ch2, self.excel_ini.gen_pwr_i_set, 2, 'on')
+                if self.pwr_ch2 != 'x':
+                    pwr_s.chg_out(
+                        self.pwr_ch2, self.excel_ini.gen_pwr_i_set, 2, 'on')
             if gen_pwr_ch_amount > 2:
-                pwr_s.chg_out(
-                    self.pwr_ch3, self.excel_ini.gen_pwr_i_set, 3, 'on')
+                if self.pwr_ch3 != 'x':
+                    pwr_s.chg_out(
+                        self.pwr_ch3, self.excel_ini.gen_pwr_i_set, 3, 'on')
 
             if gen_pulse_i2x_en == 0:
                 pass
             elif gen_pulse_i2x_en == 1:
-                mcu_s.pulse_out(self.pulse1_reg_cmd, self.pulse2_data_cmd)
+                if self.pulse1_reg_cmd != 'x':
+                    mcu_s.pulse_out(self.pulse1_reg_cmd, self.pulse2_data_cmd)
                 pass
             elif gen_pulse_i2x_en == 2:
-                mcu_s.i2c_single_write(
-                    self.pulse1_reg_cmd, self.pulse2_data_cmd)
+                if self.pulse1_reg_cmd != 'x':
+                    mcu_s.i2c_single_write(
+                        self.pulse1_reg_cmd, self.pulse2_data_cmd)
 
             # if gen_loader_en == 1 or gen_loader_en == 3:
             # set up all the load current
             # if gen_loader_ch_amount >= 1:
-            load_s.chg_out_auto_mode(self.load_ch1, 1, 'on')
+            if self.load_ch1 != 'x':
+                load_s.chg_out_auto_mode(self.load_ch1, 1, 'on')
             #     pass
 
             # if gen_loader_ch_amount > 1:
-            load_s.chg_out_auto_mode(self.load_ch2, 2, 'on')
+            if self.load_ch2 != 'x':
+                load_s.chg_out_auto_mode(self.load_ch2, 2, 'on')
             #     pass
 
             # if gen_loader_ch_amount > 2:
-            load_s.chg_out_auto_mode(self.load_ch3, 3, 'on')
+            if self.load_ch3 != 'x':
+                load_s.chg_out_auto_mode(self.load_ch3, 3, 'on')
             #     pass
 
             # if gen_loader_ch_amount > 3:
-            load_s.chg_out_auto_mode(self.load_ch4, 4, 'on')
+            if self.load_ch4 != 'x':
+                load_s.chg_out_auto_mode(self.load_ch4, 4, 'on')
             #     pass
 
             # if gen_loader_en == 2 or gen_loader_en == 3:
             # setup src
-            load_src_s.change_I(self.load_src, 'on')
+            if self.load_src != 'x':
+                load_src_s.change_I(self.load_src, 'on')
 
             # add the vin calibration
             if gen_pwr_ch_amount >= 1:
-                temp_res = pwr_s.vin_clibrate_singal_met(
-                    6, self.pwr_ch1, met_v_s, mcu_s, excel_s)
+                if self.pwr_ch1 != 'x':
+                    temp_res = pwr_s.vin_clibrate_singal_met(
+                        6, self.pwr_ch1, met_v_s, mcu_s, excel_s)
             if gen_pwr_ch_amount > 1:
-                temp_res = pwr_s.vin_clibrate_singal_met(
-                    7, self.pwr_ch2, met_v_s, mcu_s, excel_s)
+                if self.pwr_ch2 != 'x':
+                    temp_res = pwr_s.vin_clibrate_singal_met(
+                        7, self.pwr_ch2, met_v_s, mcu_s, excel_s)
             if gen_pwr_ch_amount > 2:
-                temp_res = pwr_s.vin_clibrate_singal_met(
-                    0, self.pwr_ch3, met_v_s, mcu_s, excel_s)
+                if self.pwr_ch3 != 'x':
+                    temp_res = pwr_s.vin_clibrate_singal_met(
+                        0, self.pwr_ch3, met_v_s, mcu_s, excel_s)
 
             self.res_met_curr = met_i_s.mea_i()
 
@@ -365,9 +379,9 @@ class general_test ():
         # send the checking index in and check or filled in 0 for none
         check_temp = self.sh_general_test.range(y_index, x_index).value
         if check_temp == None:
-            check_temp = 0
+            check_temp = 'x'
             # return 0 after read and set the blank to 0
-            self.sh_general_test.range(y_index, x_index).value = 0
+            self.sh_general_test.range(y_index, x_index).value = 'x'
             pass
 
         # return the settings to main program
