@@ -128,13 +128,13 @@ class general_test ():
         if pre_test_en == 1:
             if gen_pwr_ch_amount >= 1:
                 pwr_s.chg_out(
-                    pre_vin, pre_sup_iout, 1, 'on')
+                    pre_vin, pre_sup_iout, excel_s.relay0_ch, 'on')
             if gen_pwr_ch_amount > 1:
                 pwr_s.chg_out(
-                    pre_vin, pre_sup_iout, 2, 'on')
+                    pre_vin, pre_sup_iout, excel_s.relay6_ch, 'on')
             if gen_pwr_ch_amount > 2:
                 pwr_s.chg_out(
-                    pre_vin, pre_sup_iout, 3, 'on')
+                    pre_vin, pre_sup_iout, excel_s.relay7_ch, 'on')
             print('pre-power on here')
             # turn off the power and load
 
@@ -169,15 +169,15 @@ class general_test ():
             if gen_pwr_ch_amount >= 1:
                 if self.pwr_ch1 != 'x':
                     pwr_s.chg_out(
-                        self.pwr_ch1, self.excel_ini.gen_pwr_i_set, 1, 'on')
+                        self.pwr_ch1, self.excel_ini.gen_pwr_i_set, excel_s.relay0_ch, 'on')
             if gen_pwr_ch_amount > 1:
                 if self.pwr_ch2 != 'x':
                     pwr_s.chg_out(
-                        self.pwr_ch2, self.excel_ini.gen_pwr_i_set, 2, 'on')
+                        self.pwr_ch2, self.excel_ini.gen_pwr_i_set, excel_s.relay6_ch, 'on')
             if gen_pwr_ch_amount > 2:
                 if self.pwr_ch3 != 'x':
                     pwr_s.chg_out(
-                        self.pwr_ch3, self.excel_ini.gen_pwr_i_set, 3, 'on')
+                        self.pwr_ch3, self.excel_ini.gen_pwr_i_set, excel_s.relay7_ch, 'on')
 
             if gen_pulse_i2x_en == 0:
                 pass
@@ -221,15 +221,15 @@ class general_test ():
             if gen_pwr_ch_amount >= 1:
                 if self.pwr_ch1 != 'x':
                     temp_res = pwr_s.vin_clibrate_singal_met(
-                        6, self.pwr_ch1, met_v_s, mcu_s, excel_s)
+                        0, self.pwr_ch1, met_v_s, mcu_s, excel_s)
             if gen_pwr_ch_amount > 1:
                 if self.pwr_ch2 != 'x':
                     temp_res = pwr_s.vin_clibrate_singal_met(
-                        7, self.pwr_ch2, met_v_s, mcu_s, excel_s)
+                        6, self.pwr_ch2, met_v_s, mcu_s, excel_s)
             if gen_pwr_ch_amount > 2:
                 if self.pwr_ch3 != 'x':
                     temp_res = pwr_s.vin_clibrate_singal_met(
-                        0, self.pwr_ch3, met_v_s, mcu_s, excel_s)
+                        7, self.pwr_ch3, met_v_s, mcu_s, excel_s)
 
             self.res_met_curr = met_i_s.mea_i()
 

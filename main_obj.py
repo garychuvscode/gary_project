@@ -676,7 +676,7 @@ if __name__ == '__main__':
     # testing for the general test object
     elif program_group == 8:
         '''
-        thie is the testing can be modify in the program
+        this is the testing can be modify in the program
         by using different code and test \n
         function reserve for VScode control interface,
         don't change previous setting once the testing is ok for items for exe file
