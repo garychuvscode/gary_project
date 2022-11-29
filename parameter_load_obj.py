@@ -1,7 +1,7 @@
 #  this is the object define for parameter loaded
 
 # import for excel control
-from datetime import date
+from datetime import datetime
 import xlwings as xw
 # this import is for the VBA function
 import win32com.client
@@ -122,6 +122,9 @@ class excel_parameter ():
 
         # the name can be change from main program(different user during program)
         self.flexible_name = ''
+
+        # 221129 add the time stamp of the file name
+        self.time_name = ''
 
         # assign one sheet is not raw out if efficiency test now used
         self.sh_temp = self.sh_volt_curr_cmd
@@ -332,6 +335,16 @@ class excel_parameter ():
             self.index_eff + 5, 3).value
         self.eff_rerun_en = self.sh_main.range(
             self.index_eff + 6, 3).value
+        self.sh_volt_curr_cmd_name = str(self.sh_main.range(
+            self.index_eff + 7, 3).value)
+        self.sh_i2c_cmd_name = str(self.sh_main.range(
+            self.index_eff + 8, 3).value)
+        # 221129: change the sheet mapping of the command of efficiency
+
+        # this is the sheet for efficiency testing command
+        self.sh_volt_curr_cmd = self.wb.sheets(str(self.sh_volt_curr_cmd_name))
+        # this is the sheet for I2C command
+        self.sh_i2c_cmd = self.wb.sheets(str(self.sh_i2c_cmd_name))
 
         # verification item: general testing
         self.gen_chamber_en = self.sh_main.range(
@@ -1236,6 +1249,9 @@ class excel_parameter ():
             # 221113: assign the setting file name to the related file
             self.sh_main.range('B14').value = self.wb.name
 
+            # 221129: add the start time stamp to record time needed
+            self.sh_main.range('B5').value = self.time_stamp()
+
             # for the other sheet rather than main, will decide to copy to result
             # or not depends on verification item is used or not
             self.extra_file_name = '_temp'
@@ -1274,11 +1290,16 @@ class excel_parameter ():
                 # input()
                 self.detail_name = '_eff all in 1'
 
+            # 221129: add the time stamp of the file
+            self.time_name = self.time_stamp()
+            self.sh_main.range('B6').value = self.time_name
+
             self.result_book_trace = self.excel_temp + \
                 self.new_file_name + self.extra_file_name + \
-                self.detail_name + self.flexible_name + '.xlsx'
+                self.detail_name + self.flexible_name + '_' + self.time_name + '.xlsx'
             self.full_result_name = self.new_file_name + \
-                self.extra_file_name + self.detail_name + self.flexible_name
+                self.extra_file_name + self.detail_name + \
+                self.flexible_name + '_' + self.time_name
             self.wb_res.save(self.result_book_trace)
 
             if self.book_off_finished == 1:
@@ -1289,13 +1310,14 @@ class excel_parameter ():
             self.sheet_reset()
             self.detail_name = ''
             self.flexible_name = ''
+            self.time_name = ''
             self.extra_file_name = '_temp'
             self.new_file_name = str(self.sh_main.range('B8').value)
             self.full_result_name = self.new_file_name + \
-                self.extra_file_name + self.detail_name + self.flexible_name
+                self.extra_file_name + self.detail_name + self.flexible_name + self.time_name
             self.result_book_trace = self.excel_temp + \
                 self.new_file_name + self.extra_file_name + \
-                self.detail_name + self.flexible_name + '.xlsx'
+                self.detail_name + self.flexible_name + self.time_name + '.xlsx'
 
             # reset the sheet count of the one file efficiency when end of file
             self.one_file_sheet_adj = 0
@@ -1311,12 +1333,43 @@ class excel_parameter ():
         pass
 
     def flexible_naming(self, name_string):
+        '''
+        is able to change the file name at the end during program process\n
+        but only reserve for Grace(root) access XD
+        '''
 
         # this can be the flexible name of the file name call by main object
         # to have different file name without changing the excel
         self.flexible_name = str(name_string)
 
         pass
+
+    def time_stamp(self):
+        '''
+        to add the time stamp the end of file, need
+        '''
+
+        now = datetime.now()  # current date and time
+
+        year = now.strftime("%Y")
+        print("year:", year)
+
+        month = now.strftime("%m")
+        print("month:", month)
+
+        day = now.strftime("%d")
+        print("day:", day)
+
+        time = now.strftime("%H:%M:%S")
+        print("time:", time)
+
+        date_time = now.strftime("%Y-%m-%d, %H:%M:%S")
+        print("date and time:", date_time)
+
+        date_stamp = now.strftime("%Y_%m_%d_%H_%M")
+        print('the stanmp: ' + date_stamp)
+
+        return date_stamp
 
     def excel_save(self):
         # only save, not change the result book trace
@@ -1387,9 +1440,9 @@ class excel_parameter ():
         ex_sheet_name = 'raw_out'
         self.sh_raw_out = self.wb.sheets(ex_sheet_name)
         # this is the sheet for efficiency testing command
-        self.sh_volt_curr_cmd = self.wb.sheets('V_I_com')
+        self.sh_volt_curr_cmd = self.wb.sheets(self.sh_volt_curr_cmd_name)
         # this is the sheet for I2C command
-        self.sh_i2c_cmd = self.wb.sheets('I2C_ctrl')
+        self.sh_i2c_cmd = self.wb.sheets(self.sh_i2c_cmd_name)
         # this is the sheet for IQ scan
         self.sh_iq_scan = self.wb.sheets('IQ_measured')
 
@@ -2291,6 +2344,27 @@ class excel_parameter ():
             print('default sheet selected for g')
 
         sheet.range((ind_y + y_axis, ind_x + x_axis)).value = content
+
+        pass
+
+    def eff_para_re_load(self, new_VI_com=0, new_i2C_ctrl=0):
+        '''
+        the function is used to improve the control sheet extention of efficiency measurement\n
+        send the name of new sheet into the function before run verification, and it can replace the control parameter before start
+        easire to switch the command without changing the table
+
+        '''
+
+        # EFF_inst used
+        self.c_avdd_load = self.sh_volt_curr_cmd.range('D1').value
+        self.c_vin = self.sh_volt_curr_cmd.range('B1').value
+        self.c_iload = self.sh_volt_curr_cmd.range('C1').value
+        self.c_pulse = self.sh_volt_curr_cmd.range('E1').value
+        self.c_i2c = self.sh_i2c_cmd.range('B1').value
+        self.c_i2c_g = self.sh_i2c_cmd.range('D1').value
+        self.c_avdd_single = self.sh_volt_curr_cmd.range('G1').value
+        self.c_avdd_pulse = self.sh_volt_curr_cmd.range('H1').value
+        self.c_tempature = self.sh_volt_curr_cmd.range('I1').value
 
         pass
 

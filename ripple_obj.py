@@ -97,7 +97,7 @@ class ripple_test ():
         elif self.ripple_line_load == 1:
             self.excel_ini.extra_file_name = '_line_tran'
         elif self.ripple_line_load == 2:
-            self.excel_ini.extra_file_name = 'load_tran'
+            self.excel_ini.extra_file_name = '_load_tran'
 
         # setup the information for each different sheet
 

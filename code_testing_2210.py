@@ -4,9 +4,10 @@
 import locale as lo
 import sys
 import time
+from datetime import datetime
 #  add MCU testing for old version board
 import mcu_obj as m
-mcu_s = m.MCU_control(1, 3)
+mcu_s = m.MCU_control(0, 3)
 mcu_s.com_open()
 
 
@@ -87,9 +88,33 @@ class test_calass():
         print(b)
         return b
 
+    def time_string(self):
+        # refer to the command from internet to check
+        now = datetime.now()  # current date and time
+
+        year = now.strftime("%Y")
+        print("year:", year)
+
+        month = now.strftime("%m")
+        print("month:", month)
+
+        day = now.strftime("%d")
+        print("day:", day)
+
+        time = now.strftime("%H:%M:%S")
+        print("time:", time)
+
+        date_time = now.strftime("%Y-%m-%d, %H:%M:%S")
+        print("date and time:", date_time)
+
+        date_stamp = now.strftime("%Y_%m_%d_%H_%M")
+        print('the stanmp: ' + date_stamp)
+
+        pass
+
 
 t_s = test_calass()
-testing_index = 3
+testing_index = 4
 
 if testing_index == 0:
     print('a')
@@ -152,5 +177,11 @@ elif testing_index == 3:
         print(f'x now is {x}')
         time.sleep(0.3)
         pass
+
+    pass
+
+elif testing_index == 4:
+
+    t_s.time_string()
 
     pass

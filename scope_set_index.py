@@ -91,6 +91,22 @@ class scope_config():
 
             pass
 
+        elif setup_index == '50374_line_tran':
+
+            pass
+
+        elif setup_index == '50374_load_tran':
+
+            pass
+
+        elif setup_index == 'SY8386C_line_tran':
+
+            pass
+
+        elif setup_index == 'SY8386C_load_tran':
+
+            pass
+
         else:
             # if index wrong, back to 374 settings
             self.ch_c1 = {'ch_view': 'TRUE', 'volt_dev': '0.02', 'BW': '20MHz', 'filter': '2bits', 'v_offset': -3.3,

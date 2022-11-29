@@ -107,11 +107,11 @@ class eff_mea:
         self.excel_ini.sh_volt_curr_cmd.copy(self.excel_ini.sh_ref)
         # assign the sheet to result book
         self.excel_ini.sh_volt_curr_cmd = self.excel_ini.wb_res.sheets(
-            'V_I_com')
+            self.excel_ini.sh_volt_curr_cmd_name)
         # copy the rsult sheet to result book
         self.excel_ini.sh_i2c_cmd.copy(self.excel_ini.sh_ref)
         # assign the sheet to result book
-        self.excel_ini.sh_i2c_cmd = self.excel_ini.wb_res.sheets('I2C_ctrl')
+        self.excel_ini.sh_i2c_cmd = self.excel_ini.wb_res.sheets(self.excel_ini.sh_i2c_cmd_name)
         # # 220914 move to build file to prevent error of delete and end of file
         # # copy the result sheet to result book
         # self.excel_ini.sh_raw_out.copy(self.excel_ini.sh_ref)

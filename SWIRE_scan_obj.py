@@ -20,23 +20,27 @@ class sw_scan:
 
     def __init__(self, excel0, pwr0, met_v0, loader_0, mcu0):
 
-        # # ======== only for object programming
-        # # testing used temp instrument
-        # # need to become comment when the OBJ is finished
-        # import mcu_obj as mcu
-        # import inst_pkg_d as inst
-        # # initial the object and set to simulation mode
-        # pwr0 = inst.LPS_505N(3.7, 0.5, 3, 1, 'off')
-        # pwr0.sim_inst = 0
-        # # initial the object and set to simulation mode
-        # met_v0 = inst.Met_34460(0.0001, 7, 0.000001, 2.5, 21)
-        # met_v0.sim_inst = 0
-        # loader_0 = inst.chroma_63600(1, 7, 'CCL')
-        # # mcu is also config as simulation mode
-        # mcu0 = mcu.MCU_control(0, 3)
-        # # using the main control book as default
-        # excel0 = par.excel_parameter('obj_main')
-        # # ======== only for object programming
+        prog_only = 1
+        if prog_only == 0:
+            # ======== only for object programming
+            # testing used temp instrument
+            # need to become comment when the OBJ is finished
+            import mcu_obj as mcu
+            import inst_pkg_d as inst
+            # add the libirary from Geroge
+            # initial the object and set to simulation mode
+            pwr0 = inst.LPS_505N(3.7, 0.5, 3, 1, 'off')
+            pwr0.sim_inst = 0
+            # initial the object and set to simulation mode
+            met_v0 = inst.Met_34460(0.0001, 30, 0.000001, 2.5, 21)
+            met_v0.sim_inst = 0
+            loader_0 = inst.chroma_63600(1, 7, 'CCL')
+            loader_0.sim_inst = 0
+            # mcu is also config as simulation mode
+            mcu0 = mcu.MCU_control(0, 3)
+            # using the main control book as default
+            excel0 = par.excel_parameter('obj_main')
+            # ======== only for object programming
 
         # this is the initialize sub-program for the class and which will operate once class
         # has been defined
@@ -96,7 +100,7 @@ class sw_scan:
     def run_verification(self):
         # this function is to run the main item, for all the instrument control and main loop will be in this sub function
         # for the parameter only loaded to the program, no need to call from boject all the time
-        # save to local variable every time call the run_verification program
+        # save to local variable every time call the run_verification progra
 
         # slave object in subprogram
         pwr_s = self.pwr_ini
@@ -146,7 +150,8 @@ class sw_scan:
 
         if en_start_up_check == 1:
             print('window jump out')
-            excel_s.message_box('press enter if hardware configuration is correct', 'Pre-power on for system test under Vin= ' + str(excel_s.pre_vin) + 'Iin= ' + str(excel_s.pre_sup_iout))
+            excel_s.message_box('press enter if hardware configuration is correct',
+                                'Pre-power on for system test under Vin= ' + str(excel_s.pre_vin) + 'Iin= ' + str(excel_s.pre_sup_iout))
             # self.msg_res = win32api.MessageBox(
             #     0, 'press enter if hardware configuration is correct', 'Pre-power on for system test under Vin= ' + str(excel_s.pre_vin) + 'Iin= ' + str(excel_s.pre_sup_iout))
 
