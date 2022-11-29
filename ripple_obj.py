@@ -381,7 +381,7 @@ class ripple_test ():
 
                     # measure and capture waveform
 
-                    scope_s.capture_full(path_t=0)
+                    scope_s.capture_full(path_t=0, find_level=1)
                     # for simulation path using path_t=0.5
                     # scope_s.printScreenToPC(0)
 

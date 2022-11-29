@@ -299,7 +299,7 @@ class Scope_LE6100A(GInst):
 
     def triggerSingle(self):
         '''
-        this single will clear swqqp after single
+        this single will clear sweep after single
         which means that the sample of data will only be once
         '''
 
@@ -803,10 +803,11 @@ class Scope_LE6100A(GInst):
 
         return mea_result
 
-    def capture_full(self, wait_time_s=5, path_t=0):
+    def capture_full(self, wait_time_s=5, path_t=0, find_level=0):
         '''
         this function is the fully scope process, include: clear sweep => Auto =>
-        wait time => set to single(trigger) => when trigged stop and capture
+        wait time => set to single(trigger) => when trigged stop and capture \n
+        find_level: 0 is not to auto find
 
         '''
 
@@ -816,10 +817,29 @@ class Scope_LE6100A(GInst):
             pass
         else:
             time.sleep(wait_time_s)
+        if find_level == 0:
+            # no need to find level, single directly
+            self.trigger_adj(mode='Single')
+            self.waitTriggered()
+        else:
+            self.find_trig_level()
+            self.trigger_adj(mode='Single')
+            self.waitTriggered()
 
-        self.trigger_adj(mode='Single')
-        self.waitTriggered()
         self.printScreenToPC(path=path_t)
+
+        pass
+
+    def find_trig_level(self, ch=0):
+        '''
+        this program used to change the trigger channel and level and find the
+        related level automatically, ch=0 means not change channel
+        '''
+        if ch != 0:
+            # change the channel of scope for trigger
+            self.trigger_adj(source=f'C{int(ch)}')
+
+        self.writeVBS('app.Acquisition.Trigger.Edge.FindLevel')
 
         pass
 
