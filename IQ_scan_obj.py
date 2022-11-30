@@ -60,22 +60,25 @@ class iq_scan:
 
     def __init__(self, excel0, pwr0, met_i0, mcu0):
 
-        # # ======== only for object programming
-        # # testing used temp instrument
-        # # need to become comment when the OBJ is finished
-        # import mcu_obj as mcu
-        # import inst_pkg_d as inst
-        # # initial the object and set to simulation mode
-        # pwr0 = inst.LPS_505N(3.7, 0.5, 3, 1, 'off')
-        # pwr0.sim_inst = 0
-        # # initial the object and set to simulation mode
-        # met_i0 = inst.Met_34460(0.0001, 7, 0.000001, 2.5, 21)
-        # met_i0.sim_inst = 0
-        # # mcu is also config as simulation mode
-        # mcu0 = mcu.MCU_control(0, 3)
-        # # using the main control book as default
-        # excel0 = par.excel_parameter('obj_main')
-        # # ======== only for object programming
+        prog_only = 1
+        if prog_only == 0:
+            # ======== only for object programming
+            # testing used temp instrument
+            # need to become comment when the OBJ is finished
+            import mcu_obj as mcu
+            import inst_pkg_d as inst
+            # add the libirary from Geroge
+            # initial the object and set to simulation mode
+            pwr0 = inst.LPS_505N(3.7, 0.5, 3, 1, 'off')
+            pwr0.sim_inst = 0
+            # initial the object and set to simulation mode
+            met_i0 = inst.Met_34460(0.0001, 30, 0.000001, 2.5, 21)
+            met_i0.sim_inst = 0
+            # mcu is also config as simulation mode
+            mcu0 = mcu.MCU_control(0, 3)
+            # using the main control book as default
+            excel0 = par.excel_parameter('obj_main')
+            # ======== only for object programming
 
         # this is the initialize sub-program for the class and which will operate once class
         # has been defined
