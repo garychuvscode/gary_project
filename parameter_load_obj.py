@@ -319,6 +319,15 @@ class excel_parameter ():
         # verification item: IQ parameter
         self.ISD_range = self.sh_main.range(
             self.index_IQ_scan + 1, 3).value
+        self.sh_iq_scan_name = str(self.sh_main.range(
+            self.index_IQ_scan + 2, 3).value)
+        self.sh_sw_scan_name = str(self.sh_main.range(
+            self.index_IQ_scan + 3, 3).value)
+
+        # this is the sheet for IQ scan
+        self.sh_iq_scan = self.wb.sheets(self.sh_iq_scan_name)
+        # this is the sheet for wire scan
+        self.sh_sw_scan = self.wb.sheets(self.sh_sw_scan_name)
 
         # verification item: eff control parameter
         self.channel_mode = self.sh_main.range(self.index_eff + 1, 3).value
