@@ -82,7 +82,8 @@ class sw_scan:
         # copy the rsult sheet to result book
         self.excel_ini.sh_sw_scan.copy(self.excel_ini.sh_ref)
         # assign the sheet to result book
-        self.excel_ini.sh_sw_scan = self.excel_ini.wb_res.sheets('SWIRE_scan')
+        self.excel_ini.sh_sw_scan = self.excel_ini.wb_res.sheets(
+            self.excel_ini.sh_sw_scan_name)
 
         # # copy the sheets to new book
         # # for the new sheet generation, located in sheet_gen

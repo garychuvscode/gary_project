@@ -128,7 +128,7 @@ class iq_scan:
         # copy the rsult sheet to result book
         self.excel_ini.sh_iq_scan.copy(self.excel_ini.sh_ref)
         # assign the sheet to result book
-        self.excel_ini.sh_iq_scan = self.excel_ini.wb_res.sheets('IQ_measured')
+        self.excel_ini.sh_iq_scan = self.excel_ini.wb_res.sheets(self.excel_ini.sh_iq_scan_name)
 
         # # copy the sheets to new book
         # # for the new sheet generation, located in sheet_gen
