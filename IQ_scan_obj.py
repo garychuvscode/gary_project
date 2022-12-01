@@ -128,7 +128,8 @@ class iq_scan:
         # copy the rsult sheet to result book
         self.excel_ini.sh_iq_scan.copy(self.excel_ini.sh_ref)
         # assign the sheet to result book
-        self.excel_ini.sh_iq_scan = self.excel_ini.wb_res.sheets(self.excel_ini.sh_iq_scan_name)
+        self.excel_ini.sh_iq_scan = self.excel_ini.wb_res.sheets(
+            self.excel_ini.sh_iq_scan_name)
 
         # # copy the sheets to new book
         # # for the new sheet generation, located in sheet_gen
@@ -213,6 +214,10 @@ class iq_scan:
                     # because the counter starts from 0, ini value will save to the temp first and return when the counter
                     # is not 0
 
+                    # 221201: add this for range switching before real measurment
+                    print('want to have a date with Grace~~')
+                    v_res_temp = self.met_i_ini.mea_i()
+
                 # measurement start after the AVDDEN and SWIRE is updated
                 time.sleep(self.excel_ini.wait_small)
                 v_res_temp = self.met_i_ini.mea_i()
@@ -239,9 +244,9 @@ class iq_scan:
             x_iq = x_iq + 1
             self.excel_ini.excel_save()
             if self.excel_ini.program_exit == 0:
-                    # exit the program
-                    print('program_exit')
-                    break
+                # exit the program
+                print('program_exit')
+                break
         # save the result after each counter finished
         # self.excel_ini.wb_res.save(self.excel_ini.result_book_trace)
         # 220903: end of test only call by main, because

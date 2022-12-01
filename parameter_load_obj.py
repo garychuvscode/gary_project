@@ -1335,7 +1335,7 @@ class excel_parameter ():
             pass
         else:
             print('there should be error, no result book to save')
-            print("can't find Grace")
+            print("Love for g is trying to help her when she needs")
             time.sleep(3)
             pass
 
@@ -1376,7 +1376,7 @@ class excel_parameter ():
         print("date and time:", date_time)
 
         date_stamp = now.strftime("%Y_%m_%d_%H_%M")
-        print('the stanmp: ' + date_stamp)
+        print('the stamp: ' + date_stamp)
 
         return date_stamp
 
