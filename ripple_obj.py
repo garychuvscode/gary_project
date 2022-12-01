@@ -505,6 +505,9 @@ class ripple_test ():
 
                 # save the result and also check program exit
                 excel_s.excel_save()
+                if excel_s.turn_inst_off == 1:
+                    self.end_of_exp()
+                    excel_s.excel_save()
 
                 x_vin = x_vin + 1
                 # the end of vin loop
@@ -530,6 +533,11 @@ class ripple_test ():
 
         self.loader_ini.inst_single_close(self.excel_ini.loader_ELch)
         self.loader_ini.inst_single_close(self.excel_ini.loader_VCIch)
+
+        # also return MCU settings
+        self.mcu_ini.back_to_initial()
+
+        self.excel_ini.ready_to_off = 1
 
         pass
 

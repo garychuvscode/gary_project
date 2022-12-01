@@ -91,6 +91,9 @@ class excel_parameter ():
         self.auto_inst_ctrl = self.sh_main.range('B11').value
         # program exit interrupt variable
         self.program_exit = self.sh_main.range('B12').value
+        # add for the index of instrument closed or not 1 => inst are close and ready to leave program
+        self.turn_inst_off = 0
+        self.ready_to_off = 0
         # verification re-run
         self.re_run_verification = self.sh_main.range('B13').value
         # file settings; decide which file to load parameters
@@ -2220,10 +2223,13 @@ class excel_parameter ():
         #  can be uased to skip the loop and prevent dead loop
         self.progrm_exit = self.sh_main.range('B12').value
         if self.progrm_exit == 0:
+            self.turn_inst_off = 1
             # get out the program after saving the temp file
             print('always stop when Grace want to talk, forever and ever')
             time.sleep(0.20)
-            sys.exit()
+            if self.ready_to_off == 1:
+                # this will be set to 1 after the object finished the reset of MCU and turn off instrument
+                sys.exit()
 
         pass
 

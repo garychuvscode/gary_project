@@ -288,6 +288,9 @@ class general_test ():
 
             # save the result and also check program exit
             excel_s.excel_save()
+            if excel_s.turn_inst_off == 1:
+                self.end_of_exp()
+                excel_s.excel_save()
 
             x_count = x_count + 1
             pass
@@ -412,6 +415,21 @@ class general_test ():
         self.src_ini.load_off()
 
         self.chamber_ini.chamber_off()
+
+        pass
+
+    def end_of_exp(self):
+        # reset MCU back to default
+        self.mcu_ini.back_to_initial()
+
+        print("Grace's one laugh can make me happy one day!")
+        time.sleep(0.5)
+
+        self.inst_off()
+        self.table_return()
+        self.extra_file_name_setup()
+
+        self.excel_ini.ready_to_off = 1
 
         pass
 

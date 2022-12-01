@@ -1072,7 +1072,11 @@ class eff_mea:
 
                             # wb_res.save(result_book_trace)
                             excel_s.excel_save()
-                            excel_s.check_program_exit()
+                            if excel_s.turn_inst_off == 1:
+                                self.end_of_exp()
+                                excel_s.excel_save()
+                            # already checked in excel_save
+                            # excel_s.check_program_exit()
                             if excel_s.program_exit == 0:
                                 # exit the program
                                 break
@@ -1149,11 +1153,11 @@ class eff_mea:
                                 'You can start to operate the computer again', 'Plot request finished ')
                             # msg_res = win32api.MessageBox(
                             #     0, 'You can start to operate the computer again', 'Plot request finished ')
-                        excel_s.check_program_exit()
-                        if excel_s.program_exit == 0:
-                            # exit the program
-                            print('program_exit')
-                            break
+                        # excel_s.check_program_exit()
+                        # if excel_s.program_exit == 0:
+                        #     # exit the program
+                        #     print('program_exit')
+                        #     break
 
                         # change the sheet name if eff file is set to one file
                         if excel_s.eff_single_file == 1:
@@ -1164,11 +1168,11 @@ class eff_mea:
                         # end of the 2nd loop
                         pass
 
-                    excel_s.check_program_exit()
-                    if excel_s.program_exit == 0:
-                        # exit the program
-                        print('program_exit')
-                        break
+                    # excel_s.check_program_exit()
+                    # if excel_s.program_exit == 0:
+                    #     # exit the program
+                    #     print('program_exit')
+                    #     break
 
                     # 220824 add the exit action for save and turn off the excel
                     # 220911 all the turn off control and setting is in end_of_file
@@ -1201,25 +1205,15 @@ class eff_mea:
                     # end of the SWIRE/I2C loop
                     pass
 
-                excel_s.check_program_exit()
-                if excel_s.program_exit == 0:
-                    # exit the program
-                    print('program_exit')
-                    break
+                # excel_s.check_program_exit()
+                # if excel_s.program_exit == 0:
+                #     # exit the program
+                #     print('program_exit')
+                #     break
                 x_temperature = x_temperature + 1
                 # end of the temperature loop
 
-            # turn off the load and source after the loop is finished
-
-            # turn off the power and load
-            pwr_s.chg_out(0, pre_imax, relay0_ch, 'off')
-            load_s.chg_out(0, loader_ELch, 'off')
-            load_s.chg_out(0, loader_VCIch, 'off')
-            # 221114: add chamber turn off command
-            chamber_s.chamber_off()
-
-            if source_meter_channel == 1 or source_meter_channel == 2:
-                load_src_s.load_off()
+            self.end_of_exp()
 
             eff_done = 1
             excel_s.eff_done_sh = 1
@@ -1246,6 +1240,31 @@ class eff_mea:
         print('this is the end of simulation mode ')
         print('close of instrument is control by main, not single object')
         print('finsihed and goodbye')
+
+        pass
+
+    def end_of_exp(self):
+        # reset MCU back to default
+        self.mcu_ini.back_to_initial()
+
+        print("Grace's one laugh can make me happy one day!")
+        time.sleep(0.5)
+
+        # turn off the load and source after the loop is finished
+
+        # turn off the power and load
+        self.pwr_ini.chg_out(0, self.excel_ini.pre_imax, self.excel_ini.relay0_ch, 'off')
+        self.loader_ini.chg_out(0, self.excel_ini.loader_ELch, 'off')
+        self.loader_ini.chg_out(0, self.excel_ini.loader_VCIch, 'off')
+        # 221114: add chamber turn off command
+        self.chamber_ini.chamber_off()
+
+        if self.excel_ini.source_meter_channel == 1 or self.excel_ini.source_meter_channel == 2:
+            self.src_ini.load_off()
+
+        self.extra_file_name_setup()
+
+        self.excel_ini.ready_to_off = 1
 
         pass
 

@@ -243,24 +243,32 @@ class iq_scan:
 
             x_iq = x_iq + 1
             self.excel_ini.excel_save()
-            if self.excel_ini.program_exit == 0:
-                # exit the program
-                print('program_exit')
-                break
+            if self.excel_ini.turn_inst_off == 1:
+                self.end_of_exp()
+                self.excel_ini.excel_save()
         # save the result after each counter finished
         # self.excel_ini.wb_res.save(self.excel_ini.result_book_trace)
         # 220903: end of test only call by main, because
         # not knowing if this is single or not
         # excel_ini.end_of_test()
 
+        self.end_of_exp()
+
+        pass
+
+    def end_of_exp(self):
+
         self.pwr_ini.chg_out(0, self.excel_ini.pre_sup_iout,
                              self.excel_ini.relay0_ch, 'off')
+        self.mcu_ini.back_to_initial()
         print('set the output voltage to 0 but keep the current setting')
         print('Gary is lucky to meet Grace XD')
+        time.sleep(0.5)
         self.extra_file_name_setup()
         # self.pwr_ini.inst_close()
         # since inst_close may turn all the channel, may not be a good command for single function
         print('finsihed and goodbye')
+        self.excel_ini.ready_to_off = 1
 
         pass
 

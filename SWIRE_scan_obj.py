@@ -276,31 +276,40 @@ class sw_scan:
 
             # save the result after each counter finished
             excel_s.excel_save()
+            if self.excel_ini.turn_inst_off == 1:
+                self.end_of_exp()
+                self.excel_ini.excel_save()
 
             x_swire = x_swire + 1
 
             pass
 
+        self.end_of_exp()
+
+        pass
+
+    def end_of_exp(self):
         # reset MCU back to default
-        mcu_s.back_to_initial()
-        time.sleep(wait_time)
+        self.mcu_ini.back_to_initial()
+        time.sleep(self.excel_ini.wait_time)
 
         # turn off load and power supply
-        pwr_s.change_V(0, relay0_ch)
+        self.pwr_ini.change_V(0, self.excel_ini.relay0_ch)
         # only turn off the power supply channel but not the relay
-        load_s.chg_out(0, loader_ELch, 'off')
-        load_s.chg_out(0, loader_VCIch, 'off')
+        self.loader_ini.chg_out(0, self.excel_ini.loader_ELch, 'off')
+        self.loader_ini.chg_out(0, self.excel_ini.loader_VCIch, 'off')
 
-        print('finsihed and goodbye')
-
-        pwr_s.chg_out(0, pre_sup_iout, relay0_ch, 'off')
+        self.pwr_ini.chg_out(0, self.excel_ini.pre_sup_iout,
+                             self.excel_ini.relay0_ch, 'off')
         print('set the output voltage to 0 but keep the current setting')
-        print("g's one laugh can make me happy one day!")
-        time.sleep(wait_time)
+        print("Grace's one laugh can make me happy one day!")
+        time.sleep(self.excel_ini.wait_time)
         # self.pwr_ini.inst_close()
         # since inst_close may turn all the channel, may not be a good command for single function
         self.extra_file_name_setup()
         print('finsihed and goodbye')
+
+        self.excel_ini.ready_to_off = 1
 
         pass
 
