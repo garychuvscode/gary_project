@@ -773,6 +773,7 @@ if __name__ == '__main__':
 
         pass
 
+    # this is for the flexible ripple related verification
     elif program_group == 10:
         # fixed part, open one result book and save the book
         # in temp name
@@ -812,6 +813,7 @@ if __name__ == '__main__':
 
         pass
 
+    # research for the power on and off
     elif program_group == 11:
         # fixed part, open one result book and save the book
         # in temp name
@@ -829,9 +831,6 @@ if __name__ == '__main__':
 
         # changeable area
         # ===========
-
-        # run_verification() => should be put in here
-        print('finished verification')
 
         # ===========
         # changeable area

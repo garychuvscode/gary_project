@@ -83,8 +83,9 @@ class general_test ():
         pass
 
     def run_verification(self):
-        # give the sheet generation
-        self.sheet_gen()
+        # 221201 sheet generation move to set_sheet_name
+        # # give the sheet generation
+        # self.sheet_gen()
 
         # slave object in subprogram
         pwr_s = self.pwr_ini
@@ -233,55 +234,57 @@ class general_test ():
 
             self.res_met_curr = met_i_s.mea_i()
 
-            # since vin calibration also return the sting of calibration result,
-            # it doesn't a must to measure Vin of each channel again
+            # # since vin calibration also return the sting of calibration result,
+            # # it doesn't a must to measure Vin of each channel again
 
-            mcu_s.relay_ctrl(0)
+            # mcu_s.relay_ctrl(0)
+            # # time.sleep(excel_s.wait_small)
+            # self.res_met_v1 = met_v_s.mea_v()
             # time.sleep(excel_s.wait_small)
-            self.res_met_v1 = met_v_s.mea_v()
-            time.sleep(excel_s.wait_small)
 
-            mcu_s.relay_ctrl(6)
+            # mcu_s.relay_ctrl(6)
+            # # time.sleep(excel_s.wait_small)
+            # self.res_met_v2 = met_v_s.mea_v()
             # time.sleep(excel_s.wait_small)
-            self.res_met_v2 = met_v_s.mea_v()
-            time.sleep(excel_s.wait_small)
 
-            mcu_s.relay_ctrl(7)
+            # mcu_s.relay_ctrl(7)
+            # # time.sleep(excel_s.wait_small)
+            # self.res_met_v3 = met_v_s.mea_v()
             # time.sleep(excel_s.wait_small)
-            self.res_met_v3 = met_v_s.mea_v()
-            time.sleep(excel_s.wait_small)
 
-            mcu_s.relay_ctrl(1)
+            # mcu_s.relay_ctrl(1)
+            # # time.sleep(excel_s.wait_small)
+            # self.res_met_v4 = met_v_s.mea_v()
             # time.sleep(excel_s.wait_small)
-            self.res_met_v4 = met_v_s.mea_v()
-            time.sleep(excel_s.wait_small)
 
-            mcu_s.relay_ctrl(2)
+            # mcu_s.relay_ctrl(2)
+            # # time.sleep(excel_s.wait_small)
+            # self.res_met_v5 = met_v_s.mea_v()
             # time.sleep(excel_s.wait_small)
-            self.res_met_v5 = met_v_s.mea_v()
-            time.sleep(excel_s.wait_small)
 
-            mcu_s.relay_ctrl(3)
+            # mcu_s.relay_ctrl(3)
+            # # time.sleep(excel_s.wait_small)
+            # self.res_met_v6 = met_v_s.mea_v()
             # time.sleep(excel_s.wait_small)
-            self.res_met_v6 = met_v_s.mea_v()
-            time.sleep(excel_s.wait_small)
 
-            mcu_s.relay_ctrl(4)
+            # mcu_s.relay_ctrl(4)
+            # # time.sleep(excel_s.wait_small)
+            # self.res_met_v7 = met_v_s.mea_v()
             # time.sleep(excel_s.wait_small)
-            self.res_met_v7 = met_v_s.mea_v()
-            time.sleep(excel_s.wait_small)
 
-            mcu_s.relay_ctrl(5)
+            # mcu_s.relay_ctrl(5)
+            # # time.sleep(excel_s.wait_small)
+            # self.res_met_v8 = met_v_s.mea_v()
             # time.sleep(excel_s.wait_small)
-            self.res_met_v8 = met_v_s.mea_v()
-            time.sleep(excel_s.wait_small)
 
-            self.res_load_curr1 = load_s.read_iout(1)
-            self.res_load_curr2 = load_s.read_iout(2)
-            self.res_load_curr3 = load_s.read_iout(3)
-            self.res_load_curr4 = load_s.read_iout(4)
-            self.res_src_curr = load_src_s.read('CURR')
-            # self.res_temp_read = chamber_s.read('temp_mea')
+            # self.res_load_curr1 = load_s.read_iout(1)
+            # self.res_load_curr2 = load_s.read_iout(2)
+            # self.res_load_curr3 = load_s.read_iout(3)
+            # self.res_load_curr4 = load_s.read_iout(4)
+            # self.res_src_curr = load_src_s.read('CURR')
+            # # self.res_temp_read = chamber_s.read('temp_mea')
+
+            self.data_measured()
 
             self.data_latch(x_count, self.obj_sim_mode)
             # latch the data to related position
@@ -349,6 +352,9 @@ class general_test ():
         self.res_load_curr4 = 0
         self.res_src_curr = 0
         self.res_temp_read = 0
+
+        # give the sheet generation
+        self.sheet_gen()
 
         pass
 
@@ -440,6 +446,106 @@ class general_test ():
 
         # reset sheet choice to wait for next sheet name update
         self.sheet_name_ready = 0
+
+        pass
+
+    def data_measured(self):
+
+        # since vin calibration also return the sting of calibration result,
+        # it doesn't a must to measure Vin of each channel again
+
+        self.mcu_ini.relay_ctrl(0)
+        # time.sleep(excel_s.wait_small)
+        self.res_met_v1 = self.met_v_ini.mea_v()
+        time.sleep(self.excel_ini.wait_small)
+
+        self.mcu_ini.relay_ctrl(6)
+        # time.sleep(excel_s.wait_small)
+        self.res_met_v2 = self.met_v_ini.mea_v()
+        time.sleep(self.excel_ini.wait_small)
+
+        self.mcu_ini.relay_ctrl(7)
+        # time.sleep(excel_s.wait_small)
+        self.res_met_v3 = self.met_v_ini.mea_v()
+        time.sleep(self.excel_ini.wait_small)
+
+        self.mcu_ini.relay_ctrl(1)
+        # time.sleep(excel_s.wait_small)
+        self.res_met_v4 = self.met_v_ini.mea_v()
+        time.sleep(self.excel_ini.wait_small)
+
+        self.mcu_ini.relay_ctrl(2)
+        # time.sleep(excel_s.wait_small)
+        self.res_met_v5 = self.met_v_ini.mea_v()
+        time.sleep(self.excel_ini.wait_small)
+
+        self.mcu_ini.relay_ctrl(3)
+        # time.sleep(excel_s.wait_small)
+        self.res_met_v6 = self.met_v_ini.mea_v()
+        time.sleep(self.excel_ini.wait_small)
+
+        self.mcu_ini.relay_ctrl(4)
+        # time.sleep(excel_s.wait_small)
+        self.res_met_v7 = self.met_v_ini.mea_v()
+        time.sleep(self.excel_ini.wait_small)
+
+        self.mcu_ini.relay_ctrl(5)
+        # time.sleep(excel_s.wait_small)
+        self.res_met_v8 = self.met_v_ini.mea_v()
+        time.sleep(self.excel_ini.wait_small)
+
+        self.res_load_curr1 = self.loader_ini.read_iout(1)
+        self.res_load_curr2 = self.loader_ini.read_iout(2)
+        self.res_load_curr3 = self.loader_ini.read_iout(3)
+        self.res_load_curr4 = self.loader_ini.read_iout(4)
+        self.res_src_curr = self.src_ini.read('CURR')
+        # self.res_temp_read = chamber_s.read('temp_mea')
+
+        pass
+
+    def flexible_gen_ini(self):
+        '''
+        to initial special function for different items
+        this example function only for counter and loop
+        '''
+
+        x_count = 0
+        sub_count = int(self.c_test_amount/8)
+        while x_count < self.c_test_amount:
+            # load the setting first
+            self.data_loaded(x_count)
+
+            if self.chamber_target != 'x':
+                self.res_temp_read = self.chamber_ini.chamber_set(self.chamber_target)
+
+
+            if x_count < 1 * sub_count :
+
+                pass
+            elif x_count < 2 *sub_count :
+
+                pass
+            elif x_count < 3 *sub_count :
+
+                pass
+            elif x_count < 4 *sub_count :
+
+                pass
+            elif x_count < 5 *sub_count :
+
+                pass
+            elif x_count < 6 *sub_count :
+
+                pass
+            elif x_count < 7 *sub_count :
+
+                pass
+            elif x_count < 8 *sub_count :
+
+                pass
+
+
+
 
         pass
 
