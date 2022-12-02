@@ -244,6 +244,9 @@ class sw_scan:
             print('the pulse is ' + str(pulse1) + ' ' + str(pulse2))
             time.sleep(wait_time)
             # input()
+            # 221202: add one more command send to make sure the pulse is received
+            mcu_s.pulse_out(pulse1, pulse2)
+            time.sleep(wait_time)
 
             # call vin calibration
             v_res_temp = pwr_s.vin_clibrate_singal_met(
