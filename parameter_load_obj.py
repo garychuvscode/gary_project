@@ -1456,7 +1456,9 @@ class excel_parameter ():
         # this is the sheet for I2C command
         self.sh_i2c_cmd = self.wb.sheets(self.sh_i2c_cmd_name)
         # this is the sheet for IQ scan
-        self.sh_iq_scan = self.wb.sheets('IQ_measured')
+        self.sh_iq_scan = self.wb.sheets(self.sh_iq_scan_name)
+        # this is the sheet for wire scan
+        self.sh_sw_scan = self.wb.sheets(self.sh_sw_scan_name)
 
         pass
 
