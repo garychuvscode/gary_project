@@ -189,8 +189,6 @@ class format_gen ():
                 if col_str == None:
                     col_str = ''
 
-
-
                 # x_dim, y_dim are the dimension counter for modifing the table
                 while y_dim < c_y_dim:
                     # need to check every cell in the effective operating range
@@ -200,7 +198,7 @@ class format_gen ():
                     # 221102 insert for summary table
                     # self.excel_ini.sum_table_gen(self.excel_ini.summary_start_x, self.excel_ini.summary_start_y, 0, y_dim + 1, content = str_temp)
                     self.summary_fo_gen(
-                        0, y_dim + 1, self.c_row_item, self.c_data_mea, str_temp)
+                        0, y_dim + 1, self.c_row_item, self.c_column_item, x_sheets, self.c_data_mea, str_temp)
 
                     excel_temp = col_str + '\n' + \
                         str(str_temp) + item_str + '\n' + extra_str
@@ -219,7 +217,7 @@ class format_gen ():
                         # 221102 insert for summary table
                         # self.excel_ini.sum_table_gen(self.excel_ini.summary_start_x, self.excel_ini.summary_start_y, x_dim + 1, 0, content = str_temp)
                         self.summary_fo_gen(
-                            x_dim + 1, 0, self.c_row_item, self.c_data_mea, str_temp)
+                            x_dim + 1, 0, self.c_row_item, self.c_column_item, x_sheets, self.c_data_mea, str_temp)
 
                         excel_temp = row_str + str(str_temp)
                         self.sh_ref_table.range(
@@ -252,9 +250,23 @@ class format_gen ():
                             (43 + self.c_data_mea - x_data_mea - 1, 3)).value
 
                         if x_column_item == 0:
-                            # 221102 insert for summary table
+                            # 221102 insert for summary table  (measurement index and the pulse or I2C setting)
                             self.excel_ini.sum_table_gen(self.excel_ini.summary_start_x, self.excel_ini.summary_start_y,
-                                                         0 + (self.c_data_mea - x_data_mea - 1) * (c_x_dim + self.excel_ini.summary_gap), 0, content=excel_temp)
+                                                         0 + (self.c_data_mea - x_data_mea - 1) * (c_x_dim + self.excel_ini.summary_gap), 0 + x_sheets * (c_y_dim + self.excel_ini.summary_gap), content=excel_temp)
+
+                            if self.i2c_en == 0:
+                                # pulse command
+                                data1 = self.sh_format_gen.range(
+                                    (43 + x_sheets, 5)).value
+                                data2 = self.sh_format_gen.range(
+                                    (43 + x_sheets, 6)).value
+                                condition_str = f'pulse cmd: {int(data1)} and {int(data2)}'
+                            else:
+                                condition_str = f'I2C cmd: group {x_sheets + 1}'
+
+                            #  shift one cell above the measurement content
+                            self.excel_ini.sum_table_gen(self.excel_ini.summary_start_x, self.excel_ini.summary_start_y,
+                                                         0 + (self.c_data_mea - x_data_mea - 1) * (c_x_dim + self.excel_ini.summary_gap), 0 + x_sheets * (c_y_dim + self.excel_ini.summary_gap) - 1, content=condition_str)
 
                         self.sh_ref_table.range(
                             (6 + (2 + self.c_data_mea) * x_column_item, 1)).value = excel_temp
@@ -279,15 +291,19 @@ class format_gen ():
 
         pass
 
-    def summary_fo_gen(self, x_ind, y_ind, c_x_item, c_mea=1, content=0):
+    def summary_fo_gen(self, x_ind, y_ind, c_x_item, c_y_item, x_sheet_s, c_mea=1, content=0):
 
+        # x_sheets = 0
+        # while x_sheets < self.c_sheets:
         for i in range(0, int(c_mea)):
 
             # 221102 insert for summary table
             self.excel_ini.sum_table_gen(
-                self.excel_ini.summary_start_x, self.excel_ini.summary_start_y, x_ind + i * (c_x_item + self.excel_ini.summary_gap), y_ind, content)
+                self.excel_ini.summary_start_x, self.excel_ini.summary_start_y, x_ind + i * (c_x_item + self.excel_ini.summary_gap), y_ind + x_sheet_s * (c_y_item + self.excel_ini.summary_gap), content)
 
             pass
+
+            # x_sheets = x_sheets + 1
 
         pass
 
@@ -308,9 +324,9 @@ class format_gen ():
             # assign the sheet to result book
             self.excel_ini.sh_format_gen = self.excel_ini.wb_res.sheets(
                 str(self.ctrl_sheet_name))
-            i2c_en = int(self.excel_ini.sh_format_gen.range('B10').value)
+            self.i2c_en = int(self.excel_ini.sh_format_gen.range('B10').value)
 
-            if i2c_en == 0:
+            if self.i2c_en == 0:
                 self.c_sheets = int(
                     self.excel_ini.sh_format_gen.range('E40').value)
             else:
