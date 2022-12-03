@@ -429,7 +429,7 @@ class ripple_test ():
                         excel_s.sum_table_gen(
                             excel_s.summary_start_x, excel_s.summary_start_y, 1 + x_index, 1 + y_index, ovdd_r)
                         excel_s.sum_table_gen(excel_s.summary_start_x, excel_s.summary_start_y,
-                                              1 + x_index + (c_load_curr + c_vin - 1), 1 + y_index, ovss_r)
+                                              1 + x_index + (c_load_curr + excel_s.summary_gap), 1 + y_index, ovss_r)
 
                         pass
                     elif self.ch_index == 1:
@@ -460,9 +460,9 @@ class ripple_test ():
                         excel_s.sum_table_gen(
                             excel_s.summary_start_x, excel_s.summary_start_y, 1 + x_index, 1 + y_index, ovdd_r)
                         excel_s.sum_table_gen(excel_s.summary_start_x, excel_s.summary_start_y,
-                                              1 + x_index + 1 * (c_load_curr + c_vin - 1), 1 + y_index, ovss_r)
+                                              1 + x_index + 1 * (c_load_curr + excel_s.summary_gap), 1 + y_index, ovss_r)
                         excel_s.sum_table_gen(excel_s.summary_start_x, excel_s.summary_start_y,
-                                              1 + x_index + 2 * (c_load_curr + c_vin - 1), 1 + y_index, avdd_r)
+                                              1 + x_index + 2 * (c_load_curr + excel_s.summary_gap), 1 + y_index, avdd_r)
                         pass
 
                     # buck_ripple = scope_s.read_mea('P1', "last")

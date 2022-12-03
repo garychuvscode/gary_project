@@ -111,7 +111,8 @@ class eff_mea:
         # copy the rsult sheet to result book
         self.excel_ini.sh_i2c_cmd.copy(self.excel_ini.sh_ref)
         # assign the sheet to result book
-        self.excel_ini.sh_i2c_cmd = self.excel_ini.wb_res.sheets(self.excel_ini.sh_i2c_cmd_name)
+        self.excel_ini.sh_i2c_cmd = self.excel_ini.wb_res.sheets(
+            self.excel_ini.sh_i2c_cmd_name)
         # # 220914 move to build file to prevent error of delete and end of file
         # # copy the result sheet to result book
         # self.excel_ini.sh_raw_out.copy(self.excel_ini.sh_ref)
@@ -1001,7 +1002,7 @@ class eff_mea:
 
                                 # to prevent overspec of the votlage input, need to change the Vin back to
                                 # intital target before loading release
-                                pwr_s.chg_out(v_target, pre_sup_iout,
+                                pwr_s.chg_out(v_target, pre_imax,
                                               relay0_ch, 'on')
                                 print('V_target return to normal')
 
@@ -1253,7 +1254,8 @@ class eff_mea:
         # turn off the load and source after the loop is finished
 
         # turn off the power and load
-        self.pwr_ini.chg_out(0, self.excel_ini.pre_imax, self.excel_ini.relay0_ch, 'off')
+        self.pwr_ini.chg_out(0, self.excel_ini.pre_imax,
+                             self.excel_ini.relay0_ch, 'off')
         self.loader_ini.chg_out(0, self.excel_ini.loader_ELch, 'off')
         self.loader_ini.chg_out(0, self.excel_ini.loader_VCIch, 'off')
         # 221114: add chamber turn off command

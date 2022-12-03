@@ -71,25 +71,28 @@ class MCU_control ():
             # for the SWIRE mode of 2553, there are 2 pulse send to the MCU and DUT
             # pulse amount is from 1 to 255, not sure if 0 will have error or not yet
             # 20220121
-            print('2 swire pulse command in MCU')
+            print(
+                f'2 swire pulse command in MCU {self.pulse1} and {self.pulse2}')
         elif index == 'en_sw':
             self.uart_cmd_str = (chr(self.mcu_mode_sw_en) +
                                  chr(int(self.mode_set)) + chr(1))
             # for the EN SWIRE control mode, need to handle the recover to normal mode (EN, SW) = (1, 1)
             # at the end of application
             # this mode only care about the first data ( 0-4 )
-            print('mode command in MCU')
+            print(f'mode command in MCU, mode{self.mode_set}')
         elif index == 'relay':
             self.uart_cmd_str = (
                 chr(self.mcu_mode_8_bit_IO) + self.mcu_cmd_arry[self.meter_ch_ctrl])
             # assign relay to related channel after function called
             # channel index is from golbal variable
-            print('relay command in MCU')
+            print(
+                f'relay command in MCU ch {self.mcu_cmd_arry[self.meter_ch_ctrl]} from {self.meter_ch_ctrl}')
 
         elif index == 'i2c':
             self.uart_cmd_str = (chr(self.mcu_mode_I2C) +
                                  str(self.reg_i2c) + str(self.data_i2c))
-            print('i2C command in MCU')
+            print(
+                f'i2C command in MCU reg: {self.reg_i2c} data: {self.data_i2c}')
             # send mapped i2c command out from MCU
         elif index == 'grace':
             # reserve for the special function of MCU write
@@ -161,6 +164,9 @@ class MCU_control ():
         pass
 
     def pulse_out(self, pulse_1, pulse_2):
+        '''
+        pulse need to be less than 255
+        '''
         # pulse should be within 255 (8bit data limitation)
         if pulse_1 > 255:
             pulse_1 = 255
@@ -195,6 +201,10 @@ class MCU_control ():
         pass
 
     def pmic_mode(self, mode_index):
+        '''
+        (EN,SW) or (EN1, EN2) \n
+        1:(0,0); 2:(0,1); 3:(1,0); 4:(1,1)
+        '''
         # mode index should be in 1-4
         if mode_index < 1 or mode_index > 4:
             mode_index = 1
@@ -204,6 +214,11 @@ class MCU_control ():
         pass
 
     def relay_ctrl(self, channel_index):
+        '''
+        index array: ['01', '02', '04', '08', '10', '20', '40', '80']\n
+        from 0 to 7 \n
+        MCU IO 2.0 - 2.7
+        '''
         self.meter_ch_ctrl = int(channel_index)
         self.mcu_write('relay')
         pass

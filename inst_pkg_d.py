@@ -118,6 +118,7 @@ class LPS_505N:
             self.inst_obj.write(self.cmd_str_I)
             self.inst_obj.write(self.cmd_str_out_sw)
             time.sleep(wait_samll)
+            print(f'change pwr ch{self.act_ch_o} V{self.vset_o} I{self.iset_o} status{self.state_o}')
 
             pass
         else:
@@ -139,6 +140,7 @@ class LPS_505N:
         self.cmd_str_V = ("PROG:VSET" + str(int(self.act_ch_o)) +
                           ":" + str(self.vset_o))
 
+
         if self.sim_inst == 1:
             # must change both voltage and current together for every update
             # so the power supply will change output
@@ -149,6 +151,7 @@ class LPS_505N:
             # (only change the output voltage but not the current)
             # use another command to update at the same time
             self.inst_obj.write(self.cmd_str_out_sw)
+            print('change V to' + self.cmd_str_V)
             time.sleep(wait_samll)
 
             pass
