@@ -842,6 +842,35 @@ if __name__ == '__main__':
 
         pass
 
+    # power sequence output no need others
+    elif program_group == 11.1:
+        # fixed part, open one result book and save the book
+        # in temp name
+        excel_m.open_result_book()
+        # auto save after the book is generate
+        excel_m.excel_save()
+        # single setting of the object need to be 1 => no needed single
+        multi_item = 0
+        # setup instruement for test mode, only for debug, no need to change)
+        sim_mode_independent(pwr=1, met_v=1, met_i=1, loader=1, src=1, chamber=1,
+                             scope=1, bk_pwr=1, main_off_line0=main_off_line, single_mode0=single_mode)
+        # open instrument and add the name to result book
+        open_inst_and_name()
+        print('open instrument with real or simulation mode')
+
+        # changeable area
+        # ===========
+
+        # ===========
+        # changeable area
+
+        # remember that this is only call by main, not by object
+        excel_m.end_of_file(multi_item)
+        # end of file can also be call between each item
+        print('end of the program')
+
+        pass
+
     # reference code
     elif program_group == 1000:
         # fixed part, open one result book and save the book

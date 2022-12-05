@@ -723,20 +723,30 @@ class Scope_LE6100A(GInst):
 
         pass
 
-    def single_ch_change(self, ch, ver_scale=None, ver_offset=None):
-
+    def single_ch_change(self, ch, ver_scale=None, ver_offset=None, offset_type=0):
+        '''
+        this function change the ver setting of each channel (voltage scale and offset)
+        221205: new function added but not done yet, need for adjustment \n
+        offset_type set to 1: using normalization offset
+        '''
         if ver_scale != None:
             # change the ver div
             self.writeVBS(
                 f'app.Acquisition.{ch}.VerScale = {ver_scale}')
             print(f'change {ch} to {ver_scale}')
+            pass
 
-        if ver_offset != None:
+        if ver_offset != None and offset_type == 0:
             # change ver offset
             self.writeVBS(
                 f'app.Acquisition.{ch}.VerOffset = {ver_offset}')
             print(f'change {ch} to {ver_offset}')
+            pass
 
+        if ver_offset != None and offset_type == 1:
+            # the offset input is become index, different way to input the offset setting
+
+            pass
         pass
 
     def mea_default_setup(self):
@@ -840,6 +850,44 @@ class Scope_LE6100A(GInst):
             self.trigger_adj(source=f'C{int(ch)}')
 
         self.writeVBS('app.Acquisition.Trigger.Edge.FindLevel')
+
+        pass
+
+    def find_signal(self, ch=0):
+        '''
+        221205: still on-going, don't use!! (offset normalization issue~)
+        now is using old version, ofset setting directly, it's easier to
+        implement
+
+        this function is going to find the signal level from different pulse or output settings
+        by selecting the channel and it will change the offset of scope automatically
+        '''
+        # prevent index error
+        print('find signal for g')
+        ch = int(ch)
+
+        # first is to change the scale to 10V/div and the offset to 0 (see the signal from -40 to 40V)
+        self.single_ch_change(ch, 10, 0)
+        print('change to 10V/div')
+
+        # change the P8 measurement to related channel and mean, get to know the level of signal
+        self.mea_single(mea_ch='P8', parameter='mean', ch=f'C{ch}')
+        new_mean = self.read_mea(mea_ch='P8', m_type='mean', return_float=1)
+
+        # change back to the original scale and set the P8 channel back
+        ver_scale = (list(self.sc_config.ch_index.values())[ch-1])["volt_dev"]
+        new_off_set = -1 * new_mean + \
+            (list(self.sc_config.ch_index.values())
+             [ch-1])["v_offset"] * ver_scale
+        '''
+        issue point: need to use normalization offset index to make sure the waveform is at the same
+        place of the scope
+
+        to fix the issue, the function of single_ch_change may also need for adjustment
+
+        '''
+        self.single_ch_change(
+            ch=f'C{ch}', ver_scale=ver_scale, ver_offset=new_off_set)
 
         pass
 

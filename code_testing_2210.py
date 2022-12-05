@@ -114,7 +114,7 @@ class test_calass():
 
 
 t_s = test_calass()
-testing_index = 4
+testing_index = 1
 
 if testing_index == 0:
     print('a')

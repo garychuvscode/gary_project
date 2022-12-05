@@ -8,10 +8,20 @@ class scope_config():
         pass
 
     def setting_mapping(self, setup_index):
+        '''
+        scope setting input from here...
+        '''
 
         if setup_index == 'ripple_50374-2':
             # index 0 only for functional test
             # the setting for ripple verification
+
+            '''
+            221205
+            to improve the find signal, add two dimension dictionary, and change the offset setting to
+            nornalization result, x * volt_div, from +3 to -3
+            '''
+
             self.ch_c1 = {'ch_view': 'TRUE', 'volt_dev': '0.02', 'BW': '20MHz', 'filter': '2bits', 'v_offset': -3.3,
                           'label_name': 'AVDD', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC1M'}
             self.ch_c2 = {'ch_view': 'TRUE', 'volt_dev': '0.02', 'BW': '20MHz', 'filter': '2bits', 'v_offset': 3.3,
@@ -28,6 +38,10 @@ class scope_config():
                           'label_name': 'VOP', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC1M'}
             self.ch_c8 = {'ch_view': 'FALSE', 'volt_dev': '0.5', 'BW': '20MHz', 'filter': '2bits', 'v_offset': 0,
                           'label_name': 'name', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC1M'}
+
+            # add the two dimension index for the find signal reference
+            self.ch_index = {'C1': self.ch_c1, 'C2': self.ch_c2, 'C3': self.ch_c3, 'C4': self.ch_c4,
+                             'C5': self.ch_c5, 'C6': self.ch_c6, 'C7': self.ch_c7, 'C8': self.ch_c8}
 
             # setting of general
             self.set_general = {'trigger_mode': 'Auto', 'trigger_source': 'C3', 'trigger_level': '-3.2',
