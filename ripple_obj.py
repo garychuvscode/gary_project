@@ -278,6 +278,12 @@ class ripple_test ():
                 # re-generate the sheet
                 excel_s.sh_ref_table = excel_s.ref_table_list[x_sw_i2c]
 
+            # if the command is not default, need to find signal
+            if scope_s.nor_v_off == 1:
+                # need the find signal refer to the offset index settings
+                for i in range(1, 8+1):
+                    scope_s.find_signal(i)
+
             # table should be assign when generation of format gen
             excel_s.sh_ref_table.range(
                 'B1').value = extra_comments + extra_comments2

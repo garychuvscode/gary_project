@@ -427,11 +427,15 @@ class Scope_LE6100A(GInst):
             self.writeVBS(
                 f'app.Acquisition.C{i}.BandwidthLimit = "{temp_dict["BW"]}"')
             self.writeVBS(
-                    f'app.Acquisition.C{i}.EnhanceResType = "{temp_dict["filter"]}"')
+                f'app.Acquisition.C{i}.EnhanceResType = "{temp_dict["filter"]}"')
             # 221205 add normalization index if selection been set
-            if self.nor_v_off == 1 :
-                self.writeVBS(
-                    f'app.Acquisition.C{i}.VerOffset = {temp_dict["v_offset"]}')
+            if self.nor_v_off == 1:
+                # normalize_offset = float(temp_dict["v_offset"]) * temp_dict["v_offset_ind"]
+                # self.writeVBS(
+                #     f'app.Acquisition.C{i}.VerOffset = {normalize_offset}')
+                self.find_signal(i)
+                # for the indexed offset, can't be write by it's own, need to
+                # know the new mean of signal from find sigfnal function
             else:
                 self.writeVBS(
                     f'app.Acquisition.C{i}.VerOffset = {temp_dict["v_offset"]}')
@@ -874,29 +878,37 @@ class Scope_LE6100A(GInst):
         # prevent index error
         print('find signal for g')
         ch = int(ch)
+        if (list(self.sc_config.ch_index.values())[ch-1])["ch_view"] == 'TRUE':
+            # only active if the channel is turned on
 
-        # first is to change the scale to 10V/div and the offset to 0 (see the signal from -40 to 40V)
-        self.single_ch_change(ch, 10, 0)
-        print('change to 10V/div')
+            # first is to change the scale to 10V/div and the offset to 0 (see the signal from -40 to 40V)
+            self.single_ch_change(ch, 10, 0)
+            print('change to 10V/div')
 
-        # change the P8 measurement to related channel and mean, get to know the level of signal
-        self.mea_single(mea_ch='P8', parameter='mean', ch=f'C{ch}')
-        new_mean = self.read_mea(mea_ch='P8', m_type='mean', return_float=1)
+            # change the P8 measurement to related channel and mean, get to know the level of signal
+            self.mea_single(mea_ch='P8', parameter='mean', ch=f'C{ch}')
 
-        # change back to the original scale and set the P8 channel back
-        ver_scale = (list(self.sc_config.ch_index.values())[ch-1])["volt_dev"]
-        new_off_set = -1 * new_mean + \
-            (list(self.sc_config.ch_index.values())
-             [ch-1])["v_offset"] * ver_scale
-        '''
-        issue point: need to use normalization offset index to make sure the waveform is at the same
-        place of the scope
+            # clear sweep and collect new mean
+            self.writeVBS('app.ClearSweeps')
+            time.sleep(0.1)
 
-        to fix the issue, the function of single_ch_change may also need for adjustment
+            new_mean = self.read_mea(mea_ch='P8', m_type='mean', return_float=1)
 
-        '''
-        self.single_ch_change(
-            ch=f'C{ch}', ver_scale=ver_scale, ver_offset=new_off_set)
+            # change back to the original scale and set the P8 channel back
+            ver_scale = float(
+                (list(self.sc_config.ch_index.values())[ch-1])["volt_dev"])
+            new_off_set = -1 * new_mean + \
+                (list(self.sc_config.ch_index.values())
+                [ch-1])["v_offset_ind"] * ver_scale
+            '''
+            issue point: need to use normalization offset index to make sure the waveform is at the same
+            place of the scope
+
+            to fix the issue, the function of single_ch_change may also need for adjustment
+
+            '''
+            self.single_ch_change(
+                ch=f'C{ch}', ver_scale=ver_scale, ver_offset=new_off_set)
 
         pass
 
