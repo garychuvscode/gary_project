@@ -20,24 +20,25 @@ class scope_config():
             221205
             to improve the find signal, add two dimension dictionary, and change the offset setting to
             nornalization result, x * volt_div, from +3 to -3
+            use the 'v_offset_ind' as the new offset normalization index
             '''
 
-            self.ch_c1 = {'ch_view': 'TRUE', 'volt_dev': '0.02', 'BW': '20MHz', 'filter': '2bits', 'v_offset': -3.3,
-                          'label_name': 'AVDD', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC1M'}
-            self.ch_c2 = {'ch_view': 'TRUE', 'volt_dev': '0.02', 'BW': '20MHz', 'filter': '2bits', 'v_offset': 3.3,
-                          'label_name': 'OVSS', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC1M'}
-            self.ch_c3 = {'ch_view': 'TRUE', 'volt_dev': '0.2', 'BW': '20MHz', 'filter': '2bits', 'v_offset': 3.5,
-                          'label_name': 'VON', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC1M'}
+            self.ch_c1 = {'ch_view': 'TRUE', 'volt_dev': '0.02', 'BW': '20MHz', 'filter': '2bits', 'v_offset': -3.3 + 0.04,
+                          'label_name': 'AVDD', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC1M', 'v_offset_ind': 3}
+            self.ch_c2 = {'ch_view': 'TRUE', 'volt_dev': '0.02', 'BW': '20MHz', 'filter': '2bits', 'v_offset': 3.3 - 0.06,
+                          'label_name': 'OVSS', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC1M', 'v_offset_ind': -2}
+            self.ch_c3 = {'ch_view': 'TRUE', 'volt_dev': '0.2', 'BW': '20MHz', 'filter': '2bits', 'v_offset': 3.5 - 0.4,
+                          'label_name': 'VON', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC1M', 'v_offset_ind': -2.5}
             self.ch_c4 = {'ch_view': 'TRUE', 'volt_dev': '1', 'BW': '20MHz', 'filter': '2bits', 'v_offset': -3,
-                          'label_name': 'Vin', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC1M'}
+                          'label_name': 'Vin', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC1M', 'v_offset_ind': -3}
             self.ch_c5 = {'ch_view': 'TRUE', 'volt_dev': '0.02', 'BW': '20MHz', 'filter': '2bits', 'v_offset': -0.06,
-                          'label_name': 'I_load', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC50'}
-            self.ch_c6 = {'ch_view': 'TRUE', 'volt_dev': '0.02', 'BW': '20MHz', 'filter': '2bits', 'v_offset': -3.3,
-                          'label_name': 'OVDD', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC1M'}
-            self.ch_c7 = {'ch_view': 'TRUE', 'volt_dev': '0.2', 'BW': '20MHz', 'filter': '2bits', 'v_offset': -3.5,
-                          'label_name': 'VOP', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC1M'}
+                          'label_name': 'I_load', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC50', 'v_offset_ind': -3.5}
+            self.ch_c6 = {'ch_view': 'TRUE', 'volt_dev': '0.02', 'BW': '20MHz', 'filter': '2bits', 'v_offset': -3.3 + 0.02,
+                          'label_name': 'OVDD', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC1M', 'v_offset_ind': 2}
+            self.ch_c7 = {'ch_view': 'TRUE', 'volt_dev': '0.2', 'BW': '20MHz', 'filter': '2bits', 'v_offset': -4.3,
+                          'label_name': 'VOP', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC1M', 'v_offset_ind': -3.75}
             self.ch_c8 = {'ch_view': 'FALSE', 'volt_dev': '0.5', 'BW': '20MHz', 'filter': '2bits', 'v_offset': 0,
-                          'label_name': 'name', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC1M'}
+                          'label_name': 'name', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC1M', 'v_offset_ind': 1}
 
             # add the two dimension index for the find signal reference
             self.ch_index = {'C1': self.ch_c1, 'C2': self.ch_c2, 'C3': self.ch_c3, 'C4': self.ch_c4,

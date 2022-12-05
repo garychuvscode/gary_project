@@ -162,8 +162,14 @@ class ripple_test ():
         scope_s = self.scope_ini
 
         # scope initialization
-        if self.scope_initial_en == 1:
+        if self.scope_initial_en > 0:
+            if self.scope_initial_en > 1:
+                # 221205 added
+                # turn the offset setting to normalizaiton setting
+                scope_s.nor_v_off = 1
+                pass
             scope_s.scope_initial(self.scope_setting)
+            pass
 
         # pwr ovoc setting
         # pwr_s.ov_oc_set(excel_s.pre_vin_max, excel_s.pre_imax)
@@ -337,7 +343,9 @@ class ripple_test ():
                             iload_target, excel_s.loader_ELch, 'on')
                         load_s.chg_out2(0, excel_s.loader_VCIch, 'off')
                         # trigger OVDD
-                        scope_s.trigger_adj(mode='Auto', source='C6', level=0)
+                        # 221205: no need to change the level here, change to no input since there
+                        # are auto level already
+                        scope_s.trigger_adj(mode='Auto', source='C6')
 
                         pass
                     elif self.ch_index == 1:
@@ -346,7 +354,9 @@ class ripple_test ():
                             iload_target, excel_s.loader_VCIch, 'on')
                         load_s.chg_out2(0, excel_s.loader_ELch, 'off')
                         # trigger AVDD
-                        scope_s.trigger_adj(mode='Auto', source='C1', level=0)
+                        # 221205: no need to change the level here, change to no input since there
+                        # are auto level already
+                        scope_s.trigger_adj(mode='Auto', source='C1')
 
                         pass
                     elif self.ch_index == 2:
@@ -360,7 +370,9 @@ class ripple_test ():
                             i_VCI_target, excel_s.loader_VCIch, 'on')
 
                         # trigger OVDD
-                        scope_s.trigger_adj(mode='Auto', source='C6', level=0)
+                        # 221205: no need to change the level here, change to no input since there
+                        # are auto level already
+                        scope_s.trigger_adj(mode='Auto', source='C6')
                         pass
 
                     # add auto exception for line/load transient testing

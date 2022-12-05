@@ -83,6 +83,9 @@ class Scope_LE6100A(GInst):
         self.ch_c7 = {}
         self.ch_c8 = {}
 
+        self.nor_v_off = 0
+        # the index control variable of the ver_offset
+
         self.set_general = {'trigger_mode': 'Auto', 'trigger_source': 'C3', 'trigger_level': '-3.2',
                             'trigger_slope': 'Positive', 'time_scale': '0.0001', 'time_offset': '-0.0004', 'sample_mode': 'RealTime', 'fixed_sample_rate': '1.25GS/s'}
 
@@ -424,9 +427,15 @@ class Scope_LE6100A(GInst):
             self.writeVBS(
                 f'app.Acquisition.C{i}.BandwidthLimit = "{temp_dict["BW"]}"')
             self.writeVBS(
-                f'app.Acquisition.C{i}.EnhanceResType = "{temp_dict["filter"]}"')
-            self.writeVBS(
-                f'app.Acquisition.C{i}.VerOffset = {temp_dict["v_offset"]}')
+                    f'app.Acquisition.C{i}.EnhanceResType = "{temp_dict["filter"]}"')
+            # 221205 add normalization index if selection been set
+            if self.nor_v_off == 1 :
+                self.writeVBS(
+                    f'app.Acquisition.C{i}.VerOffset = {temp_dict["v_offset"]}')
+            else:
+                self.writeVBS(
+                    f'app.Acquisition.C{i}.VerOffset = {temp_dict["v_offset"]}')
+
             self.writeVBS(
                 f'app.Acquisition.C{i}.LabelsText = "{temp_dict["label_name"]}"')
             self.writeVBS(
@@ -497,21 +506,21 @@ class Scope_LE6100A(GInst):
             # index 0 only for functional test
             # the setting for ripple verification
             self.ch_c1 = {'ch_view': 'TRUE', 'volt_dev': '0.5', 'BW': '20MHz', 'filter': '2bits', 'v_offset': 0,
-                          'label_name': 'name', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC1M'}
+                          'label_name': 'name', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC1M', 'v_offset_ind': 1}
             self.ch_c2 = {'ch_view': 'TRUE', 'volt_dev': '0.5', 'BW': '20MHz', 'filter': '2bits', 'v_offset': 0,
-                          'label_name': 'name', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC1M'}
+                          'label_name': 'name', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC1M', 'v_offset_ind': 1}
             self.ch_c3 = {'ch_view': 'TRUE', 'volt_dev': '0.5', 'BW': '20MHz', 'filter': '2bits', 'v_offset': 0,
-                          'label_name': 'name', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC1M'}
+                          'label_name': 'name', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC1M', 'v_offset_ind': 1}
             self.ch_c4 = {'ch_view': 'TRUE', 'volt_dev': '0.5', 'BW': '20MHz', 'filter': '2bits', 'v_offset': 0,
-                          'label_name': 'name', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC1M'}
+                          'label_name': 'name', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC1M', 'v_offset_ind': 1}
             self.ch_c5 = {'ch_view': 'TRUE', 'volt_dev': '0.5', 'BW': '20MHz', 'filter': '2bits', 'v_offset': 0,
-                          'label_name': 'name', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC1M'}
+                          'label_name': 'name', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC1M', 'v_offset_ind': 1}
             self.ch_c6 = {'ch_view': 'TRUE', 'volt_dev': '0.5', 'BW': '20MHz', 'filter': '2bits', 'v_offset': 0,
-                          'label_name': 'name', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC1M'}
+                          'label_name': 'name', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC1M', 'v_offset_ind': 1}
             self.ch_c7 = {'ch_view': 'TRUE', 'volt_dev': '0.5', 'BW': '20MHz', 'filter': '2bits', 'v_offset': 0,
-                          'label_name': 'name', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC1M'}
+                          'label_name': 'name', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC1M', 'v_offset_ind': 1}
             self.ch_c8 = {'ch_view': 'TRUE', 'volt_dev': '0.5', 'BW': '20MHz', 'filter': '2bits', 'v_offset': 0,
-                          'label_name': 'name', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC1M'}
+                          'label_name': 'name', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC1M', 'v_offset_ind': 1}
 
             # setting of general
             self.set_general = {'trigger_mode': 'Auto', 'trigger_source': 'C3', 'trigger_level': '-3.2',
@@ -535,21 +544,21 @@ class Scope_LE6100A(GInst):
             # index 0 only for functional test
             # the setting for ripple verification
             self.ch_c1 = {'ch_view': 'TRUE', 'volt_dev': '0.02', 'BW': '20MHz', 'filter': '2bits', 'v_offset': -3.3,
-                          'label_name': 'AVDD', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC1M'}
+                          'label_name': 'AVDD', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC1M', 'v_offset_ind': 1}
             self.ch_c2 = {'ch_view': 'TRUE', 'volt_dev': '0.02', 'BW': '20MHz', 'filter': '2bits', 'v_offset': 3.3,
-                          'label_name': 'OVSS', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC1M'}
+                          'label_name': 'OVSS', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC1M', 'v_offset_ind': 1}
             self.ch_c3 = {'ch_view': 'TRUE', 'volt_dev': '0.2', 'BW': '20MHz', 'filter': '2bits', 'v_offset': 3.5,
-                          'label_name': 'VON', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC1M'}
+                          'label_name': 'VON', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC1M', 'v_offset_ind': 1}
             self.ch_c4 = {'ch_view': 'TRUE', 'volt_dev': '1', 'BW': '20MHz', 'filter': '2bits', 'v_offset': -3,
-                          'label_name': 'Vin', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC1M'}
+                          'label_name': 'Vin', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC1M', 'v_offset_ind': 1}
             self.ch_c5 = {'ch_view': 'TRUE', 'volt_dev': '0.02', 'BW': '20MHz', 'filter': '2bits', 'v_offset': -0.06,
-                          'label_name': 'I_load', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC50'}
+                          'label_name': 'I_load', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC50', 'v_offset_ind': 1}
             self.ch_c6 = {'ch_view': 'TRUE', 'volt_dev': '0.02', 'BW': '20MHz', 'filter': '2bits', 'v_offset': -3.3,
-                          'label_name': 'OVDD', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC1M'}
+                          'label_name': 'OVDD', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC1M', 'v_offset_ind': 1}
             self.ch_c7 = {'ch_view': 'TRUE', 'volt_dev': '0.2', 'BW': '20MHz', 'filter': '2bits', 'v_offset': -3.5,
-                          'label_name': 'VOP', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC1M'}
+                          'label_name': 'VOP', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC1M', 'v_offset_ind': 1}
             self.ch_c8 = {'ch_view': 'FALSE', 'volt_dev': '0.5', 'BW': '20MHz', 'filter': '2bits', 'v_offset': 0,
-                          'label_name': 'name', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC1M'}
+                          'label_name': 'name', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC1M', 'v_offset_ind': 1}
 
             # setting of general
             self.set_general = {'trigger_mode': 'Auto', 'trigger_source': 'C3', 'trigger_level': '-3.2',
