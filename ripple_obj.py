@@ -85,6 +85,13 @@ class ripple_test ():
         self.c_i2c = self.sh_verification_control.range('B12').value
         self.avdd_current_3ch = self.sh_verification_control.range('B13').value
         self.ch_index = int(self.sh_verification_control.range('B14').value)
+        self.scope_adj = 1
+        if self.ch_index > 2:
+            # extra channel setting for measurement
+            self.ch_index = self.ch_index - 3
+            self.scope_adj = 0
+
+
         self.ripple_line_load = int(
             self.sh_verification_control.range('B15').value)
         self.c_data_mea = self.excel_ini.c_data_mea
@@ -169,6 +176,21 @@ class ripple_test ():
                 scope_s.nor_v_off = 1
                 pass
             scope_s.scope_initial(self.scope_setting)
+
+            if self.scope_adj == 1:
+                # change the position and turn off related signal
+                if self.ch_index == 0:
+                    #  EL mode,
+                    scope_s.ch_view(1, 0)
+                    pass
+                elif self.ch_index == 1:
+                    #  VCI mode
+                    scope_s.ch_view(6, 0)
+                    scope_s.ch_view(2, 0)
+                    scope_s.ch_view(3, 0)
+                    scope_s.find_signal(ch=1, variable_index=0)
+                    pass
+
             pass
 
         # pwr ovoc setting
@@ -279,10 +301,11 @@ class ripple_test ():
                 excel_s.sh_ref_table = excel_s.ref_table_list[x_sw_i2c]
 
             # if the command is not default, need to find signal
-            if scope_s.nor_v_off == 1:
-                # need the find signal refer to the offset index settings
-                for i in range(1, 8+1):
-                    scope_s.find_signal(i)
+            # 221206 command is already operated in the scope
+            # if scope_s.nor_v_off == 1:
+            #     # need the find signal refer to the offset index settings
+            #     for i in range(1, 8+1):
+            #         scope_s.find_signal(i)
 
             # table should be assign when generation of format gen
             excel_s.sh_ref_table.range(

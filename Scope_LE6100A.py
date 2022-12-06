@@ -188,6 +188,7 @@ class Scope_LE6100A(GInst):
         if self.sim_inst == 1:
             logging.debug(f': {cmd}')
             self.inst.WriteString(f"VBS '{cmd}'", 1)
+            # time.sleep(0.03)
 
             if 0 == self.inst.WaitForOPC():
                 raise Exception('LecroyActiveDSO writeVBS timeout or fail.')
@@ -866,40 +867,68 @@ class Scope_LE6100A(GInst):
 
         pass
 
-    def find_signal(self, ch=0):
+    def find_signal(self, ch=0, variable_index='x'):
         '''
-        221205: still on-going, don't use!! (offset normalization issue~)
-        now is using old version, ofset setting directly, it's easier to
-        implement
-
-        this function is going to find the signal level from different pulse or output settings
-        by selecting the channel and it will change the offset of scope automatically
+        ch is from 1-8
+        variable index is the normalization result
         '''
         # prevent index error
         print('find signal for g')
         ch = int(ch)
+        # change back to the original scale and set the P8 channel back
+        ver_scale = float(
+            (list(self.sc_config.ch_index.values())[ch-1])["volt_dev"])
+
         if (list(self.sc_config.ch_index.values())[ch-1])["ch_view"] == 'TRUE':
             # only active if the channel is turned on
 
             # first is to change the scale to 10V/div and the offset to 0 (see the signal from -40 to 40V)
-            self.single_ch_change(ch, 10, 0)
-            print('change to 10V/div')
+            self.single_ch_change(f'C{ch}', 5, 0)
+            print('change to 5V/div')
 
             # change the P8 measurement to related channel and mean, get to know the level of signal
             self.mea_single(mea_ch='P8', parameter='mean', ch=f'C{ch}')
 
             # clear sweep and collect new mean
             self.writeVBS('app.ClearSweeps')
-            time.sleep(0.1)
+            time.sleep(0.8)
 
-            new_mean = self.read_mea(mea_ch='P8', m_type='mean', return_float=1)
+            new_mean = self.read_mea(
+                mea_ch='P8', m_type='mean', return_float=1)
+            if (list(self.sc_config.ch_index.values())[ch-1])["coupling"] == 'AC1M':
+                # not going to add the mean if coupling is AC1M
+                new_mean = 0
+                pass
 
-            # change back to the original scale and set the P8 channel back
-            ver_scale = float(
-                (list(self.sc_config.ch_index.values())[ch-1])["volt_dev"])
             new_off_set = -1 * new_mean + \
                 (list(self.sc_config.ch_index.values())
-                [ch-1])["v_offset_ind"] * ver_scale
+                 [ch-1])["v_offset_ind"] * ver_scale
+
+            self.single_ch_change(
+                ch=f'C{ch}', ver_scale=ver_scale, ver_offset=new_off_set)
+
+            # clear sweep and collect new mean
+            self.writeVBS('app.ClearSweeps')
+            time.sleep(0.8)
+
+            # use the second run for the offset correction
+            new_mean = self.read_mea(
+                mea_ch='P8', m_type='mean', return_float=1)
+            if (list(self.sc_config.ch_index.values())[ch-1])["coupling"] == 'AC1M':
+                # not going to add the mean if coupling is AC1M
+                new_mean = 0
+                pass
+
+
+            # only change the second, since this effect the final position
+            if variable_index == 'x':
+                new_off_set = -1 * new_mean + \
+                    (list(self.sc_config.ch_index.values())
+                     [ch-1])["v_offset_ind"] * ver_scale
+            else:
+                new_off_set = -1 * new_mean + \
+                    float(variable_index) * ver_scale
+
             '''
             issue point: need to use normalization offset index to make sure the waveform is at the same
             place of the scope
@@ -909,6 +938,28 @@ class Scope_LE6100A(GInst):
             '''
             self.single_ch_change(
                 ch=f'C{ch}', ver_scale=ver_scale, ver_offset=new_off_set)
+
+            # need return the measurement change of P8
+            self.mea_single(
+                mea_ch='P8', parameter=self.sc_config.p8['param'], ch=self.sc_config.p8['source'])
+
+            pass
+
+
+        pass
+
+    def ch_view(self, ch, view=1):
+        '''
+        turn off channel to set the view to 0
+        '''
+        # turn on or off the channel
+
+        if view == 1:
+            self.writeVBS(
+                f'app.Acquisition.C{ch}.View = TRUE')
+        else:
+            self.writeVBS(
+                f'app.Acquisition.C{ch}.View = FALSE')
 
         pass
 

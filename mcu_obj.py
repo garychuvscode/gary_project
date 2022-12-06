@@ -19,6 +19,9 @@ class MCU_control ():
 
         self.sim_mcu = sim_mcu0
         self.com_addr = com_addr0
+        if self.com_addr == 100:
+            # set MCU to simulation mode if the addr is set to 100
+            self.sim_mcu = 0
 
         # because MCU will be separate with GPIB for implementation and test
         self.mcu_cmd_arry = ['01', '02', '04', '08', '10', '20', '40', '80']
