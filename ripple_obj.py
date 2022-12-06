@@ -91,7 +91,6 @@ class ripple_test ():
             self.ch_index = self.ch_index - 3
             self.scope_adj = 0
 
-
         self.ripple_line_load = int(
             self.sh_verification_control.range('B15').value)
         self.c_data_mea = self.excel_ini.c_data_mea
@@ -299,6 +298,7 @@ class ripple_test ():
                 # there are more than 1 group of pulse command or I2C command needed
                 # re-generate the sheet
                 excel_s.sh_ref_table = excel_s.ref_table_list[x_sw_i2c]
+                self.scope_reload()
 
             # if the command is not default, need to find signal
             # 221206 command is already operated in the scope
@@ -664,6 +664,32 @@ class ripple_test ():
         # this sub plan to generate the summary table for each sheet
 
         pass
+
+    def scope_reload(self):
+        # used to reset the scope after changing to different condition
+
+        # scope initialization
+        if self.scope_initial_en > 0:
+            if self.scope_initial_en > 1:
+                # 221205 added
+                # turn the offset setting to normalizaiton setting
+                self.scope_ini.nor_v_off = 1
+                pass
+            self.scope_ini.scope_initial(self.scope_setting)
+
+            if self.scope_adj == 1:
+                # change the position and turn off related signal
+                if self.ch_index == 0:
+                    #  EL mode,
+                    self.scope_ini.ch_view(1, 0)
+                    pass
+                elif self.ch_index == 1:
+                    #  VCI mode
+                    self.scope_ini.ch_view(6, 0)
+                    self.scope_ini.ch_view(2, 0)
+                    self.scope_ini.ch_view(3, 0)
+                    self.scope_ini.find_signal(ch=1, variable_index=0)
+                    pass
 
 
 if __name__ == '__main__':
