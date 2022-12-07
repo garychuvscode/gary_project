@@ -374,7 +374,9 @@ class ripple_test ():
                         # trigger OVDD
                         # 221205: no need to change the level here, change to no input since there
                         # are auto level already
-                        scope_s.trigger_adj(mode='Auto', source='C6')
+                        if self.ripple_line_load == 0:
+                            # for the line and load transient, follow the original trigger channel setting
+                            scope_s.trigger_adj(mode='Auto', source='C6')
 
                         pass
                     elif self.ch_index == 1:
@@ -385,7 +387,9 @@ class ripple_test ():
                         # trigger AVDD
                         # 221205: no need to change the level here, change to no input since there
                         # are auto level already
-                        scope_s.trigger_adj(mode='Auto', source='C1')
+                        if self.ripple_line_load == 0:
+                            # for the line and load transient, follow the original trigger channel setting
+                            scope_s.trigger_adj(mode='Auto', source='C1')
 
                         pass
                     elif self.ch_index == 2:
@@ -401,7 +405,9 @@ class ripple_test ():
                         # trigger OVDD
                         # 221205: no need to change the level here, change to no input since there
                         # are auto level already
-                        scope_s.trigger_adj(mode='Auto', source='C6')
+                        if self.ripple_line_load == 0:
+                            # for the line and load transient, follow the original trigger channel setting
+                            scope_s.trigger_adj(mode='Auto', source='C6')
                         pass
 
                     # add auto exception for line/load transient testing

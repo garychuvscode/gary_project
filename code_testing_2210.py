@@ -7,6 +7,9 @@ import time
 from datetime import datetime
 #  add MCU testing for old version board
 import mcu_obj as m
+
+import win32api
+from win32con import MB_SYSTEMMODAL
 mcu_s = m.MCU_control(0, 3)
 mcu_s.com_open()
 
@@ -109,6 +112,13 @@ class test_calass():
 
         date_stamp = now.strftime("%Y_%m_%d_%H_%M")
         print('the stanmp: ' + date_stamp)
+
+        pass
+
+    def message_box_testing(self):
+
+        response = win32api.MessageBox(
+            0, "Did you hear the Buzzer?", "Buzzer Test", 4, MB_SYSTEMMODAL)
 
         pass
 
