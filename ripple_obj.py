@@ -332,6 +332,8 @@ class ripple_test ():
 
                 # the loop for different i load
                 x_iload = 0
+                # reset to box_ctrl to no and will stop every condition
+                box_ctrl = 7
                 while x_iload < c_load_curr:
 
                     # 221114: change for load transient
@@ -413,9 +415,12 @@ class ripple_test ():
                     # add auto exception for line/load transient testing
 
                     if (self.ripple_line_load == 1 or self.ripple_line_load == 2):
-                        if self.obj_sim_mode == 1:
-                            excel_s.message_box(
-                                'change condition of function and press enter', 'g: stop for transient', auto_expection=1)
+                        if box_ctrl == 7:
+                            # use below selection to skip the message box
+                            # if self.obj_sim_mode == 1 and box_ctrl == 7:
+                            # box control will become 7 when
+                            box_ctrl = excel_s.message_box(
+                                'choose to skip until next line or not', 'g: stop for transient', auto_exception=1, box_type=4)
 
                     # calibration Vin
 

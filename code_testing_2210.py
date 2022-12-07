@@ -119,12 +119,53 @@ class test_calass():
 
         response = win32api.MessageBox(
             0, "Did you hear the Buzzer?", "Buzzer Test", 4, MB_SYSTEMMODAL)
+        # answer yes: 6, no: 7
 
-        pass
+        return response
+
+    def message_box_testing(self):
+
+        response = win32api.MessageBox(
+            0, "Did you hear the Buzzer?", "Buzzer Test", 1)
+        # answer confirm: 1, cancel: 2
+
+        return response
+
+    def message_box_testing(self):
+
+        response = win32api.MessageBox(
+            0, "Did you hear the Buzzer?", "Buzzer Test", 2)
+        # answer stop: 3, re-try: 4, skip: 5
+
+        return response
+
+    def message_box_testing(self):
+
+        response = win32api.MessageBox(
+            0, "Did you hear the Buzzer?", "Buzzer Test", 3)
+        # answer yes: 6, no: 7, cancel: 2
+
+        return response
+
+    def message_box_testing(self):
+
+        response = win32api.MessageBox(
+            0, "Did you hear the Buzzer?", "Buzzer Test", 0)
+        # answer confirm: 1
+
+        return response
+
+    def message_box_testing(self):
+
+        response = win32api.MessageBox(
+            0, "Did you hear the Buzzer?", "Buzzer Test", 5)
+        # answer re-try: 4, cancel: 2
+
+        return response
 
 
 t_s = test_calass()
-testing_index = 1
+testing_index = 5
 
 if testing_index == 0:
     print('a')
@@ -193,5 +234,14 @@ elif testing_index == 3:
 elif testing_index == 4:
 
     t_s.time_string()
+
+    pass
+
+elif testing_index == 5:
+    # testing for the message box and use the return to decide to skip the line or not
+
+    for i in range(3):
+        a = t_s.message_box_testing()
+        print(a)
 
     pass

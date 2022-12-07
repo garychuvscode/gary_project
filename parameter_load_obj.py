@@ -1470,7 +1470,7 @@ class excel_parameter ():
         item_array = np.full([11], 1)
         check_ctrl = self.sum_array(item_array)
 
-        while(check_ctrl > 0):
+        while (check_ctrl > 0):
             # while there are items not pass, need to re-run check parameter
             # porcess
 
@@ -1681,7 +1681,7 @@ class excel_parameter ():
         for i in arr:
             sum = sum + i
 
-        return(sum)
+        return (sum)
         pass
 
     def sim_mode_delay(self, wait_time, wait_small):
@@ -1970,17 +1970,28 @@ class excel_parameter ():
         sh_temp.delete()
         # don't need the original raw output format, remove the output
 
-    def message_box(self, content_str, title_str, auto_expection=0):
+    def message_box(self, content_str, title_str, auto_exception=0, box_type=0):
+        '''
+        message box function
+        auto_exception is for waveform capture, will bypass fully auto setting in global setting \n
+        boxtype(mpaaed with return value): 0-only confirm\n
+        1-confirm: 1, cancel: 2
+        2-stop: 3, re-try: 4, skip: 5
+        3-yes: 6, no: 7, cancel: 2
+        4-yes: 6, no: 7
+        '''
         content_str = str(content_str)
         title_str = str(title_str)
-        if self.en_fully_auto == 0 or auto_expection == 1:
-            msg_res = win32api.MessageBox(0, content_str, title_str)
+        msg_res = 7
+        # won't skip if not enter the result update
+        if self.en_fully_auto == 0 or auto_exception == 1:
+            msg_res = win32api.MessageBox(0, content_str, title_str, box_type)
         # 0 to 3 is different type of message box and can sen different return value
         # detail check on the internet
         print('msg box call~~ ')
         print('P.S Grace is cute! ~ ')
 
-        pass
+        return msg_res
 
     def eff_rerun(self):
         # this program check the status of the excel file eff_re-run block
