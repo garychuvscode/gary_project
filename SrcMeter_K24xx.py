@@ -1,3 +1,10 @@
+'''
+since this library is from Geroge, need to modify before mapped to the testing system
+1. need to have the fake GInst in the related folder
+2. need to cancel all the deccorator
+3. check how to build up the interface to connect two library
+'''
+
 import pyvisa
 import re
 
@@ -46,7 +53,7 @@ class SrcMeter_K24xx(GInst):
 
     def autoConfigure(self):
         if self._configured is True :
-            return 
+            return
 
         if self._type == 'Loader' :
             self.inst.write(f':SOUR:FUNC CURR')
@@ -56,24 +63,24 @@ class SrcMeter_K24xx(GInst):
             self.inst.write(f':SENS:FUNC "VOLT"')
             self.inst.write(f':SENS:VOLT:RANG:AUTO ON')
 
-        if self._type == 'Power' :            
+        if self._type == 'Power' :
             self.inst.write(f':SOUR:FUNC VOLT')
             self.inst.write(f':SOUR:VOLT:MODE FIXED')
             self.inst.write(f':SOUR:VOLT:RANG:AUTO ON')
 
             self.inst.write(f':SENS:FUNC "CURR"')
-            self.inst.write(f':SENS:CURR:RANG:AUTO ON')    
+            self.inst.write(f':SENS:CURR:RANG:AUTO ON')
 
         self._configured = True
 
 
-    @GInstSetMethod(unit = 'V')  #decorate used to update UI
+    # @GInstSetMethod(unit = 'V')  #decorate used to update UI
     def configureVoltageSource(self, voltage, current) :
         """
         srcmeter.configureVoltageSource(voltage, current) -> None
         ================================================================
         [srcmeter(channel) configure as VoltageSource ]
-        :param voltage: Voltage source 
+        :param voltage: Voltage source
         :param current: Current Limit
         :return: None.
         """
@@ -213,7 +220,7 @@ class SrcMeter_K24xx(GInst):
 
 
 
-    @GInstSetMethod(unit = 'A')
+    # @GInstSetMethod(unit = 'A')
     def configureCurrentSource(self, voltage, current) :
         """
         srcmeter.configureCurrentSource(voltage, current) -> None
@@ -333,32 +340,32 @@ class SrcMeter_K24xx(GInst):
         #else:
         #    self.inst.write(f':SENS:VOLT:RANG {Vrange}')
 
-    @GInstSetMethod(unit = 'V')
+    # @GInstSetMethod(unit = 'V')
     def setVoltage(self, voltage) :
         """
         power.setVoltage(voltage) -> None
         ================================================================
-        [power(channel) set Voltage] 
-        :param voltage: 
+        [power(channel) set Voltage]
+        :param voltage:
         :return: None.
         """
         if voltage is None :
-            return 
+            return
 
         self.inst.write(f':SOUR:VOLT:LEV {voltage}')
 
 
-    @GInstSetMethod(unit = 'A')
+    # @GInstSetMethod(unit = 'A')
     def setCurrent(self, current) :
         """
         power.setCurrent(current) -> None
         ================================================================
-        [power(channel) set Current] 
-        :param current: 
+        [power(channel) set Current]
+        :param current:
         :return: None.
         """
         if current is None :
-            return 
+            return
 
         self.inst.write(f':SOUR:CURR:LEV {current}')
 

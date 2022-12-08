@@ -2050,10 +2050,6 @@ class excel_parameter ():
 
         return self.eff_done_sh
 
-    def check_inst_update(self):
-
-        pass
-
     def program_status(self, status_string):
         # transfer to the string for following operation
         # if you need to modify in sub-program, need to use global definition
