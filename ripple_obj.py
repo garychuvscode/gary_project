@@ -348,11 +348,24 @@ class ripple_test ():
                         excel_s.vin_status = str(v_target)
                         excel_s.program_status(pro_status_str)
 
-                    if x_iload == 0:
-                        scope_s.Hor_scale_adj(0.01)
-                    else:
-                        scope_s.Hor_scale_adj(
-                            scope_s.set_general['time_scale'], scope_s.set_general['time_offset'])
+                    if self.scope_initial_en > 1:
+                        if x_iload == 0:
+                            if self.ripple_line_load == 0:
+                                # change to 10ms consider for PFM when ripple operation
+                                scope_s.Hor_scale_adj(0.01)
+                                pass
+                            elif self.ripple_line_load == 1:
+                                # change to 500us for line transient, for more cycle at light load
+                                scope_s.Hor_scale_adj(0.0005)
+                                pass
+                            elif self.ripple_line_load == 2:
+                                # not to change for load transient, no PFM issue
+                                # scope_s.Hor_scale_adj(0.00005)
+                                pass
+
+                        else:
+                            scope_s.Hor_scale_adj(
+                                scope_s.set_general['time_scale'], scope_s.set_general['time_offset'])
 
                     # assign i_load on related channel
                     # 221114: to prevent error of load transient
@@ -418,9 +431,11 @@ class ripple_test ():
                         if box_ctrl == 7:
                             # use below selection to skip the message box
                             # if self.obj_sim_mode == 1 and box_ctrl == 7:
+                            setup_temp = excel_s.sh_format_gen.range(
+                                43 + x_vin, 2).value
                             # box control will become 7 when
                             box_ctrl = excel_s.message_box(
-                                'choose to skip until next line or not', 'g: stop for transient', auto_exception=1, box_type=4)
+                                f'choose to skip until next line or not\nset to {setup_temp} and continue ', 'g: stop for transient', auto_exception=1, box_type=4)
 
                     # calibration Vin
 

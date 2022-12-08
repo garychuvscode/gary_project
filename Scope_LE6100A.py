@@ -836,7 +836,9 @@ class Scope_LE6100A(GInst):
         '''
 
         self.writeVBS('app.ClearSweeps')
-        self.trigger_adj(mode='Auto')
+        # 221208 take this line off, since if set to auto mode during auto mode
+        # it mat cause extra error
+        # self.trigger_adj(mode='Auto')
         if self.sim_inst == 0:
             pass
         else:
@@ -919,7 +921,6 @@ class Scope_LE6100A(GInst):
                 new_mean = 0
                 pass
 
-
             # only change the second, since this effect the final position
             if variable_index == 'x':
                 new_off_set = -1 * new_mean + \
@@ -944,7 +945,6 @@ class Scope_LE6100A(GInst):
                 mea_ch='P8', parameter=self.sc_config.p8['param'], ch=self.sc_config.p8['source'])
 
             pass
-
 
         pass
 

@@ -613,6 +613,13 @@ if __name__ == '__main__':
         print(f'now is single test for {temp_str}')
 
         format_g.set_sheet_name(temp_str)
+
+        # add the protection of line transient setting pwr as real mode
+        if excel_m.sh_format_gen.range('B15').value == 1:
+            # set the pwr to simulation mode
+            pwr_m.sim_inst = 0
+            pwr_bk_m.sim_inst = 0
+
         ripple_t.run_verification()
         format_g.table_return()
 
