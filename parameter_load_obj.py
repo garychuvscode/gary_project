@@ -1235,15 +1235,18 @@ class excel_parameter ():
 
         pass
 
-    def open_result_book(self):
+    def open_result_book(self, keep_last=0):
 
         # before open thr result book to check index, first check and correct
         # index (will be update to the obj_main)
         if self.result_book_status == 'close':
             self.index_check()
+            if keep_last == 0:
+                # define new result workbook
+                self.wb_res = xw.Book()
+            else:
+                xw.Book(f'c:\\py_gary\\test_excel\\{keep_last}.xlsx')
 
-            # define new result workbook
-            self.wb_res = xw.Book()
             # create reference sheet (for sheet position)
             # sh_ref is the index for result sheet
             # sh_ref_condition is for testing condition and setting
@@ -1251,7 +1254,11 @@ class excel_parameter ():
             self.sh_ref = self.wb_res.sheets.add('ref_sh')
             # self.sh_ref_condition = self.wb_res.sheets.add('ref_sh2')
             # delete the extra sheet from new workbook, difference from version
-            self.wb_res.sheets('工作表1').delete()
+            if keep_last == 0:
+                self.wb_res.sheets('工作表1').delete()
+            else:
+                # delete the original main sheet and replace with the new one
+                self.wb_res.sheets('main').delete()
 
             # copy the main sheets to new book
             self.sh_main.copy(self.sh_ref)
@@ -1313,6 +1320,8 @@ class excel_parameter ():
                 self.extra_file_name + self.detail_name + \
                 self.flexible_name + '_' + self.time_name
             self.wb_res.save(self.result_book_trace)
+
+            # 221209: add the copy to summary book after finished the testing?
 
             if self.book_off_finished == 1:
                 self.wb_res.close()

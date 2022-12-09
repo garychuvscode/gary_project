@@ -82,7 +82,11 @@ class general_test ():
         self.excel_ini.extra_file_name = '_general'
         pass
 
-    def run_verification(self):
+    def run_verification(self, vin_cal=1):
+        '''
+        run the general testing: default calibrate Vin on
+        to disable, change vin_cal to 0
+        '''
         # 221201 sheet generation move to set_sheet_name
         # # give the sheet generation
         # self.sheet_gen()
@@ -171,14 +175,26 @@ class general_test ():
                 if self.pwr_ch1 != 'x':
                     pwr_s.chg_out(
                         self.pwr_ch1, self.excel_ini.gen_pwr_i_set, self.excel_ini.relay0_ch, 'on')
+                else:
+                    # turn off the power if not going to control power
+                    pwr_s.chg_out(0, self.excel_ini.gen_pwr_i_set,
+                                  self.excel_ini.relay0_ch, 'off')
             if gen_pwr_ch_amount > 1:
                 if self.pwr_ch2 != 'x':
                     pwr_s.chg_out(
                         self.pwr_ch2, self.excel_ini.gen_pwr_i_set, self.excel_ini.relay6_ch, 'on')
+                else:
+                    # turn off the power if not going to control power
+                    pwr_s.chg_out(0, self.excel_ini.gen_pwr_i_set,
+                                  self.excel_ini.relay6_ch, 'off')
             if gen_pwr_ch_amount > 2:
                 if self.pwr_ch3 != 'x':
                     pwr_s.chg_out(
                         self.pwr_ch3, self.excel_ini.gen_pwr_i_set, self.excel_ini.relay7_ch, 'on')
+                else:
+                    # turn off the power if not going to control power
+                    pwr_s.chg_out(0, self.excel_ini.gen_pwr_i_set,
+                                  self.excel_ini.relay7_ch, 'off')
 
             if gen_pulse_i2x_en == 0:
                 pass
@@ -219,18 +235,19 @@ class general_test ():
                 load_src_s.change_I(self.load_src, 'on')
 
             # add the vin calibration
-            if gen_pwr_ch_amount >= 1:
-                if self.pwr_ch1 != 'x':
-                    temp_res = pwr_s.vin_clibrate_singal_met(
-                        0, self.pwr_ch1, met_v_s, mcu_s, excel_s)
-            if gen_pwr_ch_amount > 1:
-                if self.pwr_ch2 != 'x':
-                    temp_res = pwr_s.vin_clibrate_singal_met(
-                        6, self.pwr_ch2, met_v_s, mcu_s, excel_s)
-            if gen_pwr_ch_amount > 2:
-                if self.pwr_ch3 != 'x':
-                    temp_res = pwr_s.vin_clibrate_singal_met(
-                        7, self.pwr_ch3, met_v_s, mcu_s, excel_s)
+            if vin_cal == 1:
+                if gen_pwr_ch_amount >= 1:
+                    if self.pwr_ch1 != 'x':
+                        temp_res = pwr_s.vin_clibrate_singal_met(
+                            0, self.pwr_ch1, met_v_s, mcu_s, excel_s)
+                if gen_pwr_ch_amount > 1:
+                    if self.pwr_ch2 != 'x':
+                        temp_res = pwr_s.vin_clibrate_singal_met(
+                            6, self.pwr_ch2, met_v_s, mcu_s, excel_s)
+                if gen_pwr_ch_amount > 2:
+                    if self.pwr_ch3 != 'x':
+                        temp_res = pwr_s.vin_clibrate_singal_met(
+                            7, self.pwr_ch3, met_v_s, mcu_s, excel_s)
 
             self.res_met_curr = met_i_s.mea_i()
 

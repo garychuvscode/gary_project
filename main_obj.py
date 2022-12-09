@@ -548,7 +548,7 @@ if __name__ == '__main__':
         pass
 
     # single test for general test
-    elif program_group == 6:
+    elif program_group == 6 or program_group == 6.1:
         # fixed part, open one result book and save the book
         # in temp name
         excel_m.open_result_book()
@@ -573,7 +573,11 @@ if __name__ == '__main__':
         temp_str = str(excel_m.single_test_mapped_general)
         print(f'now is single test for {temp_str}')
         general_t.set_sheet_name(temp_str)
-        general_t.run_verification()
+        if program_group == 6:
+            general_t.run_verification()
+        elif program_group == 6.1:
+            # 6.1 is the version without Vin calibration
+            general_t.run_verification(vin_cal=0)
 
         print('finished general_test verification')
 
