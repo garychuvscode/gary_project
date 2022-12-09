@@ -388,11 +388,13 @@ class general_test ():
             # 3. if plot is needed for this verification, need to integrated the plot in the excel file and call from here
             # 4. not a new file but an add on sheet to the result workbook
 
-            # copy the rsult sheet to result book
-            self.excel_ini.sh_general_test.copy(self.excel_ini.sh_ref)
-            # assign the sheet to result book
-            self.excel_ini.sh_general_test = self.excel_ini.wb_res.sheets(
-                str(self.ctrl_sheet_name))
+            # # copy the rsult sheet to result book
+            # self.excel_ini.sh_general_test.copy(self.excel_ini.sh_ref)
+            # # assign the sheet to result book
+            # self.excel_ini.sh_general_test = self.excel_ini.wb_res.sheets(
+            #     str(self.ctrl_sheet_name))
+            # 221209: since .copy will return the cpoied sheet, just assign, no need for name
+            self.excel_ini.sh_general_test = self.excel_ini.sh_general_test.copy(self.excel_ini.sh_ref)
 
             # change the sheet name after finished and save into the excel object
             self.excel_ini.sh_general_test.name = str(self.new_sheet_name)

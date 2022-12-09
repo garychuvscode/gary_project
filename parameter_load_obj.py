@@ -138,6 +138,10 @@ class excel_parameter ():
         # open means can save file, close means skip end_of_file
         self.result_book_status = 'close'
 
+        # 221209: add other file for extension
+        self.last_report = self.sh_main.range('A5').value
+        # check on the last_report with try except function
+
         # 220914 the instrument control variable
         self.inst_auto_selection = 1
         # this object is only used for self auto testing, no need to disable due to
@@ -1245,7 +1249,16 @@ class excel_parameter ():
                 # define new result workbook
                 self.wb_res = xw.Book()
             else:
-                xw.Book(f'c:\\py_gary\\test_excel\\{keep_last}.xlsx')
+                try:
+                    self.wb_res = xw.Book(
+                        f'c:\\py_gary\\test_excel\\{self.last_report}.xlsx')
+                except:
+                    print(
+                        'error mapping with last report, check name and will process new book\n g is cute')
+                    # define new result workbook
+                    self.wb_res = xw.Book()
+                    # change the setting back to normal if there are no proper last report to open
+                    keep_last = 0
 
             # create reference sheet (for sheet position)
             # sh_ref is the index for result sheet

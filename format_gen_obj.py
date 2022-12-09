@@ -319,11 +319,15 @@ class format_gen ():
             # 3. if plot is needed for this verification, need to integrated the plot in the excel file and call from here
             # 4. not a new file but an add on sheet to the result workbook
 
-            # copy the result sheet to result book
-            self.excel_ini.sh_format_gen.copy(self.excel_ini.sh_ref)
-            # assign the sheet to result book
-            self.excel_ini.sh_format_gen = self.excel_ini.wb_res.sheets(
-                str(self.ctrl_sheet_name))
+            # # copy the result sheet to result book
+            # self.excel_ini.sh_format_gen.copy(self.excel_ini.sh_ref)
+            # # assign the sheet to result book
+            # self.excel_ini.sh_format_gen = self.excel_ini.wb_res.sheets(
+            #     str(self.ctrl_sheet_name))
+            # 221209: since .copy will return the cpoied sheet, just assign, no need for name
+            self.excel_ini.sh_format_gen = self.excel_ini.sh_format_gen.copy(
+                self.excel_ini.sh_ref)
+
             self.i2c_en = int(self.excel_ini.sh_format_gen.range('B10').value)
 
             if self.i2c_en == 0:
@@ -335,11 +339,14 @@ class format_gen ():
 
             x_sheets = 0
             while x_sheets < self.c_sheets:
-                # copy the result sheet to result book (reference table)
-                self.excel_ini.sh_ref_table.copy(self.excel_ini.sh_ref)
-                # assign the sheet to result book
-                temp_sheet = self.excel_ini.wb_res.sheets(
-                    'table')
+                # # copy the result sheet to result book (reference table)
+                # self.excel_ini.sh_ref_table.copy(self.excel_ini.sh_ref)
+                # # assign the sheet to result book
+                # temp_sheet = self.excel_ini.wb_res.sheets(
+                #     'table')
+                # 221209: since .copy will return the cpoied sheet, just assign, no need for name
+                temp_sheet = self.excel_ini.sh_ref_table.copy(
+                    self.excel_ini.sh_ref)
 
                 # change the sheet name after finished and save into the excel object
                 temp_sheet.name = str(

@@ -103,16 +103,22 @@ class eff_mea:
         # 3. if plot is needed for this verification, need to integrated the plot in the excel file and call from here
         # 4. not a new file but an add on sheet to the result workbook
 
-        # copy the rsult sheet to result book
-        self.excel_ini.sh_volt_curr_cmd.copy(self.excel_ini.sh_ref)
-        # assign the sheet to result book
-        self.excel_ini.sh_volt_curr_cmd = self.excel_ini.wb_res.sheets(
-            self.excel_ini.sh_volt_curr_cmd_name)
-        # copy the rsult sheet to result book
-        self.excel_ini.sh_i2c_cmd.copy(self.excel_ini.sh_ref)
-        # assign the sheet to result book
-        self.excel_ini.sh_i2c_cmd = self.excel_ini.wb_res.sheets(
-            self.excel_ini.sh_i2c_cmd_name)
+        # # copy the rsult sheet to result book
+        # self.excel_ini.sh_volt_curr_cmd.copy(self.excel_ini.sh_ref)
+        # # assign the sheet to result book
+        # self.excel_ini.sh_volt_curr_cmd = self.excel_ini.wb_res.sheets(
+        #     self.excel_ini.sh_volt_curr_cmd_name)
+        # # copy the rsult sheet to result book
+        # self.excel_ini.sh_i2c_cmd.copy(self.excel_ini.sh_ref)
+        # # assign the sheet to result book
+        # self.excel_ini.sh_i2c_cmd = self.excel_ini.wb_res.sheets(
+        #     self.excel_ini.sh_i2c_cmd_name)
+        # 221209: since .copy will return the cpoied sheet, just assign, no need for name
+        self.excel_ini.sh_volt_curr_cmd = self.excel_ini.sh_volt_curr_cmd.copy(
+            self.excel_ini.sh_ref)
+        self.excel_ini.sh_i2c_cmd = self.excel_ini.sh_i2c_cmd.copy(
+            self.excel_ini.sh_ref)
+
         # # 220914 move to build file to prevent error of delete and end of file
         # # copy the result sheet to result book
         # self.excel_ini.sh_raw_out.copy(self.excel_ini.sh_ref)

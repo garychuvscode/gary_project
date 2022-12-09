@@ -163,9 +163,22 @@ class test_calass():
 
         return response
 
+    def try_except(self, example=0):
+
+        # practice for try except application
+        try:
+            a = 100 / example
+            print(f'correct input answer is {a}')
+            pass
+        except:
+            a = 10
+            print(f'this is wrong, enter error handling a become {a}')
+
+            pass
+
 
 t_s = test_calass()
-testing_index = 5
+testing_index = 6
 
 if testing_index == 0:
     print('a')
@@ -243,5 +256,17 @@ elif testing_index == 5:
     for i in range(3):
         a = t_s.message_box_testing()
         print(a)
+
+    pass
+
+elif testing_index == 6:
+
+    t_s.try_except(1)
+    t_s.try_except(2)
+    t_s.try_except(3)
+    t_s.try_except(4)
+
+    t_s.try_except(0)
+    t_s.try_except(1)
 
     pass

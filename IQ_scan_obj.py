@@ -125,11 +125,14 @@ class iq_scan:
         # 3. if plot is needed for this verification, need to integrated the plot in the excel file and call from here
         # 4. not a new file but an add on sheet to the result workbook
 
-        # copy the rsult sheet to result book
-        self.excel_ini.sh_iq_scan.copy(self.excel_ini.sh_ref)
-        # assign the sheet to result book
-        self.excel_ini.sh_iq_scan = self.excel_ini.wb_res.sheets(
-            self.excel_ini.sh_iq_scan_name)
+        # # copy the rsult sheet to result book
+        # self.excel_ini.sh_iq_scan.copy(self.excel_ini.sh_ref)
+        # # assign the sheet to result book
+        # self.excel_ini.sh_iq_scan = self.excel_ini.wb_res.sheets(
+        #     self.excel_ini.sh_iq_scan_name)
+        # 221209: since .copy will return the cpoied sheet, just assign, no need for name
+        self.excel_ini.sh_iq_scan = self.excel_ini.sh_iq_scan.copy(
+            self.excel_ini.sh_ref)
 
         # # copy the sheets to new book
         # # for the new sheet generation, located in sheet_gen

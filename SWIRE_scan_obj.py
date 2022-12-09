@@ -80,10 +80,13 @@ class sw_scan:
         # 4. not a new file but an add on sheet to the result workbook
 
         # copy the rsult sheet to result book
-        self.excel_ini.sh_sw_scan.copy(self.excel_ini.sh_ref)
-        # assign the sheet to result book
-        self.excel_ini.sh_sw_scan = self.excel_ini.wb_res.sheets(
-            self.excel_ini.sh_sw_scan_name)
+        # self.excel_ini.sh_sw_scan.copy(self.excel_ini.sh_ref)
+        # # assign the sheet to result book
+        # self.excel_ini.sh_sw_scan = self.excel_ini.wb_res.sheets(
+        #     self.excel_ini.sh_sw_scan_name)
+        # 221209: since .copy will return the cpoied sheet, just assign, no need for name
+        self.excel_ini.sh_sw_scan = self.excel_ini.sh_sw_scan.copy(
+            self.excel_ini.sh_ref)
 
         # # copy the sheets to new book
         # # for the new sheet generation, located in sheet_gen

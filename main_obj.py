@@ -737,7 +737,7 @@ if __name__ == '__main__':
     elif program_group == 9:
         # fixed part, open one result book and save the book
         # in temp name
-        excel_m.open_result_book()
+        excel_m.open_result_book(keep_last=1)
         # auto save after the book is generate
         excel_m.excel_save()
 
