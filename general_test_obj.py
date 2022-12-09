@@ -1,6 +1,7 @@
 # this file will create for the general testing
 # instrument control is set from main
-#
+# 221208: this file also include the other testing related with general test command table
+# the plan to add: 1. power on and off(high low temp) 2. waveform capture(inrush current, power on off sequence)
 
 
 # excel parameter and settings
