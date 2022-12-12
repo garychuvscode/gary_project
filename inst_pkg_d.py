@@ -240,6 +240,22 @@ class LPS_505N:
         # met_v0.sim_inst = 0
         # excel0 = par.excel_parameter('obj_main')
 
+        prog_only = 1
+        if prog_only == 0:
+            # ======== only for object programming
+            # testing used temp instrument
+            # need to become comment when the OBJ is finished
+            import mcu_obj as mcu
+            import parameter_load_obj as par
+            # initial the object and set to simulation mode
+
+            # mcu is also config as simulation mode
+            mcu0 = mcu.MCU_control(0, 3)
+            # using the main control book as default
+            excel0 = par.excel_parameter('obj_main')
+
+            # ======== only for object programming
+
         # make sure all the type is correct
         vin_target = float(vin_target)
         vin_ch = int(vin_ch)

@@ -71,6 +71,10 @@ class format_gen ():
 
     def set_sheet_name(self, ctrl_sheet_name0):
 
+        # 221212: add the table return inisde the object
+        # return the table before next use
+        self.table_return()
+
         # assign the related sheet of each format gen
         self.ctrl_sheet_name = ctrl_sheet_name0
 

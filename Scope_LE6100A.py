@@ -480,6 +480,24 @@ class Scope_LE6100A(GInst):
 
         pass
 
+    def label_chg(self, ch=0, label_name=None, label_position=None, label_view=None):
+        if int(ch) != 0:
+            ch = str(int(ch))
+
+            if label_name == None:
+                self.writeVBS(
+                    f'app.Acquisition.C{ch}.LabelsText = "{str(label_name)}"')
+
+            if label_name == None:
+                self.writeVBS(
+                    f'app.Acquisition.C{ch}.LabelsPosition = "{str(label_position)}"')
+
+            if label_name == None:
+                self.writeVBS(
+                    f'app.Acquisition.C{ch}.ViewLabels = {str(label_view)}')
+
+        pass
+
     def inst_name(self):
         # get the insturment name
         self.cmd_str_name = ''
@@ -650,10 +668,14 @@ class Scope_LE6100A(GInst):
         '''
 
         if mode != None:
-            self.writeVBS(
-                f'app.Acquisition.TriggerMode = "{mode}"')
-            # also change the setting after setting updated
-            self.set_general["trigger_mode"] = mode
+            # add selection prevent re-send the same command causing error
+            mode_temp = self.readVBS(f'app.Acquisition.TriggerMode')
+            if mode_temp != mode:
+                self.writeVBS(
+                    f'app.Acquisition.TriggerMode = "{mode}"')
+                # also change the setting after setting updated
+                self.set_general["trigger_mode"] = mode
+                pass
             pass
         if source != None:
             self.writeVBS(
@@ -827,7 +849,7 @@ class Scope_LE6100A(GInst):
 
         return mea_result
 
-    def capture_full(self, wait_time_s=5, path_t=0, find_level=0):
+    def capture_full(self, wait_time_s=5, path_t=0, find_level=0, adj_before_save=0):
         '''
         this function is the fully scope process, include: clear sweep => Auto =>
         wait time => set to single(trigger) => when trigged stop and capture \n
@@ -851,6 +873,44 @@ class Scope_LE6100A(GInst):
             self.find_trig_level()
             self.trigger_adj(mode='Single')
             self.waitTriggered()
+
+        if adj_before_save == 1:
+            # stop to adjust the cursor before capture
+            self.excel_s.message_box(
+                f'setup the cursor properly and save waveform ', 'g: stop for cursor', auto_exception=1, box_type=0)
+
+        self.printScreenToPC(path=path_t)
+
+        pass
+
+    def capture_1st(self, wait_time_s=5, find_level=0):
+        '''
+        stuff need to do before single, contain clear and set to trigger\n
+        need to have printScreenToPC after trigger condition is sent\n
+        this is the capture full without printScreenToPC
+        '''
+
+        if self.sim_inst == 0:
+            pass
+        else:
+            time.sleep(wait_time_s)
+        if find_level == 0:
+            # no need to find level, single directly
+            self.trigger_adj(mode='Single')
+            self.waitTriggered()
+        else:
+            self.find_trig_level()
+            self.trigger_adj(mode='Single')
+            self.waitTriggered()
+
+        pass
+
+    def capture_2nd(self, path_t=0, adj_before_save=0):
+
+        if adj_before_save == 1:
+            # stop to adjust the cursor before capture
+            self.excel_s.message_box(
+                f'setup the cursor properly and save waveform ', 'g: stop for cursor', auto_exception=1, box_type=0)
 
         self.printScreenToPC(path=path_t)
 
