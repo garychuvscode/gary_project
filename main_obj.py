@@ -940,6 +940,9 @@ if __name__ == '__main__':
         # ===========
 
         # fix the sheet lock to CTRL_sh_seq_EN=SW, CTRL_sh_seq_EN, CTRL_sh_seq_SW
+        format_g.set_sheet_name('CTRL_sh_inrush')
+        ripple_t.inrush_current()
+
         format_g.set_sheet_name('CTRL_sh_seq_EN=SW')
         ripple_t.pwr_seq()
         # format_g.table_return()

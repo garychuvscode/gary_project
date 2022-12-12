@@ -619,6 +619,12 @@ class ripple_test ():
         self.para_loaded()
         # the general loop will start from pulse
 
+        # for the measurement result, need to set to max for current
+        scope_value_temp = self.excel_ini.scope_value
+        self.excel_ini.scope_value = 'max'
+        print(f'the scope value now set to : {self.excel_ini.scope_value}')
+        # and it will return the setting after program ended
+
         # control variable
         c_sheet = self.c_pulse_i2c
         c_column = self.c_iload
@@ -630,9 +636,11 @@ class ripple_test ():
         # to choose what is the trigger channel
         # MCU is 3.3V, use 1.8V as trigger level
         self.scope_ini.ch_view(ch=4, view=1)
-        self.scope_ini.label_chg(ch=4, label_name='EN_pin', label_position=0, label_view='TRUE')
+        self.scope_ini.label_chg(
+            ch=4, label_name='EN_pin', label_position=0, label_view='TRUE')
         self.scope_ini.ch_view(ch=8, view=1)
-        self.scope_ini.label_chg(ch=8, label_name='SW_pin', label_position=0, label_view='TRUE')
+        self.scope_ini.label_chg(
+            ch=8, label_name='SW_pin', label_position=0, label_view='TRUE')
 
         if self.ripple_line_load == 7:
             # EN=SW together
@@ -697,6 +705,7 @@ class ripple_test ():
                         # SW
                         self.mcu_ini.pmic_mode(2)
 
+                    self.scope_ini.capture_2nd(path_t=0, adj_before_save=1)
                     # select the related range
                     '''
                     here is to choose related cell for wafeform capture, x is x axis and y is y axis,
@@ -724,12 +733,16 @@ class ripple_test ():
                     print('check point')
 
                     curr_peak = self.scope_ini.read_mea(
-                        'P1', self.excel_ini.scope_value)
+                        'P6', self.excel_ini.scope_value)
                     curr_peak = self.excel_ini.float_gene(curr_peak)
                     self.excel_ini.sh_ref_table.range(self.format_start_y + y_index * (2 + self.c_data_mea) + 1,
                                                       self.format_start_x + x_index).value = curr_peak
                     self.excel_ini.sum_table_gen(
                         self.excel_ini.summary_start_x, self.excel_ini.summary_start_y, 1 + x_index, 1 + y_index + x_sheet * (c_row + self.excel_ini.summary_gap), curr_peak)
+
+                    # back to power off sttus
+                    self.mcu_ini.pmic_mode(1)
+                    time.sleep(0.3)
 
                     x_column = x_column + 1
                     # end of iload loop
@@ -751,6 +764,12 @@ class ripple_test ():
         # hope to build the summary table after the test is finished
         self.summary_table()
 
+        # for the measurement result, need to set to max for current
+        # return to previous settings
+        self.excel_ini.scope_value = scope_value_temp
+        print(f'the scope value now return to : {self.excel_ini.scope_value}')
+        # and it will return the setting after program ended
+
         pass
 
     def inrush_current(self):
@@ -763,6 +782,12 @@ class ripple_test ():
         self.para_loaded()
         # the general loop will start from pulse
 
+        # for the measurement result, need to set to max for current
+        scope_value_temp = self.excel_ini.scope_value
+        self.excel_ini.scope_value = 'max'
+        print(f'the scope value now set to : {self.excel_ini.scope_value}')
+        # and it will return the setting after program ended
+
         # control variable
         c_sheet = self.c_pulse_i2c
         c_column = self.c_iload
@@ -770,6 +795,26 @@ class ripple_test ():
 
         # pre-power on testing
         self.pre_test_inst()
+
+        # to choose what is the trigger channel
+        # MCU is 3.3V, use 1.8V as trigger level
+        self.scope_ini.ch_view(ch=4, view=1)
+        self.scope_ini.label_chg(
+            ch=4, label_name='EN_pin', label_position=0, label_view='TRUE')
+        self.scope_ini.ch_view(ch=8, view=1)
+        self.scope_ini.label_chg(
+            ch=8, label_name='SW_pin', label_position=0, label_view='TRUE')
+
+        if self.ripple_line_load == 7:
+            # EN=SW together
+            self.scope_ini.trigger_adj(source='C4', level=1.8)
+            # C4 change to EN in sequence mode
+        elif self.ripple_line_load == 8:
+            # EN
+            self.scope_ini.trigger_adj(source='C4', level=1.8)
+        elif self.ripple_line_load == 9:
+            # SW
+            self.scope_ini.trigger_adj(source='C8', level=1.8)
 
         # the loop for pulse and i2c control
         x_sheet = 0
@@ -806,10 +851,24 @@ class ripple_test ():
 
                     # measure and capture waveform
 
-                    self.scope_ini.capture_full(path_t=0, find_level=1)
+                    # self.scope_ini.capture_full(
+                    #     path_t=0, find_level=1, adj_before_save=1)
                     # for simulation path using path_t=0.5
                     # scope_s.printScreenToPC(0)
 
+                    self.scope_ini.capture_1st()
+                    # scope turn into waiting for trigger
+                    if self.ripple_line_load == 7:
+                        # EN=SW together
+                        self.mcu_ini.pmic_mode(4)
+                    elif self.ripple_line_load == 8:
+                        # EN
+                        self.mcu_ini.pmic_mode(3)
+                    elif self.ripple_line_load == 9:
+                        # SW
+                        self.mcu_ini.pmic_mode(2)
+
+                    self.scope_ini.capture_2nd(path_t=0, adj_before_save=0)
                     # select the related range
                     '''
                     here is to choose related cell for wafeform capture, x is x axis and y is y axis,
@@ -837,7 +896,7 @@ class ripple_test ():
                     print('check point')
 
                     curr_peak = self.scope_ini.read_mea(
-                        'P1', self.excel_ini.scope_value)
+                        'P5', self.excel_ini.scope_value)
                     curr_peak = self.excel_ini.float_gene(curr_peak)
                     self.excel_ini.sh_ref_table.range(self.format_start_y + y_index * (2 + self.c_data_mea) + 1,
                                                       self.format_start_x + x_index).value = curr_peak
@@ -863,6 +922,12 @@ class ripple_test ():
 
         # hope to build the summary table after the test is finished
         self.summary_table()
+
+        # for the measurement result, need to set to max for current
+        # return to previous settings
+        self.excel_ini.scope_value = scope_value_temp
+        print(f'the scope value now return to : {self.excel_ini.scope_value}')
+        # and it will return the setting after program ended
 
         pass
 
