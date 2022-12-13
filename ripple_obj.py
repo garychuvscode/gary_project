@@ -625,6 +625,20 @@ class ripple_test ():
         print(f'the scope value now set to : {self.excel_ini.scope_value}')
         # and it will return the setting after program ended
 
+        # scope initialization
+        if self.scope_initial_en > 0:
+            if self.scope_initial_en > 1:
+                # 221205 added
+                # turn the offset setting to normalizaiton setting
+                self.scope_ini.nor_v_off = 1
+                pass
+            # turn off pwr if original is on, prevent error position
+            self.pwr_ini.chg_out(0, self.excel_ini.pre_imax,
+                                 self.excel_ini.relay0_ch, 'off')
+            self.scope_ini.scope_initial(self.scope_setting)
+
+            pass
+
         # control variable
         c_sheet = self.c_pulse_i2c
         c_column = self.c_iload
@@ -635,12 +649,14 @@ class ripple_test ():
 
         # to choose what is the trigger channel
         # MCU is 3.3V, use 1.8V as trigger level
-        self.scope_ini.ch_view(ch=4, view=1)
-        self.scope_ini.label_chg(
-            ch=4, label_name='EN_pin', label_position=0, label_view='TRUE')
-        self.scope_ini.ch_view(ch=8, view=1)
-        self.scope_ini.label_chg(
-            ch=8, label_name='SW_pin', label_position=0, label_view='TRUE')
+
+        # 221213: already finished in the initialization
+        # self.scope_ini.ch_view(ch=4, view=1)
+        # self.scope_ini.label_chg(
+        #     ch=4, label_name='EN_pin', label_position=0, label_view='TRUE')
+        # self.scope_ini.ch_view(ch=8, view=1)
+        # self.scope_ini.label_chg(
+        #     ch=8, label_name='SW_pin', label_position=0, label_view='TRUE')
 
         if self.ripple_line_load == 7:
             # EN=SW together
@@ -652,6 +668,16 @@ class ripple_test ():
         elif self.ripple_line_load == 9:
             # SW
             self.scope_ini.trigger_adj(source='C8', level=1.8)
+
+        # load target Vin
+        v_target = self.excel_ini.sh_format_gen.range(
+            'B23').value
+        scaling = self.excel_ini.sh_format_gen.range(
+            'B24').value
+
+        # table should be assign when generation of format gen
+        self.excel_ini.sh_ref_table.range(
+            'B1').value = f'power sequence testing with Vin= {v_target}V'
 
         # the loop for pulse and i2c control
         x_sheet = 0
@@ -665,7 +691,7 @@ class ripple_test ():
 
                 # 0 => EN SW together; 1 => only EN; 2=> only SW
                 self.mcu_ini.pmic_mode(1)
-                time.sleep(0.5)
+                time.sleep(0.2)
                 self.scope_ini.trigger_adj('Auto')
 
                 # the loop for different i load
@@ -673,9 +699,223 @@ class ripple_test ():
                 while x_column < c_column:
                     # assign related Vin for the sequence measurement
 
+                    # 221213: since power up sequence doesn't need to re-trigger and re-run for each row, just skip setting
+                    # after first time power up
+                    if x_column == 0:
+                        # only setup the pwr and scope for the first time
+
+                        # 221213: change v_target loading before update sheet message
+                        self.pwr_ini.chg_out(v_target, self.excel_ini.pre_imax,
+                                             self.excel_ini.relay0_ch, 'on')
+
+                        # calibration Vin
+
+                        temp_v = self.pwr_ini.vin_clibrate_singal_met(
+                            0, v_target, self.met_v_ini, self.mcu_ini, self.excel_ini)
+
+                        # setup waveform name
+                        self.excel_ini.wave_info_update(
+                            typ='seq', v=v_target, seq=x_row)
+
+                        # measure and capture waveform
+
+                        # self.scope_ini.capture_full(
+                        #     path_t=0, find_level=1, adj_before_save=1)
+                        # for simulation path using path_t=0.5
+                        # scope_s.printScreenToPC(0)
+
+                        self.scope_ini.capture_1st(clear_sweep=1)
+                        # scope turn into waiting for trigger
+                        if self.ripple_line_load == 7:
+                            # EN=SW together
+                            self.mcu_ini.pmic_mode(4)
+                        elif self.ripple_line_load == 8:
+                            # EN
+                            self.mcu_ini.pmic_mode(3)
+                        elif self.ripple_line_load == 9:
+                            # SW
+                            self.mcu_ini.pmic_mode(2)
+
+                        # self.scope_ini.capture_2nd(path_t=0, adj_before_save=1)
+                        # 221212 need to change the message, not to use capture2
+                        # separate the function out
+                        self.scope_ini.waitTriggered()
+
+                    index_msg = self.excel_ini.sh_format_gen.range(
+                        43 + x_column, 1).value
+
+                    self.excel_ini.message_box(
+                        f'setup the cursor properly and save waveform for {index_msg} ', 'g: stop for cursor', auto_exception=1, box_type=0)
+
+                    self.scope_ini.printScreenToPC(path=0)
+
+                    # select the related range
+                    '''
+                    here is to choose related cell for wafeform capture, x is x axis and y is y axis,
+                    need to input (y, x) for the range input, and x y define is not reverse
+
+                    '''
+                    x_index = x_column
+                    y_index = x_row
+
+                    active_range = self.excel_ini.sh_ref_table.range(self.format_start_y + y_index * (2 + self.c_data_mea),
+                                                                     self.format_start_x + x_index)
+                    # (1 + ripple_item) is waveform + ripple item + one current line
+
+                    # add the setting of condition in the blank
+                    active_range.value = f'Vin={v_target}_seq={x_row}'
+
+                    if self.obj_sim_mode == 0:
+                        self.excel_ini.scope_capture(
+                            self.excel_ini.sh_ref_table, active_range, default_trace=0.5)
+                    else:
+                        self.excel_ini.scope_capture(
+                            self.excel_ini.sh_ref_table, active_range, default_trace=0)
+                        pass
+
+                    print('check point')
+
+                    # need to changeto the cursor difference
+                    # curr_peak = self.scope_ini.read_mea('P6', self.excel_ini.scope_value)
+                    curr_peak = self.scope_ini.cursor_delta(
+                        x_y=0, scaling=scaling)
+                    curr_peak = self.excel_ini.float_gene(curr_peak)
+                    self.excel_ini.sh_ref_table.range(self.format_start_y + y_index * (2 + self.c_data_mea) + 1,
+                                                      self.format_start_x + x_index).value = curr_peak
+                    self.excel_ini.sum_table_gen(
+                        self.excel_ini.summary_start_x, self.excel_ini.summary_start_y, 1 + x_index, 1 + y_index + x_sheet * (c_row + self.excel_ini.summary_gap), curr_peak)
+
+                    if x_column == 0:
+
+                        # back to power off sttus
+                        self.mcu_ini.pmic_mode(1)
+                        time.sleep(0.3)
+
+                    x_column = x_column + 1
+                    # end of iload loop
+                    pass
+
+                x_row = x_row + 1
+                # the end of vin loop
+                pass
+
+            x_sheet = x_sheet + 1
+            # the end of i2c or pulse loop
+            pass
+
+        # call the file name update after run verification finished
+        # and the file name will be ripple if only do ripple or the end is ripple
+        # depend on the end of file
+        self.extra_file_name_setup()
+
+        # hope to build the summary table after the test is finished
+        self.summary_table()
+
+        # for the measurement result, need to set to max for current
+        # return to previous settings
+        self.excel_ini.scope_value = scope_value_temp
+        print(f'the scope value now return to : {self.excel_ini.scope_value}')
+        # and it will return the setting after program ended
+
+        self.end_of_exp()
+
+        pass
+
+    def inrush_current(self):
+        '''
+        run the inrush current tsting with related Vin
+        only one line
+        c_sheet and c_row will auto set to 1 unless needed
+        need to change code if not 1
+        '''
+        self.para_loaded()
+        # the general loop will start from pulse
+
+        # for the measurement result, need to set to max for current
+        scope_value_temp = self.excel_ini.scope_value
+        self.excel_ini.scope_value = 'max'
+        print(f'the scope value now set to : {self.excel_ini.scope_value}')
+        # and it will return the setting after program ended
+
+        # put the scope initial before the pre-power on, no need to adjust the position based on
+        # the original rating, just setup the position of 0
+
+        # scope initialization
+        if self.scope_initial_en > 0:
+            if self.scope_initial_en > 1:
+                # 221205 added
+                # turn the offset setting to normalizaiton setting
+                self.scope_ini.nor_v_off = 1
+                pass
+            # turn off pwr if original is on, prevent error position
+            self.pwr_ini.chg_out(0, self.excel_ini.pre_imax,
+                                 self.excel_ini.relay0_ch, 'off')
+            self.scope_ini.scope_initial(self.scope_setting)
+
+            pass
+
+        # control variable
+        c_sheet = self.c_pulse_i2c
+        c_column = self.c_iload
+        c_row = self.c_vin
+
+        # pre-power on testing
+        self.pre_test_inst()
+
+        # to choose what is the trigger channel
+        # MCU is 3.3V, use 1.8V as trigger level
+
+        # update in initial setting, no need re-send the command
+        # self.scope_ini.ch_view(ch=4, view=1)
+        # self.scope_ini.label_chg(
+        #     ch=4, label_name='EN_pin', label_position=0, label_view='TRUE')
+        # self.scope_ini.ch_view(ch=8, view=1)
+        # self.scope_ini.label_chg(
+        #     ch=8, label_name='SW_pin', label_position=0, label_view='TRUE')
+
+        # the loop for pulse and i2c control
+
+        # table should be assign when generation of format gen
+        self.excel_ini.sh_ref_table.range(
+            'B1').value = 'inrush current testing'
+
+        x_sheet = 0
+        while x_sheet < c_sheet:
+
+            # assign pulse or i2c command
+
+            # the loop for vin
+            x_row = 0
+            while x_row < c_row:
+
+                # 0 => EN SW together; 1 => only EN; 2=> only SW
+
+                if x_row == 0:
+                    # EN=SW together
+                    self.scope_ini.trigger_adj(source='C4', level=1.8)
+                    # C4 change to EN in sequence mode
+                elif x_row == 1:
+                    # EN
+                    self.scope_ini.trigger_adj(source='C4', level=1.8)
+                elif x_row == 2:
+                    # SW
+                    self.scope_ini.trigger_adj(source='C8', level=1.8)
+
+                self.mcu_ini.pmic_mode(1)
+                time.sleep(0.2)
+                self.scope_ini.trigger_adj('Auto')
+
+                # the loop for different i load
+                x_column = 0
+                while x_column < c_column:
+                    # assign related Vin for the inrush measurement
+
                     # load target Vin
                     v_target = self.excel_ini.sh_format_gen.range(
-                        'B23').value
+                        (43 + x_column, 7)).value
+
+                    self.pwr_ini.chg_out(v_target, self.excel_ini.pre_imax,
+                                         self.excel_ini.relay0_ch, 'on')
 
                     # calibration Vin
 
@@ -684,7 +924,7 @@ class ripple_test ():
 
                     # setup waveform name
                     self.excel_ini.wave_info_update(
-                        typ='seq', v=v_target, seq=x_row)
+                        typ='inrush', v=v_target, seq=x_row)
 
                     # measure and capture waveform
 
@@ -693,19 +933,24 @@ class ripple_test ():
                     # for simulation path using path_t=0.5
                     # scope_s.printScreenToPC(0)
 
-                    self.scope_ini.capture_1st()
+                    self.scope_ini.capture_1st(clear_sweep=1)
+                    time.sleep(0.2)
                     # scope turn into waiting for trigger
-                    if self.ripple_line_load == 7:
+                    if x_row == 0:
                         # EN=SW together
                         self.mcu_ini.pmic_mode(4)
-                    elif self.ripple_line_load == 8:
+                    elif x_row == 1:
                         # EN
                         self.mcu_ini.pmic_mode(3)
-                    elif self.ripple_line_load == 9:
+                    elif x_row == 2:
                         # SW
                         self.mcu_ini.pmic_mode(2)
 
-                    self.scope_ini.capture_2nd(path_t=0, adj_before_save=1)
+                    self.scope_ini.capture_2nd(path_t=0, adj_before_save=0)
+                    # turn off the IC after waveform trigger
+                    time.sleep(0.05)
+                    self.mcu_ini.pmic_mode(1)
+
                     # select the related range
                     '''
                     here is to choose related cell for wafeform capture, x is x axis and y is y axis,
@@ -740,10 +985,6 @@ class ripple_test ():
                     self.excel_ini.sum_table_gen(
                         self.excel_ini.summary_start_x, self.excel_ini.summary_start_y, 1 + x_index, 1 + y_index + x_sheet * (c_row + self.excel_ini.summary_gap), curr_peak)
 
-                    # back to power off sttus
-                    self.mcu_ini.pmic_mode(1)
-                    time.sleep(0.3)
-
                     x_column = x_column + 1
                     # end of iload loop
                     pass
@@ -754,6 +995,7 @@ class ripple_test ():
 
             x_sheet = x_sheet + 1
             # the end of i2c or pulse loop
+
             pass
 
         # call the file name update after run verification finished
@@ -770,164 +1012,7 @@ class ripple_test ():
         print(f'the scope value now return to : {self.excel_ini.scope_value}')
         # and it will return the setting after program ended
 
-        pass
-
-    def inrush_current(self):
-        '''
-        run the inrush current tsting with related Vin
-        only one line
-        c_sheet and c_row will auto set to 1 unless needed
-        need to change code if not 1
-        '''
-        self.para_loaded()
-        # the general loop will start from pulse
-
-        # for the measurement result, need to set to max for current
-        scope_value_temp = self.excel_ini.scope_value
-        self.excel_ini.scope_value = 'max'
-        print(f'the scope value now set to : {self.excel_ini.scope_value}')
-        # and it will return the setting after program ended
-
-        # control variable
-        c_sheet = self.c_pulse_i2c
-        c_column = self.c_iload
-        c_row = self.c_vin
-
-        # pre-power on testing
-        self.pre_test_inst()
-
-        # to choose what is the trigger channel
-        # MCU is 3.3V, use 1.8V as trigger level
-        self.scope_ini.ch_view(ch=4, view=1)
-        self.scope_ini.label_chg(
-            ch=4, label_name='EN_pin', label_position=0, label_view='TRUE')
-        self.scope_ini.ch_view(ch=8, view=1)
-        self.scope_ini.label_chg(
-            ch=8, label_name='SW_pin', label_position=0, label_view='TRUE')
-
-        if self.ripple_line_load == 7:
-            # EN=SW together
-            self.scope_ini.trigger_adj(source='C4', level=1.8)
-            # C4 change to EN in sequence mode
-        elif self.ripple_line_load == 8:
-            # EN
-            self.scope_ini.trigger_adj(source='C4', level=1.8)
-        elif self.ripple_line_load == 9:
-            # SW
-            self.scope_ini.trigger_adj(source='C8', level=1.8)
-
-        # the loop for pulse and i2c control
-        x_sheet = 0
-        while x_sheet < c_sheet:
-
-            # assign pulse or i2c command
-
-            # the loop for vin
-            x_row = 0
-            while x_row < c_row:
-
-                # 0 => EN SW together; 1 => only EN; 2=> only SW
-                self.mcu_ini.pmic_mode(1)
-                time.sleep(0.5)
-                self.scope_ini.trigger_adj('Auto')
-
-                # the loop for different i load
-                x_column = 0
-                while x_column < c_column:
-                    # assign related Vin for the inrush measurement
-
-                    # load target Vin
-                    v_target = self.excel_ini.sh_format_gen.range(
-                        (43 + x_column, 7)).value
-
-                    # calibration Vin
-
-                    temp_v = self.pwr_ini.vin_clibrate_singal_met(
-                        0, v_target, self.met_v_ini, self.mcu_ini, self.excel_ini)
-
-                    # setup waveform name
-                    self.excel_ini.wave_info_update(
-                        typ='inrush', v=v_target, seq=x_row)
-
-                    # measure and capture waveform
-
-                    # self.scope_ini.capture_full(
-                    #     path_t=0, find_level=1, adj_before_save=1)
-                    # for simulation path using path_t=0.5
-                    # scope_s.printScreenToPC(0)
-
-                    self.scope_ini.capture_1st()
-                    # scope turn into waiting for trigger
-                    if self.ripple_line_load == 7:
-                        # EN=SW together
-                        self.mcu_ini.pmic_mode(4)
-                    elif self.ripple_line_load == 8:
-                        # EN
-                        self.mcu_ini.pmic_mode(3)
-                    elif self.ripple_line_load == 9:
-                        # SW
-                        self.mcu_ini.pmic_mode(2)
-
-                    self.scope_ini.capture_2nd(path_t=0, adj_before_save=0)
-                    # select the related range
-                    '''
-                    here is to choose related cell for wafeform capture, x is x axis and y is y axis,
-                    need to input (y, x) for the range input, and x y define is not reverse
-
-                    '''
-                    x_index = x_column
-                    y_index = x_row
-
-                    active_range = self.excel_ini.sh_ref_table.range(self.format_start_y + y_index * (2 + self.c_data_mea),
-                                                                     self.format_start_x + x_index)
-                    # (1 + ripple_item) is waveform + ripple item + one current line
-
-                    # add the setting of condition in the blank
-                    active_range.value = f'Vin={v_target}_seq={x_row}'
-
-                    if self.obj_sim_mode == 0:
-                        self.excel_ini.scope_capture(
-                            self.excel_ini.sh_ref_table, active_range, default_trace=0.5)
-                    else:
-                        self.excel_ini.scope_capture(
-                            self.excel_ini.sh_ref_table, active_range, default_trace=0)
-                        pass
-
-                    print('check point')
-
-                    curr_peak = self.scope_ini.read_mea(
-                        'P5', self.excel_ini.scope_value)
-                    curr_peak = self.excel_ini.float_gene(curr_peak)
-                    self.excel_ini.sh_ref_table.range(self.format_start_y + y_index * (2 + self.c_data_mea) + 1,
-                                                      self.format_start_x + x_index).value = curr_peak
-                    self.excel_ini.sum_table_gen(
-                        self.excel_ini.summary_start_x, self.excel_ini.summary_start_y, 1 + x_index, 1 + y_index + x_sheet * (c_row + self.excel_ini.summary_gap), curr_peak)
-
-                    x_column = x_column + 1
-                    # end of iload loop
-                    pass
-
-                x_row = x_row + 1
-                # the end of vin loop
-                pass
-
-            x_sheet = x_sheet + 1
-            # the end of i2c or pulse loop
-            pass
-
-        # call the file name update after run verification finished
-        # and the file name will be ripple if only do ripple or the end is ripple
-        # depend on the end of file
-        self.extra_file_name_setup()
-
-        # hope to build the summary table after the test is finished
-        self.summary_table()
-
-        # for the measurement result, need to set to max for current
-        # return to previous settings
-        self.excel_ini.scope_value = scope_value_temp
-        print(f'the scope value now return to : {self.excel_ini.scope_value}')
-        # and it will return the setting after program ended
+        self.end_of_exp()
 
         pass
 
@@ -1004,6 +1089,7 @@ class ripple_test ():
 
         # hope to build the summary table after the test is finished
         self.summary_table()
+        self.end_of_exp()
 
         pass
 

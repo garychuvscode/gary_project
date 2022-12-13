@@ -206,7 +206,8 @@ class Scope_LE6100A(GInst):
         ================================================================
         [read string after write Lecroy VBS-Command to Scope]
         :param cmd: lecory VBS command
-        :return: scope return string.
+        :return: scope return string. \n
+        example: mode_temp = self.readVBS(f'return = app.Acquisition.TriggerMode')
         """
 
         if self.sim_inst == 1:
@@ -484,15 +485,15 @@ class Scope_LE6100A(GInst):
         if int(ch) != 0:
             ch = str(int(ch))
 
-            if label_name == None:
+            if label_name != None:
                 self.writeVBS(
                     f'app.Acquisition.C{ch}.LabelsText = "{str(label_name)}"')
 
-            if label_name == None:
+            if label_name != None:
                 self.writeVBS(
                     f'app.Acquisition.C{ch}.LabelsPosition = "{str(label_position)}"')
 
-            if label_name == None:
+            if label_name != None:
                 self.writeVBS(
                     f'app.Acquisition.C{ch}.ViewLabels = {str(label_view)}')
 
@@ -612,6 +613,9 @@ class Scope_LE6100A(GInst):
 
         # call the 'ch_default_setting' for each channel setting and 'scope_initial'
 
+        # 221213: change the mode to 'Auto' before start giving command, prevent error
+        self.trigger_adj(mode='Auto')
+
         # to speed up the adjustment of scope, need to change sample rate
         self.writeVBS(
             f'app.Acquisition.Horizontal.Maximize = "FixedSampleRate"')
@@ -657,7 +661,7 @@ class Scope_LE6100A(GInst):
 
         pass
 
-    def trigger_adj(self, mode=None, source=None, level=None, slope=None):
+    def trigger_adj(self, mode=None, source=None, level=None, slope=None, clear_sweep=0):
         # this function is used to adjust the trigger function
         '''
         choose which trigger to adjust: \n
@@ -669,8 +673,12 @@ class Scope_LE6100A(GInst):
 
         if mode != None:
             # add selection prevent re-send the same command causing error
-            mode_temp = self.readVBS(f'app.Acquisition.TriggerMode')
+            mode_temp = self.readVBS(f'return = app.Acquisition.TriggerMode')
             if mode_temp != mode:
+                if mode == 'Single' and clear_sweep == 1:
+                    # clear sweep before single
+                    self.writeVBS('app.ClearSweeps')
+                    time.sleep(0.1)
                 self.writeVBS(
                     f'app.Acquisition.TriggerMode = "{mode}"')
                 # also change the setting after setting updated
@@ -883,7 +891,7 @@ class Scope_LE6100A(GInst):
 
         pass
 
-    def capture_1st(self, wait_time_s=5, find_level=0):
+    def capture_1st(self, wait_time_s=5, find_level=0, clear_sweep=0):
         '''
         stuff need to do before single, contain clear and set to trigger\n
         need to have printScreenToPC after trigger condition is sent\n
@@ -893,19 +901,25 @@ class Scope_LE6100A(GInst):
         if self.sim_inst == 0:
             pass
         else:
-            time.sleep(wait_time_s)
+            # clear sweep and prepare for single
+            if clear_sweep == 1:
+                self.writeVBS('app.ClearSweeps')
+                time.sleep(0.2)
+            # time.sleep(wait_time_s)
         if find_level == 0:
             # no need to find level, single directly
             self.trigger_adj(mode='Single')
-            self.waitTriggered()
+            # self.waitTriggered()
         else:
             self.find_trig_level()
             self.trigger_adj(mode='Single')
-            self.waitTriggered()
+            # self.waitTriggered()
 
         pass
 
     def capture_2nd(self, path_t=0, adj_before_save=0):
+
+        self.waitTriggered()
 
         if adj_before_save == 1:
             # stop to adjust the cursor before capture
@@ -915,6 +929,29 @@ class Scope_LE6100A(GInst):
         self.printScreenToPC(path=path_t)
 
         pass
+
+    def cursor_delta(self, abs_val=1, x_y=0, scaling=1):
+        '''
+        get the cursor measurement, cursor need to on first\n
+        abs default 1 => if not getting abs, set to 0\n
+        x_y: 0 -> x and 1 -> y
+        '''
+
+        if x_y == 0:
+            # look for x delta
+            temp_res = self.readVBS(
+                f'return = app.Cursors.StdCursOfC1.DeltaX.Result.Value')
+        elif x_y == 1:
+            # look for y delta
+            temp_res = self.readVBS(
+                f'return = app.Cursors.StdCursOfC1.DeltaY.Result.Value')
+
+        if abs_val == 1:
+            # return the abs
+            temp_res = float(temp_res)
+            temp_res = abs(temp_res) * float(scaling)
+
+        return temp_res
 
     def find_trig_level(self, ch=0):
         '''

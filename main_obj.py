@@ -952,8 +952,7 @@ if __name__ == '__main__':
         format_g.set_sheet_name('CTRL_sh_seq_SW')
         ripple_t.pwr_seq()
         # format_g.table_return()
-        excel_m.extra_file_name = 'pwr_seq_total'
-
+        excel_m.extra_file_name = '_inrush_pwr_seq'
 
         # ===========
         # changeable area
