@@ -535,7 +535,7 @@ class general_test ():
         to initial special function for different items
         this example function only for counter and loop
         '''
-        dly_tune_ms = 0
+        dly_tune_ms = 200
         # delay in ms
         dly_set = dly_tune_ms/1000
 
@@ -818,11 +818,11 @@ if __name__ == '__main__':
     import inst_pkg_d as inst
     # initial the object and set to simulation mode
     pwr_t = inst.LPS_505N(3.7, 0.5, 3, 1, 'off')
-    pwr_t.sim_inst = 0
+    pwr_t.sim_inst = 1
     pwr_t.open_inst()
     # initial the object and set to simulation mode
     met_v_t = inst.Met_34460(0.0001, 7, 0.000001, 2.5, 20)
-    met_v_t.sim_inst = 0
+    met_v_t.sim_inst = 1
     met_v_t.open_inst()
     load_t = inst.chroma_63600(1, 7, 'CCL')
     load_t.sim_inst = 0
@@ -838,7 +838,7 @@ if __name__ == '__main__':
     chamber_t.open_inst()
     # mcu is also config as simulation mode
     # COM address of Gary_SONY is 3
-    mcu_t = mcu.MCU_control(0, 5)
+    mcu_t = mcu.MCU_control(1, 13)
     mcu_t.com_open()
 
     # for the single test, need to open obj_main first,
