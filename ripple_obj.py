@@ -622,7 +622,7 @@ class ripple_test ():
         # for the measurement result, need to set to max for current
         scope_value_temp = self.excel_ini.scope_value
         self.excel_ini.scope_value = 'max'
-        print(f'the scope value now set to : {self.excel_ini.scope_value}')
+        print(f'the scope value now set to : "{self.excel_ini.scope_value}" ')
         # and it will return the setting after program ended
 
         # scope initialization
