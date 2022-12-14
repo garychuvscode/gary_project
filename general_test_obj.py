@@ -323,7 +323,13 @@ class general_test ():
         self.extra_file_name_setup()
         pass
 
-    def set_sheet_name(self, ctrl_sheet_name0):
+    def set_sheet_name(self, ctrl_sheet_name0, extra_sheet=0, extra_name='_'):
+        '''
+        choose the sheet name for general testing\n
+        extra_sheet = 1, it will create the new sheet but only return the
+        created sheet, not going to assing to excel object
+        extra_name is to add new comment at the end of new sheet name
+        '''
 
         # assign the related sheet of each format gen
         self.ctrl_sheet_name = ctrl_sheet_name0
@@ -372,11 +378,11 @@ class general_test ():
         self.res_temp_read = 0
 
         # give the sheet generation
-        self.sheet_gen()
+        self.sheet_gen(extra_sheet=extra_sheet)
 
         pass
 
-    def sheet_gen(self):
+    def sheet_gen(self, extra_sheet=0):
 
         if self.sheet_name_ready == 0:
             print('no proper sheet name set yet, need to set_sheet_name first')
@@ -394,7 +400,8 @@ class general_test ():
             # self.excel_ini.sh_general_test = self.excel_ini.wb_res.sheets(
             #     str(self.ctrl_sheet_name))
             # 221209: since .copy will return the cpoied sheet, just assign, no need for name
-            self.excel_ini.sh_general_test = self.excel_ini.sh_general_test.copy(self.excel_ini.sh_ref)
+            self.excel_ini.sh_general_test = self.excel_ini.sh_general_test.copy(
+                self.excel_ini.sh_ref)
 
             # change the sheet name after finished and save into the excel object
             self.excel_ini.sh_general_test.name = str(self.new_sheet_name)
@@ -688,10 +695,16 @@ class general_test ():
 
         pass
 
-    def data_latch(self, index, test_mode_b=1):
+    def data_latch(self, index, test_mode_b=1, other_sheet=0):
         '''
-        test_mode_b is the main_off_line used for debug
+        test_mode_b is the main_off_line used for debug\n
+        other_sheet will change the latch to other sheet
         '''
+        if other_sheet != 0:
+            # change the latch result to other sheet
+            sh_temp = self.sh_general_test
+            self.sh_general_test = other_sheet
+            # return the self.sh setting when out of the function
 
         # update all the result based on index
 
@@ -756,6 +769,10 @@ class general_test ():
                 8 + index, 1 + self.excel_ini.gen_col_amount + 15).value = 0
 
         print('data latch for g finished')
+
+        if other_sheet != 0:
+            self.sh_general_test = sh_temp
+            # return the self.sh setting when out of the function
 
         pass
 
