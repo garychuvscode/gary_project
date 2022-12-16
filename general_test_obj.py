@@ -77,10 +77,20 @@ class general_test ():
         # set to 0 for simulation mode
         self.obj_sim_mode = 1
 
+        # 221215: add the self sheet assignment for more extra sheet and record
+        # in reservation, use the reference sheet first
+
+        self.ex_sh_array = [0, 0, 0, 0, 0]
+        self.extra_count = 0
+        # extra count is used to check for the available sequence of extra sheet
+
     pass
 
-    def extra_file_name_setup(self):
-        self.excel_ini.extra_file_name = '_general'
+    def extra_file_name_setup(self, extra_name=0):
+        if extra_name == 0:
+            self.excel_ini.extra_file_name = '_general'
+        else:
+            self.excel_ini.extra_file_name = '_general' + str(extra_name)
         pass
 
     def run_verification(self, vin_cal=1):
@@ -321,6 +331,7 @@ class general_test ():
         self.inst_off()
         self.table_return()
         self.extra_file_name_setup()
+        self.end_of_exp()
         pass
 
     def set_sheet_name(self, ctrl_sheet_name0, extra_sheet=0, extra_name='_'):
@@ -332,60 +343,81 @@ class general_test ():
         '''
 
         # assign the related sheet of each format gen
-        self.ctrl_sheet_name = ctrl_sheet_name0
+        if extra_sheet == 0:
+            # this means the sheet is control sheet
+            self.ctrl_sheet_name = ctrl_sheet_name0
 
-        # sh_general_test is the sheet can be access from other object
-        # load the setting value for instrument
-        self.excel_ini.sh_general_test = self.excel_ini.wb.sheets(
-            str(self.ctrl_sheet_name))
-        self.sh_general_test = self.excel_ini.wb.sheets(
-            str(self.ctrl_sheet_name))
+            # sh_general_test is the sheet can be access from other object
+            # load the setting value for instrument
+            self.excel_ini.sh_general_test = self.excel_ini.wb.sheets(
+                str(self.ctrl_sheet_name))
+            self.sh_general_test = self.excel_ini.wb.sheets(
+                str(self.ctrl_sheet_name))
 
-        # also include the new sheet setting from each different sheet
+            # also include the new sheet setting from each different sheet
 
-        # loading the control values
-        # 220926: index of counter need to passed to the excel, so other object or instrument
-        # is able to reference
+            # loading the control values
+            # 220926: index of counter need to passed to the excel, so other object or instrument
+            # is able to reference
 
-        self.c_test_amount = self.sh_general_test.range('B6').value
-        # only record one loop control variable to prevent error, if none element is
-        # in the blank, try to filled 0 in the blank
+            self.c_test_amount = self.sh_general_test.range('B6').value
+            # only record one loop control variable to prevent error, if none element is
+            # in the blank, try to filled 0 in the blank
 
-        # start to adjust the the format based on the input settings
+            # start to adjust the the format based on the input settings
 
-        self.new_sheet_name = str(self.sh_general_test.range('B2').value)
+            self.new_sheet_name = str(self.sh_general_test.range('B2').value)
 
-        print('sheet name ready')
-        # auto update instrument setting after the sheet is assigned
-        self.update_inst_settings()
-        self.sheet_name_ready = 1
+            print('sheet name ready')
+            # auto update instrument setting after the sheet is assigned
+            self.update_inst_settings()
+            self.sheet_name_ready = 1
 
-        # clear all the result saving parameter
-        self.res_met_curr = 0
-        self.res_met_v1 = 0
-        self.res_met_v2 = 0
-        self.res_met_v3 = 0
-        self.res_met_v4 = 0
-        self.res_met_v5 = 0
-        self.res_met_v6 = 0
-        self.res_met_v7 = 0
-        self.res_met_v8 = 0
-        self.res_load_curr1 = 0
-        self.res_load_curr2 = 0
-        self.res_load_curr3 = 0
-        self.res_load_curr4 = 0
-        self.res_src_curr = 0
-        self.res_temp_read = 0
+            # clear all the result saving parameter
+            self.res_met_curr = 0
+            self.res_met_v1 = 0
+            self.res_met_v2 = 0
+            self.res_met_v3 = 0
+            self.res_met_v4 = 0
+            self.res_met_v5 = 0
+            self.res_met_v6 = 0
+            self.res_met_v7 = 0
+            self.res_met_v8 = 0
+            self.res_load_curr1 = 0
+            self.res_load_curr2 = 0
+            self.res_load_curr3 = 0
+            self.res_load_curr4 = 0
+            self.res_src_curr = 0
+            self.res_temp_read = 0
+            print('contrl sheet assigned')
+            self.sheet_gen(extra_sh=0)
+            # no need to assign control sheet and return
+            # since control sheet is already record to the excel
+            extra_sheet = 'this is control sheet'
+            pass
+
+        else:
+            # this is not control sheet, just copy and return the
+            extra_sheet = self.excel_ini.wb.sheets(str(ctrl_sheet_name0))
+            extra_sheet = self.sheet_gen(
+                extra_sh=extra_sheet, extra_name0=extra_name)
+
+            # transfer extra sheet control variable to the mapped sheet
+            # need to copy to result book
+            pass
 
         # give the sheet generation
-        self.sheet_gen(extra_sheet=extra_sheet)
+        # extra_sheet = self.sheet_gen(extra_sh=extra_sheet)
+        return extra_sheet
+        # here will return the string if not control extra sheet
 
         pass
 
-    def sheet_gen(self, extra_sheet=0):
+    def sheet_gen(self, extra_sh=0, extra_name0=''):
 
         if self.sheet_name_ready == 0:
             print('no proper sheet name set yet, need to set_sheet_name first')
+            print('or maybe need to assign control sheet')
             pass
         else:
             # this function is a must have function to generate the related excel for this verification item
@@ -400,14 +432,34 @@ class general_test ():
             # self.excel_ini.sh_general_test = self.excel_ini.wb_res.sheets(
             #     str(self.ctrl_sheet_name))
             # 221209: since .copy will return the cpoied sheet, just assign, no need for name
-            self.excel_ini.sh_general_test = self.excel_ini.sh_general_test.copy(
-                self.excel_ini.sh_ref)
+            if extra_sh == 0:
+                # this is control sheet, not extra sheet
+                self.excel_ini.sh_general_test = self.excel_ini.sh_general_test.copy(
+                    self.excel_ini.sh_ref)
+                extra_sh = 'this is control sheet'
 
-            # change the sheet name after finished and save into the excel object
-            self.excel_ini.sh_general_test.name = str(self.new_sheet_name)
-            self.sh_general_test = self.excel_ini.sh_general_test
+                # change the sheet name after finished and save into the excel object
+                self.excel_ini.sh_general_test.name = str(self.new_sheet_name)
+                self.sh_general_test = self.excel_ini.sh_general_test
+            else:
+                # for the extra sheet, just copy and return the extra sheet
+                extra_sh = extra_sh.copy(self.excel_ini.sh_ref)
+                extra_sh.name = extra_sh.name + extra_name0
 
-            pass
+                # after create the extra sheet, assign to extra sheet list and add the counter
+                self.ex_sh_array[self.extra_count] = extra_sh
+                self.extra_count = self.extra_count + 1
+
+                pass
+        return extra_sh
+        pass
+
+    def extra_sh_clear(self):
+        '''
+        this function used to clear extra_count, when end of this item or when it's been called
+        '''
+
+        self.extra_count = 0
 
         pass
 
@@ -460,7 +512,9 @@ class general_test ():
 
         self.inst_off()
         self.table_return()
-        self.extra_file_name_setup()
+        # self.extra_file_name_setup()
+        # enable the change of name from the different function
+        self.extra_sh_clear()
 
         self.excel_ini.ready_to_off = 1
 
@@ -645,6 +699,12 @@ class general_test ():
 
             self.data_latch(x_count, self.obj_sim_mode)
 
+            # 221215 latch for power off
+            time.sleep(0.3)
+            self.data_measured()
+            # here the first is to record power off status
+            self.data_latch(x_count, other_sheet=self.ex_sh_array[0])
+
             # save the result and also check program exit
             self.excel_ini.excel_save()
             if self.excel_ini.turn_inst_off == 1:
@@ -656,10 +716,10 @@ class general_test ():
             pass
 
         print('program finished')
-        self.extra_file_name_setup()
         self.inst_off()
         self.table_return()
-        self.extra_file_name_setup()
+        self.extra_file_name_setup(extra_name='_pwr_on_off')
+        self.end_of_exp()
 
         pass
 
@@ -692,6 +752,7 @@ class general_test ():
         self.inst_off()
         self.table_return()
         self.extra_file_name_setup()
+        self.end_of_exp()
 
         pass
 
@@ -818,11 +879,11 @@ if __name__ == '__main__':
     import inst_pkg_d as inst
     # initial the object and set to simulation mode
     pwr_t = inst.LPS_505N(3.7, 0.5, 3, 1, 'off')
-    pwr_t.sim_inst = 1
+    pwr_t.sim_inst = 0
     pwr_t.open_inst()
     # initial the object and set to simulation mode
     met_v_t = inst.Met_34460(0.0001, 7, 0.000001, 2.5, 20)
-    met_v_t.sim_inst = 1
+    met_v_t.sim_inst = 0
     met_v_t.open_inst()
     load_t = inst.chroma_63600(1, 7, 'CCL')
     load_t.sim_inst = 0
@@ -838,7 +899,7 @@ if __name__ == '__main__':
     chamber_t.open_inst()
     # mcu is also config as simulation mode
     # COM address of Gary_SONY is 3
-    mcu_t = mcu.MCU_control(1, 13)
+    mcu_t = mcu.MCU_control(0, 13)
     mcu_t.com_open()
 
     # for the single test, need to open obj_main first,
@@ -859,7 +920,7 @@ if __name__ == '__main__':
 
     # and the different verification method can be call below
 
-    version_select = 2
+    version_select = 3
 
     if version_select == 0:
         # create one object
@@ -903,6 +964,20 @@ if __name__ == '__main__':
 
         general_t.set_sheet_name('general_2')
 
+        general_t.gen_pwr_on_off()
+
+        excel_t.end_of_file(0)
+        pass
+
+    elif version_select == 3:
+        # for power on and off testing, need to assign second sheet for
+        # record the power off result
+
+        general_t = general_test(
+            excel_t, pwr_t, met_v_t, load_t, mcu_t, src_t, met_i_t, chamber_t)
+
+        general_t.set_sheet_name('general_1', 0)
+        general_t.set_sheet_name('general_1', 1, '_pwr_off')
         general_t.gen_pwr_on_off()
 
         excel_t.end_of_file(0)

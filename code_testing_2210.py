@@ -47,9 +47,17 @@ class test_calass():
         # multi layer of the list (dictionary)
 
         temp = list(self.mea_ch)[0]
+        # 'P1'
         temp3 = list(self.mea_ch.values())[0]
+        # self.p1
         trmp2 = list(list(self.mea_ch.values())[0])[0]
+        # 'param'
         temp4 = (list(self.mea_ch.values())[0])["param"]
+        # 'max'
+        list(self.mea_ch.values())[0] = self.p2
+        # this line can't be done
+        self.mea_ch['P1'] = self.p2
+        # this is the method to assign
 
         print(
             f"app.Measure.{list(self.mea_ch)[0]}.ParamEngine = '{(list(self.mea_ch.values())[0])['param']}'")
@@ -178,7 +186,7 @@ class test_calass():
 
 
 t_s = test_calass()
-testing_index = 6
+testing_index = 1
 
 if testing_index == 0:
     print('a')
