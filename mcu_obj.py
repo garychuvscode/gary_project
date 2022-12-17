@@ -199,6 +199,8 @@ class MCU_control ():
             pass
         elif (self.pulse1 != 0) and (self.pulse2 != 0):
             self.mcu_write('swire')
+            # asus_branch twice swire pulse for mcu out
+            self.mcu_write('swire')
             pass
 
         pass
