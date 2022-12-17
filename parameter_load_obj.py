@@ -1264,7 +1264,12 @@ class excel_parameter ():
             # sh_ref is the index for result sheet
             # sh_ref_condition is for testing condition and setting
             # all the reference sheet will delete after the program finished
-            self.sh_ref = self.wb_res.sheets.add('ref_sh')
+
+            # 221218 modify, add the reference sheet to the last sheet
+            sh_count = self.wb_res.sheets.count
+            sh_temp = self.wb_res.sheets(sh_count)
+            self.sh_ref = self.wb_res.sheets.add('ref_sh', after=sh_temp.name)
+
             # self.sh_ref_condition = self.wb_res.sheets.add('ref_sh2')
             # delete the extra sheet from new workbook, difference from version
             if keep_last == 0:
@@ -2113,12 +2118,35 @@ class excel_parameter ():
         # re-name the sheet with new name
 
         x_sub_sh_count = 0
+        c_try = 50
         while x_sub_sh_count < self.sub_sh_count:
             index = self.sub_sh_count * x_avdd + x_sub_sh_count
             target_sheet = self.wb_res.sheets(self.sheet_arry[index])
             new_sheet_name = str(self.one_file_sheet_adj) + \
                 '_' + self.sheet_arry[index]
-            target_sheet.name = new_sheet_name
+
+            try:
+                # if there are already sheet with same name
+                # try until fail
+                x_try = 0
+                while x_try < c_try:
+                    check_sh_temp_name = str(
+                        x_try) + '_' + self.sheet_arry[index]
+                    temp_sh = self.wb_res.sheets(check_sh_temp_name)
+                    x_try = x_try + 1
+
+                pass
+
+            except:
+                # if there are no sheet with same name, change the new sheet name to the
+                # setting name
+                if x_try == 0:
+                    target_sheet.name = new_sheet_name
+                else:
+                    target_sheet.name = str(
+                        x_try) + '_' + self.sheet_arry[index]
+                pass
+
             self.sheet_arry[index] = new_sheet_name
 
             # also need to update operating condition to each sheet

@@ -548,10 +548,20 @@ if __name__ == '__main__':
         pass
 
     # single test for general test
-    elif program_group == 6 or program_group == 6.1:
+    elif program_group >= 6 and program_group < 7:
         # fixed part, open one result book and save the book
+        '''
+        6 => new file, cal_vin
+        6.1 => old file, cal_vin
+        6.2 => new file
+        6.3 => old file
+        '''
         # in temp name
-        excel_m.open_result_book()
+        if program_group == 6.1 or program_group == 6.3:
+            # track previous report and save at the end
+            excel_m.open_result_book(keep_last=1)
+        else:
+            excel_m.open_result_book(keep_last=0)
         # auto save after the book is generate
         excel_m.excel_save()
 
@@ -575,7 +585,7 @@ if __name__ == '__main__':
         general_t.set_sheet_name(temp_str)
         if program_group == 6:
             general_t.run_verification()
-        elif program_group == 6.1:
+        elif program_group == 6.2 or program_group == 6.3:
             # 6.1 is the version without Vin calibration
             general_t.run_verification(vin_cal=0)
 
@@ -978,8 +988,19 @@ if __name__ == '__main__':
     # reference code
     elif program_group == 1000:
         # fixed part, open one result book and save the book
+        '''
+        explanation of different number settings
+        6 => new file, cal_vin
+        6.1 => old file, cal_vin
+        6.2 => new file
+        6.3 => old file
+        '''
         # in temp name
-        excel_m.open_result_book()
+        if program_group == 6.1 or program_group == 6.3:
+            # track previous report and save at the end
+            excel_m.open_result_book(keep_last=1)
+        else:
+            excel_m.open_result_book(keep_last=0)
         # auto save after the book is generate
         excel_m.excel_save()
         # single setting of the object need to be 1 => no needed single

@@ -342,6 +342,7 @@ class format_gen ():
                     self.excel_ini.sh_format_gen.range('B12').value)
 
             x_sheets = 0
+            c_try = 50
             while x_sheets < self.c_sheets:
                 # # copy the result sheet to result book (reference table)
                 # self.excel_ini.sh_ref_table.copy(self.excel_ini.sh_ref)
@@ -352,9 +353,34 @@ class format_gen ():
                 temp_sheet = self.excel_ini.sh_ref_table.copy(
                     self.excel_ini.sh_ref)
 
+                # 221218 replace with the try function
+                # temp_sheet.name = str(
+                #     self.new_sheet_name + '_' + str(x_sheets))
+
                 # change the sheet name after finished and save into the excel object
-                temp_sheet.name = str(
-                    self.new_sheet_name + '_' + str(x_sheets))
+                try:
+                    # if the setting name already exist
+                    x_try = 0
+                    while x_try < c_try:
+                        check_sh_temp_name = str(
+                            self.new_sheet_name + '_' + str(x_try))
+                        temp_sh = self.excel_ini.wb_res.sheets(
+                            check_sh_temp_name)
+                        x_try = x_try + 1
+                        pass
+
+                    #  this try function must fail and enter except
+                    pass
+
+                except:
+                    # if there are no sheet with same name, change the sheet name to related name
+
+                    if x_try == 0:
+                        temp_sheet.name = self.new_sheet_name
+                    else:
+                        temp_sheet.name = str(
+                            self.new_sheet_name + '_' + str(x_try))
+
                 self.excel_ini.ref_table_list[x_sheets] = temp_sheet
                 # self.sh_ref_table = self.excel_ini.sh_ref_table
 
