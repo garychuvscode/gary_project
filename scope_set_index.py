@@ -462,7 +462,7 @@ class scope_config():
 
             # setting of general
             self.set_general = {'trigger_mode': 'Auto', 'trigger_source': 'C4', 'trigger_level': '1.8',
-                                'trigger_slope': 'Positive', 'time_scale': '0.0005',
+                                'trigger_slope': 'Positive', 'time_scale': '0.0002',
                                 'time_offset': '-0.002', 'sample_mode': 'RealTime', 'fixed_sample_rate': '1.25GS/s'}
 
             # setting of measurement
