@@ -525,7 +525,6 @@ if __name__ == '__main__':
     #  the testing code for this file object
     import parameter_load_obj as par
     excel_t = par.excel_parameter('obj_main')
-    sim_scope = 1
     default_path = 'C:\\py_gary\\test_excel\\wave_form_raw\\'
 
     import Scope_LE6100A as sco
@@ -536,8 +535,7 @@ if __name__ == '__main__':
     test_index = 0
 
     if test_index == 0:
-
+        # used for checking the scope initialization setting
         scope.open_inst()
         scope.scope_initial('NT50970_pwr_seq_inrush')
-
         pass
