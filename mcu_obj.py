@@ -205,7 +205,7 @@ class MCU_control ():
 
     def pmic_mode(self, mode_index):
         '''
-        (EN,SW) or (EN1, EN2) \n
+        (EN,SW) or (EN2, EN1) \n
         1:(0,0); 2:(0,1); 3:(1,0); 4:(1,1)
         '''
         # mode index should be in 1-4

@@ -93,7 +93,7 @@ class general_test ():
             self.excel_ini.extra_file_name = '_general' + str(extra_name)
         pass
 
-    def run_verification(self, vin_cal=1):
+    def run_verification(self, vin_cal=1, ctrl_ind_1=0):
         '''
         run the general testing: default calibrate Vin on
         to disable, change vin_cal to 0
@@ -260,11 +260,10 @@ class general_test ():
                         temp_res = pwr_s.vin_clibrate_singal_met(
                             7, self.pwr_ch3, met_v_s, mcu_s, excel_s)
 
-            self.res_met_curr = met_i_s.mea_i()
-
             # # since vin calibration also return the sting of calibration result,
             # # it doesn't a must to measure Vin of each channel again
 
+            # self.res_met_curr = met_i_s.mea_i()
             # mcu_s.relay_ctrl(0)
             # # time.sleep(excel_s.wait_small)
             # self.res_met_v1 = met_v_s.mea_v()
@@ -312,6 +311,10 @@ class general_test ():
             # self.res_src_curr = load_src_s.read('CURR')
             # # self.res_temp_read = chamber_s.read('temp_mea')
 
+            self.run_veri_add_in_1(ctrl_index=ctrl_ind_1)
+            # control index send from the the call of verification and know if to toggle enable or not
+            # need to ajust the call of run_verificatio in the main program
+
             self.data_measured()
 
             self.data_latch(x_count, self.obj_sim_mode)
@@ -332,6 +335,32 @@ class general_test ():
         self.table_return()
         self.extra_file_name_setup()
         self.end_of_exp()
+        pass
+
+    def run_veri_add_in_1(self, ctrl_index=0):
+        '''
+        add in function for run verification, check related position and able to input control selection
+        for different requirement in different application \n
+        this add in is before data measure after every condition is ready\n
+        send different ctrl_index for different result
+        '''
+        if ctrl_index == 0:
+            # do nothing and it's the general run_verification function
+            pass
+        elif ctrl_index == 1:
+            # high V buck NT50970 series OTP testing
+
+            # action: toggle EN1 to see if temperature is low enough for buck to recover
+            # if not in buck OTP, should be able to turn on
+            # not to toggle LDO since LDO should be auto recover
+
+            self.mcu_ini.pmic_mode(3)
+            time.sleep(0.2)
+            self.mcu_ini.pmic_mode(4)
+            time.sleep(0.05)
+
+            pass
+
         pass
 
     def set_sheet_name(self, ctrl_sheet_name0, extra_sheet=0, extra_name='_'):
@@ -535,6 +564,9 @@ class general_test ():
         # since vin calibration also return the sting of calibration result,
         # it doesn't a must to measure Vin of each channel again
 
+        self.res_met_curr = self.met_i_ini.mea_i()
+        time.sleep(self.excel_ini.wait_small)
+
         self.mcu_ini.relay_ctrl(0)
         # time.sleep(excel_s.wait_small)
         self.res_met_v1 = self.met_v_ini.mea_v()
@@ -607,6 +639,8 @@ class general_test ():
                 self.res_temp_read = self.chamber_ini.chamber_set(
                     self.chamber_target)
 
+            # different power on sequence
+
             if x_count < 1 * sub_count:
                 # sequence1 pwr-EN-SW
                 self.pwr_ini.chg_out(
@@ -630,7 +664,7 @@ class general_test ():
             elif x_count < 3 * sub_count:
                 # sequence3 EN-pwr-SW
                 self.mcu_ini.pmic_mode(3)
-                time.sleep(dly_set)
+                time.sleep(1.5 * dly_set)
                 self.pwr_ini.chg_out(
                     self.pwr_ch1, self.excel_ini.gen_pwr_i_set, self.excel_ini.relay0_ch, 'on')
                 time.sleep(dly_set)
@@ -640,7 +674,7 @@ class general_test ():
             elif x_count < 4 * sub_count:
                 # sequence4 SW-pwr-EN
                 self.mcu_ini.pmic_mode(2)
-                time.sleep(dly_set)
+                time.sleep(1.5 * dly_set)
                 self.pwr_ini.chg_out(
                     self.pwr_ch1, self.excel_ini.gen_pwr_i_set, self.excel_ini.relay0_ch, 'on')
                 time.sleep(dly_set)
@@ -652,7 +686,7 @@ class general_test ():
                 self.mcu_ini.pmic_mode(3)
                 time.sleep(dly_set)
                 self.mcu_ini.pmic_mode(4)
-                time.sleep(dly_set)
+                time.sleep(1.5 * dly_set)
                 self.pwr_ini.chg_out(
                     self.pwr_ch1, self.excel_ini.gen_pwr_i_set, self.excel_ini.relay0_ch, 'on')
 
@@ -662,7 +696,7 @@ class general_test ():
                 self.mcu_ini.pmic_mode(2)
                 time.sleep(dly_set)
                 self.mcu_ini.pmic_mode(4)
-                time.sleep(dly_set)
+                time.sleep(1.5 * dly_set)
                 self.pwr_ini.chg_out(
                     self.pwr_ch1, self.excel_ini.gen_pwr_i_set, self.excel_ini.relay0_ch, 'on')
 
@@ -671,6 +705,7 @@ class general_test ():
                 # sequence7 pwr-SW=EN
                 self.pwr_ini.chg_out(
                     self.pwr_ch1, self.excel_ini.gen_pwr_i_set, self.excel_ini.relay0_ch, 'on')
+                time.sleep(1.5 * dly_set)
                 # time.sleep(dly_set)
                 # self.mcu_ini.pmic_mode(2)
                 self.mcu_ini.pmic_mode(4)
@@ -691,18 +726,103 @@ class general_test ():
             time.sleep(dly_measure)
             self.data_measured()
 
-            # turn off after data measure
-            self.pwr_ini.chg_out(
-                self.pwr_ch1, self.excel_ini.gen_pwr_i_set, self.excel_ini.relay0_ch, 'off')
-            # reset MCU to (EN,SW) = (0,0)
-            self.mcu_ini.pmic_mode(1)
-
+            # # turn off after data measure
+            # self.pwr_ini.chg_out(
+            #     self.pwr_ch1, self.excel_ini.gen_pwr_i_set, self.excel_ini.relay0_ch, 'off')
+            # # reset MCU to (EN,SW) = (0,0)
+            # self.mcu_ini.pmic_mode(1)
+            time.sleep(dly_measure)
             self.data_latch(x_count, self.obj_sim_mode)
 
+            # different power off sequence
+
+            if x_count < 1 * sub_count:
+                # sequence1 pwr-EN-SW, off: SW-EN-pwr
+                self.mcu_ini.pmic_mode(3)
+                time.sleep(dly_set)
+                self.mcu_ini.pmic_mode(1)
+                time.sleep(dly_set)
+                self.pwr_ini.chg_out(
+                    self.pwr_ch1, self.excel_ini.gen_pwr_i_set, self.excel_ini.relay0_ch, 'off')
+
+                pass
+            elif x_count < 2 * sub_count:
+                # sequence2 pwr-SW-EN, off: EN-SW-pwr
+
+                self.mcu_ini.pmic_mode(2)
+                time.sleep(dly_set)
+                self.mcu_ini.pmic_mode(1)
+                time.sleep(dly_set)
+                self.pwr_ini.chg_out(
+                    self.pwr_ch1, self.excel_ini.gen_pwr_i_set, self.excel_ini.relay0_ch, 'off')
+
+                pass
+            elif x_count < 3 * sub_count:
+                # sequence3 EN-pwr-SW, off: SW-pwr-EN
+                self.mcu_ini.pmic_mode(3)
+                time.sleep(dly_set)
+                self.mcu_ini.pmic_mode(1)
+                time.sleep(dly_set)
+                self.pwr_ini.chg_out(
+                    self.pwr_ch1, self.excel_ini.gen_pwr_i_set, self.excel_ini.relay0_ch, 'off')
+
+                pass
+            elif x_count < 4 * sub_count:
+                # sequence4 SW-pwr-EN, off: EN-pwr-SW
+                self.mcu_ini.pmic_mode(2)
+                time.sleep(dly_set)
+                self.pwr_ini.chg_out(
+                    self.pwr_ch1, self.excel_ini.gen_pwr_i_set, self.excel_ini.relay0_ch, 'off')
+                time.sleep(1.5 * dly_set)
+                self.mcu_ini.pmic_mode(1)
+
+                pass
+            elif x_count < 5 * sub_count:
+                # sequence5 EN-SW-pwr, off: pwr-SW-EN
+                self.pwr_ini.chg_out(
+                    self.pwr_ch1, self.excel_ini.gen_pwr_i_set, self.excel_ini.relay0_ch, 'off')
+                time.sleep(1.5 * dly_set)
+                self.mcu_ini.pmic_mode(3)
+                time.sleep(dly_set)
+                self.mcu_ini.pmic_mode(1)
+
+                pass
+            elif x_count < 6 * sub_count:
+                # sequence6 SW-EN-pwr, off: pwr-EN-SW
+                self.pwr_ini.chg_out(
+                    self.pwr_ch1, self.excel_ini.gen_pwr_i_set, self.excel_ini.relay0_ch, 'off')
+                time.sleep(1.5 * dly_set)
+                self.mcu_ini.pmic_mode(2)
+                time.sleep(dly_set)
+                self.mcu_ini.pmic_mode(1)
+
+                pass
+            elif x_count < 7 * sub_count:
+                # sequence7 pwr-SW=EN, off: SW=EN-pwr
+                self.mcu_ini.pmic_mode(1)
+                time.sleep(dly_set)
+                self.pwr_ini.chg_out(
+                    self.pwr_ch1, self.excel_ini.gen_pwr_i_set, self.excel_ini.relay0_ch, 'off')
+                # time.sleep(dly_set)
+                # self.mcu_ini.pmic_mode(2)
+
+                pass
+            elif x_count < 8 * sub_count:
+                # sequence8 SW=EN-pwr, off: pwr-SW=EN
+                self.pwr_ini.chg_out(
+                    self.pwr_ch1, self.excel_ini.gen_pwr_i_set, self.excel_ini.relay0_ch, 'off')
+                time.sleep(1.5 * dly_set)
+                self.mcu_ini.pmic_mode(1)
+
+                # time.sleep(dly_set)
+                # self.mcu_ini.pmic_mode(2)
+                pass
+
             # 221215 latch for power off
-            time.sleep(0.3)
+            time.sleep(dly_measure)
             self.data_measured()
             # here the first is to record power off status
+            time.sleep(dly_measure)
             self.data_latch(x_count, other_sheet=self.ex_sh_array[0])
 
             # save the result and also check program exit
@@ -879,11 +999,11 @@ if __name__ == '__main__':
     import inst_pkg_d as inst
     # initial the object and set to simulation mode
     pwr_t = inst.LPS_505N(3.7, 0.5, 3, 1, 'off')
-    pwr_t.sim_inst = 0
+    pwr_t.sim_inst = 1
     pwr_t.open_inst()
     # initial the object and set to simulation mode
     met_v_t = inst.Met_34460(0.0001, 7, 0.000001, 2.5, 20)
-    met_v_t.sim_inst = 0
+    met_v_t.sim_inst = 1
     met_v_t.open_inst()
     load_t = inst.chroma_63600(1, 7, 'CCL')
     load_t.sim_inst = 0
@@ -899,7 +1019,7 @@ if __name__ == '__main__':
     chamber_t.open_inst()
     # mcu is also config as simulation mode
     # COM address of Gary_SONY is 3
-    mcu_t = mcu.MCU_control(0, 13)
+    mcu_t = mcu.MCU_control(1, 13)
     mcu_t.com_open()
 
     # for the single test, need to open obj_main first,
