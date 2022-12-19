@@ -668,6 +668,9 @@ class ripple_test ():
         elif self.ripple_line_load == 9:
             # SW
             self.scope_ini.trigger_adj(source='C8', level=1.8)
+        elif self.ripple_line_load == 10:
+            # SW (EN rising first)
+            self.scope_ini.trigger_adj(source='C8', level=1.8)
 
         # load target Vin
         v_target = self.excel_ini.sh_format_gen.range(
@@ -723,6 +726,11 @@ class ripple_test ():
                         #     path_t=0, find_level=1, adj_before_save=1)
                         # for simulation path using path_t=0.5
                         # scope_s.printScreenToPC(0)
+                        if self.ripple_line_load == 10:
+                            # for the EN(EN1) rising first case, need to set to AOD mode before trigger
+                            # also wait for a while for steady state of EN control pin
+                            self.mcu_ini.pmic_mode(3)
+                            time.sleep(0.15)
 
                         self.scope_ini.capture_1st(clear_sweep=1)
                         # scope turn into waiting for trigger
@@ -787,7 +795,7 @@ class ripple_test ():
 
                     if x_column == 0:
 
-                        # back to power off sttus
+                        # back to power off sttus, only need for the first time
                         self.mcu_ini.pmic_mode(1)
                         time.sleep(0.3)
 
@@ -900,6 +908,9 @@ class ripple_test ():
                 elif x_row == 2:
                     # SW
                     self.scope_ini.trigger_adj(source='C8', level=1.8)
+                elif x_row == 3:
+                    # 221219, EN on first, also trigger SW
+                    self.scope_ini.trigger_adj(source='C8', level=1.8)
 
                 self.mcu_ini.pmic_mode(1)
                 time.sleep(0.2)
@@ -909,6 +920,10 @@ class ripple_test ():
                 x_column = 0
                 while x_column < c_column:
                     # assign related Vin for the inrush measurement
+                    if x_row == 3:
+                        # for the EN on first mode, turn on EN(EN2 in buck first)
+                        self.mcu_ini.pmic_mode(3)
+                        time.sleep(0.2)
 
                     # load target Vin
                     v_target = self.excel_ini.sh_format_gen.range(
@@ -936,8 +951,9 @@ class ripple_test ():
                     self.scope_ini.capture_1st(clear_sweep=1)
                     time.sleep(0.2)
                     # scope turn into waiting for trigger
-                    if x_row == 0:
+                    if x_row == 0 or x_row == 3:
                         # EN=SW together
+                        # 221219: add the SWIRE rising after EN goes up first case
                         self.mcu_ini.pmic_mode(4)
                     elif x_row == 1:
                         # EN
@@ -1108,6 +1124,9 @@ class ripple_test ():
             self.excel_ini.extra_file_name = '_pwr_seq_EN'
         elif self.ripple_line_load == 9:
             self.excel_ini.extra_file_name = '_pwr_seq_SW'
+        elif self.ripple_line_load == 10:
+            # add the case with EN rising first
+            self.excel_ini.extra_file_name = '_pwr_seq_SW(EN)'
 
         pass
 
