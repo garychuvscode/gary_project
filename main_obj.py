@@ -38,7 +38,7 @@ import ripple_obj as rip
 
 
 # off line test, set to 1 set all the instrument to simulation mode
-main_off_line = 0
+main_off_line = 1
 single_mode = 0
 # this is the variable control file name, single or the multi item
 # adjust after the if selection of program_group
@@ -990,10 +990,8 @@ if __name__ == '__main__':
         # fixed part, open one result book and save the book
         '''
         explanation of different number settings
-        6 => new file, cal_vin
-        6.1 => old file, cal_vin
-        6.2 => new file
-        6.3 => old file
+        14 => new file
+        14.1 => old file
         '''
         # in temp name
         if program_group == 14.1:
@@ -1038,7 +1036,7 @@ if __name__ == '__main__':
         15.1 => old file
         '''
         # in temp name
-        if program_group == 15.1 :
+        if program_group == 15.1:
             # track previous report and save at the end
             excel_m.open_result_book(keep_last=1)
         else:
@@ -1059,6 +1057,73 @@ if __name__ == '__main__':
 
         general_t.set_sheet_name('gen_pwr_on_off_35', 0)
         general_t.set_sheet_name('gen_pwr_on_off_35', 1, '_pwr_off')
+        general_t.gen_pwr_on_off()
+
+        # ===========
+        # changeable area
+
+        # remember that this is only call by main, not by object
+        excel_m.end_of_file(multi_item)
+        # end of file can also be call between each item
+        print('end of the program')
+
+        pass
+
+    # for HV buck chamber related testing
+    elif program_group >= 16 and program_group < 17:
+        # fixed part, open one result book and save the book
+        '''
+        explanation of different number settings
+        16 => new file
+        16.1 => old file
+        '''
+        # in temp name
+        if program_group == 16.1:
+            # track previous report and save at the end
+            excel_m.open_result_book(keep_last=1)
+        else:
+            excel_m.open_result_book(keep_last=0)
+        # auto save after the book is generate
+        excel_m.excel_save()
+        # single setting of the object need to be 1 => no needed single
+        multi_item = 0
+        # setup instruement for test mode, only for debug, no need to change)
+        sim_mode_independent(pwr=1, met_v=1, met_i=1, loader=1, src=1, chamber=1,
+                             scope=1, bk_pwr=1, main_off_line0=main_off_line, single_mode0=single_mode)
+        # open instrument and add the name to result book
+        open_inst_and_name()
+        print('open instrument with real or simulation mode')
+
+        # changeable area
+        # ===========
+
+        # first should be the band gap
+        general_t.set_sheet_name(
+            ctrl_sheet_name0='gen_BK_band_gap', extra_sheet=0, extra_name='_BK')
+        general_t.set_sheet_name(
+            ctrl_sheet_name0='gen_BK_band_gap', extra_sheet=1, extra_name='_LDO')
+        general_t.run_verification(ctrl_ind_1=2)
+
+        # OTP not toggle EN1
+        general_t.set_sheet_name(
+            'gen_OTP_BK', extra_sheet=0, extra_name='_EN1_keep')
+        general_t.run_verification(ctrl_ind_1=0)
+        general_t.set_sheet_name(
+            'gen_OTP_BK', extra_sheet=0, extra_name='_EN1_toggle')
+        general_t.run_verification(ctrl_ind_1=1)
+
+        # high temp power on off
+        general_t.set_sheet_name(
+            'gen_BK_pwr_on_off_85', extra_sheet=0, extra_name='_on')
+        general_t.set_sheet_name(
+            'gen_BK_pwr_on_off_85', extra_sheet=1, extra_name='_off')
+        general_t.gen_pwr_on_off()
+
+        # low temp power on off
+        general_t.set_sheet_name(
+            'gen_BK_pwr_on_off_-40', extra_sheet=0, extra_name='_on')
+        general_t.set_sheet_name(
+            'gen_BK_pwr_on_off_-40', extra_sheet=1, extra_name='_off')
         general_t.gen_pwr_on_off()
 
         # ===========

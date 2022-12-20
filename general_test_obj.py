@@ -93,10 +93,12 @@ class general_test ():
             self.excel_ini.extra_file_name = '_general' + str(extra_name)
         pass
 
-    def run_verification(self, vin_cal=1, ctrl_ind_1=0):
+    def run_verification(self, vin_cal=1, ctrl_ind_1=0, pwr_iout=0):
         '''
         run the general testing: default calibrate Vin on
-        to disable, change vin_cal to 0
+        to disable, change vin_cal to 0\n
+        ctrl_ind_1 enable the function before measurement or not (run_veri_add_in_1)\n
+        pwr_iout is to record pwr iout or not
         '''
         # 221201 sheet generation move to set_sheet_name
         # # give the sheet generation
@@ -137,6 +139,11 @@ class general_test ():
         # 221111 disable extra enable control, use the simulation mode of GPIB to
         # control the instrument
 
+        # 221220: add the function for reading pwr supply iout
+        # 0 is disable and 1 is enable => just check for data latch
+        # add the measurement for all case
+        self.pwr_iout_en = pwr_iout
+
         # power supply OV and OC protection
         pwr_s.ov_oc_set(pre_vin_max, pre_imax)
 
@@ -169,6 +176,8 @@ class general_test ():
 
         x_count = 0
         while x_count < self.c_test_amount:
+            # 221220: this control index used for other function in object
+            self.x_count = x_count
 
             # load the setting first
             self.data_loaded(x_count)
@@ -313,7 +322,7 @@ class general_test ():
 
             self.run_veri_add_in_1(ctrl_index=ctrl_ind_1)
             # control index send from the the call of verification and know if to toggle enable or not
-            # need to ajust the call of run_verificatio in the main program
+            # need to adjust the call of run_verificatio in the main program
 
             self.data_measured()
 
@@ -361,13 +370,24 @@ class general_test ():
 
             pass
 
+        elif ctrl_index == 2:
+            # high V buck band gap, change to standby mode and measure LDO output drift
+            # before the buck measurement
+            self.mcu_ini.pmic_mode(3)
+            time.sleep(0.2)
+            self.data_measured()
+            self.data_latch(
+                index=self.x_count, test_mode_b=self.obj_sim_mode, other_sheet=self.ex_sh_array[0])
+            self.mcu_ini.pmic_mode(4)
+            time.sleep(0.05)
+
         pass
 
     def set_sheet_name(self, ctrl_sheet_name0, extra_sheet=0, extra_name='_'):
         '''
         choose the sheet name for general testing\n
-        extra_sheet = 1, it will create the new sheet but only return the
-        created sheet, not going to assing to excel object
+        extra_sheet = 1, it will create new sheet in extra array, access from excel array\n
+        it will also return the related sheet
         extra_name is to add new comment at the end of new sheet name
         '''
 
@@ -418,8 +438,13 @@ class general_test ():
             self.res_load_curr4 = 0
             self.res_src_curr = 0
             self.res_temp_read = 0
+            self.pwr_relay0_ioout = 0
+            self.pwr_relay6_ioout = 0
+            self.pwr_relay7_ioout = 0
+
             print('contrl sheet assigned')
-            self.sheet_gen(extra_sh=0)
+            # 221220: control also allow to add extra sheet name
+            self.sheet_gen(extra_sh=0, extra_name0=extra_name)
             # no need to assign control sheet and return
             # since control sheet is already record to the excel
             extra_sheet = 'this is control sheet'
@@ -468,13 +493,23 @@ class general_test ():
                 extra_sh = 'this is control sheet'
 
                 # change the sheet name after finished and save into the excel object
-                self.excel_ini.sh_general_test.name = str(self.new_sheet_name)
+                if extra_name0 != '_':
+                    # need to add the extra name for control sheet also
+                    self.excel_ini.sh_general_test.name = str(
+                        self.new_sheet_name) + str(extra_name0)
+                else:
+                    self.excel_ini.sh_general_test.name = str(
+                        self.new_sheet_name)
                 self.sh_general_test = self.excel_ini.sh_general_test
             else:
                 # for the extra sheet, just copy and return the extra sheet
                 extra_sh = extra_sh.copy(self.excel_ini.sh_ref)
                 new_ex_sh_name = str(extra_sh.range('B2').value)
-                extra_sh.name = new_ex_sh_name + extra_name0
+                extra_sh.name = new_ex_sh_name + str(extra_name0)
+                '''
+                extra_name0 need to be assign when using extra sheet to prevent error,
+                maximum of extra sheet should be 5 (based on the array)
+                '''
 
                 # after create the extra sheet, assign to extra sheet list and add the counter
                 self.ex_sh_array[self.extra_count] = extra_sh
@@ -488,7 +523,7 @@ class general_test ():
         '''
         this function used to clear extra_count, when end of this item or when it's been called
         '''
-
+        # also clear in the table return ~
         self.extra_count = 0
 
         pass
@@ -558,6 +593,10 @@ class general_test ():
         # reset sheet choice to wait for next sheet name update
         self.sheet_name_ready = 0
 
+        # reset the count and sheet array of the extra sheet
+        self.ex_sh_array = [0, 0, 0, 0, 0]
+        self.extra_count = 0
+
         pass
 
     def data_measured(self):
@@ -614,6 +653,12 @@ class general_test ():
         self.res_load_curr4 = self.loader_ini.read_iout(4)
         self.res_src_curr = self.src_ini.read('CURR')
         # self.res_temp_read = chamber_s.read('temp_mea')
+        self.pwr_relay0_ioout = self.pwr_ini.read_iout(
+            self.excel_ini.relay0_ch)
+        self.pwr_relay6_ioout = self.pwr_ini.read_iout(
+            self.excel_ini.relay6_ch)
+        self.pwr_relay7_ioout = self.pwr_ini.read_iout(
+            self.excel_ini.relay7_ch)
 
         pass
 
@@ -864,7 +909,8 @@ class general_test ():
             self.data_measured()
             # here the first is to record power off status
             time.sleep(dly_measure)
-            self.data_latch(x_count, other_sheet=self.ex_sh_array[0])
+            self.data_latch(x_count, test_mode_b=self.obj_sim_mode,
+                            other_sheet=self.ex_sh_array[0])
 
             # save the result and also check program exit
             self.excel_ini.excel_save()
@@ -989,6 +1035,15 @@ class general_test ():
         else:
             self.sh_general_test.range(
                 8 + index, 1 + self.excel_ini.gen_col_amount + 15).value = 0
+
+        if self.pwr_iout_en != 0:
+            # latch iout to the result sheet
+            self.sh_general_test.range(
+                8 + index, 1 + self.excel_ini.gen_col_amount + 16).value = self.pwr_relay0_ioout
+            self.sh_general_test.range(
+                8 + index, 1 + self.excel_ini.gen_col_amount + 17).value = self.pwr_relay6_ioout
+            self.sh_general_test.range(
+                8 + index, 1 + self.excel_ini.gen_col_amount + 18).value = self.pwr_relay7_ioout
 
         print('data latch for g finished')
 
