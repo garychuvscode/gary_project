@@ -473,7 +473,8 @@ class general_test ():
             else:
                 # for the extra sheet, just copy and return the extra sheet
                 extra_sh = extra_sh.copy(self.excel_ini.sh_ref)
-                extra_sh.name = extra_sh.name + extra_name0
+                new_ex_sh_name = str(extra_sh.range('B2').value)
+                extra_sh.name = new_ex_sh_name + extra_name0
 
                 # after create the extra sheet, assign to extra sheet list and add the counter
                 self.ex_sh_array[self.extra_count] = extra_sh
@@ -627,6 +628,46 @@ class general_test ():
 
         dly_measure = 0.2
         # measurement after 200ms of command finished
+
+        # power supply OV and OC protection
+        self.pwr_ini.ov_oc_set(self.excel_ini.pre_vin_max,
+                               self.excel_ini.pre_imax)
+
+        # power supply channel (channel on setting)
+        if self.excel_ini.pre_test_en == 1:
+            if self.excel_ini.gen_pwr_ch_amount >= 1:
+                self.pwr_ini.chg_out(
+                    self.excel_ini.pre_vin, self.excel_ini.pre_sup_iout, self.excel_ini.relay0_ch, 'on')
+            if self.excel_ini.gen_pwr_ch_amount > 1:
+                self.pwr_ini.chg_out(
+                    self.excel_ini.pre_vin, self.excel_ini.pre_sup_iout, self.excel_ini.relay6_ch, 'on')
+            if self.excel_ini.gen_pwr_ch_amount > 2:
+                self.pwr_ini.chg_out(
+                    self.excel_ini.pre_vin, self.excel_ini.pre_sup_iout, self.excel_ini.relay7_ch, 'on')
+            print('pre-power on here')
+            # turn off the power and load
+
+            print('also turn all load off')
+
+            if self.excel_ini.en_start_up_check == 1:
+                self.excel_ini.message_box('press enter if hardware configuration is correct',
+                                           'Pre-power on for system test under Vin= ' + str(self.excel_ini.pre_vin) + 'Iin= ' + str(self.excel_ini.pre_sup_iout))
+                # msg_res = win32api.MessageBox(
+                #     0, 'press enter if hardware configuration is correct', 'Pre-power on for system test under Vin= ' + str(pre_vin) + 'Iin= ' + str(pre_sup_iout))
+
+            # initial settings for power on off is off
+            time.sleep(dly_set)
+            if self.excel_ini.gen_pwr_ch_amount >= 1:
+                self.pwr_ini.chg_out(
+                    self.excel_ini.pre_vin, self.excel_ini.pre_sup_iout, self.excel_ini.relay0_ch, 'off')
+            if self.excel_ini.gen_pwr_ch_amount > 1:
+                self.pwr_ini.chg_out(
+                    self.excel_ini.pre_vin, self.excel_ini.pre_sup_iout, self.excel_ini.relay6_ch, 'off')
+            if self.excel_ini.gen_pwr_ch_amount > 2:
+                self.pwr_ini.chg_out(
+                    self.excel_ini.pre_vin, self.excel_ini.pre_sup_iout, self.excel_ini.relay7_ch, 'off')
+            # reset MCU to (EN,SW) = (0,0)
+            self.mcu_ini.pmic_mode(1)
 
         x_count = 0
         sub_count = int(self.c_test_amount/8)
@@ -999,11 +1040,11 @@ if __name__ == '__main__':
     import inst_pkg_d as inst
     # initial the object and set to simulation mode
     pwr_t = inst.LPS_505N(3.7, 0.5, 3, 1, 'off')
-    pwr_t.sim_inst = 1
+    pwr_t.sim_inst = 0
     pwr_t.open_inst()
     # initial the object and set to simulation mode
     met_v_t = inst.Met_34460(0.0001, 7, 0.000001, 2.5, 20)
-    met_v_t.sim_inst = 1
+    met_v_t.sim_inst = 0
     met_v_t.open_inst()
     load_t = inst.chroma_63600(1, 7, 'CCL')
     load_t.sim_inst = 0
@@ -1019,7 +1060,7 @@ if __name__ == '__main__':
     chamber_t.open_inst()
     # mcu is also config as simulation mode
     # COM address of Gary_SONY is 3
-    mcu_t = mcu.MCU_control(1, 13)
+    mcu_t = mcu.MCU_control(0, 13)
     mcu_t.com_open()
 
     # for the single test, need to open obj_main first,

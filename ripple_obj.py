@@ -727,15 +727,15 @@ class ripple_test ():
                         # for simulation path using path_t=0.5
                         # scope_s.printScreenToPC(0)
                         if self.ripple_line_load == 10:
-                            # for the EN(EN1) rising first case, need to set to AOD mode before trigger
+                            # for the EN(EN2) rising first case, need to set to AOD mode before trigger
                             # also wait for a while for steady state of EN control pin
                             self.mcu_ini.pmic_mode(3)
                             time.sleep(0.15)
 
                         self.scope_ini.capture_1st(clear_sweep=1)
                         # scope turn into waiting for trigger
-                        if self.ripple_line_load == 7:
-                            # EN=SW together
+                        if self.ripple_line_load == 7 or self.ripple_line_load == 10:
+                            # EN=SW together or the EN rising first case
                             self.mcu_ini.pmic_mode(4)
                         elif self.ripple_line_load == 8:
                             # EN
