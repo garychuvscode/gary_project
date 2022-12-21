@@ -95,7 +95,7 @@ class general_test ():
 
     def run_verification(self, vin_cal=1, ctrl_ind_1=0, pwr_iout=0):
         '''
-        run the general testing: default calibrate Vin on
+        run the general testing: default calibrate Vin on\n
         to disable, change vin_cal to 0\n
         ctrl_ind_1 enable the function before measurement or not (run_veri_add_in_1)\n
         pwr_iout is to record pwr iout or not
