@@ -175,8 +175,15 @@ class Power_BK9141(GInst):
                 self.inst.write(f'INST {str(ch_str)}')
             valstr = self.inst.query(f'MEAS:SCAL:VOLTage:DC?')
         except pyvisa.errors.VisaIOError:
+            # here is the old ersion from geroge
             valstr = self.inst.query(f'MEAS:SCAL:VOLTage:DC?')
             self.inst.query(f'*CLS?')
+
+            # # 221221: change the exception operation to clear fault first
+            # # and read again; the other one is change to write since
+            # # there may not be return for '*CLS' (clear status and errors)
+            # self.inst.query(f'*CLS')
+            # valstr = self.inst.query(f'MEAS:SCAL:VOLTage:DC?')
 
         return float(re.search(r"[-+]?\d*\.\d+|\d+", valstr).group(0))
 
