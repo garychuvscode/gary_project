@@ -118,7 +118,8 @@ class LPS_505N:
             self.inst_obj.write(self.cmd_str_I)
             self.inst_obj.write(self.cmd_str_out_sw)
             time.sleep(wait_samll)
-            print(f'change pwr ch{self.act_ch_o} V{self.vset_o} I{self.iset_o} status{self.state_o}')
+            print(
+                f'change pwr ch{self.act_ch_o} V{self.vset_o} I{self.iset_o} status{self.state_o}')
 
             pass
         else:
@@ -139,7 +140,6 @@ class LPS_505N:
         # 20220127, add the channel index for the change_V function
         self.cmd_str_V = ("PROG:VSET" + str(int(self.act_ch_o)) +
                           ":" + str(self.vset_o))
-
 
         if self.sim_inst == 1:
             # must change both voltage and current together for every update
@@ -504,8 +504,6 @@ class Met_34460:
 
     def open_inst(self):
 
-
-
         print('GPIB0::' + str(int(self.GP_addr_ini)) + '::INSTR')
         if self.sim_inst == 1:
             self.inst_obj = rm.open_resource(
@@ -767,6 +765,17 @@ class chroma_63600:
             self.sim_inst = 1
         else:
             self.sim_inst = 0
+
+        # 221221: include the dynamic current mode in loader, default parameter setting
+        self.dyn_rise = 0.5
+        self.dyn_fall = 0.5
+        self.dyn_t1 = 0.001
+        self.dyn_t2 = 0.001
+        self.dyn_L1 = 0.5
+        self.dyn_L2 = 0.1
+        self.dyn_rep = 0
+
+        self.default_cmd = ''
 
     # need to watch out if the power limit, current limit need to be set and config through
     # the different mode of the load setting, to prevent crash of the load during auto testing
@@ -1052,6 +1061,126 @@ class chroma_63600:
         # # after reading the iout from source, remove the A in the string
         # self.iout_o = self.iout_o.replace('A', '')
         return str(self.i_out)
+
+    def dynamic_config(self, rise=None, fall=None, t1=None, t2=None, L1=None, L2=None, rep=None):
+        '''
+        initialization of the dyanmic load transient operation
+        parameter: rise, fall, t1, t2, L1, L2, rep
+        '''
+        '''
+        command table:
+        CURR:DYN:FALL 2.5 => 2.5A/us, falling slew rate
+        CURR:DYN:L1 20 => set level 1 to 20A, unit: A
+        CURR:DYN:L2 10 => set level 2 to 10A
+        CURR:DYN:RISE: 2.5 => 2.5A/us, rising slew rate
+        CURR:DYN:T1 2 => set T1 to 2s (10us to 100s, resolution 10us)
+        CURR:DYN:T2 10ms => set T1 to 10ms
+        CURR:DYN:REP 500 => repeat 500 times
+        '''
+        if rise != None:
+            self.dyn_rise = rise
+        if fall != None:
+            self.dyn_fall = fall
+        if t1 != None:
+            self.dyn_t1 = t1
+        if t2 != None:
+            self.dyn_t2 = t2
+        if L1 != None:
+            self.dyn_L1 = L1
+        if L2 != None:
+            self.dyn_L2 = L2
+        if rep != None:
+            self.dyn_rep = rep
+
+        pass
+
+    def dynamic_ctrl(self, act_ch1, status0, mode0='CCDH'):
+        '''
+        this function control dyanmic loading after config\n
+        act_ch1: 1-4
+        status0: 'on' or 'off'
+        '''
+        self.act_ch_o = act_ch1
+        self.mode_o[int(act_ch1)-1] = mode0
+        self.state_o[int(self.act_ch_o) - 1] = status0
+        # config channel
+        self.default_cmd = "CHAN " + str(int(self.act_ch_o))
+        self.only_write()
+        # config mode
+        self.default_cmd = "MODE " + \
+            str(self.mode_o[int(self.act_ch_o) - 1])
+        self.only_write()
+
+        # dynamic settings
+        self.default_cmd = f'CURR:DYN:FALL {self.dyn_fall}'
+        self.only_write()
+        self.default_cmd = f'CURR:DYN:L1 {self.dyn_L1}'
+        self.only_write()
+        self.default_cmd = f'CURR:DYN:L2 {self.dyn_L2}'
+        self.only_write()
+        self.default_cmd = f'CURR:DYN:RISE {self.dyn_rise}'
+        self.only_write()
+        self.default_cmd = f'CURR:DYN:T1 {self.dyn_t1}'
+        self.only_write()
+        self.default_cmd = f'CURR:DYN:T2 {self.dyn_t2}'
+        self.only_write()
+        self.default_cmd = f'CURR:DYN:REP {self.dyn_rep}'
+        self.only_write()
+
+        # config load status
+        self.default_cmd = "Load " + self.state_o[int(self.act_ch_o) - 1]
+        self.only_write()
+
+        pass
+
+    def query_write(self, cmd=0):
+        # mix write function for better debug or change
+        if cmd == 0:
+            # send the default command
+            print(
+                f'query write with command: "{self.default_cmd}" with sim={self.sim_inst}')
+            if self.sim_inst == 1:
+                self.inst_obj.query(str(self.default_cmd))
+
+        else:
+            print(f'query write with command: "{cmd}"')
+            if self.sim_inst == 1:
+                self.inst_obj.query(str(cmd))
+
+        pass
+
+    def only_write(self, cmd=0):
+        # mix write function for better debug or change
+        if cmd == 0:
+            # send the default command
+            print(
+                f'query write with command: "{self.default_cmd}" with sim={self.sim_inst}')
+            if self.sim_inst == 1:
+                self.inst_obj.write(str(self.default_cmd))
+        else:
+            print(
+                f'query write with command: "{cmd}" with sim={self.sim_inst}')
+            if self.sim_inst == 1:
+                self.inst_obj.write(str(cmd))
+
+        pass
+
+    def read(self, cmd=0):
+        # mix read function for better debug or change
+        if cmd == 0:
+            # send the default command
+            print(
+                f'query write with command: "{self.default_cmd}" with sim={self.sim_inst}')
+            if self.sim_inst == 1:
+                self.inst_obj.read(str(self.default_cmd))
+
+        else:
+            print(
+                f'query write with command: "{cmd}" with sim={self.sim_inst}')
+            if self.sim_inst == 1:
+                self.inst_obj.read(str(cmd))
+
+        pass
 
     def chg_out_auto_mode(self, iset1, act_ch1, state1):
 
@@ -1879,7 +2008,6 @@ class chamber_su242:
 
     def open_inst(self):
 
-
         print('GPIB0::' + str(int(self.GP_addr_ini)) + '::INSTR')
         if self.sim_inst == 1:
             self.inst_obj = rm.open_resource(
@@ -2265,7 +2393,6 @@ class inst_obj_gen_sub ():
 
     def open_inst(self):
 
-
         # maybe no need to define rm for global variable
         # global rm
         print('GPIB0::' + str(int(self.GP_addr_ini)) + '::INSTR')
@@ -2333,11 +2460,14 @@ pass
 
 if __name__ == '__main__':
     # add more if selection for different instrument testing
-    inst_test_ctrl = 5
-    # 0 => power supply, LPS505N; 1 => meter, 34460; 2 => chroma 63600
+    inst_test_ctrl = 6
+    # 0 => power supply, LPS505N;
+    # 1 => meter, 34460;
+    # 2 => chroma 63600
     # 3 => source meter 2440
     # 4 => chamber su242
     # 5 => DM3068 meter
+    # 6 => chroma loader 63600 => load transient
 
     # only run the code below when this is main program
     # can used for the testing of import, otherwise it will
@@ -2812,5 +2942,21 @@ if __name__ == '__main__':
         # rigo_m.impedance_set('10M')
         # temp_str = rigo_m.impedance_o
         # print(temp_str)
+
+        pass
+
+    # chroma loader, load transient
+    if inst_test_ctrl == 6:
+
+        load = chroma_63600(1, 7, 'CCH')
+        load.sim_inst = 0
+
+        load.dynamic_config(rise='20us', fall='20us',
+                            t1='1ms', t2='5ms', L1=0.5, L2=0.2, rep=0)
+
+        load.dynamic_ctrl(act_ch1=1, status0='on')
+        print('press enter to turn off loader')
+        input()
+        load.dynamic_ctrl(act_ch1=1, status0='off')
 
         pass
