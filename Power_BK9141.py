@@ -200,7 +200,7 @@ class Power_BK9141(GInst):
             if ch_str == 0:
                 self.inst.write(f'INST {self.chConvert[self.ch]}')
             else:
-                self.inst.write(f'INST {str(ch_str)}')
+                self.inst.write(f'INST {self.chConvert[ch_str]}')
             valstr = self.inst.query(f'MEAS:SCAL:VOLTage:DC?')
         except pyvisa.errors.VisaIOError:
             # here is the old ersion from geroge
@@ -230,7 +230,7 @@ class Power_BK9141(GInst):
             if ch_str == 0:
                 self.inst.write(f'INST {self.chConvert[self.ch]}')
             else:
-                self.inst.write(f'INST {str(ch_str)}')
+                self.inst.write(f'INST {self.chConvert[ch_str]}')
             valstr = self.inst.query(f'MEAS:SCAL:CURR:DC?')
         except pyvisa.errors.VisaIOError:
             valstr = self.inst.query(f'MEAS:SCAL:CURR:DC?')
