@@ -86,6 +86,11 @@ class Power_BK9141(GInst):
                 raise Exception(
                     f'<>< Power_BK9141 ><> "9141" not fit in "{idn}"!')
 
+        # 221221 add the voltage and current limit for the BK9141
+        # since it's for HV buck, default set to 28V first
+        self.max_v = 28
+        self.max_i = 3
+
     # @GInstSetMethod(unit = 'V')
 
     def setVoltage(self, voltage, ch_str=0):
@@ -106,6 +111,8 @@ class Power_BK9141(GInst):
             self.inst.write(f'INST {str(ch_str)}')
         self.inst.write(f'VOLT {abs(voltage):3g}')
 
+        pass
+
     # @GInstSetMethod(unit = 'A')
 
     def setCurrent(self, current, ch_str=0):
@@ -124,6 +131,27 @@ class Power_BK9141(GInst):
         else:
             self.inst.write(f'INST {str(ch_str)}')
         self.inst.write(f'CURR {current:3g}')
+
+        pass
+
+    def change_I(self, iset1, ch=0):
+        # mapped to the change_I function of precious power supply
+        iset1 = float(iset1)
+
+        # 221221 update => refer to chg_out function
+        if ch != 0 and iset1 <= self.max_i:
+            self.setCurrent(iset1, 'CH' + str(ch))
+        else:
+            print('no channel or higher than max_i')
+
+    def ov_oc_set(self, max_v0, max_i0):
+        '''
+        update the default vin_max(28V) and iin_max(3A), mainly for high V buck
+        '''
+        self.max_v = max_v0
+        self.max_i = max_i0
+
+        pass
 
     # @GInstOnMethod()
 
@@ -203,14 +231,31 @@ class Power_BK9141(GInst):
 
         return float(re.search(r"[-+]?\d*\.\d+|\d+", valstr).group(0))
 
-    def chg_out(self, act_ch1, vset1='NA', iset1='NA', state1='NA'):
+    def read_iout(self, ch0=0):
+        '''
+        mapped with the read iout function of pwr
+        '''
+        ch0 = str(int(ch0))
+        ch0_1 = 'CH' + ch0
+
+        # try to wait for a moment of read current
+        time.sleep(0.1)
+
+        curr = self.measureCurrent(ch_str=ch0_1)
+
+        return str(curr)
+        pass
+
+    def chg_out(self, vset1='NA', iset1='NA', act_ch1=1, state1='NA'):
 
         act_ch1 = int(act_ch1)
 
         if vset1 != 'NA':
-            self.setVoltage(vset1, 'CH' + str(act_ch1))
+            if vset1 <= self.max_v:
+                self.setVoltage(vset1, 'CH' + str(act_ch1))
         if iset1 != 'NA':
-            self.setCurrent(iset1, 'CH' + str(act_ch1))
+            if iset1 <= self.max_i:
+                self.setCurrent(iset1, 'CH' + str(act_ch1))
 
         if state1 != 'NA':
             if state1 == 'on':
@@ -374,7 +419,7 @@ class Power_BK9141(GInst):
         # get the insturment name
         if self.sim_inst == 1:
             self.cmd_str_name = "*IDN?"
-            self.in_name = self.inst_obj.query(self.cmd_str_name)
+            self.in_name = self.inst.query(self.cmd_str_name)
             time.sleep(wait_samll)
 
             pass
@@ -398,19 +443,27 @@ if __name__ == '__main__':
     import inst_pkg_d as inst
 
     import parameter_load_obj as par
-    excel_t = par.excel_parameter('obj_main')
+    excel_t = par.excel_parameter('970_full')
 
     met_v_t = inst.Met_34460(0.0001, 30, 0.000001, 2.5, 20)
     met_v_t.sim_inst = sim_test_set
     met_v_t.open_inst()
 
-    mcu_t = mcu.MCU_control(0, 4)
+    mcu_t = mcu.MCU_control(1, 13)
     mcu_t.com_open()
 
     # bk_9141 = Power_BK9141(sim_inst0=sim_test_set, excel0=excel_t, addr=2)
     bk_9141 = Power_BK9141(excel0=excel_t)
 
-    if test_mode == 1:
+    if test_mode == 0:
+        # old version of the chg_out, with wrong sequence
+        '''
+        should follow LPS505
+        def chg_out(self, vset1, iset1, act_ch1, state1):
+
+        define in this test_mode
+        def chg_out(self, act_ch1=1, vset1='NA', iset1='NA', state1='NA'):
+        '''
 
         bk_9141.open_inst()
         bk_9141.chg_out(1, 3.7, 1, 'on')
@@ -425,5 +478,27 @@ if __name__ == '__main__':
         bk_9141.chg_out(3, 1.5, 2, 'on')
         bk_9141.chg_out(3, 1.7, 2)
         bk_9141.chg_out(2, 1.9, 2)
+
+        pass
+
+    if test_mode == 1:
+
+        bk_9141.open_inst()
+        bk_9141.chg_out(3.7, 1, 1, 'on')
+        bk_9141.chg_out(3.7, 1, 1, 'off')
+        bk_9141.chg_out(3.7, 2, 1, 'on')
+        bk_9141.chg_out(4, 1, 1, 'on')
+
+        bk_9141.vin_calibrate_singal_met(
+            0, 4.5, met_v0=met_v_t, mcu0=mcu_t, excel0=excel_t)
+
+        bk_9141.chg_out(2, 1, 2, 'on')
+        bk_9141.chg_out(1.5, 2, 3, 'on')
+        bk_9141.chg_out(1.7, 2, 3)
+        bk_9141.chg_out(1.9, 2, 2)
+
+        a = bk_9141.read_iout(1)
+        a = bk_9141.read_iout(2)
+        a = bk_9141.read_iout(3)
 
         pass

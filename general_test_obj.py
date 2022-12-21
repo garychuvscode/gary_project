@@ -325,7 +325,6 @@ class general_test ():
             # need to adjust the call of run_verificatio in the main program
 
             self.data_measured()
-
             self.data_latch(x_count, self.obj_sim_mode)
             # latch the data to related position
 
@@ -604,6 +603,7 @@ class general_test ():
         # since vin calibration also return the sting of calibration result,
         # it doesn't a must to measure Vin of each channel again
 
+        time.sleep(3 * self.excel_ini.wait_small)
         self.res_met_curr = self.met_i_ini.mea_i()
         time.sleep(self.excel_ini.wait_small)
 
