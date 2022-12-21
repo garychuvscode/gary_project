@@ -58,6 +58,9 @@ class Power_BK9141(GInst):
 
         # self.open_inst()
 
+        self.chConvert = {'CH1': '0', 'CH2': '1',
+                          'CH3': '2', 'ALL': ':ALL'}
+
         if ini == 1:
             # move the rm of Geroge to the top, since there will be other way to open instrument
             # rm = pyvisa.ResourceManager()
@@ -200,11 +203,13 @@ class Power_BK9141(GInst):
             if ch_str == 0:
                 self.inst.write(f'INST {self.chConvert[self.ch]}')
             else:
-                self.inst.write(f'INST {str(ch_str)}')
-            valstr = self.inst.query(f'MEAS:SCAL:VOLTage:DC?')
+                self.inst.write(f'INST {self.chConvert[ch_str]}')
+                print(f'INST {self.chConvert[ch_str]}')
+            time.sleep(0.5)
+            valstr = self.inst.query(f'MEAS:SCAL:VOLTage:DC?', 0.5)
         except pyvisa.errors.VisaIOError:
             # here is the old ersion from geroge
-            valstr = self.inst.query(f'MEAS:SCAL:VOLTage:DC?')
+            valstr = self.inst.query(f'MEAS:SCAL:VOLTage:DC?', 0.5)
             self.inst.query(f'*CLS?')
 
             # # 221221: change the exception operation to clear fault first
@@ -230,10 +235,12 @@ class Power_BK9141(GInst):
             if ch_str == 0:
                 self.inst.write(f'INST {self.chConvert[self.ch]}')
             else:
-                self.inst.write(f'INST {str(ch_str)}')
-            valstr = self.inst.query(f'MEAS:SCAL:CURR:DC?')
+                self.inst.write(f'INST {self.chConvert[ch_str]}')
+                print(f'INST {self.chConvert[ch_str]}')
+            time.sleep(0.5)
+            valstr = self.inst.query(f'MEAS:SCAL:CURR:DC?', 0.5)
         except pyvisa.errors.VisaIOError:
-            valstr = self.inst.query(f'MEAS:SCAL:CURR:DC?')
+            valstr = self.inst.query(f'MEAS:SCAL:CURR:DC?', 0.5)
             self.inst.query(f'*CLS?')
 
         return float(re.search(r"[-+]?\d*\.\d+|\d+", valstr).group(0))
@@ -443,7 +450,7 @@ class Power_BK9141(GInst):
 
 if __name__ == '__main__':
     # testing for the 9141
-    test_mode = 1
+    test_mode = 2
     sim_test_set = 1
 
     import mcu_obj as mcu
@@ -488,7 +495,7 @@ if __name__ == '__main__':
 
         pass
 
-    if test_mode == 1:
+    elif test_mode == 1:
 
         bk_9141.open_inst()
         bk_9141.chg_out(3.7, 1, 1, 'on')
@@ -507,5 +514,24 @@ if __name__ == '__main__':
         a = bk_9141.read_iout(1)
         a = bk_9141.read_iout(2)
         a = bk_9141.read_iout(3)
+
+        pass
+
+    elif test_mode == 2:
+        # this mode is used to test the read current function
+        bk_9141.open_inst()
+
+        x_test = 0
+        while x_test < 20000:
+
+            a = bk_9141.read_iout(1)
+            b = bk_9141.read_iout(2)
+            c = bk_9141.read_iout(3)
+
+            print(f'ch1: {a}, ch2: {b}, ch3 {c} and count is {x_test}\n')
+
+            x_test = x_test + 1
+
+            pass
 
         pass
