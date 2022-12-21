@@ -1106,10 +1106,10 @@ if __name__ == '__main__':
 
         # OTP not toggle EN1
         general_t.set_sheet_name(
-            'gen_OTP_BK', extra_sheet=0, extra_name='_EN1_keep')
+            'gen_BK_OTP', extra_sheet=0, extra_name='_EN1_keep')
         general_t.run_verification(ctrl_ind_1=0)
         general_t.set_sheet_name(
-            'gen_OTP_BK', extra_sheet=0, extra_name='_EN1_toggle')
+            'gen_BK_OTP', extra_sheet=0, extra_name='_EN1_toggle')
         general_t.run_verification(ctrl_ind_1=1)
 
         # high temp power on off

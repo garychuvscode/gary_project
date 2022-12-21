@@ -727,6 +727,37 @@ class general_test ():
 
             # different power on sequence
 
+            # 221221: add other channel control for the power supply
+            '''
+            for the pwr_on_off program, ch1 is used for Vin,
+            other channel shold also able to use for bias or other application
+            and it will change follow count_index
+
+            add the same update method like previous, it's able to change with
+            channel index setting at main sheet
+            '''
+
+            if self.excel_ini.gen_pwr_ch_amount >= 1:
+                # this program ch1 is lock for the Vin, control by the
+                # other part of program
+                pass
+            if self.excel_ini.gen_pwr_ch_amount > 1:
+                if self.pwr_ch2 != 'x':
+                    self.pwr_ini.chg_out(
+                        self.pwr_ch2, self.excel_ini.gen_pwr_i_set, self.excel_ini.relay6_ch, 'on')
+                else:
+                    # turn off the power if not going to control power
+                    self.pwr_ini.chg_out(0, self.excel_ini.gen_pwr_i_set,
+                                  self.excel_ini.relay6_ch, 'off')
+            if self.excel_ini.gen_pwr_ch_amount > 2:
+                if self.pwr_ch3 != 'x':
+                    self.pwr_ini.chg_out(
+                        self.pwr_ch3, self.excel_ini.gen_pwr_i_set, self.excel_ini.relay7_ch, 'on')
+                else:
+                    # turn off the power if not going to control power
+                    self.pwr_ini.chg_out(0, self.excel_ini.gen_pwr_i_set,
+                                  self.excel_ini.relay7_ch, 'off')
+
             if x_count < 1 * sub_count:
                 # sequence1 pwr-EN-SW
                 self.pwr_ini.chg_out(
