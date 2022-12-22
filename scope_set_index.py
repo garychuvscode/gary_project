@@ -90,6 +90,10 @@ class scope_config():
                                 'trigger_slope': 'Positive', 'time_scale': '0.0005', 'time_offset': '0', 'sample_mode': 'RealTime', 'fixed_sample_rate': '5GS/s'}
             # note: ripple measurement follow robert's measurement
 
+            # add the two dimension index for the find signal reference
+            self.ch_index = {'C1': self.ch_c1, 'C2': self.ch_c2, 'C3': self.ch_c3, 'C4': self.ch_c4,
+                             'C5': self.ch_c5, 'C6': self.ch_c6, 'C7': self.ch_c7, 'C8': self.ch_c8}
+
             # setting of measurementsinjfij
             self.p1 = {"param": "pkpk", "source": "C1", "view": "TRUE"}
             self.p2 = {"param": "pkpk", "source": "C2", "view": "TRUE"}

@@ -38,7 +38,7 @@ import ripple_obj as rip
 
 
 # off line test, set to 1 set all the instrument to simulation mode
-main_off_line = 0
+main_off_line = 1
 single_mode = 0
 # this is the variable control file name, single or the multi item
 # adjust after the if selection of program_group
@@ -635,6 +635,11 @@ if __name__ == '__main__':
             # set the pwr to simulation mode
             pwr_m.sim_inst = 0
             pwr_bk_m.sim_inst = 0
+
+        if excel_m.pwr_select == 1:
+            # this is only for HV buck
+            excel_m.relay0_ch = 1
+            excel_m.message_box('high V buck setting, parallel output for BK9141\n control shannel is set to CH1', 'waatch out', auto_exception=1)
 
         ripple_t.run_verification()
         # format_g.table_return()
