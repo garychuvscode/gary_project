@@ -603,9 +603,7 @@ class general_test ():
         # since vin calibration also return the sting of calibration result,
         # it doesn't a must to measure Vin of each channel again
 
-        time.sleep(3 * self.excel_ini.wait_small)
-        self.res_met_curr = self.met_i_ini.mea_i()
-        time.sleep(self.excel_ini.wait_small)
+
 
         self.mcu_ini.relay_ctrl(0)
         # time.sleep(excel_s.wait_small)
@@ -659,6 +657,10 @@ class general_test ():
             self.excel_ini.relay6_ch)
         self.pwr_relay7_ioout = self.pwr_ini.read_iout(
             self.excel_ini.relay7_ch)
+
+        time.sleep(3 * self.excel_ini.wait_small)
+        self.res_met_curr = self.met_i_ini.mea_i()
+        time.sleep(self.excel_ini.wait_small)
 
         pass
 

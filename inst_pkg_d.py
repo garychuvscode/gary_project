@@ -1062,10 +1062,11 @@ class chroma_63600:
         # self.iout_o = self.iout_o.replace('A', '')
         return str(self.i_out)
 
-    def dynamic_config(self, rise=None, fall=None, t1=None, t2=None, L1=None, L2=None, rep=None):
+    def dynamic_config(self, rise='MAX', fall='MAX', t1=None, t2=None, L1=None, L2=None, rep=None):
         '''
         initialization of the dyanmic load transient operation
         parameter: rise, fall, t1, t2, L1, L2, rep
+        default of the slew rate is maximum
         '''
         '''
         command table:
@@ -1077,9 +1078,9 @@ class chroma_63600:
         CURR:DYN:T2 10ms => set T1 to 10ms
         CURR:DYN:REP 500 => repeat 500 times
         '''
-        if rise != None:
+        if rise != 'Max':
             self.dyn_rise = rise
-        if fall != None:
+        if fall != 'Max':
             self.dyn_fall = fall
         if t1 != None:
             self.dyn_t1 = t1
@@ -2949,10 +2950,19 @@ if __name__ == '__main__':
     if inst_test_ctrl == 6:
 
         load = chroma_63600(1, 7, 'CCH')
-        load.sim_inst = 0
+        load.sim_inst = 1
+        load.open_inst()
 
         load.dynamic_config(rise='20us', fall='20us',
-                            t1='1ms', t2='5ms', L1=0.5, L2=0.2, rep=0)
+                            t1='1ms', t2='5ms', L1=8, L2=0, rep=0)
+
+        load.dynamic_ctrl(act_ch1=1, status0='on')
+        print('press enter to turn off loader')
+        input()
+        load.dynamic_ctrl(act_ch1=1, status0='off')
+
+        load.dynamic_config(rise='MAX', fall='MAX',
+                            t1='1ms', t2='5ms', L1=8, L2=0.01, rep=0)
 
         load.dynamic_ctrl(act_ch1=1, status0='on')
         print('press enter to turn off loader')
