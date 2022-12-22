@@ -238,10 +238,12 @@ class Power_BK9141(GInst):
                 self.inst.write(f'INST {self.chConvert[ch_str]}')
                 print(f'INST {self.chConvert[ch_str]}')
             time.sleep(0.5)
-            valstr = self.inst.query(f'MEAS:SCAL:CURR:DC?', 0.5)
+            valstr = self.inst.query(f'MEAS:SCAL:CURR:DC?', 0.8)
         except pyvisa.errors.VisaIOError:
-            valstr = self.inst.query(f'MEAS:SCAL:CURR:DC?', 0.5)
-            self.inst.query(f'*CLS?')
+            self.inst.write(f'*CLS')
+            valstr = self.inst.query(f'MEAS:SCAL:CURR:DC?', 0.8)
+            # self.inst.query(f'*CLS?')
+
 
         return float(re.search(r"[-+]?\d*\.\d+|\d+", valstr).group(0))
 
