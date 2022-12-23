@@ -381,6 +381,10 @@ class ripple_test ():
                                 # not to change for load transient, no PFM issue
                                 # scope_s.Hor_scale_adj(0.00005)
                                 pass
+                            elif self.ripple_line_load == 2.5:
+                                # not to change for load transient, no PFM issue
+                                # scope_s.Hor_scale_adj(0.005)
+                                pass
 
                         else:
                             scope_s.Hor_scale_adj(
@@ -391,16 +395,19 @@ class ripple_test ():
                     if self.ripple_line_load != 2:
                         iload_target = excel_s.sh_format_gen.range(
                             (43 + x_iload, 7)).value
+
+                    else:
+                        # 221222: set to 0 for MOSFET load transient
+                        # but need to set dynamic loader setting if using chroma load transient
+                        iload_target = 0
+
                     if self.ripple_line_load == 2.5:
                         iload_L1 = excel_s.sh_format_gen.range(
                             (43 + x_iload, 7)).value
                         iload_L2 = excel_s.sh_format_gen.range(
                             (43 + x_iload, 8)).value
 
-                    else:
-                        # 221222: set to 0 for MOSFET load transient
-                        # but need to set dynamic loader setting if using chroma load transient
-                        iload_target = 0
+
 
                     pro_status_str = 'setting iload_target current'
                     excel_s.i_el_status = str(iload_target)
@@ -445,7 +452,7 @@ class ripple_test ():
                             '''
                             load_s.dynamic_config(L1=iload_L1, L2=iload_L2)
                             load_s.dynamic_ctrl(
-                                act_ch1=excel_s.loader_ELch, status0='on')
+                                act_ch1=excel_s.loader_VCIch, status0='on')
                         # trigger AVDD
                         # 221205: no need to change the level here, change to no input since there
                         # are auto level already

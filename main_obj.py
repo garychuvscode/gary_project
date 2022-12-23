@@ -38,7 +38,7 @@ import ripple_obj as rip
 
 
 # off line test, set to 1 set all the instrument to simulation mode
-main_off_line = 1
+main_off_line = 0
 single_mode = 0
 # this is the variable control file name, single or the multi item
 # adjust after the if selection of program_group
@@ -722,9 +722,9 @@ if __name__ == '__main__':
             excel_m.relay0_ch = 1
             excel_m.message_box(
                 'high V buck setting, parallel output for BK9141\n control shannel is set to CH1', 'waatch out', auto_exception=1)
-        # ripple
-        format_g.set_sheet_name('CTRL_sh_ripple_SY')
-        ripple_t.run_verification()
+        # # ripple
+        # format_g.set_sheet_name('CTRL_sh_ripple_SY')
+        # ripple_t.run_verification()
         # load transient
         format_g.set_sheet_name('CTRL_sh_load_SY')
         ripple_t.run_verification()
