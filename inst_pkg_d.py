@@ -1096,11 +1096,17 @@ class chroma_63600:
 
         pass
 
-    def dynamic_ctrl(self, act_ch1, status0, mode0='CCDH'):
+    def dynamic_ctrl(self, act_ch1, status0, mode0='CCDH', smooth_on_off=0, smooth_dly=0.1):
         '''
         this function control dyanmic loading after config\n
         act_ch1: 1-4
         status0: 'on' or 'off'
+        '''
+        # 221223: since load transient may burned IC down, adjust the load transient method
+        '''
+        prevent burned down from using smooth turn off when accept
+        turn off command from 1x loading to 0.8x, 0.6x, 0.4x, 0.2x
+        then turn off
         '''
         self.act_ch_o = act_ch1
         self.mode_o[int(act_ch1)-1] = mode0
@@ -1113,25 +1119,59 @@ class chroma_63600:
             str(self.mode_o[int(self.act_ch_o) - 1])
         self.only_write()
 
-        # dynamic settings
-        self.default_cmd = f'CURR:DYN:FALL {self.dyn_fall}'
-        self.only_write()
-        self.default_cmd = f'CURR:DYN:L1 {self.dyn_L1}'
-        self.only_write()
-        self.default_cmd = f'CURR:DYN:L2 {self.dyn_L2}'
-        self.only_write()
-        self.default_cmd = f'CURR:DYN:RISE {self.dyn_rise}'
-        self.only_write()
-        self.default_cmd = f'CURR:DYN:T1 {self.dyn_t1}'
-        self.only_write()
-        self.default_cmd = f'CURR:DYN:T2 {self.dyn_t2}'
-        self.only_write()
-        self.default_cmd = f'CURR:DYN:REP {self.dyn_rep}'
-        self.only_write()
+        if smooth_on_off == 0:
+            # dynamic settings
+            self.default_cmd = f'CURR:DYN:FALL {self.dyn_fall}'
+            self.only_write()
+            self.default_cmd = f'CURR:DYN:L1 {self.dyn_L1}'
+            self.only_write()
+            self.default_cmd = f'CURR:DYN:L2 {self.dyn_L2}'
+            self.only_write()
+            self.default_cmd = f'CURR:DYN:RISE {self.dyn_rise}'
+            self.only_write()
+            self.default_cmd = f'CURR:DYN:T1 {self.dyn_t1}'
+            self.only_write()
+            self.default_cmd = f'CURR:DYN:T2 {self.dyn_t2}'
+            self.only_write()
+            self.default_cmd = f'CURR:DYN:REP {self.dyn_rep}'
+            self.only_write()
 
-        # config load status
-        self.default_cmd = "Load " + self.state_o[int(self.act_ch_o) - 1]
-        self.only_write()
+            # config load status
+            self.default_cmd = "Load " + self.state_o[int(self.act_ch_o) - 1]
+            self.only_write()
+
+        else:
+            # operate the smooth on and off
+            x_on_off_step = 0
+            c_step = 5
+            while x_on_off_step < c_step:
+
+                # dynamic settings
+                self.default_cmd = f'CURR:DYN:FALL {self.dyn_fall}'
+                self.only_write()
+                self.dyn_L1 = 0.2 * ( 1 + x_on_off_step) * self.dyn_L1
+                self.default_cmd = f'CURR:DYN:L1 {self.dyn_L1}'
+                self.only_write()
+                self.dyn_L1 = 0.2 * ( 1 + x_on_off_step) * self.dyn_L1
+                self.default_cmd = f'CURR:DYN:L2 {self.dyn_L2}'
+                self.only_write()
+                self.default_cmd = f'CURR:DYN:RISE {self.dyn_rise}'
+                self.only_write()
+                self.default_cmd = f'CURR:DYN:T1 {self.dyn_t1}'
+                self.only_write()
+                self.default_cmd = f'CURR:DYN:T2 {self.dyn_t2}'
+                self.only_write()
+                self.default_cmd = f'CURR:DYN:REP {self.dyn_rep}'
+                self.only_write()
+
+                # config load status
+                self.default_cmd = "Load " + self.state_o[int(self.act_ch_o) - 1]
+                self.only_write()
+
+                time.sleep(smooth_dly)
+                pass
+
+            pass
 
         pass
 

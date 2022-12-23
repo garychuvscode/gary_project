@@ -407,8 +407,6 @@ class ripple_test ():
                         iload_L2 = excel_s.sh_format_gen.range(
                             (43 + x_iload, 8)).value
 
-
-
                     pro_status_str = 'setting iload_target current'
                     excel_s.i_el_status = str(iload_target)
                     print(pro_status_str)
@@ -427,7 +425,7 @@ class ripple_test ():
                             '''
                             load_s.dynamic_config(L1=iload_L1, L2=iload_L2)
                             load_s.dynamic_ctrl(
-                                act_ch1=excel_s.loader_ELch, status0='on')
+                                act_ch1=excel_s.loader_ELch, status0='on', smooth_on_off=1)
                         # trigger OVDD
                         # 221205: no need to change the level here, change to no input since there
                         # are auto level already
@@ -452,7 +450,7 @@ class ripple_test ():
                             '''
                             load_s.dynamic_config(L1=iload_L1, L2=iload_L2)
                             load_s.dynamic_ctrl(
-                                act_ch1=excel_s.loader_VCIch, status0='on')
+                                act_ch1=excel_s.loader_VCIch, status0='on', smooth_on_off=1)
                         # trigger AVDD
                         # 221205: no need to change the level here, change to no input since there
                         # are auto level already
