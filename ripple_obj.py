@@ -386,7 +386,7 @@ class ripple_test ():
                                 # scope_s.Hor_scale_adj(0.005)
                                 pass
 
-                        else:
+                        elif x_iload == 1:
                             scope_s.Hor_scale_adj(
                                 scope_s.set_general['time_scale'], scope_s.set_general['time_offset'])
 
@@ -403,9 +403,9 @@ class ripple_test ():
 
                     if self.ripple_line_load == 2.5:
                         iload_L1 = excel_s.sh_format_gen.range(
-                            (43 + x_iload, 7)).value
+                            (43 + x_vin, 7)).value
                         iload_L2 = excel_s.sh_format_gen.range(
-                            (43 + x_iload, 8)).value
+                            (43 + x_vin, 8)).value
 
                     pro_status_str = 'setting iload_target current'
                     excel_s.i_el_status = str(iload_target)

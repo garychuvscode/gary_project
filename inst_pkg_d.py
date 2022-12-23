@@ -1144,16 +1144,18 @@ class chroma_63600:
             # operate the smooth on and off
             x_on_off_step = 0
             c_step = 5
+            self.dyn_L1 = float(self.dyn_L1)
+            self.dyn_L2 = float(self.dyn_L2)
             while x_on_off_step < c_step:
 
                 # dynamic settings
                 self.default_cmd = f'CURR:DYN:FALL {self.dyn_fall}'
                 self.only_write()
-                self.dyn_L1 = 0.2 * ( 1 + x_on_off_step) * self.dyn_L1
-                self.default_cmd = f'CURR:DYN:L1 {self.dyn_L1}'
+                self.dyn_L1_1 = 0.2 * (1 + x_on_off_step) * self.dyn_L1
+                self.default_cmd = f'CURR:DYN:L1 {self.dyn_L1_1}'
                 self.only_write()
-                self.dyn_L1 = 0.2 * ( 1 + x_on_off_step) * self.dyn_L1
-                self.default_cmd = f'CURR:DYN:L2 {self.dyn_L2}'
+                self.dyn_L2_1 = 0.2 * (1 + x_on_off_step) * self.dyn_L2
+                self.default_cmd = f'CURR:DYN:L2 {self.dyn_L2_1}'
                 self.only_write()
                 self.default_cmd = f'CURR:DYN:RISE {self.dyn_rise}'
                 self.only_write()
@@ -1165,10 +1167,12 @@ class chroma_63600:
                 self.only_write()
 
                 # config load status
-                self.default_cmd = "Load " + self.state_o[int(self.act_ch_o) - 1]
+                self.default_cmd = "Load " + \
+                    self.state_o[int(self.act_ch_o) - 1]
                 self.only_write()
 
                 time.sleep(smooth_dly)
+                x_on_off_step = x_on_off_step + 1
                 pass
 
             pass
