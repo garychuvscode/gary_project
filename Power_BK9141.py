@@ -58,6 +58,9 @@ class Power_BK9141(GInst):
 
         # self.open_inst()
 
+        self.chConvert = {'CH1': '0', 'CH2': '1',
+                          'CH3': '2', 'ALL': ':ALL'}
+
         if ini == 1:
             # move the rm of Geroge to the top, since there will be other way to open instrument
             # rm = pyvisa.ResourceManager()
@@ -80,7 +83,7 @@ class Power_BK9141(GInst):
                 raise Exception(
                     f'<>< Power_BK9141 ><> open 3-CH Power Fail {str(e)}!')
 
-            idn = self.inst.query('*IDN?')
+            idn = self.query_write('*IDN?')
 
             if '9141' not in idn:
                 raise Exception(
@@ -90,6 +93,32 @@ class Power_BK9141(GInst):
         # since it's for HV buck, default set to 28V first
         self.max_v = 28
         self.max_i = 3
+
+        # 221223: simulation mode output check
+        self.res_testi = 0
+        self.res_testv = 0
+
+    def only_write(self, cmd):
+        if self.sim_inst == 1:
+            # real mode
+            print(f'real_mode write: {cmd}')
+            self.inst.write(cmd)
+
+        else:
+            print(f'sim_mode write: {cmd}')
+
+        pass
+
+    def query_write(self, cmd, dly=0.05):
+        if self.sim_inst == 1:
+            # real mode
+            print(f'real_mode query: {cmd}')
+            self.inst.query(cmd, dly)
+
+        else:
+            print(f'sim_mode query: {cmd}')
+
+        pass
 
     # @GInstSetMethod(unit = 'V')
 
@@ -106,10 +135,10 @@ class Power_BK9141(GInst):
             return
 
         if ch_str == 0:
-            self.inst.write(f'INST {self.chConvert[self.ch]}')
+            self.only_write(f'INST {self.chConvert[self.ch]}')
         else:
-            self.inst.write(f'INST {str(ch_str)}')
-        self.inst.write(f'VOLT {abs(voltage):3g}')
+            self.only_write(f'INST {self.chConvert[ch_str]}')
+        self.only_write(f'VOLT {abs(voltage):3g}')
 
         pass
 
@@ -127,10 +156,10 @@ class Power_BK9141(GInst):
             return
 
         if ch_str == 0:
-            self.inst.write(f'INST {self.chConvert[self.ch]}')
+            self.only_write(f'INST {self.chConvert[self.ch]}')
         else:
-            self.inst.write(f'INST {str(ch_str)}')
-        self.inst.write(f'CURR {current:3g}')
+            self.only_write(f'INST {self.chConvert[ch_str]}')
+        self.only_write(f'CURR {current:3g}')
 
         pass
 
@@ -162,12 +191,14 @@ class Power_BK9141(GInst):
         [power(channel) output ON]
         :param None:
         :return: None.
+        ch_str = 'CH1'
         """
         if ch_str == 0:
-            self.inst.write(f'INST {self.chConvert[self.ch]}')
+            self.only_write(f'INST {self.chConvert[self.ch]}')
         else:
-            self.inst.write(f'INST {str(ch_str)}')
-        self.inst.write(f'OUTP 1')
+            # ch_str = 'CH' + str(ch_str)
+            self.only_write(f'INST {self.chConvert[ch_str]}')
+        self.only_write(f'OUTP 1')
 
     # @GInstOffMethod()
 
@@ -178,12 +209,14 @@ class Power_BK9141(GInst):
         [power(channel) output OFF]
         :param None:
         :return: None.
+        ch_str = 'CH1'
         """
         if ch_str == 0:
-            self.inst.write(f'INST {self.chConvert[self.ch]}')
+            self.only_write(f'INST {self.chConvert[self.ch]}')
         else:
-            self.inst.write(f'INST {str(ch_str)}')
-        self.inst.write(f'OUTP 0')
+            # ch_str = 'CH' + str(ch_str)
+            self.only_write(f'INST {self.chConvert[ch_str]}')
+        self.only_write(f'OUTP 0')
 
     # @GInstGetMethod(unit = 'V')
 
@@ -198,20 +231,26 @@ class Power_BK9141(GInst):
         """
         try:
             if ch_str == 0:
-                self.inst.write(f'INST {self.chConvert[self.ch]}')
+                self.only_write(f'INST {self.chConvert[self.ch]}')
             else:
-                self.inst.write(f'INST {str(ch_str)}')
-            valstr = self.inst.query(f'MEAS:SCAL:VOLTage:DC?')
+                self.only_write(f'INST {self.chConvert[ch_str]}')
+                print(f'INST {self.chConvert[ch_str]}')
+            time.sleep(0.5)
+            valstr = self.query_write(f'MEAS:SCAL:VOLTage:DC?', 0.5)
         except pyvisa.errors.VisaIOError:
             # here is the old ersion from geroge
-            valstr = self.inst.query(f'MEAS:SCAL:VOLTage:DC?')
-            self.inst.query(f'*CLS?')
+            valstr = self.query_write(f'MEAS:SCAL:VOLTage:DC?', 0.5)
+            self.query_write(f'*CLS?')
 
             # # 221221: change the exception operation to clear fault first
             # # and read again; the other one is change to write since
             # # there may not be return for '*CLS' (clear status and errors)
-            # self.inst.query(f'*CLS')
-            # valstr = self.inst.query(f'MEAS:SCAL:VOLTage:DC?')
+            # self.query_write(f'*CLS')
+            # valstr = self.query_write(f'MEAS:SCAL:VOLTage:DC?')
+
+        if self.sim_inst == 0:
+            self.res_testv = self.res_testv + 1
+            valstr = str(self.res_testv)
 
         return float(re.search(r"[-+]?\d*\.\d+|\d+", valstr).group(0))
 
@@ -226,15 +265,23 @@ class Power_BK9141(GInst):
         :return: Current.\n
         ch_str = 'CH1'
         """
+
         try:
             if ch_str == 0:
-                self.inst.write(f'INST {self.chConvert[self.ch]}')
+                self.only_write(f'INST {self.chConvert[self.ch]}')
             else:
-                self.inst.write(f'INST {str(ch_str)}')
-            valstr = self.inst.query(f'MEAS:SCAL:CURR:DC?')
+                self.only_write(f'INST {self.chConvert[ch_str]}')
+                print(f'INST {self.chConvert[ch_str]}')
+            time.sleep(0.5)
+            valstr = self.query_write(f'MEAS:SCAL:CURR:DC?', 0.8)
         except pyvisa.errors.VisaIOError:
-            valstr = self.inst.query(f'MEAS:SCAL:CURR:DC?')
-            self.inst.query(f'*CLS?')
+            self.only_write(f'*CLS')
+            valstr = self.query_write(f'MEAS:SCAL:CURR:DC?', 0.8)
+            # self.query_write(f'*CLS?')
+
+        if self.sim_inst == 0:
+            self.res_testi = self.res_testi + 1
+            valstr = str(self.res_testi)
 
         return float(re.search(r"[-+]?\d*\.\d+|\d+", valstr).group(0))
 
@@ -249,6 +296,7 @@ class Power_BK9141(GInst):
         time.sleep(0.1)
 
         curr = self.measureCurrent(ch_str=ch0_1)
+        print(f'9141 read i_out = {curr}')
 
         return str(curr)
         pass
@@ -258,11 +306,17 @@ class Power_BK9141(GInst):
         act_ch1 = int(act_ch1)
 
         if vset1 != 'NA':
-            if vset1 <= self.max_v:
+            vset1 = float(vset1)
+            if float(vset1) <= self.max_v:
                 self.setVoltage(vset1, 'CH' + str(act_ch1))
+            else:
+                self.setVoltage(self.max_v, 'CH' + str(act_ch1))
         if iset1 != 'NA':
-            if iset1 <= self.max_i:
+            iset1 = float(iset1)
+            if float(iset1) <= self.max_i:
                 self.setCurrent(iset1, 'CH' + str(act_ch1))
+            else:
+                self.setCurrent(self.max_i, 'CH' + str(act_ch1))
 
         if state1 != 'NA':
             if state1 == 'on':
@@ -272,7 +326,14 @@ class Power_BK9141(GInst):
 
         pass
 
-    def vin_calibrate_singal_met(self, vin_ch, vin_target, met_v0, mcu0, excel0):
+    def inst_single_close(self, off_ch):
+        # close single channel, change the function name due to
+        # from different library
+        self.outputOFF('CH' + str(off_ch))
+
+        pass
+
+    def vin_clibrate_singal_met(self, vin_ch, vin_target, met_v0, mcu0, excel0):
         '''
         vin_ch is the channel of relay
         '''
@@ -426,7 +487,7 @@ class Power_BK9141(GInst):
         # get the insturment name
         if self.sim_inst == 1:
             self.cmd_str_name = "*IDN?"
-            self.in_name = self.inst.query(self.cmd_str_name)
+            self.in_name = self.query_write(self.cmd_str_name)
             time.sleep(wait_samll)
 
             pass
@@ -443,7 +504,7 @@ class Power_BK9141(GInst):
 
 if __name__ == '__main__':
     # testing for the 9141
-    test_mode = 1
+    test_mode = 2
     sim_test_set = 1
 
     import mcu_obj as mcu
@@ -488,7 +549,7 @@ if __name__ == '__main__':
 
         pass
 
-    if test_mode == 1:
+    elif test_mode == 1:
 
         bk_9141.open_inst()
         bk_9141.chg_out(3.7, 1, 1, 'on')
@@ -509,3 +570,25 @@ if __name__ == '__main__':
         a = bk_9141.read_iout(3)
 
         pass
+
+    elif test_mode == 2:
+        # this mode is used to test the read current function
+        bk_9141.open_inst()
+
+        x_test = 0
+        while x_test < 20000:
+
+            a = bk_9141.read_iout(1)
+            b = bk_9141.read_iout(2)
+            c = bk_9141.read_iout(3)
+
+            print(f'ch1: {a}, ch2: {b}, ch3 {c} and count is {x_test}\n')
+
+            x_test = x_test + 1
+
+            pass
+
+        pass
+    elif test_mode == 3:
+        # this mode is used to test each function
+        bk_9141.open_inst()

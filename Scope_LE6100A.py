@@ -309,13 +309,13 @@ class Scope_LE6100A(GInst):
         '''
 
         if self.sim_inst == 1:
-            #logging.debug(f': {cmd}')
-            #self.inst.WriteString(f"VBS '{cmd}'", 1)
-            #self.writeVBS('app.Acquisition.TriggerMode = "Stopped"')
+            # logging.debug(f': {cmd}')
+            # self.inst.WriteString(f"VBS '{cmd}'", 1)
+            # self.writeVBS('app.Acquisition.TriggerMode = "Stopped"')
             self.writeVBS('app.Acquisition.TriggerMode = "Single"')
             self.writeVBS('app.ClearSweeps')
 
-            #self.inst.WriteString(f"VBS 'TriggerDetected = app.Acquisition.Acquire({timeout}, false)'", 1)
+            # self.inst.WriteString(f"VBS 'TriggerDetected = app.Acquisition.Acquire({timeout}, false)'", 1)
             # if 0 == self.inst.WaitForOPC():
             #    raise Exception('LecroyActiveDSO writeVBS timeout or fail.')
             pass
@@ -869,18 +869,17 @@ class Scope_LE6100A(GInst):
         # 221208 take this line off, since if set to auto mode during auto mode
         # it mat cause extra error
         # self.trigger_adj(mode='Auto')
+
+        if find_level == 0:
+            self.find_trig_level()
+
         if self.sim_inst == 0:
             pass
         else:
             time.sleep(wait_time_s)
-        if find_level == 0:
-            # no need to find level, single directly
-            self.trigger_adj(mode='Single')
-            self.waitTriggered()
-        else:
-            self.find_trig_level()
-            self.trigger_adj(mode='Single')
-            self.waitTriggered()
+
+        self.trigger_adj(mode='Single')
+        self.waitTriggered()
 
         if adj_before_save == 1:
             # stop to adjust the cursor before capture

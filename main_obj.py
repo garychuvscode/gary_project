@@ -38,7 +38,7 @@ import ripple_obj as rip
 
 
 # off line test, set to 1 set all the instrument to simulation mode
-main_off_line = 0
+main_off_line = 1
 single_mode = 0
 # this is the variable control file name, single or the multi item
 # adjust after the if selection of program_group
@@ -651,7 +651,7 @@ if __name__ == '__main__':
 
         pass
 
-    # for the scpoe command testing and format gen
+    # For the HV buck ripple, line and load transient
     elif program_group == 7.5:
         excel_m.open_result_book()
 
@@ -666,25 +666,70 @@ if __name__ == '__main__':
         open_inst_and_name()
         print('open instrument with real or simulation mode')
 
-        format_g.set_sheet_name('CTRL_sh_ex_ripple')
-        # 221115: set_sheet_name already include the sheet_and run_format_gen, no need for
-        # these command
-        # format_g.sheet_gen()
-        # format_g.run_format_gen()
-        # insert related test => the sheet in excel is still active
+        # changeable area
+        # ===========
+        temp_str = str(excel_m.single_test_mapped_wave)
+        print(f'now is single test for {temp_str}')
 
-        # table release after table return
-        # format_g.table_return()
+        format_g.set_sheet_name(temp_str)
 
-        format_g.set_sheet_name('CTRL_sh_ex_line')
-        # format_g.sheet_gen()
-        # format_g.run_format_gen()
-        # insert related test => the sheet in excel is still active
+        # add the protection of line transient setting pwr as real mode
+        if excel_m.sh_format_gen.range('B15').value == 1:
+            # set the pwr to simulation mode
+            pwr_m.sim_inst = 0
+            pwr_bk_m.sim_inst = 0
 
-        # table release after table return
-        # format_g.table_return()
+        if excel_m.pwr_select == 1:
+            # this is only for HV buck
+            excel_m.relay0_ch = 1
+            excel_m.message_box(
+                'high V buck setting, parallel output for BK9141\n control shannel is set to CH1', 'waatch out', auto_exception=1)
 
-        print('finished XX verification')
+        ripple_t.run_verification()
+
+        print('finished waveform test verification')
+
+        # ===========
+        # changeable area
+
+        # remember that this is only call by main, not by  object
+        excel_m.end_of_file(multi_item)
+        # end of file can also be call between each item
+        print('end of the program')
+
+        pass
+
+    # For the HV buck ripple, load transeint in 1
+    elif program_group == 7.8:
+        excel_m.open_result_book()
+
+        # single setting of the object need to be 1 => no needed single
+        multi_item = 0
+        # if not off line testing, setup the the instrument needed independently
+        # set simulation for the used instrument
+        # pwr, met_v, met_i, loader, src, chamber, main offline
+        sim_mode_independent(1, 1, 1, 1, 1, 0, main_off_line0=main_off_line)
+        # open instrument and add the name
+        # must open after simulation mode setting(open real or sim)
+        open_inst_and_name()
+        print('open instrument with real or simulation mode')
+
+        # changeable area
+        # ===========
+
+        if excel_m.pwr_select == 1:
+            # this is only for HV buck
+            excel_m.relay0_ch = 1
+            excel_m.message_box(
+                'high V buck setting, parallel output for BK9141\n control shannel is set to CH1', 'waatch out', auto_exception=1)
+        # ripple
+        format_g.set_sheet_name('CTRL_sh_ripple_SY')
+        ripple_t.run_verification()
+        # load transient
+        format_g.set_sheet_name('CTRL_sh_load_SY')
+        ripple_t.run_verification()
+
+        print('finished waveform test verification')
 
         # ===========
         # changeable area
