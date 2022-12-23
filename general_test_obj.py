@@ -662,7 +662,7 @@ class general_test ():
 
         pass
 
-    def gen_pwr_on_off(self):
+    def gen_pwr_on_off(self, pwr_iout=0):
         '''
         to initial special function for different items
         this example function only for counter and loop
@@ -673,6 +673,9 @@ class general_test ():
 
         dly_measure = 0.2
         # measurement after 200ms of command finished
+
+        # 221222: to record iout or not, need to add the blank in excel
+        self.pwr_iout_en = pwr_iout
 
         # power supply OV and OC protection
         self.pwr_ini.ov_oc_set(self.excel_ini.pre_vin_max,
