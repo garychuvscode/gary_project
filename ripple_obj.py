@@ -98,7 +98,7 @@ class ripple_test ():
             self.ch_index = self.ch_index - 3
             self.scope_adj = 0
 
-        self.ripple_line_load = int(
+        self.ripple_line_load = float(
             self.sh_verification_control.range('B15').value)
         self.c_data_mea = self.excel_ini.c_data_mea
         self.scope_initial_en = int(
@@ -224,7 +224,6 @@ class ripple_test ():
         elif self.ripple_line_load == 2.5:
             load_src_s.sim_inst = 0
 
-
         # 221114: change the control of instrument for load transient test
 
         # control variable
@@ -315,6 +314,8 @@ class ripple_test ():
                 # there are more than 1 group of pulse command or I2C command needed
                 # re-generate the sheet
                 excel_s.sh_ref_table = excel_s.ref_table_list[x_sw_i2c]
+                # 221223: add comments, scope reload can help to find the porper signal
+                # find the signal at different SWIRE pulse and put in the window
                 self.scope_reload()
 
             # if the command is not default, need to find signal
@@ -367,6 +368,7 @@ class ripple_test ():
 
                     if self.scope_initial_en > 0:
                         if x_iload == 0:
+                            # 221223: adjustment for the no load condition
                             if self.ripple_line_load == 0:
                                 # change to 10ms consider for PFM when ripple operation
                                 scope_s.Hor_scale_adj(0.01)
@@ -389,10 +391,11 @@ class ripple_test ():
                     if self.ripple_line_load != 2:
                         iload_target = excel_s.sh_format_gen.range(
                             (43 + x_iload, 7)).value
-                    elif self.ripple_line_load == 2.5:
-                        iload_L1 = 0
-                        iload_L2 = 0
-
+                    if self.ripple_line_load == 2.5:
+                        iload_L1 = excel_s.sh_format_gen.range(
+                            (43 + x_iload, 7)).value
+                        iload_L2 = excel_s.sh_format_gen.range(
+                            (43 + x_iload, 8)).value
 
                     else:
                         # 221222: set to 0 for MOSFET load transient
@@ -412,13 +415,21 @@ class ripple_test ():
                                 iload_target, excel_s.loader_ELch, 'on')
                             load_s.chg_out2(0, excel_s.loader_VCIch, 'off')
                         else:
-                            load_s.dynamic_config()
-                            load_s.dynamic_ctrl(act_ch1=excel_s.loader_ELch, status0='on')
+                            '''
+                            Buck: is for LDO load transient, check LDO and VCC
+                            '''
+                            load_s.dynamic_config(L1=iload_L1, L2=iload_L2)
+                            load_s.dynamic_ctrl(
+                                act_ch1=excel_s.loader_ELch, status0='on')
                         # trigger OVDD
                         # 221205: no need to change the level here, change to no input since there
                         # are auto level already
                         if self.ripple_line_load == 0:
                             # for the line and load transient, follow the original trigger channel setting
+                            '''
+                            ine/load transient need to trigger the Vin or load turrent, can't change with
+                            different channel index
+                            '''
                             scope_s.trigger_adj(mode='Auto', source='C6')
 
                         pass
@@ -429,8 +440,12 @@ class ripple_test ():
                                 iload_target, excel_s.loader_VCIch, 'on')
                             load_s.chg_out2(0, excel_s.loader_ELch, 'off')
                         else:
-                            load_s.dynamic_config()
-                            load_s.dynamic_ctrl(act_ch1=excel_s.loader_ELch, status0='on')
+                            '''
+                            Buck: is for Buck load transient, check Buck(1CH)
+                            '''
+                            load_s.dynamic_config(L1=iload_L1, L2=iload_L2)
+                            load_s.dynamic_ctrl(
+                                act_ch1=excel_s.loader_ELch, status0='on')
                         # trigger AVDD
                         # 221205: no need to change the level here, change to no input since there
                         # are auto level already
@@ -446,7 +461,8 @@ class ripple_test ():
                                 iload_target, excel_s.loader_ELch, 'on')
 
                             # load other target for VCI
-                            i_VCI_target = excel_s.sh_format_gen.range('B13').value
+                            i_VCI_target = excel_s.sh_format_gen.range(
+                                'B13').value
                             load_s.chg_out2(
                                 i_VCI_target, excel_s.loader_VCIch, 'on')
 
@@ -501,6 +517,9 @@ class ripple_test ():
 
                     # add the setting of condition in the blank
                     active_range.value = f'Vin={v_target}_i_load={iload_target}'
+                    if self.ripple_line_load == 2.5:
+                        # chroma load transient index input the the cell
+                        active_range.value = f'Vin={v_target}_i_load= {iload_L1} to {iload_L2}'
 
                     if self.obj_sim_mode == 0:
                         excel_s.scope_capture(

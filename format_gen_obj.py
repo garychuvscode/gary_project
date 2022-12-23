@@ -353,33 +353,40 @@ class format_gen ():
                 temp_sheet = self.excel_ini.sh_ref_table.copy(
                     self.excel_ini.sh_ref)
 
-                # 221218 replace with the try function
-                # temp_sheet.name = str(
-                #     self.new_sheet_name + '_' + str(x_sheets))
+                # 221223: to overcome the issue of new file and old file, need to separate the try except function
+                if self.excel_ini.keep_last == 0:
+                    # to use the new file, keep_last disable
 
-                # change the sheet name after finished and save into the excel object
-                try:
-                    # if the setting name already exist
-                    x_try = 0
-                    while x_try < c_try:
-                        check_sh_temp_name = str(
-                            self.new_sheet_name + '_' + str(x_try))
-                        temp_sh = self.excel_ini.wb_res.sheets(
-                            check_sh_temp_name)
-                        x_try = x_try + 1
+                    # 221218 replace with the try function (re-enable this part 221223)
+                    temp_sheet.name = str(
+                        self.new_sheet_name + '_' + str(x_sheets))
+
+                else:
+                    # 221223: move this part to else, when keep_last == 1, add in previous sheet
+
+                    # change the sheet name after finished and save into the excel object
+                    try:
+                        # if the setting name already exist
+                        x_try = 0
+                        while x_try < c_try:
+                            check_sh_temp_name = str(
+                                self.new_sheet_name + '_' + str(x_try))
+                            temp_sh = self.excel_ini.wb_res.sheets(
+                                check_sh_temp_name)
+                            x_try = x_try + 1
+                            pass
+
+                        #  this try function must fail and enter except
                         pass
 
-                    #  this try function must fail and enter except
-                    pass
+                    except:
+                        # if there are no sheet with same name, change the sheet name to related name
 
-                except:
-                    # if there are no sheet with same name, change the sheet name to related name
-
-                    if x_try == 0:
-                        temp_sheet.name = self.new_sheet_name
-                    else:
-                        temp_sheet.name = str(
-                            self.new_sheet_name + '_' + str(x_try))
+                        if x_try == 0:
+                            temp_sheet.name = self.new_sheet_name
+                        else:
+                            temp_sheet.name = str(
+                                self.new_sheet_name + '_' + str(x_try))
 
                 self.excel_ini.ref_table_list[x_sheets] = temp_sheet
                 # self.sh_ref_table = self.excel_ini.sh_ref_table

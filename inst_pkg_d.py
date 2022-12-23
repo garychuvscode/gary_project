@@ -769,8 +769,8 @@ class chroma_63600:
         # 221221: include the dynamic current mode in loader, default parameter setting
         self.dyn_rise = 0.5
         self.dyn_fall = 0.5
-        self.dyn_t1 = 0.001
-        self.dyn_t2 = 0.001
+        self.dyn_t1 = 0.0005
+        self.dyn_t2 = 0.0005
         self.dyn_L1 = 0.5
         self.dyn_L2 = 0.1
         self.dyn_rep = 0
@@ -1062,11 +1062,12 @@ class chroma_63600:
         # self.iout_o = self.iout_o.replace('A', '')
         return str(self.i_out)
 
-    def dynamic_config(self, rise='MAX', fall='MAX', t1=None, t2=None, L1=None, L2=None, rep=None):
+    def dynamic_config(self, rise='MAX', fall='MAX', t1='500us', t2='500us', L1=None, L2=None, rep=None):
         '''
         initialization of the dyanmic load transient operation
         parameter: rise, fall, t1, t2, L1, L2, rep
-        default of the slew rate is maximum
+        default of the slew rate is maximum\n
+        default t1=500us, t2=500us\n
         '''
         '''
         command table:
@@ -1076,15 +1077,15 @@ class chroma_63600:
         CURR:DYN:RISE: 2.5 => 2.5A/us, rising slew rate
         CURR:DYN:T1 2 => set T1 to 2s (10us to 100s, resolution 10us)
         CURR:DYN:T2 10ms => set T1 to 10ms
-        CURR:DYN:REP 500 => repeat 500 times
+        CURR:DYN:REP 500 => repeat 500 times, 0 is infinite loop
         '''
         if rise != 'Max':
             self.dyn_rise = rise
         if fall != 'Max':
             self.dyn_fall = fall
-        if t1 != None:
+        if t1 != '500us':
             self.dyn_t1 = t1
-        if t2 != None:
+        if t2 != '500us':
             self.dyn_t2 = t2
         if L1 != None:
             self.dyn_L1 = L1

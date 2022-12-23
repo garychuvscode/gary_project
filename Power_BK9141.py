@@ -94,6 +94,10 @@ class Power_BK9141(GInst):
         self.max_v = 28
         self.max_i = 3
 
+        # 221223: simulation mode output check
+        self.res_testi = 0
+        self.res_testv = 0
+
     def only_write(self, cmd):
         if self.sim_inst == 1:
             # real mode
@@ -105,11 +109,11 @@ class Power_BK9141(GInst):
 
         pass
 
-    def query_write(self, cmd):
+    def query_write(self, cmd, dly=0.05):
         if self.sim_inst == 1:
             # real mode
             print(f'real_mode query: {cmd}')
-            self.inst.query(cmd)
+            self.inst.query(cmd, dly)
 
         else:
             print(f'sim_mode query: {cmd}')
@@ -187,11 +191,12 @@ class Power_BK9141(GInst):
         [power(channel) output ON]
         :param None:
         :return: None.
+        ch_str = 'CH1'
         """
         if ch_str == 0:
             self.only_write(f'INST {self.chConvert[self.ch]}')
         else:
-            ch_str = 'CH' + str(ch_str)
+            # ch_str = 'CH' + str(ch_str)
             self.only_write(f'INST {self.chConvert[ch_str]}')
         self.only_write(f'OUTP 1')
 
@@ -204,11 +209,12 @@ class Power_BK9141(GInst):
         [power(channel) output OFF]
         :param None:
         :return: None.
+        ch_str = 'CH1'
         """
         if ch_str == 0:
             self.only_write(f'INST {self.chConvert[self.ch]}')
         else:
-            ch_str = 'CH' + str(ch_str)
+            # ch_str = 'CH' + str(ch_str)
             self.only_write(f'INST {self.chConvert[ch_str]}')
         self.only_write(f'OUTP 0')
 
@@ -242,6 +248,10 @@ class Power_BK9141(GInst):
             # self.query_write(f'*CLS')
             # valstr = self.query_write(f'MEAS:SCAL:VOLTage:DC?')
 
+        if self.sim_inst == 0:
+            self.res_testv = self.res_testv + 1
+            valstr = str(self.res_testv)
+
         return float(re.search(r"[-+]?\d*\.\d+|\d+", valstr).group(0))
 
     # @GInstGetMethod(unit = 'A')
@@ -255,6 +265,7 @@ class Power_BK9141(GInst):
         :return: Current.\n
         ch_str = 'CH1'
         """
+
         try:
             if ch_str == 0:
                 self.only_write(f'INST {self.chConvert[self.ch]}')
@@ -267,6 +278,10 @@ class Power_BK9141(GInst):
             self.only_write(f'*CLS')
             valstr = self.query_write(f'MEAS:SCAL:CURR:DC?', 0.8)
             # self.query_write(f'*CLS?')
+
+        if self.sim_inst == 0:
+            self.res_testi = self.res_testi + 1
+            valstr = str(self.res_testi)
 
         return float(re.search(r"[-+]?\d*\.\d+|\d+", valstr).group(0))
 
@@ -281,6 +296,7 @@ class Power_BK9141(GInst):
         time.sleep(0.1)
 
         curr = self.measureCurrent(ch_str=ch0_1)
+        print(f'9141 read i_out = {curr}')
 
         return str(curr)
         pass
@@ -313,7 +329,7 @@ class Power_BK9141(GInst):
     def inst_single_close(self, off_ch):
         # close single channel, change the function name due to
         # from different library
-        self.outputOFF(int(off_ch))
+        self.outputOFF('CH' + str(off_ch))
 
         pass
 
@@ -576,5 +592,3 @@ if __name__ == '__main__':
     elif test_mode == 3:
         # this mode is used to test each function
         bk_9141.open_inst()
-
-

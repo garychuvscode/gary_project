@@ -129,6 +129,9 @@ class excel_parameter ():
         # 221129 add the time stamp of the file name
         self.time_name = ''
 
+        # 221223: add the default setting of keep_last (keep last file index)
+        self.keep_last = 0
+
         # assign one sheet is not raw out if efficiency test now used
         self.sh_temp = self.sh_volt_curr_cmd
         # the string indicate current items for file name or other adjustmenr reference
@@ -1243,6 +1246,10 @@ class excel_parameter ():
 
         # before open thr result book to check index, first check and correct
         # index (will be update to the obj_main)
+
+        # 221223 add the rcord of keep last, to give format gen correct method selection
+        self.keep_last = keep_last
+
         if self.result_book_status == 'close':
             self.index_check()
             if keep_last == 0:
