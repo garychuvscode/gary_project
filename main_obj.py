@@ -722,12 +722,12 @@ if __name__ == '__main__':
             excel_m.relay0_ch = 1
             excel_m.message_box(
                 'high V buck setting, parallel output for BK9141\n control shannel is set to CH1', 'waatch out', auto_exception=1)
-        # # ripple
-        # format_g.set_sheet_name('CTRL_sh_ripple_SY')
-        # ripple_t.run_verification()
+        # ripple
+        format_g.set_sheet_name('CTRL_sh_ripple_SY')
+        ripple_t.run_verification(pmic_buck0=1)
         # load transient
         format_g.set_sheet_name('CTRL_sh_load_SY')
-        ripple_t.run_verification()
+        ripple_t.run_verification(pmic_buck0=1)
 
         print('finished waveform test verification')
 
@@ -1235,7 +1235,7 @@ if __name__ == '__main__':
         general_t_bk.run_verification(ctrl_ind_1=0, vin_cal=0)
 
         # file name index
-        general_t.extra_file_name_setup('_VTH_mix')
+        general_t_bk.extra_file_name_setup('_VTH_mix')
 
         # ===========
         # changeable area

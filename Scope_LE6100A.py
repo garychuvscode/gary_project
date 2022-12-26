@@ -870,7 +870,7 @@ class Scope_LE6100A(GInst):
         # it mat cause extra error
         # self.trigger_adj(mode='Auto')
 
-        if find_level == 0:
+        if find_level == 1:
             self.find_trig_level()
 
         if self.sim_inst == 0:

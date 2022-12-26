@@ -65,6 +65,12 @@ class ripple_test ():
         # object sumulation mode, defaut active (sim mode change to 0)
         self.obj_sim_mode = 1
 
+        # 221226 add the new mode for PMIC buck selection
+        '''
+        default set to 0 and used for PMIC mode for different operation selection
+        '''
+        self.pmic_buck = 0
+
         pass
 
     def para_loaded(self):
@@ -151,10 +157,12 @@ class ripple_test ():
 
         pass
 
-    def run_verification(self):
+    def run_verification(self, pmic_buck0=0):
         '''
         run ripple testing verification
+        pmic_buck0 = 0 in default, PMIC mode, buck set to 1
         '''
+        self.pmic_buck = pmic_buck0
 
         self.para_loaded()
         # for the control of temperature, now can be loaded from from the main
@@ -201,7 +209,10 @@ class ripple_test ():
                     scope_s.ch_view(6, 0)
                     scope_s.ch_view(2, 0)
                     scope_s.ch_view(3, 0)
-                    scope_s.find_signal(ch=1, variable_index=0)
+                    if self.pmic_buck == 0:
+                        # 221226 for buck and PMIC there are different setting selection
+                        # only PMIC will adjust the index in VCI mode
+                        scope_s.find_signal(ch=1, variable_index=0)
                     pass
 
             pass

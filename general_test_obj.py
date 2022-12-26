@@ -84,6 +84,12 @@ class general_test ():
         self.extra_count = 0
         # extra count is used to check for the available sequence of extra sheet
 
+
+        # 221226: add the control index record for the general tesitng
+        # default will all be 0
+        self.ctrl_ind_1 = 0
+        self.ctrl_ind_2 = 0
+
     pass
 
     def extra_file_name_setup(self, extra_name=0):
@@ -93,12 +99,13 @@ class general_test ():
             self.excel_ini.extra_file_name = '_general' + str(extra_name)
         pass
 
-    def run_verification(self, vin_cal=1, ctrl_ind_1=0, pwr_iout=0):
+    def run_verification(self, vin_cal=1, ctrl_ind_1=0, pwr_iout=0, ctrl_ind_2=0):
         '''
         run the general testing: default calibrate Vin on\n
         to disable, change vin_cal to 0\n
         ctrl_ind_1 enable the function before measurement or not (run_veri_add_in_1)\n
         pwr_iout is to record pwr iout or not
+        ctrl_ind_2 enable the function after measurement or not (run_veri_add_in_2)\n
         '''
         # 221201 sheet generation move to set_sheet_name
         # # give the sheet generation
@@ -328,6 +335,8 @@ class general_test ():
             self.data_latch(x_count, self.obj_sim_mode)
             # latch the data to related position
 
+            self.run_veri_add_in_2(ctrl_index=ctrl_ind_2)
+
             # save the result and also check program exit
             excel_s.excel_save()
             if excel_s.turn_inst_off == 1:
@@ -352,6 +361,7 @@ class general_test ():
         this add in is before data measure after every condition is ready\n
         send different ctrl_index for different result
         '''
+        self.ctrl_ind_1 = ctrl_index
         if ctrl_index == 0:
             # do nothing and it's the general run_verification function
             pass
@@ -379,6 +389,56 @@ class general_test ():
                 index=self.x_count, test_mode_b=self.obj_sim_mode, other_sheet=self.ex_sh_array[0])
             self.mcu_ini.pmic_mode(4)
             time.sleep(0.05)
+
+        pass
+
+    def run_veri_add_in_2(self, ctrl_index=0):
+        '''
+        add_in_2 is placed after data measurement,
+        ctrl_index: 0 => nothing, 1 => pre-short
+
+        '''
+
+        '''
+
+        '''
+        self.ctrl_ind_2 = ctrl_index
+        if ctrl_index == 0:
+            # doing nothing
+            pass
+        elif ctrl_index == 1:
+            # for the pre-short operation
+            # need to turn off the power supply after the measurement
+            # turn off power supply based on the pwr index
+
+
+            if self.excel_ini.gen_pwr_ch_amount >= 1:
+                if self.pwr_ch1 != 'x':
+                    self.pwr_ini.chg_out(
+                        self.pwr_ch1, self.excel_ini.gen_pwr_i_set, self.excel_ini.relay0_ch, 'off')
+                else:
+                    # turn off the power if not going to control power
+                    self.pwr_ini.chg_out(0, self.excel_ini.gen_pwr_i_set,
+                                  self.excel_ini.relay0_ch, 'off')
+            if self.excel_ini.gen_pwr_ch_amount > 1:
+                if self.pwr_ch2 != 'x':
+                    self.pwr_ini.chg_out(
+                        self.pwr_ch2, self.excel_ini.gen_pwr_i_set, self.excel_ini.relay6_ch, 'off')
+                else:
+                    # turn off the power if not going to control power
+                    self.pwr_ini.chg_out(0, self.excel_ini.gen_pwr_i_set,
+                                  self.excel_ini.relay6_ch, 'off')
+            if self.excel_ini.gen_pwr_ch_amount > 2:
+                if self.pwr_ch3 != 'x':
+                    self.pwr_ini.chg_out(
+                        self.pwr_ch3, self.excel_ini.gen_pwr_i_set, self.excel_ini.relay7_ch, 'off')
+                else:
+                    # turn off the power if not going to control power
+                    self.pwr_ini.chg_out(0, self.excel_ini.gen_pwr_i_set,
+                                  self.excel_ini.relay7_ch, 'off')
+
+            pass
+        print(f'end of the run_veri_add_in_2 in index: {ctrl_index}')
 
         pass
 

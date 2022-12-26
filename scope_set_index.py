@@ -112,8 +112,8 @@ class scope_config():
         elif setup_index == 'SY8386C_load_tran':
             # index 0 only for functional test
             # the setting for ripple verification
-            self.ch_c1 = {'ch_view': 'TRUE', 'volt_dev': '0.1', 'BW': '20MHz', 'filter': 'None', 'v_offset': 0,
-                          'label_name': 'Buck', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'AC1M', 'v_offset_ind': 0}
+            self.ch_c1 = {'ch_view': 'TRUE', 'volt_dev': '0.2', 'BW': '20MHz', 'filter': 'None', 'v_offset': 0,
+                          'label_name': 'Buck', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'AC1M', 'v_offset_ind': 1}
             self.ch_c2 = {'ch_view': 'TRUE', 'volt_dev': '0.02', 'BW': '20MHz', 'filter': 'None', 'v_offset': 0.045,
                           'label_name': 'VCC', 'label_position': 0.0001, 'label_view': 'TRUE', 'coupling': 'AC1M', 'v_offset_ind': -2.5}
             self.ch_c3 = {'ch_view': 'FALSE', 'volt_dev': '1', 'BW': '20MHz', 'filter': 'None', 'v_offset': -3.3,
@@ -121,7 +121,7 @@ class scope_config():
             self.ch_c4 = {'ch_view': 'TRUE', 'volt_dev': '5', 'BW': '20MHz', 'filter': 'None', 'v_offset': -15,
                           'label_name': 'Vin', 'label_position': 0.0001, 'label_view': 'TRUE', 'coupling': 'DC1M', 'v_offset_ind': -3}
             self.ch_c5 = {'ch_view': 'TRUE', 'volt_dev': '2', 'BW': '20MHz', 'filter': 'None', 'v_offset': -3.5,
-                          'label_name': 'I_load', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC50', 'v_offset_ind': -2}
+                          'label_name': 'I_load', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC50', 'v_offset_ind': -3}
             self.ch_c6 = {'ch_view': 'TRUE', 'volt_dev': '0.02', 'BW': '20MHz', 'filter': 'None', 'v_offset': -0.04,
                           'label_name': 'LDO', 'label_position': 0.0001, 'label_view': 'TRUE', 'coupling': 'AC1M', 'v_offset_ind': 0}
             self.ch_c7 = {'ch_view': 'FALSE', 'volt_dev': '0.2', 'BW': '20MHz', 'filter': 'None', 'v_offset': -3.5,
@@ -130,8 +130,8 @@ class scope_config():
                           'label_name': 'name', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC1M', 'v_offset_ind': 1}
 
             # setting of general
-            self.set_general = {'trigger_mode': 'Auto', 'trigger_source': 'C1', 'trigger_level': '0',
-                                'trigger_slope': 'Positive', 'time_scale': '0.0005', 'time_offset': '0', 'sample_mode': 'RealTime', 'fixed_sample_rate': '5GS/s'}
+            self.set_general = {'trigger_mode': 'Auto', 'trigger_source': 'C5', 'trigger_level': '3',
+                                'trigger_slope': 'Positive', 'time_scale': '0.0001', 'time_offset': '-0.00025', 'sample_mode': 'RealTime', 'fixed_sample_rate': '5GS/s'}
             # note: ripple measurement follow robert's measurement
 
             # add the two dimension index for the find signal reference
@@ -675,5 +675,7 @@ if __name__ == '__main__':
     if test_index == 0:
         # used for checking the scope initialization setting
         scope.open_inst()
-        scope.scope_initial('NT50970_pwr_seq_inrush')
+        # use the index correction or not
+        scope.nor_v_off = 1
+        scope.scope_initial('SY8386C_load_tran')
         pass
