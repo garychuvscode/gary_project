@@ -209,6 +209,9 @@ class eff_mea:
         bypass_measurement_flag = 0
         self.sheet_gen()
 
+        # make sure MCU back to initial
+        self.mcu_ini.back_to_initial()
+
         # 220521 new start of program, infinite loop for the selection
         # choose the eff or the normal instrument control
         while (eff_done == 0):

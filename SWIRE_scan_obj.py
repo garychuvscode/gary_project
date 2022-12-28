@@ -122,6 +122,9 @@ class sw_scan:
 
         self.sheet_gen()
 
+        # make sure MCU back to initial
+        self.mcu_ini.back_to_initial()
+
         # sheet needed in the sub
         res_sheet = excel_s.sh_sw_scan
 

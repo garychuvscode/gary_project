@@ -1420,7 +1420,28 @@ class excel_parameter ():
     def excel_save(self):
         # only save, not change the result book trace
         # should be only the temp file during program operation
-        self.wb_res.save(self.result_book_trace)
+
+        # 221228 to prevent the error when checking report,add try except block
+
+        x_save = 0
+        # try 3 times for saving before real error
+        c_save = 3
+        while x_save < c_save:
+            try:
+                self.wb_res.save(self.result_book_trace)
+                # close the counter by setting the loop to 3 and it will end
+                x_save = 3
+
+                pass
+            except :
+                print('I know Grace is cute, but python need to save the excel now in 10 sec')
+                print(f'system counter is {x_save}')
+                time.sleep(9)
+                pass
+
+            x_save = x_save + 1
+
+
 
         # also update the program exit control for checking
         self.check_program_exit()

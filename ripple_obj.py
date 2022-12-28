@@ -176,6 +176,9 @@ class ripple_test ():
         extra_comments = ''
         # this used to save the in
 
+        # make sure MCU back to initial
+        self.mcu_ini.back_to_initial()
+
         self.pre_test_inst()
 
         # slave object in subprogram
@@ -677,6 +680,9 @@ class ripple_test ():
         self.para_loaded()
         # the general loop will start from pulse
 
+        # make sure MCU back to initial
+        self.mcu_ini.back_to_initial()
+
         # for the measurement result, need to set to max for current
         scope_value_temp = self.excel_ini.scope_value
         self.excel_ini.scope_value = 'max'
@@ -897,6 +903,9 @@ class ripple_test ():
         self.para_loaded()
         # the general loop will start from pulse
 
+        # make sure MCU back to initial
+        self.mcu_ini.back_to_initial()
+
         # for the measurement result, need to set to max for current
         scope_value_temp = self.excel_ini.scope_value
         self.excel_ini.scope_value = 'max'
@@ -1116,6 +1125,9 @@ class ripple_test ():
         # to reduce the complexity of general loop
 
         # the general loop will start from pulse
+
+        # make sure MCU back to initial
+        self.mcu_ini.back_to_initial()
 
         # control variable
         c_sheet = 5

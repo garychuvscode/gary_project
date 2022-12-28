@@ -340,6 +340,7 @@ class Power_BK9141(GInst):
     def inst_single_close(self, off_ch):
         # close single channel, change the function name due to
         # from different library
+        off_ch = int(off_ch)
         self.outputOFF('CH' + str(off_ch))
 
         pass

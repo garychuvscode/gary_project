@@ -146,6 +146,9 @@ class general_test ():
         # 221111 disable extra enable control, use the simulation mode of GPIB to
         # control the instrument
 
+        # make sure MCU back to initial
+        self.mcu_ini.back_to_initial()
+
         # 221220: add the function for reading pwr supply iout
         # 0 is disable and 1 is enable => just check for data latch
         # add the measurement for all case
