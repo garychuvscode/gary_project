@@ -1049,7 +1049,8 @@ class general_test ():
         pwr_iout set to default 1 since iout is needed for the judgement for short
         power supply channel is fixed in pre-short, not follow excel sheeet \n
         channel sequence: 2,1,3 ; 3 is fixed for bias
-        if using the original sequence, sheet_seq=1
+        if using the original sequence, sheet_seq=1 \n
+        there is no Vin calibration in pre-short
         '''
         # index not to turn on the power supply after damage
         # when it become 1, means pre-short damage

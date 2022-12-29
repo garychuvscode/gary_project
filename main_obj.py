@@ -38,7 +38,7 @@ import ripple_obj as rip
 
 
 # off line test, set to 1 set all the instrument to simulation mode
-main_off_line = 0
+main_off_line = 1
 single_mode = 0
 # this is the variable control file name, single or the multi item
 # adjust after the if selection of program_group
@@ -830,13 +830,10 @@ if __name__ == '__main__':
 
         pass
 
-    # testing for the general test object
+    # pre_short testing of suff
     elif program_group == 8:
         '''
-        this is the testing can be modify in the program
-        by using different code and test \n
-        function reserve for VScode control interface,
-        don't change previous setting once the testing is ok for items for exe file
+        pre-short testing, watch out the pwr supply channel
         '''
         # fixed part, open one result book and save the book
         # in temp name
@@ -859,13 +856,13 @@ if __name__ == '__main__':
         # changeable area
         # ===========
 
-        # general_t.set_sheet_name('general_1')
-        # general_t.run_verification()
+        general_t.set_sheet_name('gen_pre_short_HT_HV')
+        # using the default channel setting, not the main sheet setting
+        # ch2(relay0), ch1(relay6), ch3(relay7) => excel sequence
+        general_t.pre_short(pwr_iout=1, sheet_seq=0)
 
-        general_t.set_sheet_name('general_2')
-        general_t.run_verification()
-
-        print('finished XX verification')
+        general_t.set_sheet_name('gen_pre_short_LT_HV')
+        general_t.pre_short(pwr_iout=1, sheet_seq=0)
 
         # ===========
         # changeable area

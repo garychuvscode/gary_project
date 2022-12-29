@@ -1275,7 +1275,15 @@ class excel_parameter ():
             # 221218 modify, add the reference sheet to the last sheet
             sh_count = self.wb_res.sheets.count
             sh_temp = self.wb_res.sheets(sh_count)
-            self.sh_ref = self.wb_res.sheets.add('ref_sh', after=sh_temp.name)
+            try:
+                # add for prevent issue of forgetting to delete the ref_sh when re-run
+                self.sh_ref = self.wb_res.sheets.add(
+                    'ref_sh', after=sh_temp.name)
+
+            except:
+                # when using the old sheet, it may have ref_sh already
+                self.sh_ref = self.wb_res.sheets('ref_sh')
+                print('the ref_sh is already exist')
 
             # self.sh_ref_condition = self.wb_res.sheets.add('ref_sh2')
             # delete the extra sheet from new workbook, difference from version
@@ -1433,15 +1441,14 @@ class excel_parameter ():
                 x_save = 3
 
                 pass
-            except :
-                print('I know Grace is cute, but python need to save the excel now in 10 sec')
+            except:
+                print(
+                    'I know Grace is cute, but python need to save the excel now in 10 sec')
                 print(f'system counter is {x_save}')
                 time.sleep(9)
                 pass
 
             x_save = x_save + 1
-
-
 
         # also update the program exit control for checking
         self.check_program_exit()
