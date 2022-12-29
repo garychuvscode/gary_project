@@ -386,8 +386,9 @@ class ripple_test ():
                             if self.ripple_line_load == 0:
                                 # change to 10ms consider for PFM when ripple operation
                                 # scope_s.Hor_scale_adj(0.01)
-                                if self.pmic_buck == 1:
+                                if self.pmic_buck == 2:
                                     # don't change if LDO ripple, no PFM
+                                    # pmic_buck 0 is PMIC, 1 is buck, 2 is LDO
                                     pass
                                 else:
                                     scope_s.Hor_scale_adj(0.01)
@@ -395,7 +396,7 @@ class ripple_test ():
                                 pass
                             elif self.ripple_line_load == 1:
                                 # change to 500us for line transient, for more cycle at light load
-                                if self.pmic_buck == 1:
+                                if self.pmic_buck == 1 or self.pmic_buck == 2:
                                     scope_s.Hor_scale_adj(0.005)
                                 else:
                                     scope_s.Hor_scale_adj(0.0005)

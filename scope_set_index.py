@@ -161,7 +161,7 @@ class scope_config():
                           'label_name': 'Buck', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'AC1M', 'v_offset_ind': 1}
             self.ch_c2 = {'ch_view': 'TRUE', 'volt_dev': '0.02', 'BW': '20MHz', 'filter': 'None', 'v_offset': 0.045,
                           'label_name': 'VCC', 'label_position': 0.0001, 'label_view': 'TRUE', 'coupling': 'AC1M', 'v_offset_ind': -2.5}
-            self.ch_c3 = {'ch_view': 'FALSE', 'volt_dev': '1', 'BW': '20MHz', 'filter': 'None', 'v_offset': -3.3,
+            self.ch_c3 = {'ch_view': 'FALSE', 'volt_dev': '1', 'BW': '20MHz', 'filter': '2bits', 'v_offset': -3.3,
                           'label_name': 'OVDD', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC1M', 'v_offset_ind': 1}
             self.ch_c4 = {'ch_view': 'TRUE', 'volt_dev': '5', 'BW': '20MHz', 'filter': 'None', 'v_offset': -15,
                           'label_name': 'Vin', 'label_position': 0.0001, 'label_view': 'TRUE', 'coupling': 'DC1M', 'v_offset_ind': -3}
@@ -211,6 +211,51 @@ class scope_config():
             self.ch_c4 = {'ch_view': 'TRUE', 'volt_dev': '5', 'BW': '20MHz', 'filter': 'None', 'v_offset': -15,
                           'label_name': 'Vin', 'label_position': 0.0001, 'label_view': 'TRUE', 'coupling': 'DC1M', 'v_offset_ind': 1.75}
             self.ch_c5 = {'ch_view': 'TRUE', 'volt_dev': '2', 'BW': '20MHz', 'filter': 'None', 'v_offset': -3.5,
+                          'label_name': 'I_load', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC50', 'v_offset_ind': -3}
+            self.ch_c6 = {'ch_view': 'TRUE', 'volt_dev': '0.1', 'BW': '20MHz', 'filter': 'None', 'v_offset': -0.04,
+                          'label_name': 'LDO', 'label_position': 0.0001, 'label_view': 'TRUE', 'coupling': 'AC1M', 'v_offset_ind': -1.5}
+            self.ch_c7 = {'ch_view': 'FALSE', 'volt_dev': '0.2', 'BW': '20MHz', 'filter': 'None', 'v_offset': -3.5,
+                          'label_name': 'VOP', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC1M', 'v_offset_ind': 1}
+            self.ch_c8 = {'ch_view': 'FALSE', 'volt_dev': '0.5', 'BW': '20MHz', 'filter': 'None', 'v_offset': 0,
+                          'label_name': 'name', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC1M', 'v_offset_ind': 1}
+
+            # setting of general
+            self.set_general = {'trigger_mode': 'Auto', 'trigger_source': 'C4', 'trigger_level': '15',
+                                'trigger_slope': 'Positive', 'time_scale': '0.00005', 'time_offset': '-0.000125', 'sample_mode': 'RealTime', 'fixed_sample_rate': '5GS/s'}
+            # note: ripple measurement follow robert's measurement
+
+            # add the two dimension index for the find signal reference
+            self.ch_index = {'C1': self.ch_c1, 'C2': self.ch_c2, 'C3': self.ch_c3, 'C4': self.ch_c4,
+                             'C5': self.ch_c5, 'C6': self.ch_c6, 'C7': self.ch_c7, 'C8': self.ch_c8}
+
+            # setting of measurement
+            self.p1 = {"param": "pkpk", "source": "C1", "view": "TRUE"}
+            self.p2 = {"param": "pkpk", "source": "C2", "view": "TRUE"}
+            self.p3 = {"param": "pkpk", "source": "C6", "view": "TRUE"}
+            self.p4 = {"param": "max", "source": "C3", "view": "TRUE"}
+            self.p5 = {"param": "min", "source": "C7", "view": "TRUE"}
+            self.p6 = {"param": "mean", "source": "C5", "view": "TRUE"}
+            self.p7 = {"param": "pkpk", "source": "C7", "view": "TRUE"}
+            self.p8 = {"param": "pkpk", "source": "C3", "view": "TRUE"}
+            self.p9 = {"param": "mean", "source": "C3", "view": "TRUE"}
+            self.p10 = {"param": "mean", "source": "C4", "view": "TRUE"}
+            self.p11 = {"param": "mean", "source": "C6", "view": "TRUE"}
+            self.p12 = {"param": "mean", "source": "C2", "view": "TRUE"}
+
+            pass
+
+        elif setup_index == 'SY8386C_line_tran_LDO':
+            # index 0 only for functional test
+            # the setting for ripple verification
+            self.ch_c1 = {'ch_view': 'TRUE', 'volt_dev': '0.05', 'BW': '20MHz', 'filter': 'None', 'v_offset': 0,
+                          'label_name': 'Buck', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'AC1M', 'v_offset_ind': -0.5}
+            self.ch_c2 = {'ch_view': 'TRUE', 'volt_dev': '0.1', 'BW': '20MHz', 'filter': '2bits', 'v_offset': 0.045,
+                          'label_name': 'VCC', 'label_position': 0.0001, 'label_view': 'TRUE', 'coupling': 'AC1M', 'v_offset_ind': -2.5}
+            self.ch_c3 = {'ch_view': 'FALSE', 'volt_dev': '1', 'BW': '20MHz', 'filter': '2bits', 'v_offset': -3.3,
+                          'label_name': 'OVDD', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC1M', 'v_offset_ind': 1}
+            self.ch_c4 = {'ch_view': 'TRUE', 'volt_dev': '5', 'BW': '20MHz', 'filter': 'None', 'v_offset': -15,
+                          'label_name': 'Vin', 'label_position': 0.0001, 'label_view': 'TRUE', 'coupling': 'DC1M', 'v_offset_ind': 1.75}
+            self.ch_c5 = {'ch_view': 'TRUE', 'volt_dev': '0.1', 'BW': '20MHz', 'filter': 'None', 'v_offset': -3.5,
                           'label_name': 'I_load', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC50', 'v_offset_ind': -3}
             self.ch_c6 = {'ch_view': 'TRUE', 'volt_dev': '0.1', 'BW': '20MHz', 'filter': 'None', 'v_offset': -0.04,
                           'label_name': 'LDO', 'label_position': 0.0001, 'label_view': 'TRUE', 'coupling': 'AC1M', 'v_offset_ind': -1.5}

@@ -94,6 +94,9 @@ class general_test ():
         self.iout_r6 = 0.1
         self.iout_r7 = 0.1
 
+        # iout_read for the pwr
+        self.pwr_iout_en = 0
+
     pass
 
     def extra_file_name_setup(self, extra_name=0):
@@ -1040,6 +1043,130 @@ class general_test ():
 
         pass
 
+    def pre_short(self, pwr_iout=1, sheet_seq=0):
+        '''
+        pre-short testing with chamber
+        pwr_iout set to default 1 since iout is needed for the judgement for short
+        power supply channel is fixed in pre-short, not follow excel sheeet \n
+        channel sequence: 2,1,3 ; 3 is fixed for bias
+        if using the original sequence, sheet_seq=1
+        '''
+        # index not to turn on the power supply after damage
+        # when it become 1, means pre-short damage
+        self.pre_short_damage_r0 = 0
+        self.pre_short_damage_r6 = 0
+        self.pre_short_damage_r7 = 0
+        wait_time = 0.5
+
+        self.pwr_iout_en = pwr_iout
+
+        if sheet_seq == 0:
+            # use the pre_short configuration sequence
+            # save the temp channel setting and return after pre-short is over
+            temp_r0 = self.excel_ini.relay0_ch
+            temp_r6 = self.excel_ini.relay6_ch
+            temp_r7 = self.excel_ini.relay7_ch
+
+            self.excel_ini.relay0_ch = 2
+            self.excel_ini.relay6_ch = 1
+            self.excel_ini.relay7_ch = 3
+
+        x_count = 0
+        while x_count < self.c_test_amount:
+            # load the setting first
+            self.data_loaded(x_count)
+
+            # is able to operate high and low temp power on and off
+            if self.chamber_target != 'x':
+                self.res_temp_read = self.chamber_ini.chamber_set(
+                    self.chamber_target)
+
+            if self.excel_ini.gen_pwr_ch_amount >= 1:
+                # this program ch1 is lock for the Vin, control by the
+                # other part of program
+
+                if self.pwr_ch1 != 'x' and self.pre_short_damage_r0 == 0:
+                    self.pwr_ini.chg_out(
+                        self.pwr_ch1, self.iout_r0, self.excel_ini.relay0_ch, 'on')
+                else:
+                    # turn off the power if not going to control power
+                    self.pwr_ini.chg_out(0, self.iout_r0,
+                                         self.excel_ini.relay0_ch, 'off')
+
+                pass
+            if self.excel_ini.gen_pwr_ch_amount > 1:
+                if self.pwr_ch2 != 'x' and self.pre_short_damage_r6 == 0:
+                    self.pwr_ini.chg_out(
+                        self.pwr_ch2, self.iout_r6, self.excel_ini.relay6_ch, 'on')
+                else:
+                    # turn off the power if not going to control power
+                    self.pwr_ini.chg_out(0, self.iout_r6,
+                                         self.excel_ini.relay6_ch, 'off')
+            if self.excel_ini.gen_pwr_ch_amount > 2:
+                if self.pwr_ch3 != 'x' and self.pre_short_damage_r7 == 0:
+                    self.pwr_ini.chg_out(
+                        self.pwr_ch3, self.iout_r7, self.excel_ini.relay7_ch, 'on')
+                else:
+                    # turn off the power if not going to control power
+                    self.pwr_ini.chg_out(0, self.iout_r7,
+                                         self.excel_ini.relay7_ch, 'off')
+
+            time.sleep(wait_time)
+            self.data_measured()
+
+            # turn off the power after measurement finished
+
+            if self.excel_ini.gen_pwr_ch_amount >= 1:
+                self.pwr_ini.chg_out(
+                    self.excel_ini.pre_vin, self.excel_ini.pre_sup_iout, self.excel_ini.relay0_ch, 'off')
+            if self.excel_ini.gen_pwr_ch_amount > 1:
+                self.pwr_ini.chg_out(
+                    self.excel_ini.pre_vin, self.excel_ini.pre_sup_iout, self.excel_ini.relay6_ch, 'off')
+            if self.excel_ini.gen_pwr_ch_amount > 2:
+                self.pwr_ini.chg_out(
+                    self.excel_ini.pre_vin, self.excel_ini.pre_sup_iout, self.excel_ini.relay7_ch, 'off')
+
+            if float(self.pwr_relay0_ioout) > 1:
+                # relay0 already burned
+                self.pre_short_damage_r0 = 1
+
+                pass
+            if float(self.pwr_relay6_ioout) > 1:
+                # relay6 already burned
+                self.pre_short_damage_r6 = 1
+
+                pass
+            if float(self.pwr_relay7_ioout) > 1:
+                # relay7 already burned
+                self.pre_short_damage_r7 = 1
+
+                pass
+
+            self.data_latch(x_count)
+            # save the result and also check program exit
+            self.excel_ini.excel_save()
+            if self.excel_ini.turn_inst_off == 1:
+                self.end_of_exp()
+                self.excel_ini.excel_save()
+
+            x_count = x_count + 1
+            pass
+
+        print('program finished')
+        self.extra_file_name_setup()
+        self.inst_off()
+        self.table_return()
+        self.extra_file_name_setup()
+        self.end_of_exp()
+
+        if sheet_seq == 0:
+            # return the sheet setting from temp
+            self.excel_ini.relay0_ch = temp_r0
+            self.excel_ini.relay6_ch = temp_r6
+            self.excel_ini.relay7_ch = temp_r7
+
+        pass
+
     def flexible_gen_ini(self):
         '''
         to initial special function for different items
@@ -1053,7 +1180,10 @@ class general_test ():
 
             # =====
 
+            self.data_measured()
+
             # =====
+
             self.data_latch(x_count)
             # save the result and also check program exit
             self.excel_ini.excel_save()
@@ -1205,7 +1335,7 @@ if __name__ == '__main__':
     import inst_pkg_d as inst
     # initial the object and set to simulation mode
     pwr_t = inst.LPS_505N(3.7, 0.5, 3, 1, 'off')
-    pwr_t.sim_inst = 0
+    pwr_t.sim_inst = 1
     pwr_t.open_inst()
     # initial the object and set to simulation mode
     met_v_t = inst.Met_34460(0.0001, 7, 0.000001, 2.5, 20)
@@ -1246,7 +1376,7 @@ if __name__ == '__main__':
 
     # and the different verification method can be call below
 
-    version_select = 3
+    version_select = 4
 
     if version_select == 0:
         # create one object
@@ -1308,3 +1438,11 @@ if __name__ == '__main__':
 
         excel_t.end_of_file(0)
         pass
+
+    elif version_select == 4:
+        # testing for pre-short function
+        general_t = general_test(
+            excel_t, pwr_t, met_v_t, load_t, mcu_t, src_t, met_i_t, chamber_t)
+
+        general_t.set_sheet_name('gen_pre_short_HT_HV', extra_sheet=0)
+        general_t.pre_short()
