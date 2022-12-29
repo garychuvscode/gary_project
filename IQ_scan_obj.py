@@ -155,6 +155,9 @@ class iq_scan:
 
         pre_test_en = self.excel_ini.pre_test_en
 
+        # make sure MCU back to initial
+        self.mcu_ini.back_to_initial()
+
         # power supply OV and OC protection
         self.pwr_ini.ov_oc_set(self.excel_ini.pre_vin_max,
                                self.excel_ini.pre_imax)

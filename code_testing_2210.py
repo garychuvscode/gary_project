@@ -175,8 +175,10 @@ class test_calass():
 
         # practice for try except application
         try:
-            a = 100 / example
+            a = 0
             print(f'correct input answer is {a}')
+            a = 100 / example
+            print(f'2_correct input answer is {a}')
             pass
         except:
             a = 10

@@ -98,6 +98,9 @@ class Power_BK9141(GInst):
         self.res_testi = 0
         self.res_testv = 0
 
+        # 221226 correct the query issue => no reutnr value
+        self.res_q = 0
+
     def only_write(self, cmd):
         if self.sim_inst == 1:
             # real mode
@@ -113,10 +116,13 @@ class Power_BK9141(GInst):
         if self.sim_inst == 1:
             # real mode
             print(f'real_mode query: {cmd}')
-            self.inst.query(cmd, dly)
+            self.res_q = self.inst.query(cmd, dly)
 
         else:
             print(f'sim_mode query: {cmd}')
+            self.res_q = self.res_q + 1
+
+        return self.res_q
 
         pass
 
@@ -265,6 +271,7 @@ class Power_BK9141(GInst):
         :return: Current.\n
         ch_str = 'CH1'
         """
+        valstr = 0
 
         try:
             if ch_str == 0:
@@ -281,7 +288,11 @@ class Power_BK9141(GInst):
 
         if self.sim_inst == 0:
             self.res_testi = self.res_testi + 1
-            valstr = str(self.res_testi)
+
+        # if self.res_testi != 0:
+        #     valstr = str(self.res_testi)
+        # else:
+        #     valstr = 0
 
         return float(re.search(r"[-+]?\d*\.\d+|\d+", valstr).group(0))
 
@@ -329,6 +340,7 @@ class Power_BK9141(GInst):
     def inst_single_close(self, off_ch):
         # close single channel, change the function name due to
         # from different library
+        off_ch = int(off_ch)
         self.outputOFF('CH' + str(off_ch))
 
         pass
@@ -460,7 +472,7 @@ class Power_BK9141(GInst):
             time.sleep(wait_time)
             # finished getting back to the initial state
         else:
-            v_res_temp = int(v_res_temp)
+            v_res_temp = float(v_res_temp)
             v_res_temp = v_res_temp + 1
         # need to return the channel after the calibration is finished
 

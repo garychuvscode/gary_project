@@ -65,6 +65,12 @@ class ripple_test ():
         # object sumulation mode, defaut active (sim mode change to 0)
         self.obj_sim_mode = 1
 
+        # 221226 add the new mode for PMIC buck selection
+        '''
+        default set to 0 and used for PMIC mode for different operation selection
+        '''
+        self.pmic_buck = 0
+
         pass
 
     def para_loaded(self):
@@ -151,10 +157,12 @@ class ripple_test ():
 
         pass
 
-    def run_verification(self):
+    def run_verification(self, pmic_buck0=0):
         '''
         run ripple testing verification
+        pmic_buck0 = 0 in default, PMIC mode, buck set to 1
         '''
+        self.pmic_buck = pmic_buck0
 
         self.para_loaded()
         # for the control of temperature, now can be loaded from from the main
@@ -167,6 +175,9 @@ class ripple_test ():
         # reset the content of the extra comments every time before the loop start
         extra_comments = ''
         # this used to save the in
+
+        # make sure MCU back to initial
+        self.mcu_ini.back_to_initial()
 
         self.pre_test_inst()
 
@@ -201,7 +212,10 @@ class ripple_test ():
                     scope_s.ch_view(6, 0)
                     scope_s.ch_view(2, 0)
                     scope_s.ch_view(3, 0)
-                    scope_s.find_signal(ch=1, variable_index=0)
+                    if self.pmic_buck == 0:
+                        # 221226 for buck and PMIC there are different setting selection
+                        # only PMIC will adjust the index in VCI mode
+                        scope_s.find_signal(ch=1, variable_index=0)
                     pass
 
             pass
@@ -375,7 +389,10 @@ class ripple_test ():
                                 pass
                             elif self.ripple_line_load == 1:
                                 # change to 500us for line transient, for more cycle at light load
-                                scope_s.Hor_scale_adj(0.0005)
+                                if self.pmic_buck == 1:
+                                    scope_s.Hor_scale_adj(0.005)
+                                else:
+                                    scope_s.Hor_scale_adj(0.0005)
                                 pass
                             elif self.ripple_line_load == 2:
                                 # not to change for load transient, no PFM issue
@@ -666,6 +683,9 @@ class ripple_test ():
         self.para_loaded()
         # the general loop will start from pulse
 
+        # make sure MCU back to initial
+        self.mcu_ini.back_to_initial()
+
         # for the measurement result, need to set to max for current
         scope_value_temp = self.excel_ini.scope_value
         self.excel_ini.scope_value = 'max'
@@ -886,6 +906,9 @@ class ripple_test ():
         self.para_loaded()
         # the general loop will start from pulse
 
+        # make sure MCU back to initial
+        self.mcu_ini.back_to_initial()
+
         # for the measurement result, need to set to max for current
         scope_value_temp = self.excel_ini.scope_value
         self.excel_ini.scope_value = 'max'
@@ -1105,6 +1128,9 @@ class ripple_test ():
         # to reduce the complexity of general loop
 
         # the general loop will start from pulse
+
+        # make sure MCU back to initial
+        self.mcu_ini.back_to_initial()
 
         # control variable
         c_sheet = 5
