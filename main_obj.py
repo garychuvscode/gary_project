@@ -734,8 +734,8 @@ if __name__ == '__main__':
             format_g.set_sheet_name('CTRL_sh_ripple_SY_LDO')
             ripple_t.run_verification(pmic_buck0=2)
             # load transient
-            # format_g.set_sheet_name('CTRL_sh_load_SY_LDO')
-            # ripple_t.run_verification(pmic_buck0=2)
+            format_g.set_sheet_name('CTRL_sh_load_SY_LDO')
+            ripple_t.run_verification(pmic_buck0=2)
             print(f'finished waveform test verification ind_{program_group}')
 
             pass
