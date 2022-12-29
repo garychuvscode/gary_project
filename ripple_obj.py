@@ -439,10 +439,12 @@ class ripple_test ():
                         else:
                             '''
                             Buck: is for LDO load transient, check LDO and VCC
+                            221229 update: for the LDO load transient, need to use CCDL
+                            to have better slew rate
                             '''
                             load_s.dynamic_config(L1=iload_L1, L2=iload_L2)
                             load_s.dynamic_ctrl(
-                                act_ch1=excel_s.loader_ELch, status0='on', smooth_on_off=1)
+                                act_ch1=excel_s.loader_ELch, status0='on', smooth_on_off=1,mode0='CCDL')
                         # trigger OVDD
                         # 221205: no need to change the level here, change to no input since there
                         # are auto level already
