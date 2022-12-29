@@ -406,9 +406,6 @@ class general_test ():
 
         '''
 
-        '''
-
-        '''
         self.ctrl_ind_2 = ctrl_index
         if ctrl_index == 0:
             # doing nothing
