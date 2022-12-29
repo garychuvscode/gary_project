@@ -1214,9 +1214,13 @@ if __name__ == '__main__':
         # changeable area
         # ===========
 
+        # 221226 change the current setting to 0.1A to preven burn down
+        excel_m.gen_pwr_i_set = 0.1
+
         # EN=Vin/2 testing
         general_t_bk.set_sheet_name(
             ctrl_sheet_name0='gen_BK_ENd2', extra_sheet=0, extra_name='_')
+        general_t.pwr_iout_set(iout_r0=0.1,iout_r6=0.1,iout_r7=0.1)
         general_t_bk.run_verification(ctrl_ind_1=0, vin_cal=0)
 
         # EN1 testing

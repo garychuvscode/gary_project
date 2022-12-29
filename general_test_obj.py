@@ -84,6 +84,11 @@ class general_test ():
         self.extra_count = 0
         # extra count is used to check for the available sequence of extra sheet
 
+        # 221226: add the supply iout setting in different channel
+        self.iout_r0 = 0.1
+        self.iout_r6 = 0.1
+        self.iout_r7 = 0.1
+
     pass
 
     def extra_file_name_setup(self, extra_name=0):
@@ -194,26 +199,26 @@ class general_test ():
             if gen_pwr_ch_amount >= 1:
                 if self.pwr_ch1 != 'x':
                     pwr_s.chg_out(
-                        self.pwr_ch1, self.excel_ini.gen_pwr_i_set, self.excel_ini.relay0_ch, 'on')
+                        self.pwr_ch1, self.iout_r0, self.excel_ini.relay0_ch, 'on')
                 else:
                     # turn off the power if not going to control power
-                    pwr_s.chg_out(0, self.excel_ini.gen_pwr_i_set,
+                    pwr_s.chg_out(0, self.iout_r0,
                                   self.excel_ini.relay0_ch, 'off')
             if gen_pwr_ch_amount > 1:
                 if self.pwr_ch2 != 'x':
                     pwr_s.chg_out(
-                        self.pwr_ch2, self.excel_ini.gen_pwr_i_set, self.excel_ini.relay6_ch, 'on')
+                        self.pwr_ch2, self.iout_r6, self.excel_ini.relay6_ch, 'on')
                 else:
                     # turn off the power if not going to control power
-                    pwr_s.chg_out(0, self.excel_ini.gen_pwr_i_set,
+                    pwr_s.chg_out(0, self.iout_r6,
                                   self.excel_ini.relay6_ch, 'off')
             if gen_pwr_ch_amount > 2:
                 if self.pwr_ch3 != 'x':
                     pwr_s.chg_out(
-                        self.pwr_ch3, self.excel_ini.gen_pwr_i_set, self.excel_ini.relay7_ch, 'on')
+                        self.pwr_ch3, self.iout_r7, self.excel_ini.relay7_ch, 'on')
                 else:
                     # turn off the power if not going to control power
-                    pwr_s.chg_out(0, self.excel_ini.gen_pwr_i_set,
+                    pwr_s.chg_out(0, self.iout_r7,
                                   self.excel_ini.relay7_ch, 'off')
 
             if gen_pulse_i2x_en == 0:
@@ -547,6 +552,9 @@ class general_test ():
         self.pwr_ini.change_I(self.excel_ini.gen_pwr_i_set, 1)
         self.pwr_ini.change_I(self.excel_ini.gen_pwr_i_set, 2)
         self.pwr_ini.change_I(self.excel_ini.gen_pwr_i_set, 3)
+        self.iout_r0 = self.excel_ini.gen_pwr_i_set
+        self.iout_r6 = self.excel_ini.gen_pwr_i_set
+        self.iout_r7 = self.excel_ini.gen_pwr_i_set
         pass
 
     def inst_off(self):
@@ -602,8 +610,6 @@ class general_test ():
 
         # since vin calibration also return the sting of calibration result,
         # it doesn't a must to measure Vin of each channel again
-
-
 
         self.mcu_ini.relay_ctrl(0)
         # time.sleep(excel_s.wait_small)
@@ -661,6 +667,16 @@ class general_test ():
         time.sleep(3 * self.excel_ini.wait_small)
         self.res_met_curr = self.met_i_ini.mea_i()
         time.sleep(self.excel_ini.wait_small)
+
+        pass
+
+    def pwr_iout_set(self, iout_r0=0.1, iout_r6=0.1, iout_r7=0.1):
+        '''
+        config the different iout of the power supply in general test, default is 0.1A
+        '''
+        self.iout_r0 = iout_r0
+        self.iout_r6 = iout_r6
+        self.iout_r7 = iout_r7
 
         pass
 
@@ -749,24 +765,24 @@ class general_test ():
             if self.excel_ini.gen_pwr_ch_amount > 1:
                 if self.pwr_ch2 != 'x':
                     self.pwr_ini.chg_out(
-                        self.pwr_ch2, self.excel_ini.gen_pwr_i_set, self.excel_ini.relay6_ch, 'on')
+                        self.pwr_ch2, self.iout_r6, self.excel_ini.relay6_ch, 'on')
                 else:
                     # turn off the power if not going to control power
-                    self.pwr_ini.chg_out(0, self.excel_ini.gen_pwr_i_set,
-                                  self.excel_ini.relay6_ch, 'off')
+                    self.pwr_ini.chg_out(0, self.iout_r6,
+                                         self.excel_ini.relay6_ch, 'off')
             if self.excel_ini.gen_pwr_ch_amount > 2:
                 if self.pwr_ch3 != 'x':
                     self.pwr_ini.chg_out(
-                        self.pwr_ch3, self.excel_ini.gen_pwr_i_set, self.excel_ini.relay7_ch, 'on')
+                        self.pwr_ch3, self.iout_r7, self.excel_ini.relay7_ch, 'on')
                 else:
                     # turn off the power if not going to control power
-                    self.pwr_ini.chg_out(0, self.excel_ini.gen_pwr_i_set,
-                                  self.excel_ini.relay7_ch, 'off')
+                    self.pwr_ini.chg_out(0, self.iout_r7,
+                                         self.excel_ini.relay7_ch, 'off')
 
             if x_count < 1 * sub_count:
                 # sequence1 pwr-EN-SW
                 self.pwr_ini.chg_out(
-                    self.pwr_ch1, self.excel_ini.gen_pwr_i_set, self.excel_ini.relay0_ch, 'on')
+                    self.pwr_ch1, self.iout_r0, self.excel_ini.relay0_ch, 'on')
                 time.sleep(dly_set)
                 self.mcu_ini.pmic_mode(3)
                 time.sleep(dly_set)
@@ -776,7 +792,7 @@ class general_test ():
             elif x_count < 2 * sub_count:
                 # sequence2 pwr-SW-EN
                 self.pwr_ini.chg_out(
-                    self.pwr_ch1, self.excel_ini.gen_pwr_i_set, self.excel_ini.relay0_ch, 'on')
+                    self.pwr_ch1, self.iout_r0, self.excel_ini.relay0_ch, 'on')
                 time.sleep(dly_set)
                 self.mcu_ini.pmic_mode(2)
                 time.sleep(dly_set)
@@ -788,7 +804,7 @@ class general_test ():
                 self.mcu_ini.pmic_mode(3)
                 time.sleep(1.5 * dly_set)
                 self.pwr_ini.chg_out(
-                    self.pwr_ch1, self.excel_ini.gen_pwr_i_set, self.excel_ini.relay0_ch, 'on')
+                    self.pwr_ch1, self.iout_r0, self.excel_ini.relay0_ch, 'on')
                 time.sleep(dly_set)
                 self.mcu_ini.pmic_mode(4)
 
@@ -798,7 +814,7 @@ class general_test ():
                 self.mcu_ini.pmic_mode(2)
                 time.sleep(1.5 * dly_set)
                 self.pwr_ini.chg_out(
-                    self.pwr_ch1, self.excel_ini.gen_pwr_i_set, self.excel_ini.relay0_ch, 'on')
+                    self.pwr_ch1, self.iout_r0, self.excel_ini.relay0_ch, 'on')
                 time.sleep(dly_set)
                 self.mcu_ini.pmic_mode(4)
 
@@ -810,7 +826,7 @@ class general_test ():
                 self.mcu_ini.pmic_mode(4)
                 time.sleep(1.5 * dly_set)
                 self.pwr_ini.chg_out(
-                    self.pwr_ch1, self.excel_ini.gen_pwr_i_set, self.excel_ini.relay0_ch, 'on')
+                    self.pwr_ch1, self.iout_r0, self.excel_ini.relay0_ch, 'on')
 
                 pass
             elif x_count < 6 * sub_count:
@@ -820,13 +836,13 @@ class general_test ():
                 self.mcu_ini.pmic_mode(4)
                 time.sleep(1.5 * dly_set)
                 self.pwr_ini.chg_out(
-                    self.pwr_ch1, self.excel_ini.gen_pwr_i_set, self.excel_ini.relay0_ch, 'on')
+                    self.pwr_ch1, self.iout_r0, self.excel_ini.relay0_ch, 'on')
 
                 pass
             elif x_count < 7 * sub_count:
                 # sequence7 pwr-SW=EN
                 self.pwr_ini.chg_out(
-                    self.pwr_ch1, self.excel_ini.gen_pwr_i_set, self.excel_ini.relay0_ch, 'on')
+                    self.pwr_ch1, self.iout_r0, self.excel_ini.relay0_ch, 'on')
                 time.sleep(1.5 * dly_set)
                 # time.sleep(dly_set)
                 # self.mcu_ini.pmic_mode(2)
@@ -839,7 +855,7 @@ class general_test ():
                 self.mcu_ini.pmic_mode(4)
                 time.sleep(dly_set)
                 self.pwr_ini.chg_out(
-                    self.pwr_ch1, self.excel_ini.gen_pwr_i_set, self.excel_ini.relay0_ch, 'on')
+                    self.pwr_ch1, self.iout_r0, self.excel_ini.relay0_ch, 'on')
                 # time.sleep(dly_set)
                 # self.mcu_ini.pmic_mode(2)
 
@@ -850,7 +866,7 @@ class general_test ():
 
             # # turn off after data measure
             # self.pwr_ini.chg_out(
-            #     self.pwr_ch1, self.excel_ini.gen_pwr_i_set, self.excel_ini.relay0_ch, 'off')
+            #     self.pwr_ch1, self.iout_r0, self.excel_ini.relay0_ch, 'off')
             # # reset MCU to (EN,SW) = (0,0)
             # self.mcu_ini.pmic_mode(1)
             time.sleep(dly_measure)
@@ -865,7 +881,7 @@ class general_test ():
                 self.mcu_ini.pmic_mode(1)
                 time.sleep(dly_set)
                 self.pwr_ini.chg_out(
-                    self.pwr_ch1, self.excel_ini.gen_pwr_i_set, self.excel_ini.relay0_ch, 'off')
+                    self.pwr_ch1, self.iout_r0, self.excel_ini.relay0_ch, 'off')
 
                 pass
             elif x_count < 2 * sub_count:
@@ -876,7 +892,7 @@ class general_test ():
                 self.mcu_ini.pmic_mode(1)
                 time.sleep(dly_set)
                 self.pwr_ini.chg_out(
-                    self.pwr_ch1, self.excel_ini.gen_pwr_i_set, self.excel_ini.relay0_ch, 'off')
+                    self.pwr_ch1, self.iout_r0, self.excel_ini.relay0_ch, 'off')
 
                 pass
             elif x_count < 3 * sub_count:
@@ -886,7 +902,7 @@ class general_test ():
                 self.mcu_ini.pmic_mode(1)
                 time.sleep(dly_set)
                 self.pwr_ini.chg_out(
-                    self.pwr_ch1, self.excel_ini.gen_pwr_i_set, self.excel_ini.relay0_ch, 'off')
+                    self.pwr_ch1, self.iout_r0, self.excel_ini.relay0_ch, 'off')
 
                 pass
             elif x_count < 4 * sub_count:
@@ -894,7 +910,7 @@ class general_test ():
                 self.mcu_ini.pmic_mode(2)
                 time.sleep(dly_set)
                 self.pwr_ini.chg_out(
-                    self.pwr_ch1, self.excel_ini.gen_pwr_i_set, self.excel_ini.relay0_ch, 'off')
+                    self.pwr_ch1, self.iout_r0, self.excel_ini.relay0_ch, 'off')
                 time.sleep(1.5 * dly_set)
                 self.mcu_ini.pmic_mode(1)
 
@@ -902,7 +918,7 @@ class general_test ():
             elif x_count < 5 * sub_count:
                 # sequence5 EN-SW-pwr, off: pwr-SW-EN
                 self.pwr_ini.chg_out(
-                    self.pwr_ch1, self.excel_ini.gen_pwr_i_set, self.excel_ini.relay0_ch, 'off')
+                    self.pwr_ch1, self.iout_r0, self.excel_ini.relay0_ch, 'off')
                 time.sleep(1.5 * dly_set)
                 self.mcu_ini.pmic_mode(3)
                 time.sleep(dly_set)
@@ -912,7 +928,7 @@ class general_test ():
             elif x_count < 6 * sub_count:
                 # sequence6 SW-EN-pwr, off: pwr-EN-SW
                 self.pwr_ini.chg_out(
-                    self.pwr_ch1, self.excel_ini.gen_pwr_i_set, self.excel_ini.relay0_ch, 'off')
+                    self.pwr_ch1, self.iout_r0, self.excel_ini.relay0_ch, 'off')
                 time.sleep(1.5 * dly_set)
                 self.mcu_ini.pmic_mode(2)
                 time.sleep(dly_set)
@@ -924,7 +940,7 @@ class general_test ():
                 self.mcu_ini.pmic_mode(1)
                 time.sleep(dly_set)
                 self.pwr_ini.chg_out(
-                    self.pwr_ch1, self.excel_ini.gen_pwr_i_set, self.excel_ini.relay0_ch, 'off')
+                    self.pwr_ch1, self.iout_r0, self.excel_ini.relay0_ch, 'off')
                 # time.sleep(dly_set)
                 # self.mcu_ini.pmic_mode(2)
 
@@ -932,7 +948,7 @@ class general_test ():
             elif x_count < 8 * sub_count:
                 # sequence8 SW=EN-pwr, off: pwr-SW=EN
                 self.pwr_ini.chg_out(
-                    self.pwr_ch1, self.excel_ini.gen_pwr_i_set, self.excel_ini.relay0_ch, 'off')
+                    self.pwr_ch1, self.iout_r0, self.excel_ini.relay0_ch, 'off')
                 time.sleep(1.5 * dly_set)
                 self.mcu_ini.pmic_mode(1)
 
