@@ -389,7 +389,10 @@ class ripple_test ():
                                 pass
                             elif self.ripple_line_load == 1:
                                 # change to 500us for line transient, for more cycle at light load
-                                scope_s.Hor_scale_adj(0.0005)
+                                if self.pmic_buck == 1:
+                                    scope_s.Hor_scale_adj(0.005)
+                                else:
+                                    scope_s.Hor_scale_adj(0.0005)
                                 pass
                             elif self.ripple_line_load == 2:
                                 # not to change for load transient, no PFM issue

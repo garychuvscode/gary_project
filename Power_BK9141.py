@@ -472,7 +472,7 @@ class Power_BK9141(GInst):
             time.sleep(wait_time)
             # finished getting back to the initial state
         else:
-            v_res_temp = int(v_res_temp)
+            v_res_temp = float(v_res_temp)
             v_res_temp = v_res_temp + 1
         # need to return the channel after the calibration is finished
 

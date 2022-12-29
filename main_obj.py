@@ -683,7 +683,7 @@ if __name__ == '__main__':
             # this is only for HV buck
             excel_m.relay0_ch = 1
             excel_m.message_box(
-                'high V buck setting, parallel output for BK9141\n control shannel is set to CH1', 'waatch out', auto_exception=1)
+                'high V buck setting, parallel output for BK9141\n control channel is set to CH1', 'waatch out', auto_exception=1)
 
         ripple_t.run_verification()
 
@@ -721,12 +721,92 @@ if __name__ == '__main__':
             # this is only for HV buck
             excel_m.relay0_ch = 1
             excel_m.message_box(
-                'high V buck setting, parallel output for BK9141\n control shannel is set to CH1', 'waatch out', auto_exception=1)
+                'high V buck setting, parallel output for BK9141\n control channel is set to CH1', 'waatch out', auto_exception=1)
         # ripple
         format_g.set_sheet_name('CTRL_sh_ripple_SY')
         ripple_t.run_verification(pmic_buck0=1)
         # load transient
         format_g.set_sheet_name('CTRL_sh_load_SY')
+        ripple_t.run_verification(pmic_buck0=1)
+
+        print('finished waveform test verification')
+
+        # ===========
+        # changeable area
+
+        # remember that this is only call by main, not by  object
+        excel_m.end_of_file(multi_item)
+        # end of file can also be call between each item
+        print('end of the program')
+
+        pass
+
+    # For the HV buck line transient
+    elif program_group == 7.9:
+        excel_m.open_result_book()
+
+        # single setting of the object need to be 1 => no needed single
+        multi_item = 0
+        # if not off line testing, setup the the instrument needed independently
+        # set simulation for the used instrument
+        # pwr, met_v, met_i, loader, src, chamber, main offline
+        sim_mode_independent(1, 1, 1, 1, 1, 0, main_off_line0=main_off_line)
+        # open instrument and add the name
+        # must open after simulation mode setting(open real or sim)
+        pwr_bk_m.sim_inst = 0
+        pwr_m.sim_inst = 0
+        open_inst_and_name()
+        print('open instrument with real or simulation mode')
+
+        # changeable area
+        # ===========
+
+        if excel_m.pwr_select == 1:
+            # this is only for HV buck
+            excel_m.relay0_ch = 1
+            excel_m.message_box(
+                'high V buck setting, parallel output for BK9141\n control channel is set to CH1', 'watch out', auto_exception=1)
+        # line transient
+        format_g.set_sheet_name('CTRL_sh_line_SY')
+        ripple_t.run_verification(pmic_buck0=1)
+
+        print('finished waveform test verification')
+
+        # ===========
+        # changeable area
+
+        # remember that this is only call by main, not by  object
+        excel_m.end_of_file(multi_item)
+        # end of file can also be call between each item
+        print('end of the program')
+
+        pass
+
+    # For the HV buck(LDO) line transient
+    elif program_group == 7.95:
+        excel_m.open_result_book()
+
+        # single setting of the object need to be 1 => no needed single
+        multi_item = 0
+        # if not off line testing, setup the the instrument needed independently
+        # set simulation for the used instrument
+        # pwr, met_v, met_i, loader, src, chamber, main offline
+        sim_mode_independent(1, 1, 1, 1, 1, 0, main_off_line0=main_off_line)
+        # open instrument and add the name
+        # must open after simulation mode setting(open real or sim)
+        pwr_bk_m.sim_inst = 0
+        pwr_m.sim_inst = 0
+        open_inst_and_name()
+        print('open instrument with real or simulation mode')
+
+        # changeable area
+        # ===========
+
+        if excel_m.pwr_select == 1:
+            excel_m.message_box(
+                'high V buck setting, line transient operation', 'watch out', auto_exception=1)
+        # line transient
+        format_g.set_sheet_name('CTRL_sh_line_SY_LDO')
         ripple_t.run_verification(pmic_buck0=1)
 
         print('finished waveform test verification')

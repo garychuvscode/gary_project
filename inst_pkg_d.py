@@ -2506,7 +2506,7 @@ pass
 
 if __name__ == '__main__':
     # add more if selection for different instrument testing
-    inst_test_ctrl = 6
+    inst_test_ctrl = 0
     # 0 => power supply, LPS505N;
     # 1 => meter, 34460;
     # 2 => chroma 63600
@@ -2524,11 +2524,23 @@ if __name__ == '__main__':
         # power supply application
         PWR_supply1 = LPS_505N(0, 0, 1, 1, 'off')
 
-        PWR_supply1.sim_inst = 0
+        PWR_supply1.sim_inst = 1
         # simulation control for the power supply
 
         # open the GPIB device from resource manager, need to add after object is define
         PWR_supply1.open_inst()
+        PWR_supply1.chg_out(0, 0, 1, 'off')
+        PWR_supply1.chg_out(0, 0, 2, 'off')
+        PWR_supply1.chg_out(0, 0, 3, 'off')
+        PWR_supply1.inst_single_close(1)
+        PWR_supply1.inst_single_close(2)
+        PWR_supply1.inst_single_close(3)
+        a = PWR_supply1.read_iout(1)
+        print(a)
+        a = PWR_supply1.read_iout(2)
+        print(a)
+        a = PWR_supply1.read_iout(2)
+        print(a)
 
         # check default value
         print('')
