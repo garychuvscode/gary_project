@@ -698,7 +698,7 @@ if __name__ == '__main__':
                 # this is only for HV buck
                 excel_m.relay0_ch = 1
                 excel_m.message_box(
-                    'high V buck setting, parallel output for BK9141\n control channel is set to CH1', 'waatch out', auto_exception=1)
+                    'high V buck setting, parallel output for BK9141\n control channel is set to CH1', 'watch out', auto_exception=1)
 
             ripple_t.run_verification()
             print(f'finished waveform test verification ind_{program_group}')
@@ -711,7 +711,7 @@ if __name__ == '__main__':
                 # this is only for HV buck
                 excel_m.relay0_ch = 1
                 excel_m.message_box(
-                    'high V buck setting, parallel output for BK9141\n control channel is set to CH1', 'waatch out', auto_exception=1)
+                    'high V buck setting, parallel output for BK9141\n control channel is set to CH1', 'watch out', auto_exception=1)
             # ripple
             format_g.set_sheet_name('CTRL_sh_ripple_SY')
             ripple_t.run_verification(pmic_buck0=1)
@@ -723,14 +723,16 @@ if __name__ == '__main__':
             if serial_veri == 1:
                 # change program group if need to operation in one file
                 program_group = 7.3
+                excel_m.message_box(
+                    'high V buck setting, change EN1 to L and start LDO testing', 'watch out', auto_exception=1)
 
             pass
 
         if program_group == 7.3:
 
-            # ripple
-            format_g.set_sheet_name('CTRL_sh_ripple_SY_LDO')
-            ripple_t.run_verification(pmic_buck0=1)
+            # # ripple
+            # format_g.set_sheet_name('CTRL_sh_ripple_SY_LDO')
+            # ripple_t.run_verification(pmic_buck0=1)
             # load transient
             format_g.set_sheet_name('CTRL_sh_load_SY_LDO')
             ripple_t.run_verification(pmic_buck0=1)
