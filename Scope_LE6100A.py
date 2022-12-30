@@ -857,7 +857,7 @@ class Scope_LE6100A(GInst):
 
         return mea_result
 
-    def capture_full(self, wait_time_s=5, path_t=0, find_level=0, adj_before_save=0):
+    def capture_full(self, wait_time_s=2, path_t=0, find_level=0, adj_before_save=0):
         '''
         this function is the fully scope process, include: clear sweep => Auto =>
         wait time => set to single(trigger) => when trigged stop and capture \n
