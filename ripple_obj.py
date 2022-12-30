@@ -164,6 +164,16 @@ class ripple_test ():
         '''
         self.pmic_buck = pmic_buck0
 
+        # default wait time can be change by interrupt during operation
+        '''
+        this wait time can be change during operaion to speed up process,
+        but it will reset every time call ren_verification \n
+        just change the default_wait during operation
+        so does adjust before save
+        '''
+        self.default_wait = 5
+        self.adj_before_save = 0
+
         self.para_loaded()
         # for the control of temperature, now can be loaded from from the main
         # and separate the sheet name
@@ -451,7 +461,7 @@ class ripple_test ():
                             '''
                             load_s.dynamic_config(L1=iload_L1, L2=iload_L2)
                             load_s.dynamic_ctrl(
-                                act_ch1=excel_s.loader_ELch, status0='on', smooth_on_off=1,mode0='CCDL')
+                                act_ch1=excel_s.loader_ELch, status0='on', smooth_on_off=1, mode0='CCDL')
                         # trigger OVDD
                         # 221205: no need to change the level here, change to no input since there
                         # are auto level already
@@ -529,7 +539,8 @@ class ripple_test ():
 
                     # measure and capture waveform
 
-                    scope_s.capture_full(path_t=0, find_level=1)
+                    scope_s.capture_full(
+                        path_t=0, find_level=1, wait_time_s=self.default_wait, adj_before_save=self.adj_before_save)
                     # for simulation path using path_t=0.5
                     # scope_s.printScreenToPC(0)
 
