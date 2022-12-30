@@ -171,7 +171,7 @@ class ripple_test ():
         just change the default_wait during operation
         so does adjust before save
         '''
-        self.default_wait = 5
+        self.default_wait = 2
         self.adj_before_save = 0
 
         self.para_loaded()
