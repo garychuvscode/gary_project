@@ -723,14 +723,15 @@ if __name__ == '__main__':
             if serial_veri == 1:
                 # change program group if need to operation in one file
                 program_group = 7.3
-                excel_m.message_box(
-                    'high V buck setting, change EN1 to L and start LDO testing', 'watch out', auto_exception=1)
 
             pass
 
         if program_group == 7.3:
 
-            # # ripple
+            excel_m.message_box(
+                'high V buck setting, change EN1 to L and start LDO testing', 'watch out', auto_exception=1)
+
+            # ripple
             format_g.set_sheet_name('CTRL_sh_ripple_SY_LDO')
             ripple_t.run_verification(pmic_buck0=2)
             # load transient
@@ -813,7 +814,7 @@ if __name__ == '__main__':
 
         if excel_m.pwr_select == 1:
             excel_m.message_box(
-                'high V buck setting, line transient operation', 'watch out', auto_exception=1)
+                'high V buck setting, line transient operation(LDO)', 'watch out', auto_exception=1)
         # line transient
         format_g.set_sheet_name('CTRL_sh_line_SY_LDO')
         ripple_t.run_verification(pmic_buck0=1)

@@ -684,9 +684,13 @@ class ripple_test ():
 
         pass
 
-    def pwr_seq(self):
+    def pwr_seq(self, vin_cal=0, pwr_off=0):
         '''
         testing for the power on and off sequence
+        221230, add new default setting, not calibate Vin(vin_cal=0)\n
+        pwr_off = 1 is to include the power off measurement (only for record the waveform)
+        plan:add the input loop in MCU control and in input function from the terminal
+        when get out from the terminal, record the wave and cursor measurement
 
         '''
         self.para_loaded()
@@ -768,7 +772,7 @@ class ripple_test ():
             x_row = 0
             while x_row < c_row:
 
-                # 0 => EN SW together; 1 => only EN; 2=> only SW
+                # 0 => EN SW together; 1 => only EN; 2=> only SW, 3 SW after EN
                 self.mcu_ini.pmic_mode(1)
                 time.sleep(0.2)
                 self.scope_ini.trigger_adj('Auto')
@@ -788,9 +792,9 @@ class ripple_test ():
                                              self.excel_ini.relay0_ch, 'on')
 
                         # calibration Vin
-
-                        temp_v = self.pwr_ini.vin_clibrate_singal_met(
-                            0, v_target, self.met_v_ini, self.mcu_ini, self.excel_ini)
+                        if vin_cal == 1:
+                            temp_v = self.pwr_ini.vin_clibrate_singal_met(
+                                0, v_target, self.met_v_ini, self.mcu_ini, self.excel_ini)
 
                         # setup waveform name
                         self.excel_ini.wave_info_update(

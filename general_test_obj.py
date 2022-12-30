@@ -712,18 +712,18 @@ class general_test ():
         self.res_met_v8 = self.met_v_ini.mea_v()
         time.sleep(self.excel_ini.wait_small)
 
-        self.res_load_curr1 = self.loader_ini.read_iout(1)
-        self.res_load_curr2 = self.loader_ini.read_iout(2)
-        self.res_load_curr3 = self.loader_ini.read_iout(3)
-        self.res_load_curr4 = self.loader_ini.read_iout(4)
+        self.res_load_curr1 = float(self.loader_ini.read_iout(1))
+        self.res_load_curr2 = float(self.loader_ini.read_iout(2))
+        self.res_load_curr3 = float(self.loader_ini.read_iout(3))
+        self.res_load_curr4 = float(self.loader_ini.read_iout(4))
         self.res_src_curr = self.src_ini.read('CURR')
         # self.res_temp_read = chamber_s.read('temp_mea')
-        self.pwr_relay0_ioout = self.pwr_ini.read_iout(
-            self.excel_ini.relay0_ch)
-        self.pwr_relay6_ioout = self.pwr_ini.read_iout(
-            self.excel_ini.relay6_ch)
-        self.pwr_relay7_ioout = self.pwr_ini.read_iout(
-            self.excel_ini.relay7_ch)
+        self.pwr_relay0_ioout = float(self.pwr_ini.read_iout(
+            self.excel_ini.relay0_ch))
+        self.pwr_relay6_ioout = float(self.pwr_ini.read_iout(
+            self.excel_ini.relay6_ch))
+        self.pwr_relay7_ioout = float(self.pwr_ini.read_iout(
+            self.excel_ini.relay7_ch))
 
         time.sleep(3 * self.excel_ini.wait_small)
         self.res_met_curr = self.met_i_ini.mea_i()
@@ -734,6 +734,7 @@ class general_test ():
     def pwr_iout_set(self, iout_r0=0.1, iout_r6=0.1, iout_r7=0.1):
         '''
         config the different iout of the power supply in general test, default is 0.1A
+        need to put after set_sheet_name if going to change current
         '''
         self.iout_r0 = iout_r0
         self.iout_r6 = iout_r6
@@ -1043,7 +1044,7 @@ class general_test ():
 
         pass
 
-    def pre_short(self, pwr_iout=1, sheet_seq=0):
+    def pre_short(self, pwr_iout=1, sheet_seq=0, bias_off=0, i_max=1):
         '''
         pre-short testing with chamber
         pwr_iout set to default 1 since iout is needed for the judgement for short
@@ -1051,6 +1052,8 @@ class general_test ():
         channel sequence: 2,1,3 ; 3 is fixed for bias
         if using the original sequence, sheet_seq=1 \n
         there is no Vin calibration in pre-short
+        bias_off: control the bias to turn off or not(default not dutn off)
+        i_max: default set supply current to the max of pwr supply
         '''
         # index not to turn on the power supply after damage
         # when it become 1, means pre-short damage
@@ -1058,6 +1061,10 @@ class general_test ():
         self.pre_short_damage_r6 = 0
         self.pre_short_damage_r7 = 0
         wait_time = 0.5
+
+        if i_max == 1:
+            # set the power input to max current and bias to 50mA
+            self.pwr_iout_set(iout_r0=3, iout_r6=3, iout_r7=0.05)
 
         self.pwr_iout_en = pwr_iout
 
@@ -1082,6 +1089,19 @@ class general_test ():
                 self.res_temp_read = self.chamber_ini.chamber_set(
                     self.chamber_target)
 
+            # change sequence since bias must power up first
+            if self.excel_ini.gen_pwr_ch_amount > 2:
+                if self.pwr_ch3 != 'x' and self.pre_short_damage_r7 == 0:
+                    self.pwr_ini.chg_out(
+                        self.pwr_ch3, self.iout_r7, self.excel_ini.relay7_ch, 'on')
+                else:
+                    # turn off the power if not going to control power
+                    self.pwr_ini.chg_out(0, self.iout_r7,
+                                         self.excel_ini.relay7_ch, 'off')
+
+            time.sleep(0.1)
+            # make sure bias ready before Vin comes
+
             if self.excel_ini.gen_pwr_ch_amount >= 1:
                 # this program ch1 is lock for the Vin, control by the
                 # other part of program
@@ -1103,14 +1123,6 @@ class general_test ():
                     # turn off the power if not going to control power
                     self.pwr_ini.chg_out(0, self.iout_r6,
                                          self.excel_ini.relay6_ch, 'off')
-            if self.excel_ini.gen_pwr_ch_amount > 2:
-                if self.pwr_ch3 != 'x' and self.pre_short_damage_r7 == 0:
-                    self.pwr_ini.chg_out(
-                        self.pwr_ch3, self.iout_r7, self.excel_ini.relay7_ch, 'on')
-                else:
-                    # turn off the power if not going to control power
-                    self.pwr_ini.chg_out(0, self.iout_r7,
-                                         self.excel_ini.relay7_ch, 'off')
 
             time.sleep(wait_time)
             self.data_measured()
@@ -1123,7 +1135,8 @@ class general_test ():
             if self.excel_ini.gen_pwr_ch_amount > 1:
                 self.pwr_ini.chg_out(
                     self.excel_ini.pre_vin, self.excel_ini.pre_sup_iout, self.excel_ini.relay6_ch, 'off')
-            if self.excel_ini.gen_pwr_ch_amount > 2:
+            if self.excel_ini.gen_pwr_ch_amount > 2 and bias_off == 1:
+                # 221230 modify: not to turn off bias is default bias_off == 0
                 self.pwr_ini.chg_out(
                     self.excel_ini.pre_vin, self.excel_ini.pre_sup_iout, self.excel_ini.relay7_ch, 'off')
 
