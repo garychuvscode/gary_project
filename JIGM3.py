@@ -13,7 +13,7 @@ from PyUSBManagerv4 import opendev, closedev, luacmd, listdevs
 
 class JIGM3():
 
-    def __init__(self, devpath, CmdSentSignal):
+    def __init__(self, devpath, CmdSentSignal=0):
 
         self.DevPath = devpath
         self.handle = opendev(devpath)
@@ -72,7 +72,7 @@ class JIGM3():
                 except Exception as e:
                     logging.warning(f"Retry for {str(e)}")
                     if retryed < 2:
-                        QThread.msleep(3000*retryed + 1)
+                        # QThread.msleep(3000*retryed + 1)
                         args[0].reopen()
                         retryed += 1
                     else:
@@ -100,7 +100,7 @@ class JIGM3():
         :param command: command.
         :return: JIG result
         """
-        self.CmdSentSignal.emit(command)
+        # self.CmdSentSignal.emit(command)
         logging.info(f"{command=}")
 
         result = json.loads(luacmd(self.handle, command))
@@ -120,7 +120,7 @@ class JIGM3():
 
         cmd = f" return mcu.i2c.read(0x{device:02X}, 0x{regaddr:02X}, {len})"
 
-        self.CmdSentSignal.emit(cmd)
+        # self.CmdSentSignal.emit(cmd)
 
         err, datas, * \
             _ = self.assertResult(json.loads(luacmd(self.handle, cmd)))
@@ -150,7 +150,7 @@ class JIGM3():
 
         cmd = f" return mcu.i2c.write(0x{device:02X}, 0x{regaddr:02X}, {{{cmddstr}}})"
 
-        self.CmdSentSignal.emit(cmd)
+        # self.CmdSentSignal.emit(cmd)
 
         err, *_ = self.assertResult(json.loads(luacmd(self.handle, cmd)))
 
@@ -178,7 +178,7 @@ class JIGM3():
 
         cmd = f' return mcu.i2c.opread(0x{device:02X}, {len}, {1 if contAck else 0}, {1 if lastAck else 0})'
 
-        self.CmdSentSignal.emit(cmd)
+        # self.CmdSentSignal.emit(cmd)
 
         err, datas, * \
             _ = self.assertResult(json.loads(luacmd(self.handle, cmd)))
@@ -207,7 +207,7 @@ class JIGM3():
 
         cmd = f" return mcu.i2c.opwrite(0x{device:02X}, {{{cmddstr}}})"
 
-        self.CmdSentSignal.emit(cmd)
+        # self.CmdSentSignal.emit(cmd)
 
         err, *_ = self.assertResult(json.loads(luacmd(self.handle, cmd)))
 
@@ -234,7 +234,7 @@ class JIGM3():
 
         cmd = f" return mcu.i2c.read16(0x{device:02X}, 0x{regaddr:04X}, {len})"
 
-        self.CmdSentSignal.emit(cmd)
+        # self.CmdSentSignal.emit(cmd)
 
         err, datas, * \
             _ = self.assertResult(json.loads(luacmd(self.handle, cmd)))
@@ -264,7 +264,7 @@ class JIGM3():
 
         cmd = f" return mcu.i2c.write16(0x{device:02X}, 0x{regaddr:04X}, {{{cmddstr}}})"
 
-        self.CmdSentSignal.emit(cmd)
+        # self.CmdSentSignal.emit(cmd)
 
         err, *_ = self.assertResult(json.loads(luacmd(self.handle, cmd)))
 
@@ -278,3 +278,17 @@ class JIGM3():
                 raise I2CBusError(f"{device=:02X}")
             case _:
                 raise I2CError(f"{device=:02X}")
+
+
+if __name__ == '__main__':
+    # testing of GPL MCU connection
+    '''
+    only GPL MCU will be on the device, should be able to use the path[0]
+    for default, when only one device is connected
+    '''
+
+    path = JIGM3.listdevices()
+    g_mcu = JIGM3(devpath=path[0])
+
+    a = g_mcu.getversion()
+    print(f'the MCU version is {a}')

@@ -874,7 +874,7 @@ class ripple_test ():
 
                     print('check point')
 
-                    # need to changeto the cursor difference
+                    # need to change to the cursor difference
                     # curr_peak = self.scope_ini.read_mea('P6', self.excel_ini.scope_value)
                     curr_peak = self.scope_ini.cursor_delta(
                         x_y=0, scaling=scaling)
