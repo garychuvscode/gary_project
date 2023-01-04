@@ -507,7 +507,7 @@ class Power_BK9141(GInst):
             # for the simulatiom mode of change output
             print('check the instrument name, sim mode ')
             print(str(self.cmd_str_name))
-            self.in_name = 'pwr is in sim mode'
+            self.in_name = 'pwr_BK is in sim mode'
 
             pass
 

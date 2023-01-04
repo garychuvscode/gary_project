@@ -1167,10 +1167,9 @@ class general_test ():
             pass
 
         print('program finished')
-        self.extra_file_name_setup()
+        self.extra_file_name_setup('pre_short')
         self.inst_off()
         self.table_return()
-        self.extra_file_name_setup()
         self.end_of_exp()
 
         if sheet_seq == 0:
