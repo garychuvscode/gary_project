@@ -2032,7 +2032,8 @@ class chamber_su242:
         return read_temp
 
     def ini_inst(self):
-        self.chamber_off()
+        # 221231 => no need to turn off when start? cancel ~
+        # self.chamber_off()
         # loaded the high and low limit to chamber
         self.limt_set(self.temp_H_limt_ini, self.temp_L_limt_ini)
         # loaded the acceptible error for measurement
