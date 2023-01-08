@@ -166,7 +166,7 @@ class MCU_control ():
         print('command accept to reset the MCU')
         pass
 
-    def pulse_out(self, pulse_1, pulse_2):
+    def pulse_out(self, pulse_1=0, pulse_2=0, msp430=1):
         '''
         pulse need to be less than 255
         '''
@@ -203,7 +203,7 @@ class MCU_control ():
 
         pass
 
-    def pmic_mode(self, mode_index):
+    def pmic_mode(self, mode_index, msp430=1):
         '''
         (EN,SW) or (EN2, EN1) \n
         1:(0,0); 2:(0,1); 3:(1,0); 4:(1,1)
@@ -216,7 +216,7 @@ class MCU_control ():
         self.mcu_write('en_sw')
         pass
 
-    def relay_ctrl(self, channel_index):
+    def relay_ctrl(self, channel_index, msp430=1):
         '''
         index array: ['01', '02', '04', '08', '10', '20', '40', '80']\n
         from 0 to 7 \n
@@ -226,7 +226,7 @@ class MCU_control ():
         self.mcu_write('relay')
         pass
 
-    def i2c_single_write(self, register_index, data_index):
+    def i2c_single_write(self, register_index, data_index, msp430=1):
         self.reg_i2c = register_index
         self.data_i2c = data_index
         self.mcu_write('i2c')
