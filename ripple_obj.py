@@ -785,7 +785,8 @@ class ripple_test ():
 
                 # 0 => EN SW together; 1 => only EN; 2=> only SW, 3 SW after EN
                 self.mcu_ini.pmic_mode(1)
-                time.sleep(0.2)
+                # 230108 change to 2 since the discharge time for sequence is not enough
+                time.sleep(4)
                 self.scope_ini.trigger_adj('Auto')
 
                 # the loop for different i load
@@ -886,7 +887,7 @@ class ripple_test ():
 
                     if x_column == 0:
 
-                        # back to power off sttus, only need for the first time
+                        # back to power off status, only need for the first time
                         self.mcu_ini.pmic_mode(1)
                         time.sleep(0.3)
 
@@ -920,7 +921,7 @@ class ripple_test ():
 
         pass
 
-    def inrush_current(self):
+    def inrush_current(self, vin_cal=0):
         '''
         run the inrush current tsting with related Vin
         only one line
@@ -1014,6 +1015,9 @@ class ripple_test ():
                 x_column = 0
                 while x_column < c_column:
                     # assign related Vin for the inrush measurement
+                    # 230108: add extra wait time for waveform back to initial before next trigger
+                    time.sleep(10)
+
                     if x_row == 3:
                         # for the EN on first mode, turn on EN(EN2 in buck first)
                         self.mcu_ini.pmic_mode(3)
@@ -1027,9 +1031,9 @@ class ripple_test ():
                                          self.excel_ini.relay0_ch, 'on')
 
                     # calibration Vin
-
-                    temp_v = self.pwr_ini.vin_clibrate_singal_met(
-                        0, v_target, self.met_v_ini, self.mcu_ini, self.excel_ini)
+                    if vin_cal == 1:
+                        temp_v = self.pwr_ini.vin_clibrate_singal_met(
+                            0, v_target, self.met_v_ini, self.mcu_ini, self.excel_ini)
 
                     # setup waveform name
                     self.excel_ini.wave_info_update(

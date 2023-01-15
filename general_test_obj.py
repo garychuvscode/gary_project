@@ -712,10 +712,16 @@ class general_test ():
         self.res_met_v8 = self.met_v_ini.mea_v()
         time.sleep(self.excel_ini.wait_small)
 
-        self.res_load_curr1 = float(self.loader_ini.read_iout(1))
-        self.res_load_curr2 = float(self.loader_ini.read_iout(2))
-        self.res_load_curr3 = float(self.loader_ini.read_iout(3))
-        self.res_load_curr4 = float(self.loader_ini.read_iout(4))
+        # self.res_load_curr1 = float(self.loader_ini.read_iout(1))
+        # self.res_load_curr2 = float(self.loader_ini.read_iout(2))
+        # self.res_load_curr3 = float(self.loader_ini.read_iout(3))
+        # self.res_load_curr4 = float(self.loader_ini.read_iout(4))
+
+        self.res_load_curr1 = self.loader_ini.read_iout(1)
+        self.res_load_curr2 = self.loader_ini.read_iout(2)
+        self.res_load_curr3 = self.loader_ini.read_iout(3)
+        self.res_load_curr4 = self.loader_ini.read_iout(4)
+
         self.res_src_curr = self.src_ini.read('CURR')
         # self.res_temp_read = chamber_s.read('temp_mea')
         self.pwr_relay0_ioout = float(self.pwr_ini.read_iout(

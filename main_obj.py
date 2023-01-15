@@ -38,7 +38,7 @@ import ripple_obj as rip
 
 
 # off line test, set to 1 set all the instrument to simulation mode
-main_off_line = 1
+main_off_line = 0
 single_mode = 0
 # this is the variable control file name, single or the multi item
 # adjust after the if selection of program_group
@@ -1352,13 +1352,13 @@ if __name__ == '__main__':
         # ===========
 
         # 221226 change the current setting to 0.1A to preven burn down
-        excel_m.gen_pwr_i_set = 0.1
+        excel_m.gen_pwr_i_set = 0.3
 
-        # EN=Vin/2 testing
-        general_t_bk.set_sheet_name(
-            ctrl_sheet_name0='gen_BK_ENd2', extra_sheet=0, extra_name='_')
-        general_t.pwr_iout_set(iout_r0=0.1, iout_r6=0.1, iout_r7=0.1)
-        general_t_bk.run_verification(ctrl_ind_1=0, vin_cal=0)
+        # # EN=Vin/2 testing
+        # general_t_bk.set_sheet_name(
+        #     ctrl_sheet_name0='gen_BK_ENd2', extra_sheet=0, extra_name='_')
+        # general_t_bk.pwr_iout_set(iout_r0=0.2, iout_r6=0.2, iout_r7=0.2)
+        # general_t_bk.run_verification(ctrl_ind_1=0, vin_cal=0)
 
         # EN1 testing
         general_t_bk.set_sheet_name(
