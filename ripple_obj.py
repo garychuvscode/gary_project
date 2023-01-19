@@ -995,17 +995,21 @@ class ripple_test ():
 
                 if x_row == 0:
                     # EN=SW together
-                    self.scope_ini.trigger_adj(source='C4', level=1.8)
+                    self.scope_ini.trigger_adj(
+                        source='C4', level=1.8, slope='Positive')
                     # C4 change to EN in sequence mode
                 elif x_row == 1:
                     # EN
-                    self.scope_ini.trigger_adj(source='C4', level=1.8)
+                    self.scope_ini.trigger_adj(
+                        source='C4', level=1.8, slope='Positive')
                 elif x_row == 2:
                     # SW
-                    self.scope_ini.trigger_adj(source='C8', level=1.8)
+                    self.scope_ini.trigger_adj(
+                        source='C8', level=1.8, slope='Positive')
                 elif x_row == 3:
                     # 221219, EN on first, also trigger SW
-                    self.scope_ini.trigger_adj(source='C8', level=1.8)
+                    self.scope_ini.trigger_adj(
+                        source='C8', level=1.8, slope='Positive')
 
                 self.mcu_ini.pmic_mode(1)
                 time.sleep(0.2)
