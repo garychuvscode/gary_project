@@ -672,6 +672,9 @@ class general_test ():
         # since vin calibration also return the sting of calibration result,
         # it doesn't a must to measure Vin of each channel again
 
+        # 230406 add the measurement dealy due to the first data may be wrong
+        time.sleep(0.2)
+
         self.mcu_ini.relay_ctrl(0)
         # time.sleep(excel_s.wait_small)
         self.res_met_v1 = self.met_v_ini.mea_v()

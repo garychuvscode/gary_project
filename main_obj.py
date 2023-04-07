@@ -1330,6 +1330,7 @@ if __name__ == '__main__':
         explanation of different number settings
         17 => new file
         17.1 => old file
+        > choose the control variable if the setting is for A version or not (A_version)
         '''
         # in temp name
         if program_group == 17.1:
@@ -1352,13 +1353,25 @@ if __name__ == '__main__':
         # ===========
 
         # 221226 change the current setting to 0.1A to preven burn down
-        excel_m.gen_pwr_i_set = 0.3
+        excel_m.gen_pwr_i_set = 0.5
+        # 230405 add the A_version setting for IQ checking due to not to check IQ during FCCM mode,
+        #  change may not be seen from the IQ (0 is for non-A and 1 is for A )
+        A_version = 1
 
-        # # EN=Vin/2 testing
-        # general_t_bk.set_sheet_name(
-        #     ctrl_sheet_name0='gen_BK_ENd2', extra_sheet=0, extra_name='_')
-        # general_t_bk.pwr_iout_set(iout_r0=0.2, iout_r6=0.2, iout_r7=0.2)
-        # general_t_bk.run_verification(ctrl_ind_1=0, vin_cal=0)
+        if A_version == 0:
+            # EN=Vin/2 testing (non-A version)
+            general_t_bk.set_sheet_name(
+                ctrl_sheet_name0='gen_BK_ENd2', extra_sheet=0, extra_name='_')
+            general_t_bk.pwr_iout_set(iout_r0=0.2, iout_r6=0.2, iout_r7=0.2)
+            general_t_bk.run_verification(ctrl_ind_1=0, vin_cal=0)
+
+        else:
+
+            # EN=Vin/2 testing (A version)
+            general_t_bk.set_sheet_name(
+                ctrl_sheet_name0='gen_BK_ENd2_A', extra_sheet=0, extra_name='_')
+            general_t_bk.pwr_iout_set(iout_r0=0.2, iout_r6=0.2, iout_r7=0.2)
+            general_t_bk.run_verification(ctrl_ind_1=0, vin_cal=0)
 
         # EN1 testing
         general_t_bk.set_sheet_name(

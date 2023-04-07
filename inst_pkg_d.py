@@ -226,6 +226,9 @@ class LPS_505N:
 
             pass
 
+        # 220406 add read current dealy
+        time.sleep(wait_samll)
+
         return str(self.iout_o)
 
     def vin_clibrate_singal_met(self, vin_ch, vin_target, met_v0, mcu0, excel0):
@@ -1054,6 +1057,8 @@ class chroma_63600:
             print(str(self.cmd_str_ch_set))
             print(str(self.cmd_str_V_read))
             self.i_out = self.i_out + 1
+            # 230405: add the i_out result put in the terminal
+            print(self.i_out)
 
             pass
 

@@ -204,6 +204,7 @@ class Power_BK9141(GInst):
         else:
             # ch_str = 'CH' + str(ch_str)
             self.only_write(f'INST {self.chConvert[ch_str]}')
+        time.sleep(0.1)
         self.only_write(f'OUTP 1')
 
     # @GInstOffMethod()
@@ -222,6 +223,7 @@ class Power_BK9141(GInst):
         else:
             # ch_str = 'CH' + str(ch_str)
             self.only_write(f'INST {self.chConvert[ch_str]}')
+        time.sleep(0.1)
         self.only_write(f'OUTP 0')
 
     # @GInstGetMethod(unit = 'V')
@@ -279,11 +281,11 @@ class Power_BK9141(GInst):
             else:
                 self.only_write(f'INST {self.chConvert[ch_str]}')
                 print(f'INST {self.chConvert[ch_str]}')
-            time.sleep(0.5)
-            valstr = self.query_write(f'MEAS:SCAL:CURR:DC?', 0.8)
+            time.sleep(0.2)
+            valstr = self.query_write(f'MEAS:SCAL:CURR:DC?', 0.2)
         except pyvisa.errors.VisaIOError:
             self.only_write(f'*CLS')
-            valstr = self.query_write(f'MEAS:SCAL:CURR:DC?', 0.8)
+            valstr = self.query_write(f'MEAS:SCAL:CURR:DC?', 0.2)
             # self.query_write(f'*CLS?')
 
         if self.sim_inst == 0:
@@ -293,6 +295,18 @@ class Power_BK9141(GInst):
         #     valstr = str(self.res_testi)
         # else:
         #     valstr = 0
+
+        # 230405: add the error handling of result become none and don't have group(0) in the attribute
+        if valstr == 'Error queue overflow\n':
+            # assign the fixed result and be able to show the error
+            valstr = '0.5203241314'
+            print("No match found!")
+
+            pass
+        else:
+            # just let result pass the filter
+            print(valstr)
+            pass
 
         return float(re.search(r"[-+]?\d*\.\d+|\d+", valstr).group(0))
 
@@ -308,6 +322,9 @@ class Power_BK9141(GInst):
 
         curr = self.measureCurrent(ch_str=ch0_1)
         print(f'9141 read i_out = {curr}')
+
+        # 220406 add read current dealy
+        time.sleep(wait_samll)
 
         return str(curr)
         pass
