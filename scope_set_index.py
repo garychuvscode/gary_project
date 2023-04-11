@@ -753,14 +753,14 @@ if __name__ == '__main__':
     #  the testing code for this file object
     import parameter_load_obj as par
     excel_t = par.excel_parameter('obj_main')
-    default_path = 'C:\\py_gary\\test_excel\\wave_form_raw\\'
+    default_path = 'C:\\wave_form_raw\\'
 
     import Scope_LE6100A as sco
 
     # scope = Scope_LE6100A('GPIB: 5', 3, sim_scope, excel_t)
     scope = sco.Scope_LE6100A(excel0=excel_t)
 
-    test_index = 0
+    test_index = 1
 
     if test_index == 0:
         # used for checking the scope initialization setting
@@ -768,4 +768,13 @@ if __name__ == '__main__':
         # use the index correction or not
         scope.nor_v_off = 1
         scope.scope_initial('SY8386C_line_tran')
+        pass
+
+    elif test_index == 1:
+        # used for checking the scope initialization setting
+        scope.open_inst()
+        excel_t.wave_path = default_path
+        excel_t.wave_condition = 'scope_set_temp_capture'
+        scope.printScreenToPC()
+
         pass

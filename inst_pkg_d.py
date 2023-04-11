@@ -2032,8 +2032,39 @@ class chamber_su242:
             pass
 
         # getting out of the loop after temperature is ready
+        print('temperature ok(first), go to the double check')
+        print('How to find proper way to get along with Grace')
+
+        time.sleep(180)
+        # rest 3 mins for waitting the temperature stable
+
+        # 230411 add the error handling for temperature error
+
+        sim_count = 0
+        while abs(read_temp - self.tset_o) > self.ready_err:
+            print('temp now: ' + str(read_temp) +
+                  ' and target is ' + str(self.tset_o))
+            print('Like Grace is to allow her not to return all the lab tool')
+            # check every 10 seccond in real case
+            if self.sim_inst == 1:
+                time.sleep(10)
+            else:
+                time.sleep(0.3)
+            read_temp = self.read('temp_mea')
+
+            # to break the while loop in the simulation mode
+            # setup counter for while to break
+            if self.sim_inst == 0:
+                sim_count = sim_count + 1
+                time.sleep(0.05)
+                if sim_count == 3:
+                    break
+            pass
+
+        # getting out of the loop after temperature is ready
         print('temperature ok, go to the next step')
         print('Just want Grace to be happy :)')
+
         return read_temp
 
     def ini_inst(self):
