@@ -1141,23 +1141,43 @@ if __name__ == '__main__':
         # changeable area
         # ===========
 
-        # fix the sheet lock to CTRL_sh_seq_EN=SW, CTRL_sh_seq_EN, CTRL_sh_seq_SW
-        format_g.set_sheet_name('CTRL_sh_inrush_BK')
-        ripple_t.inrush_current()
+        AD_version = 1
+        # 230419 add this to spearate A and D version testing
 
-        format_g.set_sheet_name('CTRL_sh_seq_EN=SW_BK')
-        ripple_t.pwr_seq()
-        # format_g.table_return()
-        format_g.set_sheet_name('CTRL_sh_seq_EN_BK')
-        ripple_t.pwr_seq()
-        # format_g.table_return()
-        format_g.set_sheet_name('CTRL_sh_seq_SW_BK')
-        ripple_t.pwr_seq()
-        # format_g.table_return()
-        format_g.set_sheet_name('CTRL_sh_seq_SW(EN)_BK')
-        ripple_t.pwr_seq()
-        # format_g.table_return()
-        excel_m.extra_file_name = '_inrush_pwr_seq_BK'
+        if AD_version == 0:
+            # fix the sheet lock to CTRL_sh_seq_EN=SW, CTRL_sh_seq_EN, CTRL_sh_seq_SW
+            format_g.set_sheet_name('CTRL_sh_inrush_BK')
+            ripple_t.inrush_current()
+
+            format_g.set_sheet_name('CTRL_sh_seq_EN=SW_BK')
+            ripple_t.pwr_seq()
+            # format_g.table_return()
+            format_g.set_sheet_name('CTRL_sh_seq_EN_BK')
+            ripple_t.pwr_seq()
+            # format_g.table_return()
+            format_g.set_sheet_name('CTRL_sh_seq_SW_BK')
+            ripple_t.pwr_seq()
+            # format_g.table_return()
+            format_g.set_sheet_name('CTRL_sh_seq_SW(EN)_BK')
+            ripple_t.pwr_seq()
+            # format_g.table_return()
+            excel_m.extra_file_name = '_inrush_pwr_seq_BK'
+
+            pass
+        else:
+            # A or D version of testing, need to change by hand
+
+            # # fix the sheet lock to CTRL_sh_seq_EN=SW, CTRL_sh_seq_EN, CTRL_sh_seq_SW
+            # format_g.set_sheet_name('CTRL_sh_inrush_BK_AD')
+            # ripple_t.inrush_current()
+
+            # since A and D version is only 1 EN, there is no sequence issue, one sheet is enough
+            format_g.set_sheet_name('CTRL_sh_seq_EN_BK_AD')
+            ripple_t.pwr_seq()
+
+            excel_m.extra_file_name = '_inrush_pwr_seq_BK_AD'
+
+            pass
 
         # ===========
         # changeable area

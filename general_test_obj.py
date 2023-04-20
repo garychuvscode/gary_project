@@ -621,9 +621,9 @@ class general_test ():
     def inst_off(self):
 
         print('going to turn off all the instrument')
-        self.pwr_ini.chg_out(0, 0, 1, 'off')
-        self.pwr_ini.chg_out(0, 0, 2, 'off')
-        self.pwr_ini.chg_out(0, 0, 3, 'off')
+        self.pwr_ini.chg_out(0, 0.1, 1, 'off')
+        self.pwr_ini.chg_out(0, 0.1, 2, 'off')
+        self.pwr_ini.chg_out(0, 0.1, 3, 'off')
 
         self.loader_ini.chg_out(0, 1, 'off')
         self.loader_ini.chg_out(0, 2, 'off')

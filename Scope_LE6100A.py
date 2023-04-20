@@ -947,6 +947,7 @@ class Scope_LE6100A(GInst):
 
         if abs_val == 1:
             # return the abs
+            # 230419: it will have error if no turn on the cursor (error happened here)
             temp_res = float(temp_res)
             temp_res = abs(temp_res) * float(scaling)
 
@@ -1059,6 +1060,45 @@ class Scope_LE6100A(GInst):
 
         pass
 
+    def change_label(self, channel0=0, name0=0, position0=0, config=0, view0=1):
+        '''
+        this function is going adjust the label scope with related name and position
+        channel
+        if channel = 0, pass
+        name and position is default 0, config is the default general for reservation
+        '''
+
+        view0 = int(view0)
+        view_str = 'TRUE'
+
+        if view0 == 0:
+            # disable the lable display
+            view_str = 'FALSE'
+
+            pass
+
+        else:
+            # enalbe the label display
+
+            pass
+
+        if channel0 != 0:
+            # operate
+
+            self.writeVBS(
+                f'app.Acquisition.C{channel0}.LabelsText = "{name0}"')
+            self.writeVBS(
+                f'app.Acquisition.C{channel0}.LabelsPosition = "{position0}"')
+            self.writeVBS(
+                f'app.Acquisition.C{channel0}.ViewLabels = {view_str}')
+
+            pass
+
+        else:
+            print('channel is set to 0, just pass, no action')
+
+        pass
+
 
 if __name__ == '__main__':
     #  the testing code for this file object
@@ -1069,8 +1109,13 @@ if __name__ == '__main__':
 
     # scope = Scope_LE6100A('GPIB: 5', 3, sim_scope, excel_t)
     scope = Scope_LE6100A(excel0=excel_t)
+    scope.open_inst()
 
-    test_index = 3
+    test_index = 4
+    '''
+    set 3 to update the channel and others
+    set 4 to change the label name
+    '''
 
     if test_index == 0:
 
@@ -1124,7 +1169,7 @@ if __name__ == '__main__':
         # testing for the measurement setup
 
         scope.scope_initial('SY8386C_ripple')
-        scope.open_inst()
+        # scope.open_inst()
         temp_name = scope.inst_name()
         print(temp_name)
         # scope.mea_default_setup()
@@ -1133,4 +1178,42 @@ if __name__ == '__main__':
         scope.Hor_scale_adj(0.0005, 0.0003)
         scope.Hor_scale_adj(0.00025, 0.0001)
 
+        pass
+
+    elif test_index == 4:
+
+        # here is for label name fast change, set index to 4 and run
+        # position is in unit, sec
+        # maybe plan to add normalize coniguration in future
+
+        # list of channel name
+        ch_name = {"CH1": "name1", "CH2": "name2", "CH3": "name3", "CH4": "name4",
+                   "CH5": "name5", "CH6": "name6", "CH7": "name7", "CH8": "name8"}
+
+        # CH1
+        scope.change_label(channel0=1, name0=ch_name['CH1'],
+                           position0=0, config=0, view0=1)
+        # CH2
+        scope.change_label(channel0=2, name0=ch_name['CH2'],
+                           position0=0, config=0, view0=1)
+        # CH3
+        scope.change_label(channel0=3, name0=ch_name['CH3'],
+                           position0=0, config=0, view0=1)
+        # CH4
+        scope.change_label(channel0=4, name0=ch_name['CH4'],
+                           position0=0, config=0, view0=1)
+        # CH5
+        scope.change_label(channel0=5, name0=ch_name['CH5'],
+                           position0=0, config=0, view0=1)
+        # CH6
+        scope.change_label(channel0=6, name0=ch_name['CH6'],
+                           position0=0, config=0, view0=1)
+        # CH7
+        scope.change_label(channel0=7, name0=ch_name['CH7'],
+                           position0=0, config=0, view0=1)
+        # CH8
+        scope.change_label(channel0=8, name0=ch_name['CH8'],
+                           position0=0, config=0, view0=1)
+
+        print('the label setting finished, thanks g')
         pass

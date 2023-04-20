@@ -419,7 +419,7 @@ class LPS_505N:
 
         if self.sim_inst == 1:
             # change all the output to 0V and 0A, for channel 1 to 3
-            self.chg_out(0, 0, int(off_ch), 'off')
+            self.chg_out(0, 0.1, int(off_ch), 'off')
             print('turn off single channel of the power supply: CH_' + str(off_ch))
             # GPIB device close
             time.sleep(wait_samll)

@@ -786,7 +786,12 @@ class ripple_test ():
                 # 0 => EN SW together; 1 => only EN; 2=> only SW, 3 SW after EN
                 self.mcu_ini.pmic_mode(1)
                 # 230108 change to 2 since the discharge time for sequence is not enough
-                time.sleep(4)
+                # 230419 change to 15
+                if x_row == 0 :
+                    time.sleep(15)
+                    pass
+                else :
+                    time.sleep(5)
                 self.scope_ini.trigger_adj('Auto')
 
                 # the loop for different i load
@@ -1020,7 +1025,8 @@ class ripple_test ():
                 while x_column < c_column:
                     # assign related Vin for the inrush measurement
                     # 230108: add extra wait time for waveform back to initial before next trigger
-                    time.sleep(10)
+                    # 230419: change to 20 from 10 due to 88B discharge
+                    time.sleep(20)
 
                     if x_row == 3:
                         # for the EN on first mode, turn on EN(EN2 in buck first)
