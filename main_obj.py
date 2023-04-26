@@ -1167,9 +1167,11 @@ if __name__ == '__main__':
         else:
             # A or D version of testing, need to change by hand
 
-            # # fix the sheet lock to CTRL_sh_seq_EN=SW, CTRL_sh_seq_EN, CTRL_sh_seq_SW
-            # format_g.set_sheet_name('CTRL_sh_inrush_BK_AD')
-            # ripple_t.inrush_current()
+            # fix the sheet lock to CTRL_sh_seq_EN=SW, CTRL_sh_seq_EN, CTRL_sh_seq_SW
+            format_g.set_sheet_name('CTRL_sh_inrush_BK_AD')
+            # since the first step of inrush is EN2=EN1, both EN_mcu or SW_mcu can connect to EN pin of buck
+            # suggest to connect EN_mcu to EN_buck
+            ripple_t.inrush_current()
 
             # since A and D version is only 1 EN, there is no sequence issue, one sheet is enough
             format_g.set_sheet_name('CTRL_sh_seq_EN_BK_AD')

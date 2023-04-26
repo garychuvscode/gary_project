@@ -835,10 +835,10 @@ class ripple_test ():
                             # EN=SW together or the EN rising first case
                             self.mcu_ini.pmic_mode(4)
                         elif self.ripple_line_load == 8:
-                            # EN
+                            # EN_mcu
                             self.mcu_ini.pmic_mode(3)
                         elif self.ripple_line_load == 9:
-                            # SW
+                            # SW_mcu
                             self.mcu_ini.pmic_mode(2)
 
                         # self.scope_ini.capture_2nd(path_t=0, adj_before_save=1)

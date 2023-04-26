@@ -903,7 +903,7 @@ class Scope_LE6100A(GInst):
             # clear sweep and prepare for single
             if clear_sweep == 1:
                 self.writeVBS('app.ClearSweeps')
-                time.sleep(0.2)
+                time.sleep(0.5)
             # time.sleep(wait_time_s)
         if find_level == 0:
             # no need to find level, single directly
@@ -1085,8 +1085,10 @@ class Scope_LE6100A(GInst):
         if channel0 != 0:
             # operate
 
-            self.writeVBS(
-                f'app.Acquisition.C{channel0}.LabelsText = "{name0}"')
+            if name0 != 0:
+                # only operate the change of name when it's not 0
+                self.writeVBS(
+                    f'app.Acquisition.C{channel0}.LabelsText = "{name0}"')
             self.writeVBS(
                 f'app.Acquisition.C{channel0}.LabelsPosition = "{position0}"')
             self.writeVBS(
@@ -1111,7 +1113,7 @@ if __name__ == '__main__':
     scope = Scope_LE6100A(excel0=excel_t)
     scope.open_inst()
 
-    test_index = 4
+    test_index = 4.1
     '''
     set 3 to update the channel and others
     set 4 to change the label name
@@ -1182,38 +1184,87 @@ if __name__ == '__main__':
 
     elif test_index == 4:
 
+        label_pos = 0
         # here is for label name fast change, set index to 4 and run
         # position is in unit, sec
         # maybe plan to add normalize coniguration in future
 
-        # list of channel name
-        ch_name = {"CH1": "name1", "CH2": "name2", "CH3": "name3", "CH4": "name4",
-                   "CH5": "name5", "CH6": "name6", "CH7": "name7", "CH8": "name8"}
+        # 230426 add label to 0 selection (set to 1 when change to 0, or set to the position you want)
+        label_pos_sel = 0.00005
+        '''
+        ms 0.001
+        us 0.000001
+        '''
+
+        if label_pos_sel == 0:
+            # list of channel name
+            ch_name = {"CH1": "name1", "CH2": "name2", "CH3": "Vout", "CH4": "name4",
+                       "CH5": "Iin", "CH6": "Vin", "CH7": "EN", "CH8": "PG"}
+        elif label_pos_sel == 1:
+            ch_name = {"CH1": 0, "CH2": 0, "CH3": 0, "CH4": 0,
+                       "CH5": 0, "CH6": 0, "CH7": 0, "CH8": 0}
+        else:
+            ch_name = {"CH1": 0, "CH2": 0, "CH3": 0, "CH4": 0,
+                       "CH5": 0, "CH6": 0, "CH7": 0, "CH8": 0}
+            label_pos = label_pos_sel
 
         # CH1
         scope.change_label(channel0=1, name0=ch_name['CH1'],
-                           position0=0, config=0, view0=1)
+                           position0=label_pos, config=0, view0=1)
         # CH2
         scope.change_label(channel0=2, name0=ch_name['CH2'],
-                           position0=0, config=0, view0=1)
+                           position0=label_pos, config=0, view0=1)
         # CH3
         scope.change_label(channel0=3, name0=ch_name['CH3'],
-                           position0=0, config=0, view0=1)
+                           position0=label_pos, config=0, view0=1)
         # CH4
         scope.change_label(channel0=4, name0=ch_name['CH4'],
-                           position0=0, config=0, view0=1)
+                           position0=label_pos, config=0, view0=1)
         # CH5
         scope.change_label(channel0=5, name0=ch_name['CH5'],
-                           position0=0, config=0, view0=1)
+                           position0=label_pos, config=0, view0=1)
         # CH6
         scope.change_label(channel0=6, name0=ch_name['CH6'],
-                           position0=0, config=0, view0=1)
+                           position0=label_pos, config=0, view0=1)
         # CH7
         scope.change_label(channel0=7, name0=ch_name['CH7'],
-                           position0=0, config=0, view0=1)
+                           position0=label_pos, config=0, view0=1)
         # CH8
         scope.change_label(channel0=8, name0=ch_name['CH8'],
-                           position0=0, config=0, view0=1)
+                           position0=label_pos, config=0, view0=1)
 
         print('the label setting finished, thanks g')
+        pass
+
+    elif test_index == 4.1:
+        '''
+        single change for channel
+        '''
+        ch_num = 8
+        name_set = 'LX'
+        pos = 0
+
+        scope.change_label(channel0=ch_num, name0=name_set,
+                           position0=pos, config=0, view0=1)
+
+        pass
+
+    elif test_index == 5:
+        '''
+        here is plan to add the save and recall setup, to better improve the efficiency of operation
+        5 is to save the setup
+        '''
+        default_trace = 'C:\\g_auto_settings\\'
+        save_name = '' + '.lss'
+
+        pass
+
+    elif test_index == 6:
+        '''
+        here is plan to add the save and recall setup, to better improve the efficiency of operation
+        6 is to recall the setup
+        '''
+        default_trace = 'C:\\g_auto_settings\\'
+        recall_name = '' + '.lss'
+
         pass

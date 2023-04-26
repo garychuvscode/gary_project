@@ -724,7 +724,7 @@ class scope_config():
                           'label_name': 'Vin', 'label_position': 0.001, 'label_view': 'TRUE', 'coupling': 'DC1M', 'v_offset_ind': -2.5}
             self.ch_c4 = {'ch_view': 'TRUE', 'volt_dev': '2', 'BW': '20MHz', 'filter': '3bits', 'v_offset': 4,
                           'label_name': 'EN_pin', 'label_position': 0.001, 'label_view': 'TRUE', 'coupling': 'DC1M', 'v_offset_ind': 3.5}
-            self.ch_c5 = {'ch_view': 'TRUE', 'volt_dev': '0.5', 'BW': '20MHz', 'filter': '2bits', 'v_offset': -1.5,
+            self.ch_c5 = {'ch_view': 'TRUE', 'volt_dev': '0.1', 'BW': '20MHz', 'filter': '2bits', 'v_offset': -1.5,
                           'label_name': 'Iin', 'label_position': 0.001, 'label_view': 'TRUE', 'coupling': 'DC50', 'v_offset_ind': -3}
             self.ch_c6 = {'ch_view': 'FALSE', 'volt_dev': '2', 'BW': '20MHz', 'filter': '2bits', 'v_offset': -4,
                           'label_name': 'LDO', 'label_position': 0.001, 'label_view': 'TRUE', 'coupling': 'DC1M', 'v_offset_ind': -1}
@@ -812,7 +812,7 @@ if __name__ == '__main__':
     # 230420, add the default open_inst for test mode
     scope.open_inst()
 
-    test_index = 2
+    test_index = 0
     '''
     set 0 to update channel and others
     set 2 to update label name
@@ -828,7 +828,7 @@ if __name__ == '__main__':
         # use the index correction or not
         scope.nor_v_off = 1
 
-        scope.scope_initial('SY8386C_line_tran')
+        scope.scope_initial('NT50970A_pwr_seq_inrush')
         pass
 
     elif test_index == 1:
