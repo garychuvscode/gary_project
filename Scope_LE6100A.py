@@ -1113,7 +1113,7 @@ if __name__ == '__main__':
     scope = Scope_LE6100A(excel0=excel_t)
     scope.open_inst()
 
-    test_index = 4.1
+    test_index = 4
     '''
     set 3 to update the channel and others
     set 4 to change the label name
@@ -1190,7 +1190,7 @@ if __name__ == '__main__':
         # maybe plan to add normalize coniguration in future
 
         # 230426 add label to 0 selection (set to 1 when change to 0, or set to the position you want)
-        label_pos_sel = 0.00005
+        label_pos_sel = 0
         '''
         ms 0.001
         us 0.000001
@@ -1198,8 +1198,8 @@ if __name__ == '__main__':
 
         if label_pos_sel == 0:
             # list of channel name
-            ch_name = {"CH1": "name1", "CH2": "name2", "CH3": "Vout", "CH4": "name4",
-                       "CH5": "Iin", "CH6": "Vin", "CH7": "EN", "CH8": "PG"}
+            ch_name = {"CH1": "name1", "CH2": "name2", "CH3": "LX", "CH4": "name4",
+                       "CH5": "Iout", "CH6": "Boot", "CH7": "EN", "CH8": "Vout"}
         elif label_pos_sel == 1:
             ch_name = {"CH1": 0, "CH2": 0, "CH3": 0, "CH4": 0,
                        "CH5": 0, "CH6": 0, "CH7": 0, "CH8": 0}
