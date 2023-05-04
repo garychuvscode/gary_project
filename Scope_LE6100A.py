@@ -1360,19 +1360,13 @@ class Scope_LE6100A(GInst):
     def change_setup(self, save0=1, trace0=0, file_name0="", option_function=0):
         """
         this function used to save the scope setup to scope drive
-        save-1 => save, save-0 => recall
+        save-1 => save, save-0 => recall last, save-2 => recall file_name0
         trace default will be C:\ (trace=0)
         file_name is string
-        sequence is set to --00000
+        sequence is set to --00000 => can turn off the auto naming
+        auto naming default off for Gary's scope setting
         """
         trace_full = "C:\\g_auto_settings\\"
-        if save0 == 1:
-            # choose to save
-            save_s = "Save"
-
-        else:
-            # choose to recall
-            save_s = "Recall"
 
         if trace0 == 0:
             # save the setup in the default trace
@@ -1386,26 +1380,53 @@ class Scope_LE6100A(GInst):
 
             pass
 
-        # update trace
-        temp_str = f'app.SaveRecall.Setup.{save_s}SetupFilename = "{trace_full}{file_name0}--00000.lss"'
-        print(temp_str)
-        self.writeVBS(
-            f'app.SaveRecall.Setup.{save_s}SetupFilename = "{trace_full}{file_name0}--00000.lss"'
-        )
+        if save0 == 1:
+            # choose to save
+            save_s = "Save"
 
-        if option_function == 0:
-            # default function, assign the name and save
-
-            # save setup
-            temp_str = f"app.SaveRecall.Setup.Do{save_s}SetupFileDoc2"
+            # update trace
+            temp_str = f'app.SaveRecall.Setup.{save_s}SetupFilename = "{trace_full}{file_name0}--00000.lss"'
             print(temp_str)
-            self.writeVBS(f"app.SaveRecall.Setup.Do{save_s}SetupFileDoc2")
+            self.writeVBS(
+                f'app.SaveRecall.Setup.{save_s}SetupFilename = "{trace_full}{file_name0}--00000.lss"'
+            )
             pass
 
-        else:
-            # option function not 0, only change name setting, other reserve for future
+        elif save0 == 0:
+            # choose to recall
+            save_s = "Recall"
+            """
+            for the recall, read first to get the last saved name
+            """
+            recall_trace = self.readVBS(
+                f"return = app.SaveRecall.Setup.{save_s}SetupFilename.value"
+            )
+
+            # update trace
+            temp_str = f'app.SaveRecall.Setup.{save_s}SetupFilename = "{recall_trace}"'
+            print(temp_str)
+            self.writeVBS(
+                f'app.SaveRecall.Setup.{save_s}SetupFilename = "{recall_trace}"'
+            )
+            pass
+        elif save0 == 2:
+            # choose to recall
+            save_s = "Recall"
+
+            # update trace
+            temp_str = f'app.SaveRecall.Setup.{save_s}SetupFilename = "{trace_full}{file_name0}.lss"'
+            print(temp_str)
+            self.writeVBS(
+                f'app.SaveRecall.Setup.{save_s}SetupFilename = "{trace_full}{file_name0}.lss"'
+            )
+            pass
 
             pass
+
+        # run save or recall
+        temp_str = f"app.SaveRecall.Setup.Do{save_s}SetupFileDoc2"
+        print(temp_str)
+        self.writeVBS(f"app.SaveRecall.Setup.Do{save_s}SetupFileDoc2")
 
         pass
 
@@ -1596,14 +1617,19 @@ if __name__ == "__main__":
         """
         here is plan to add the save and recall setup, to better improve the efficiency of operation
         5 is to save the setup
+
+        save setup can only used for people operation, because same naming cause error need to press enter
         """
         # default_trace = 'C:\\g_auto_settings\\'
         # save_name = '' + '.lss'
 
         # set to 0 using default trace 'C:\\g_auto_settings\\'
         trace_in = 0
-        file_name_in = "auto_2"
-        # 1-> save ; 0-> recall
+        file_name_in = "auto3p55"
+        # 1-> save; 0-> recall last; 2-> recall specific
+        """
+        recall last can be used when change the scope for different capture, but need to recover after nex capature
+        """
         save_in = 1
         option_function_in = 0
 
