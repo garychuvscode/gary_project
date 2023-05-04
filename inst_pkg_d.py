@@ -214,6 +214,7 @@ class LPS_505N:
             time.sleep(wait_samll)
             # after reading the iout from source, remove the A in the string
             self.iout_o = self.iout_o.replace('A', '')
+            print(self.iout_o)
 
             pass
         else:
@@ -2543,7 +2544,7 @@ pass
 
 if __name__ == '__main__':
     # add more if selection for different instrument testing
-    inst_test_ctrl = 0
+    inst_test_ctrl = 10.1
     # 0 => power supply, LPS505N;
     # 1 => meter, 34460;
     # 2 => chroma 63600
@@ -2551,6 +2552,7 @@ if __name__ == '__main__':
     # 4 => chamber su242
     # 5 => DM3068 meter
     # 6 => chroma loader 63600 => load transient
+    # 10.x => single testing item build from different request(need to explain in each selection)
 
     # only run the code below when this is main program
     # can used for the testing of import, otherwise it will
@@ -3064,3 +3066,75 @@ if __name__ == '__main__':
         load.dynamic_ctrl(act_ch1=1, status0='off')
 
         pass
+
+    if inst_test_ctrl == 10.1:
+        '''
+        this item is used to test for Boot discharge and start up issue of HV buck
+
+        operating content:
+        1. chroma loader: toggle the loader with setting loading
+        2. control the time duration, make sure Boot is discharge to LX
+        3. turn on the load suddenly, see if there are issue for building up the boot voltage
+
+        other explanation:
+        this function is used to test for Boot_low function, if this is a must have function
+
+        '''
+
+        # set the loader to CCH for 8A full load operation
+        load_exp = chroma_63600(2, 7, 'CCH')
+        pwr_exp = LPS_505N(19.5, 2.6, 2, 1, 'off')
+
+        # setting of test
+        iset = 8
+        ch_out = 2
+
+        # time delay in unit 'second'
+        time_dly_s = 7
+
+        # loop control variable, infinite loop set to 0, otherwise setup counter
+        loop_count = 0
+
+        load_exp.open_inst()
+        load_exp.chg_out(iset, ch_out, 'off')
+        pwr_exp.open_inst()
+        pwr_exp.chg_out(19.5, 2.6, 2, 'off')
+        time.sleep(3)
+        pwr_exp.chg_out(19.5, 2.6, 2, 'on')
+
+        if loop_count == 0:
+
+            while 1:
+                # infinite toggle for loader
+                load_exp.chg_state_single(ch_out, 'on')
+                time.sleep(3)
+                # turn off if short
+                a = float(pwr_exp.read_iout(2))
+                load_exp.chg_state_single(ch_out, 'off')
+                time.sleep(time_dly_s)
+
+                if a > 2.4:
+                    pwr_exp.chg_out(0, 0.2, 2, 'off')
+                    break
+
+                pass
+
+            pass
+
+        else:
+
+            while loop_count > 1:
+                # loop_count toggle for loader
+                load_exp.chg_state_single(ch_out, 'on')
+                time.sleep(3)
+                # turn off if short
+                a = float(pwr_exp.read_iout(2))
+                load_exp.chg_state_single(ch_out, 'off')
+                time.sleep(time_dly_s)
+
+                if a > 2.4:
+                    pwr_exp.chg_out(0, 0.2, 2, 'off')
+                    break
+
+                loop_count = loop_count - 1
+                pass
