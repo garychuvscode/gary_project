@@ -1,6 +1,7 @@
 
 import logging
 import json
+import time
 
 # from PySide6.QtCore import *  # type: ignore
 # from PySide6.QtGui import *  # type: ignore
@@ -13,7 +14,7 @@ from PyUSBManagerv4 import opendev, closedev, luacmd, listdevs
 
 class JIGM3():
 
-    def __init__(self, devpath, CmdSentSignal=0):
+    def __init__(self, sim_mcu0=0, com_addr0=0, devpath=0, CmdSentSignal=0):
 
         self.DevPath = devpath
         self.handle = opendev(devpath)
@@ -23,6 +24,25 @@ class JIGM3():
         self.Version = self.getversion()
 
         logging.info(f"OpenJIGM3[{self.Version}]")
+
+        # === Gary add on for JIGM3
+        '''
+        The add on for initial object is for default setting of JIGM3 or the generation
+        of variable
+        '''
+
+        self.sim_mcu = sim_mcu0
+        self.com_addr = com_addr0
+
+        # port number assignment
+        self.i_o_port_num = {'PG': '0', 'IO': '1', 'IOx': '2', 'IOy': '3'}
+
+        # IO number assignemnt
+        self.i_o_pin_num_set = {'1': 0x1, '2': 0x2, '3': 0x4, '4': 0x8, '5': 0x10, '6': 0x20, '7': 0x40, '8': 0x80,
+                                '9': 0x100, '10': 0x200, '11': 0x400, '12': 0x800, '13': 0x1000, '14': 0x2000, '15': 0x4000, '16': 0x8000, }
+        self.i_o_pin_num_clr = {'1': 0xFFFE, '2': 0xFFFD, '3': 0xFFFB, '4': 0xFFF7, '5': 0xFFEF, '6': 0xFFDF, '7': 0xFFBF,
+                                '8': 0xFF7F, '9': 0xFEFF, '10': 0xFDFF, '11': 0xFBFF, '12': 0xF7FF, '13': 0xEFFF, '14': 0xDFFF, '15': 0xBFFF, '16': 0x7FFF, }
+        # binary number: 0b10101010
 
     @staticmethod
     def listdevices():
@@ -100,6 +120,16 @@ class JIGM3():
         :param command: command.
         :return: JIG result
         """
+        '''
+        Gary Q:
+        1. what is the return value? => if sending I/O pattern from pattern gen or I2C command?
+        2. what is the difference between i2c i2c_op i2c16?
+        A2: i2C16 is 16 bit data length => also address?; i2C should be the normal read an write with 8bit data and
+        7 bit address
+        Gary note:
+        1. ezcommand can be found from the V4 tool "MCU", the string needed for related operation for JIGM3
+        2. pattern gen, I/O toggle and I2C command supported
+        '''
         # self.CmdSentSignal.emit(command)
         logging.info(f"{command=}")
 
@@ -279,6 +309,83 @@ class JIGM3():
             case _:
                 raise I2CError(f"{device=:02X}")
 
+    # === Gary add on for JIGM3
+
+    '''
+    the mainly function will be I/O control and pattern gen
+    PWM and SPI will be placed in low priority
+    '''
+
+    def g_ezcommand(self, command0):
+        '''
+        send string from V4 to get MCU work for cute g
+        '''
+        command0 = str(command0)
+        if self.sim_mcu == 0:
+            # object in simulation mode
+            print(f'simulation mode for MCU, command is \n {command0}')
+            pass
+        else:
+            print(f'real mode with command \n {command0}')
+            self.ezCommand(command0)
+            pass
+
+        pass
+
+    def i_o_config(self, port_sel0='PG', i_o_sel0='out', all_out0=1):
+        '''
+        setting up for the i_o input or output \n
+        default output  \n
+        port_sel need to use upper case  \n
+        '''
+        # MCU set 1 is output, 0 is input
+        config_sel = 0xFFFF
+
+        if i_o_sel0 == 'in':
+            config_sel = 0x0
+            pass
+
+        if all_out0 != 1:
+            # single setting request is send
+            cmd_str = f'mcu.gpio.setdir({config_sel}, {self.i_o_port_num[port_sel0]})'
+            self.g_ezcommand(cmd_str)
+
+        else:
+            # set all port to output
+            self.g_ezcommand(f'mcu.gpio.setdir(0xFFFF, 0)')
+            self.g_ezcommand(f'mcu.gpio.setdir(0xFFFF, 1)')
+            self.g_ezcommand(f'mcu.gpio.setdir(0xFFFF, 2)')
+            self.g_ezcommand(f'mcu.gpio.setdir(0xFFFF, 3)')
+            pass
+
+        pass
+
+    def i_o_change(self, port0='PG', set_or_clr0=0, pin_num0=0):
+        '''
+        port0 default PG (0) \n
+        set-1 or clr-0 \n
+        pin_num is from 1-16 \n
+        EX: PG1- PG16 \n
+        '''
+        port0 = str(port0)
+        pin_num0 = str(pin_num0)
+
+        port_cmd = self.i_o_port_num[port0]
+
+        if set_or_clr0 == 1:
+            # set the related pin
+            i_o_cmd = self.i_o_pin_num_set[pin_num0]
+
+        else:
+            # clear the related pin
+            i_o_cmd = self.i_o_pin_num_clr[pin_num0]
+
+        cmd_str = f'mcu.gpio.setout({i_o_cmd}, {port_cmd})'
+
+        self.g_ezcommand(cmd_str)
+
+        pass
+
 
 if __name__ == '__main__':
     # testing of GPL MCU connection
@@ -287,8 +394,46 @@ if __name__ == '__main__':
     for default, when only one device is connected
     '''
 
+    # GPL MCU initialization: this is the general initial method
+    # for only one device at the same time
+    # ====
     path = JIGM3.listdevices()
-    g_mcu = JIGM3(devpath=path[0])
+    g_mcu = JIGM3(devpath=path[0], sim_mcu0=1)
+    # ====
 
     a = g_mcu.getversion()
     print(f'the MCU version is {a}')
+
+    test_index = 1
+    '''
+    testing index settings
+
+    '''
+
+    if test_index == 0:
+        # first to test the EZ command to config I/O of the GPL MCU
+
+        x = 0x01
+        y = 0x20
+
+        print(x & y)
+        print(x | y)
+        print(x ^ y)
+
+        print(~x)
+        print(~y)
+
+        pass
+
+    elif test_index == 1:
+        # send IO signal to MCU
+
+        g_mcu.i_o_config(port_sel0='PG')
+
+        # infinite toggle IO
+        while (1):
+
+            g_mcu.i_o_change(port0='IO', set_or_clr0=1, pin_num0=1)
+            time.sleep(2)
+            g_mcu.i_o_change(port0='IO', set_or_clr0=0, pin_num0=1)
+            time.sleep(2)

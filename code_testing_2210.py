@@ -186,9 +186,38 @@ class test_calass():
 
             pass
 
+    def logic_operator(self):
+        '''
+        try all the logic operator and result show in terminal
+        '''
+
+        x = 0x01
+        y = 0x20
+        print(x + y)
+
+        print(x & y)
+        print(x | y)
+        print(x ^ y)
+        print(~x)
+        print(~y)
+
+        print(hex(x))
+        print(hex(y))
+
+        print(hex(~x))
+        print(hex(~y))
+
+        print(hex(abs(~x)))
+        print(hex(abs(~y)))
+
+        a = 0b1010111111111111
+        print(hex(a))
+
+        pass
+
 
 t_s = test_calass()
-testing_index = 6
+testing_index = 7
 
 if testing_index == 0:
     print('a')
@@ -278,5 +307,11 @@ elif testing_index == 6:
 
     t_s.try_except(0)
     t_s.try_except(1)
+
+    pass
+
+elif testing_index == 7:
+
+    t_s.logic_operator()
 
     pass
