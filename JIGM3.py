@@ -44,6 +44,15 @@ class JIGM3():
                                 '8': 0xFF7F, '9': 0xFEFF, '10': 0xFDFF, '11': 0xFBFF, '12': 0xF7FF, '13': 0xEFFF, '14': 0xDFFF, '15': 0xBFFF, '16': 0x7FFF, }
         # binary number: 0b10101010
 
+        # default state and state record of IO pin
+        self.i_o_state = {'PG': 0x00, 'IO': 0x00, 'IOx': 0x00, 'IOy': 0x00}
+
+        '''
+        MSP430 related variable mapping
+        '''
+        # default PMIC mode is set to 1 (shut down mode)
+        self.mode_set = 1
+
     @staticmethod
     def listdevices():
         try:
@@ -148,6 +157,10 @@ class JIGM3():
         :return: error id, datas or error string.
         """
 
+        '''
+        return datas doen's contain register address
+        '''
+
         cmd = f" return mcu.i2c.read(0x{device:02X}, 0x{regaddr:02X}, {len})"
 
         # self.CmdSentSignal.emit(cmd)
@@ -175,6 +188,10 @@ class JIGM3():
         :param datas: list for bytes to write.
         :return: error id, datas or error string.
         """
+
+        '''
+        device address use 8 bit address, regaddr (0x9C), datas (0xFF or 0x00)-list no need index
+        '''
         hexstrs = ["0x{:02X}".format(data) for data in datas]
         cmddstr = ", ".join(hexstrs)
 
@@ -205,6 +222,10 @@ class JIGM3():
         :param lastAck: 1 for last Ack.   otherwise 0
         :return: error id, datas or error string.
         """
+
+        '''
+        only device address, not register adress, difference between op and normal
+        '''
 
         cmd = f' return mcu.i2c.opread(0x{device:02X}, {len}, {1 if contAck else 0}, {1 if lastAck else 0})'
 
@@ -356,6 +377,13 @@ class JIGM3():
             self.g_ezcommand(f'mcu.gpio.setdir(0xFFFF, 1)')
             self.g_ezcommand(f'mcu.gpio.setdir(0xFFFF, 2)')
             self.g_ezcommand(f'mcu.gpio.setdir(0xFFFF, 3)')
+
+            # and send output to 0, so it can be aligned to default state
+            self.g_ezcommand(f'mcu.gpio.setout(0x0, 0)')
+            self.g_ezcommand(f'mcu.gpio.setout(0x0, 1)')
+            self.g_ezcommand(f'mcu.gpio.setout(0x0, 2)')
+            self.g_ezcommand(f'mcu.gpio.setout(0x0, 3)')
+
             pass
 
         pass
@@ -371,20 +399,134 @@ class JIGM3():
         pin_num0 = str(pin_num0)
 
         port_cmd = self.i_o_port_num[port0]
+        # put related IO state in cache
+        i_o_state_tmp = self.i_o_state[port0]
 
         if set_or_clr0 == 1:
             # set the related pin
-            i_o_cmd = self.i_o_pin_num_set[pin_num0]
+            i_o_cmd0 = self.i_o_pin_num_set[pin_num0]
+            print(f'command0 is {i_o_cmd0}')
+            # use or operator for the set
+            i_o_cmd = i_o_state_tmp | i_o_cmd0
+            print(f'final command0 is {i_o_cmd}')
 
         else:
             # clear the related pin
-            i_o_cmd = self.i_o_pin_num_clr[pin_num0]
+            i_o_cmd0 = self.i_o_pin_num_clr[pin_num0]
+            print(f'command0 is {i_o_cmd0}')
+            # use and operator for clear
+            i_o_cmd = i_o_state_tmp & i_o_cmd0
+            print(f'final command is {i_o_cmd}')
 
         cmd_str = f'mcu.gpio.setout({i_o_cmd}, {port_cmd})'
+        # update the status of MCU
+        self.i_o_state[port0] = i_o_cmd
 
         self.g_ezcommand(cmd_str)
 
         pass
+
+    def pwm_ctrl(self, pwm_freq0=1000, pwm_duty0=10, pwm_port0=1, en_dis0=1):
+        '''
+        this function control the PWM output for the MCU
+        PWM have 4 port PWM1-PWM4, default 1
+        EX: mcu.pwm.setpwm(1000, 0 , 1) ; mcu.pwm.off()
+        freq, duty, port, enalbe/disable
+        '''
+
+        if en_dis0 == 1:
+            # enable PWM output
+            cmd_str = f'mcu.pwm.setpwm({pwm_freq0}, {pwm_duty0} , {pwm_port0})'
+            self.g_ezcommand(cmd_str)
+
+            pass
+        else:
+            # disable the PWM output
+            cmd_str = f'mcu.pwm.off()'
+            self.g_ezcommand(cmd_str)
+
+            pass
+
+        pass
+
+    def pattern_gen(self, pattern0=0, unit_time0=1, extra_function0=0):
+        '''
+        data format, ({data transition1, data transition2,...}, unit_time, extra_function)
+        unit_time is in 'ns' \n
+        format of data transition: (IO state,1-H,0-L)$(counter, unit_time) \n
+        EX: mcu.pattern.setupX( {'9$2e4`401$1e4`409$1e4`400$1e4`0$5e4`'},
+                    10000, 0 )
+        '''
+        '''
+        pattern element break down
+        9$2e4 => 9 is the status from PG16(MSB) to PG1(LSB) => PG1 and PG4 high
+        9$2e4 => 2e4 is 2*10^4 * unit_time0 is the transition time point
+        '' => is the beginning and end of the pattern element
+        ` (~~) => is the separation of each transition of pattern
+        '''
+
+        if pattern0 == 0:
+            # use default pattern, change all output to 0
+            pattern0 = "'0$1e3`'"
+
+        cmd_str = f"mcu.pattern.setupX( {{{pattern0}}},{unit_time0}, {extra_function0} )"
+        self.g_ezcommand(cmd_str)
+
+        pass
+
+    def pattern_gen_full_str(self, cmd_str0=0):
+        '''
+        send the full string command generate from GPL,V4 pattern gen
+        copy and paste~
+        '''
+        if cmd_str0 == 0:
+            # use default pattern
+            cmd_str = "mcu.pattern.setupX( {'0$1e3`'},10000, 0 )"
+
+        cmd_str = cmd_str0
+        self.g_ezcommand(cmd_str)
+
+        pass
+
+    def g_pulse_out(self, pulse0=1, low_duration_us=10):
+        '''
+        function to send pulse for SWIRE function
+        '''
+
+        pass
+
+    '''
+    add function to match MSP430
+    '''
+
+    def pulse_out(self, pulse_1, pulse_2):
+        '''
+        GPL MCU mapped with MSP430
+        pulse need to be less then 255
+        '''
+
+        pass
+
+    def pmic_mode(self, mode_index):
+        '''
+        (EN,SW) or (EN2, EN1) \n
+        1:(0,0); 2:(0,1); 3:(1,0); 4:(1,1)
+        default using PG16 as EN and PG15 as SW in JIGM3
+        '''
+        # mode index should be in 1-4
+        if mode_index < 1 or mode_index > 4:
+            mode_index = 1
+            # turn off if error occur
+        self.mode_set = mode_index
+
+        if mode_index == 1:
+            # shut_down
+            self.i_o_change(self, port0='PG', set_or_clr0=0, pin_num0=16)
+            self.i_o_change(self, port0='PG', set_or_clr0=0, pin_num0=15)
+            pass
+        elif mode_index == 2:
+
+            pass
 
 
 if __name__ == '__main__':
@@ -399,12 +541,14 @@ if __name__ == '__main__':
     # ====
     path = JIGM3.listdevices()
     g_mcu = JIGM3(devpath=path[0], sim_mcu0=1)
+    # set all the IO to output
+    g_mcu.i_o_config()
     # ====
 
     a = g_mcu.getversion()
     print(f'the MCU version is {a}')
 
-    test_index = 1
+    test_index = 3
     '''
     testing index settings
 
@@ -437,3 +581,50 @@ if __name__ == '__main__':
             time.sleep(2)
             g_mcu.i_o_change(port0='IO', set_or_clr0=0, pin_num0=1)
             time.sleep(2)
+
+            g_mcu.i_o_change(port0='IO', set_or_clr0=1, pin_num0=1)
+            time.sleep(2)
+            g_mcu.i_o_change(port0='IO', set_or_clr0=1, pin_num0=2)
+            time.sleep(2)
+            g_mcu.i_o_change(port0='IO', set_or_clr0=1, pin_num0=3)
+            time.sleep(2)
+
+            g_mcu.i_o_change(port0='IO', set_or_clr0=0, pin_num0=1)
+            time.sleep(2)
+            g_mcu.i_o_change(port0='IO', set_or_clr0=0, pin_num0=2)
+            time.sleep(2)
+            g_mcu.i_o_change(port0='IO', set_or_clr0=0, pin_num0=3)
+            time.sleep(2)
+
+            pass
+        pass
+    elif test_index == 2:
+        '''
+        testing for PWM control
+        '''
+        g_mcu.pwm_ctrl(pwm_freq0=45000, pwm_duty0=30, pwm_port0=1, en_dis0=1)
+
+        g_mcu.pwm_ctrl(en_dis0=0)
+
+        pass
+
+    elif test_index == 3:
+        '''
+        testing for pattern gen
+        { or } in f-string need to be {{ or }}
+        '''
+        pattern = "'0$1e2`20008$1e2`0$1e2`20008$1e2`0$6e2`'"
+        full_str = "mcu.pattern.setupX( {'0$1e2`20008$1e2`0$1e2`20008$1e2`0$6e2`'},10000, 2 )"
+        unit_time = 10000
+        extra_function = 0
+        g_mcu.pattern_gen(pattern0=pattern,
+                          unit_time0=unit_time, extra_function0=2)
+        time.sleep(5)
+        g_mcu.pattern_gen_full_str(cmd_str0=full_str)
+
+        pass
+
+    elif test_index == 4:
+        '''
+        testing for pulse output function with programmable duration
+        '''
