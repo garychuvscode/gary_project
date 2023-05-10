@@ -158,7 +158,8 @@ class JIGM3:
             raise Exception("[Result Error] Result is not list")
 
         if not isinstance(result[0], int):
-            raise Exception("[Result Error] Result[0] is not integer for Error-number")
+            raise Exception(
+                "[Result Error] Result[0] is not integer for Error-number")
 
         return result
 
@@ -208,7 +209,8 @@ class JIGM3:
 
         # self.CmdSentSignal.emit(cmd)
 
-        err, datas, *_ = self.assertResult(json.loads(luacmd(self.handle, cmd)))
+        err, datas, * \
+            _ = self.assertResult(json.loads(luacmd(self.handle, cmd)))
 
         match err:
             case 0:
@@ -273,7 +275,8 @@ class JIGM3:
 
         # self.CmdSentSignal.emit(cmd)
 
-        err, datas, *_ = self.assertResult(json.loads(luacmd(self.handle, cmd)))
+        err, datas, * \
+            _ = self.assertResult(json.loads(luacmd(self.handle, cmd)))
 
         match err:
             case 0:
@@ -328,7 +331,8 @@ class JIGM3:
 
         # self.CmdSentSignal.emit(cmd)
 
-        err, datas, *_ = self.assertResult(json.loads(luacmd(self.handle, cmd)))
+        err, datas, * \
+            _ = self.assertResult(json.loads(luacmd(self.handle, cmd)))
 
         match err:
             case 0:
@@ -530,10 +534,43 @@ class JIGM3:
 
         pass
 
-    def g_pulse_out(self, pulse0=1, low_duration_us=10):
+    def g_pulse_out(self, pulse0=1, duration_ns=10000, en_sw='SW'):
         """
         function to send pulse for SWIRE function
         """
+
+        '''
+        pattern gen explanation
+        by using PG1(EN) and PG2(SW) as output
+        toggle SW => '3$10`1$10`3$10`1$10`3$10`1$10`3$10`1$10`3$20`'
+        (head and end => keep the pin in logic H: '3$10  `3$10`')
+        format: each pulse add one cycle `1$10`3$10
+        '''
+        cmd_str = "'3$10"
+        cmd_str_end = "`'"
+
+        # decide which pin to toggle
+        if en_sw == 'SW':
+            # toggle SW
+            single_cell = '`1$10`3$10'
+            pass
+        else:
+            # toggle EN
+            single_cell = '`2$10`3$10'
+
+        # cmd_str_end = "`3$10`'"
+
+        cmd_str = "'3$10"
+        x = 0
+        while x < pulse0:
+            cmd_str = cmd_str + single_cell
+            x = x + 1
+            pass
+        # after finished the pulse count, add the final element
+        cmd_str = cmd_str + cmd_str_end
+        self.pattern_gen(pattern0=cmd_str, unit_time0=duration_ns)
+
+        print('pulse1 finished')
 
         pass
 
@@ -541,11 +578,66 @@ class JIGM3:
     add function to match MSP430
     """
 
-    def pulse_out(self, pulse_1, pulse_2):
+    def pulse_out(self, pulse_1=1, pulse_2=1):
         """
         GPL MCU mapped with MSP430
         pulse need to be less then 255
+        can choose pulse at PG2(EN), default is at PG1(SW)
+
+        g_MCU LSB is 1 ns, set in duration to 10 us
         """
+        '''
+        pattern gen explanation
+        by using PG1(EN) and PG2(SW) as output
+        toggle SW => '3$10`1$10`3$10`1$10`3$10`1$10`3$10`1$10`3$20`'
+        (head and end => keep the pin in logic H: '3$10  `3$10`')
+        format: each pulse add one cycle `1$10`3$10
+        '''
+
+        # since this function is used to mapped with MSP430, fixed the extra
+        # parameter of pattern gen
+        duration_ns = 10000
+        en_sw = 'SW'
+
+        cmd_str = "'3$10"
+        cmd_str_end = "`'"
+
+        if en_sw == 'SW':
+            # toggle SW
+            single_cell = '`1$10`3$10'
+            pass
+        else:
+            # toggle EN
+            single_cell = '`2$10`3$10'
+
+        # cmd_str_end = "`3$10`'"
+
+        cmd_str = "'3$10"
+        x = 0
+        while x < pulse_1:
+            cmd_str = cmd_str + single_cell
+            x = x + 1
+            pass
+        # after finished the pulse count, add the final element
+        cmd_str = cmd_str + cmd_str_end
+        self.pattern_gen(pattern0=cmd_str, unit_time0=duration_ns)
+
+        print('pulse1 finished')
+
+        # delay 50ms between two pulse
+        time.sleep(0.05)
+
+        cmd_str = "'3$10"
+        x = 0
+        while x < pulse_2:
+            cmd_str = cmd_str + single_cell
+            x = x + 1
+            pass
+        # after finished the pulse count, add the final element
+        cmd_str = cmd_str + cmd_str_end
+        self.pattern_gen(pattern0=cmd_str, unit_time0=duration_ns)
+
+        print('pulse2 finished')
 
         pass
 
@@ -566,23 +658,31 @@ class JIGM3:
 
         if mode_index == 1:
             # shut_down
-            self.i_o_change(self, port0=port_optional0, set_or_clr0=0, pin_num0=pin_EN0)
-            self.i_o_change(self, port0=port_optional0, set_or_clr0=0, pin_num0=pin_SW0)
+            self.i_o_change(self, port0=port_optional0,
+                            set_or_clr0=0, pin_num0=pin_EN0)
+            self.i_o_change(self, port0=port_optional0,
+                            set_or_clr0=0, pin_num0=pin_SW0)
             pass
         elif mode_index == 2:
             # only SW on
-            self.i_o_change(self, port0=port_optional0, set_or_clr0=0, pin_num0=pin_EN0)
-            self.i_o_change(self, port0=port_optional0, set_or_clr0=1, pin_num0=pin_SW0)
+            self.i_o_change(self, port0=port_optional0,
+                            set_or_clr0=0, pin_num0=pin_EN0)
+            self.i_o_change(self, port0=port_optional0,
+                            set_or_clr0=1, pin_num0=pin_SW0)
             pass
         elif mode_index == 3:
             # only EN on (AOD mode for PMIC)
-            self.i_o_change(self, port0=port_optional0, set_or_clr0=1, pin_num0=pin_EN0)
-            self.i_o_change(self, port0=port_optional0, set_or_clr0=0, pin_num0=pin_SW0)
+            self.i_o_change(self, port0=port_optional0,
+                            set_or_clr0=1, pin_num0=pin_EN0)
+            self.i_o_change(self, port0=port_optional0,
+                            set_or_clr0=0, pin_num0=pin_SW0)
             pass
         elif mode_index == 4:
             # both EN and SW are on (normal mode of PMIC)
-            self.i_o_change(self, port0=port_optional0, set_or_clr0=1, pin_num0=pin_EN0)
-            self.i_o_change(self, port0=port_optional0, set_or_clr0=1, pin_num0=pin_SW0)
+            self.i_o_change(self, port0=port_optional0,
+                            set_or_clr0=1, pin_num0=pin_EN0)
+            self.i_o_change(self, port0=port_optional0,
+                            set_or_clr0=1, pin_num0=pin_SW0)
             pass
 
         pass
@@ -707,7 +807,8 @@ if __name__ == "__main__":
         )
         unit_time = 10000
         extra_function = 0
-        g_mcu.pattern_gen(pattern0=pattern, unit_time0=unit_time, extra_function0=2)
+        g_mcu.pattern_gen(pattern0=pattern,
+                          unit_time0=unit_time, extra_function0=2)
         time.sleep(5)
         g_mcu.pattern_gen_full_str(cmd_str0=full_str)
 
@@ -717,3 +818,7 @@ if __name__ == "__main__":
         """
         testing for pulse output function with programmable duration
         """
+
+        g_mcu.pulse_out(pulse_1=10, pulse_2=10)
+
+        g_mcu.g_pulse_out(pulse0=5, duration_ns=)
