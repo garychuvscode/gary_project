@@ -891,8 +891,10 @@ if __name__ == "__main__":
         """
         testing for PWM control
         """
+        # turn on
         g_mcu.pwm_ctrl(pwm_freq0=45000, pwm_duty0=30, pwm_port0=1, en_dis0=1)
 
+        # turn off
         g_mcu.pwm_ctrl(en_dis0=0)
 
         pass
@@ -925,3 +927,9 @@ if __name__ == "__main__":
         g_mcu.g_pulse_out(pulse0=5, duration_ns=1000, en_sw="SW")
 
         g_mcu.g_pulse_out(pulse0=5, duration_ns=1000, en_sw="EN")
+
+        g_mcu.g_pulse_out_V2(pulse0=2, duration_ns=1000, en_sw="SW", count0=3)
+
+        g_mcu.g_pulse_out_V2(pulse0=3, duration_ns=1000, en_sw="SW", count0=10)
+
+        g_mcu.g_pulse_out_V2(pulse0=1, duration_ns=500, en_sw="SW", count0=10)
