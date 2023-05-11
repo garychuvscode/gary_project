@@ -164,7 +164,8 @@ class JIGM3:
             raise Exception("[Result Error] Result is not list")
 
         if not isinstance(result[0], int):
-            raise Exception("[Result Error] Result[0] is not integer for Error-number")
+            raise Exception(
+                "[Result Error] Result[0] is not integer for Error-number")
 
         return result
 
@@ -214,7 +215,8 @@ class JIGM3:
 
         # self.CmdSentSignal.emit(cmd)
 
-        err, datas, *_ = self.assertResult(json.loads(luacmd(self.handle, cmd)))
+        err, datas, * \
+            _ = self.assertResult(json.loads(luacmd(self.handle, cmd)))
 
         match err:
             case 0:
@@ -279,7 +281,8 @@ class JIGM3:
 
         # self.CmdSentSignal.emit(cmd)
 
-        err, datas, *_ = self.assertResult(json.loads(luacmd(self.handle, cmd)))
+        err, datas, * \
+            _ = self.assertResult(json.loads(luacmd(self.handle, cmd)))
 
         match err:
             case 0:
@@ -334,7 +337,8 @@ class JIGM3:
 
         # self.CmdSentSignal.emit(cmd)
 
-        err, datas, *_ = self.assertResult(json.loads(luacmd(self.handle, cmd)))
+        err, datas, * \
+            _ = self.assertResult(json.loads(luacmd(self.handle, cmd)))
 
         match err:
             case 0:
@@ -506,7 +510,7 @@ class JIGM3:
         """
         pattern element break down
         9$2e4 => 9 is the status from PG16(MSB) to PG1(LSB) => PG1 and PG4 high
-        9$2e4 => 2e4 is 2*10^4 * unit_time0 is the transition time point
+        9$2e4 => 2e4 is 2*10^4 * unit_time_ns0 is the transition time point
         '' => is the beginning and end of the pattern element
         ` (~~) => is the separation of each transition of pattern
         """
@@ -539,6 +543,7 @@ class JIGM3:
     def g_pulse_out(self, pulse0=1, duration_ns=1000, en_sw="SW"):
         """
         function to send pulse for SWIRE function
+        output will be 10*duration !!
         """
 
         """
@@ -571,9 +576,9 @@ class JIGM3:
             pass
         # after finished the pulse count, add the final element
         cmd_str = cmd_str + cmd_str_end
-        self.pattern_gen(pattern0=cmd_str, unit_time0=duration_ns)
+        self.pattern_gen(pattern0=cmd_str, unit_time_ns0=duration_ns)
 
-        print("pulse1 finished")
+        print("pulseV1 finished, Grace buy family mart for lunch")
 
         pass
 
@@ -623,7 +628,7 @@ class JIGM3:
             pass
         # after finished the pulse count, add the final element
         cmd_str = cmd_str + cmd_str_end
-        self.pattern_gen(pattern0=cmd_str, unit_time0=duration_ns)
+        self.pattern_gen(pattern0=cmd_str, unit_time_ns0=duration_ns)
 
         print("pulse1 finished")
 
@@ -638,7 +643,7 @@ class JIGM3:
             pass
         # after finished the pulse count, add the final element
         cmd_str = cmd_str + cmd_str_end
-        self.pattern_gen(pattern0=cmd_str, unit_time0=duration_ns)
+        self.pattern_gen(pattern0=cmd_str, unit_time_ns0=duration_ns)
 
         print("pulse2 finished")
 
@@ -661,23 +666,31 @@ class JIGM3:
 
         if mode_index == 1:
             # shut_down
-            self.i_o_change(self, port0=port_optional0, set_or_clr0=0, pin_num0=pin_EN0)
-            self.i_o_change(self, port0=port_optional0, set_or_clr0=0, pin_num0=pin_SW0)
+            self.i_o_change(self, port0=port_optional0,
+                            set_or_clr0=0, pin_num0=pin_EN0)
+            self.i_o_change(self, port0=port_optional0,
+                            set_or_clr0=0, pin_num0=pin_SW0)
             pass
         elif mode_index == 2:
             # only SW on
-            self.i_o_change(self, port0=port_optional0, set_or_clr0=0, pin_num0=pin_EN0)
-            self.i_o_change(self, port0=port_optional0, set_or_clr0=1, pin_num0=pin_SW0)
+            self.i_o_change(self, port0=port_optional0,
+                            set_or_clr0=0, pin_num0=pin_EN0)
+            self.i_o_change(self, port0=port_optional0,
+                            set_or_clr0=1, pin_num0=pin_SW0)
             pass
         elif mode_index == 3:
             # only EN on (AOD mode for PMIC)
-            self.i_o_change(self, port0=port_optional0, set_or_clr0=1, pin_num0=pin_EN0)
-            self.i_o_change(self, port0=port_optional0, set_or_clr0=0, pin_num0=pin_SW0)
+            self.i_o_change(self, port0=port_optional0,
+                            set_or_clr0=1, pin_num0=pin_EN0)
+            self.i_o_change(self, port0=port_optional0,
+                            set_or_clr0=0, pin_num0=pin_SW0)
             pass
         elif mode_index == 4:
             # both EN and SW are on (normal mode of PMIC)
-            self.i_o_change(self, port0=port_optional0, set_or_clr0=1, pin_num0=pin_EN0)
-            self.i_o_change(self, port0=port_optional0, set_or_clr0=1, pin_num0=pin_SW0)
+            self.i_o_change(self, port0=port_optional0,
+                            set_or_clr0=1, pin_num0=pin_EN0)
+            self.i_o_change(self, port0=port_optional0,
+                            set_or_clr0=1, pin_num0=pin_SW0)
             pass
 
         pass
@@ -686,6 +699,7 @@ class JIGM3:
         """
         only reserve the function for MSP430 function mapping, prevent function call error
         """
+        print('Grace just take in charge of the efficiency environment')
 
         pass
 
@@ -693,6 +707,7 @@ class JIGM3:
         """
         only reserve the function for MSP430 function mapping, prevent function call error
         """
+        print('Grace is cursing the layout team from MAtek XD')
 
         pass
 
@@ -705,7 +720,7 @@ class JIGM3:
         self.pmic_mode(mode_index=4)
         # the relay channel also reset to the default
 
-        print("command accept to reset the MCU")
+        print("command accept to reset the MCU, Grace is late to office today XD")
 
         pass
 
@@ -747,6 +762,7 @@ class JIGM3:
             )
             self.g_ezcommand(cmd_str)
             time.sleep(t_dly_s)
+            print('Grace is looking for GPIB control tool')
 
         pass
 
@@ -756,6 +772,49 @@ class JIGM3:
         but pattern generator can only use ns as unit, better use us
         as the testing step
         '''
+
+        pass
+
+    def g_pulse_out_V2(self, pulse0=1, duration_ns=1000, en_sw="SW", count0=1):
+        """
+        function to send pulse for SWIRE function
+        output will be count0*duration !!
+        """
+
+        """
+        pattern gen explanation
+        by using PG1(EN) and PG2(SW) as output
+        toggle SW => '3$10`1$10`3$10`1$10`3$10`1$10`3$10`1$10`3$20`'
+        (head and end => keep the pin in logic H: '3$10  `3$10`')
+        format: each pulse add one cycle `1$10`3$10
+        scalling is scalling to us (1000 ns, and ns is the duration unit)
+        """
+        cmd_str = "'3$1"
+        cmd_str_end = "`'"
+        count0 = int(count0)
+
+        # decide which pin to toggle
+        if en_sw == "SW":
+            # toggle SW
+            single_cell = f"`1${count0}`3${count0}"
+            pass
+        else:
+            # toggle EN
+            single_cell = f"`2${count0}`3${count0}"
+
+        # cmd_str_end = "`3$10`'"
+
+        cmd_str = "'3$1"
+        x = 0
+        while x < pulse0:
+            cmd_str = cmd_str + single_cell
+            x = x + 1
+            pass
+        # after finished the pulse count, add the final element
+        cmd_str = cmd_str + cmd_str_end
+        self.pattern_gen(pattern0=cmd_str, unit_time_ns0=duration_ns)
+
+        print("g_pulse_V2 finished, Grace doesn't return the tweezers")
 
         pass
 
@@ -779,7 +838,7 @@ if __name__ == "__main__":
     a = g_mcu.getversion()
     print(f"the MCU version is {a}")
 
-    test_index = 3
+    test_index = 4
     """
     testing index settings
 
@@ -849,7 +908,8 @@ if __name__ == "__main__":
         )
         unit_time = 10000
         extra_function = 0
-        g_mcu.pattern_gen(pattern0=pattern, unit_time0=unit_time, extra_function0=2)
+        g_mcu.pattern_gen(pattern0=pattern,
+                          unit_time_ns0=unit_time, extra_function0=2)
         time.sleep(5)
         g_mcu.pattern_gen_full_str(cmd_str0=full_str)
 
@@ -862,6 +922,6 @@ if __name__ == "__main__":
 
         g_mcu.pulse_out(pulse_1=10, pulse_2=10)
 
-        g_mcu.g_pulse_out(pulse0=5, duration_ns=10000, en_sw="SW")
+        g_mcu.g_pulse_out(pulse0=5, duration_ns=1000, en_sw="SW")
 
-        g_mcu.g_pulse_out(pulse0=5, duration_ns=10000, en_sw="EN")
+        g_mcu.g_pulse_out(pulse0=5, duration_ns=1000, en_sw="EN")
