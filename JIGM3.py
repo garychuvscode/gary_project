@@ -79,8 +79,14 @@ class JIGM3:
         """
         MSP430 related variable mapping
         """
+
+        self.mcu_cmd_arry = ["01", "02", "04", "08", "10", "20", "40", "80"]
+
         # default PMIC mode is set to 1 (shut down mode)
         self.mode_set = 1
+
+        # relay function enable or disable, not to use IO1-IO8 if relay mode enable
+        self.relay0 = 0
 
     @staticmethod
     def listdevices():
@@ -158,8 +164,7 @@ class JIGM3:
             raise Exception("[Result Error] Result is not list")
 
         if not isinstance(result[0], int):
-            raise Exception(
-                "[Result Error] Result[0] is not integer for Error-number")
+            raise Exception("[Result Error] Result[0] is not integer for Error-number")
 
         return result
 
@@ -209,8 +214,7 @@ class JIGM3:
 
         # self.CmdSentSignal.emit(cmd)
 
-        err, datas, * \
-            _ = self.assertResult(json.loads(luacmd(self.handle, cmd)))
+        err, datas, *_ = self.assertResult(json.loads(luacmd(self.handle, cmd)))
 
         match err:
             case 0:
@@ -275,8 +279,7 @@ class JIGM3:
 
         # self.CmdSentSignal.emit(cmd)
 
-        err, datas, * \
-            _ = self.assertResult(json.loads(luacmd(self.handle, cmd)))
+        err, datas, *_ = self.assertResult(json.loads(luacmd(self.handle, cmd)))
 
         match err:
             case 0:
@@ -331,8 +334,7 @@ class JIGM3:
 
         # self.CmdSentSignal.emit(cmd)
 
-        err, datas, * \
-            _ = self.assertResult(json.loads(luacmd(self.handle, cmd)))
+        err, datas, *_ = self.assertResult(json.loads(luacmd(self.handle, cmd)))
 
         match err:
             case 0:
@@ -493,7 +495,7 @@ class JIGM3:
 
         pass
 
-    def pattern_gen(self, pattern0=0, unit_time0=1, extra_function0=0):
+    def pattern_gen(self, pattern0=0, unit_time_ns0=1, extra_function0=0):
         """
         data format, ({data transition1, data transition2,...}, unit_time, extra_function)
         unit_time is in 'ns' \n
@@ -514,7 +516,7 @@ class JIGM3:
             pattern0 = "'0$1e3`'"
 
         cmd_str = (
-            f"mcu.pattern.setupX( {{{pattern0}}},{unit_time0}, {extra_function0} )"
+            f"mcu.pattern.setupX( {{{pattern0}}},{unit_time_ns0}, {extra_function0} )"
         )
         self.g_ezcommand(cmd_str)
 
@@ -534,29 +536,30 @@ class JIGM3:
 
         pass
 
-    def g_pulse_out(self, pulse0=1, duration_ns=10000, en_sw='SW'):
+    def g_pulse_out(self, pulse0=1, duration_ns=1000, en_sw="SW"):
         """
         function to send pulse for SWIRE function
         """
 
-        '''
+        """
         pattern gen explanation
         by using PG1(EN) and PG2(SW) as output
         toggle SW => '3$10`1$10`3$10`1$10`3$10`1$10`3$10`1$10`3$20`'
         (head and end => keep the pin in logic H: '3$10  `3$10`')
         format: each pulse add one cycle `1$10`3$10
-        '''
+        scalling is scalling to us (1000 ns, and ns is the duration unit)
+        """
         cmd_str = "'3$10"
         cmd_str_end = "`'"
 
         # decide which pin to toggle
-        if en_sw == 'SW':
+        if en_sw == "SW":
             # toggle SW
-            single_cell = '`1$10`3$10'
+            single_cell = "`1$10`3$10"
             pass
         else:
             # toggle EN
-            single_cell = '`2$10`3$10'
+            single_cell = "`2$10`3$10"
 
         # cmd_str_end = "`3$10`'"
 
@@ -570,7 +573,7 @@ class JIGM3:
         cmd_str = cmd_str + cmd_str_end
         self.pattern_gen(pattern0=cmd_str, unit_time0=duration_ns)
 
-        print('pulse1 finished')
+        print("pulse1 finished")
 
         pass
 
@@ -586,29 +589,29 @@ class JIGM3:
 
         g_MCU LSB is 1 ns, set in duration to 10 us
         """
-        '''
+        """
         pattern gen explanation
         by using PG1(EN) and PG2(SW) as output
         toggle SW => '3$10`1$10`3$10`1$10`3$10`1$10`3$10`1$10`3$20`'
         (head and end => keep the pin in logic H: '3$10  `3$10`')
         format: each pulse add one cycle `1$10`3$10
-        '''
+        """
 
         # since this function is used to mapped with MSP430, fixed the extra
         # parameter of pattern gen
-        duration_ns = 10000
-        en_sw = 'SW'
+        duration_ns = 1000
+        en_sw = "SW"
 
         cmd_str = "'3$10"
         cmd_str_end = "`'"
 
-        if en_sw == 'SW':
+        if en_sw == "SW":
             # toggle SW
-            single_cell = '`1$10`3$10'
+            single_cell = "`1$10`3$10"
             pass
         else:
             # toggle EN
-            single_cell = '`2$10`3$10'
+            single_cell = "`2$10`3$10"
 
         # cmd_str_end = "`3$10`'"
 
@@ -622,7 +625,7 @@ class JIGM3:
         cmd_str = cmd_str + cmd_str_end
         self.pattern_gen(pattern0=cmd_str, unit_time0=duration_ns)
 
-        print('pulse1 finished')
+        print("pulse1 finished")
 
         # delay 50ms between two pulse
         time.sleep(0.05)
@@ -637,7 +640,7 @@ class JIGM3:
         cmd_str = cmd_str + cmd_str_end
         self.pattern_gen(pattern0=cmd_str, unit_time0=duration_ns)
 
-        print('pulse2 finished')
+        print("pulse2 finished")
 
         pass
 
@@ -658,31 +661,23 @@ class JIGM3:
 
         if mode_index == 1:
             # shut_down
-            self.i_o_change(self, port0=port_optional0,
-                            set_or_clr0=0, pin_num0=pin_EN0)
-            self.i_o_change(self, port0=port_optional0,
-                            set_or_clr0=0, pin_num0=pin_SW0)
+            self.i_o_change(self, port0=port_optional0, set_or_clr0=0, pin_num0=pin_EN0)
+            self.i_o_change(self, port0=port_optional0, set_or_clr0=0, pin_num0=pin_SW0)
             pass
         elif mode_index == 2:
             # only SW on
-            self.i_o_change(self, port0=port_optional0,
-                            set_or_clr0=0, pin_num0=pin_EN0)
-            self.i_o_change(self, port0=port_optional0,
-                            set_or_clr0=1, pin_num0=pin_SW0)
+            self.i_o_change(self, port0=port_optional0, set_or_clr0=0, pin_num0=pin_EN0)
+            self.i_o_change(self, port0=port_optional0, set_or_clr0=1, pin_num0=pin_SW0)
             pass
         elif mode_index == 3:
             # only EN on (AOD mode for PMIC)
-            self.i_o_change(self, port0=port_optional0,
-                            set_or_clr0=1, pin_num0=pin_EN0)
-            self.i_o_change(self, port0=port_optional0,
-                            set_or_clr0=0, pin_num0=pin_SW0)
+            self.i_o_change(self, port0=port_optional0, set_or_clr0=1, pin_num0=pin_EN0)
+            self.i_o_change(self, port0=port_optional0, set_or_clr0=0, pin_num0=pin_SW0)
             pass
         elif mode_index == 4:
             # both EN and SW are on (normal mode of PMIC)
-            self.i_o_change(self, port0=port_optional0,
-                            set_or_clr0=1, pin_num0=pin_EN0)
-            self.i_o_change(self, port0=port_optional0,
-                            set_or_clr0=1, pin_num0=pin_SW0)
+            self.i_o_change(self, port0=port_optional0, set_or_clr0=1, pin_num0=pin_EN0)
+            self.i_o_change(self, port0=port_optional0, set_or_clr0=1, pin_num0=pin_SW0)
             pass
 
         pass
@@ -714,7 +709,54 @@ class JIGM3:
 
         pass
 
-    def relay_ctrl(self, channel_index=0):
+    def relay_ctrl(self, channel_index=0, relay_mode0="", t_dly_s=0.05):
+        """
+        MSP relay control \n
+        use IO1(index0)-IO8(index7) as the related \n
+        need to set relay mode to 1 at the first call of relay control \n
+        this function only control 8 channel of relay, just MSP430 \n
+        """
+        # to use IO port, port command fixed to 1 in this function
+        port_cmd = 1
+        # set the control index to 1 => means the IO1-IO8 is set to
+        # relay control
+        if relay_mode0 == 1:
+            # set relay mode to 1 and disable other GIPO control
+            self.relay0 = 1
+        elif relay_mode0 == 0:
+            # turn off relay mode and return the control of GPIO
+            self.relay0 = 0
+        else:
+            # not doing anything
+            pass
+
+        if self.relay0 == 1:
+            # re-load other GPIO status setting from IO9-IO16
+            # clear the PG1-PG8
+            self.relay_state = self.i_o_state["IO"] & 0xFF00
+
+            time.sleep(t_dly_s)
+            # since relay control need to be causion for short between relays
+            # give all turn off first
+            cmd_str = f"mcu.gpio.setout({self.relay_state}, {port_cmd})"
+            self.g_ezcommand(cmd_str)
+            time.sleep(t_dly_s)
+
+            cmd_str = (
+                f"mcu.gpio.setout({self.i_o_pin_num_set[channel_index]}, {port_cmd})"
+            )
+            self.g_ezcommand(cmd_str)
+            time.sleep(t_dly_s)
+
+        pass
+
+    def glitch_test(self):
+        '''
+        this function is planned to do the glitch testing of IO pin with
+        but pattern generator can only use ns as unit, better use us
+        as the testing step
+        '''
+
         pass
 
 
@@ -807,8 +849,7 @@ if __name__ == "__main__":
         )
         unit_time = 10000
         extra_function = 0
-        g_mcu.pattern_gen(pattern0=pattern,
-                          unit_time0=unit_time, extra_function0=2)
+        g_mcu.pattern_gen(pattern0=pattern, unit_time0=unit_time, extra_function0=2)
         time.sleep(5)
         g_mcu.pattern_gen_full_str(cmd_str0=full_str)
 
@@ -821,4 +862,6 @@ if __name__ == "__main__":
 
         g_mcu.pulse_out(pulse_1=10, pulse_2=10)
 
-        g_mcu.g_pulse_out(pulse0=5, duration_ns=)
+        g_mcu.g_pulse_out(pulse0=5, duration_ns=10000, en_sw="SW")
+
+        g_mcu.g_pulse_out(pulse0=5, duration_ns=10000, en_sw="EN")
