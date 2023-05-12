@@ -1445,7 +1445,7 @@ if __name__ == "__main__":
     excel_t.wave_path = default_path
     scope.open_inst()
 
-    test_index = 5
+    test_index = 4
     """
     set 3 to update the channel and others
     set 4 to change the label name

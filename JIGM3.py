@@ -766,12 +766,14 @@ class JIGM3:
 
         pass
 
-    def glitch_test(self):
+    def glitch_test(self, start_us=1, ):
         '''
         this function is planned to do the glitch testing of IO pin with
         but pattern generator can only use ns as unit, better use us
         as the testing step
         '''
+
+
 
         pass
 
