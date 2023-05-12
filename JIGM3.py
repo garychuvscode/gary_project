@@ -766,14 +766,30 @@ class JIGM3:
 
         pass
 
-    def glitch_test(self, start_us=1, ):
+    def glitch_test_H(self, start_us0=10, step_us0=10, stop_us0=500, pin_num0=0, port0="PG"):
         '''
         this function is planned to do the glitch testing of IO pin with
         but pattern generator can only use ns as unit, better use us
         as the testing step
+
+        set-1 or clr-0 \n
+        pin_num is from 1-16 \n
+        EX: PG1- PG16 \n
+        follow i_o_change
+
+        for H_version (high pulse) select pin and the other state will be 0 (all pin0)
         '''
 
+        # config the pin for deglitch
 
+        i_o_cmd0 = self.i_o_pin_num_set[pin_num0]
+
+        c_glitch = 0
+        x_glitch = int(stop_us0/start_us0)
+        while c_glitch < x_glitch:
+
+            x_glitch = x_glitch + 1
+            pass
 
         pass
 
