@@ -14,11 +14,19 @@ from PyUSBManagerv4 import opendev, closedev, luacmd, listdevs
 class JIGM3:
     def __init__(self, sim_mcu0=0, com_addr0=0, devpath=0, CmdSentSignal=0):
         self.DevPath = devpath
-        self.handle = opendev(devpath)
+        try:
+            self.handle = opendev(devpath)
+
+        except:
+            self.handle = 1
+            print("error or in simulation mode")
 
         self.CmdSentSignal = CmdSentSignal
 
-        self.Version = self.getversion()
+        if self.handle != 1:
+            self.Version = self.getversion()
+        else:
+            self.Version = "not open success"
 
         logging.info(f"OpenJIGM3[{self.Version}]")
 
@@ -108,7 +116,12 @@ class JIGM3:
                     0x30,
                 ),
             )
-            return pathm4s
+            if pathm4s == []:
+                path_null = ["no device or in simulation mode"]
+                print("no device or in simulation mode, return null jig path")
+                return path_null
+            else:
+                return pathm4s
 
         except Exception as e:
             logging.warning(e)
@@ -117,7 +130,8 @@ class JIGM3:
     # JIG-M4 style
 
     def getversion(self):
-        return self.ezCommand("return mcu._version:get()")[0]
+        # return self.ezCommand("return mcu._version:get()")[0]
+        return self.g_ezcommand("return mcu._version:get()")[0]
 
     def refresh(self):
         # self.reopen()
@@ -164,8 +178,7 @@ class JIGM3:
             raise Exception("[Result Error] Result is not list")
 
         if not isinstance(result[0], int):
-            raise Exception(
-                "[Result Error] Result[0] is not integer for Error-number")
+            raise Exception("[Result Error] Result[0] is not integer for Error-number")
 
         return result
 
@@ -215,8 +228,7 @@ class JIGM3:
 
         # self.CmdSentSignal.emit(cmd)
 
-        err, datas, * \
-            _ = self.assertResult(json.loads(luacmd(self.handle, cmd)))
+        err, datas, *_ = self.assertResult(json.loads(luacmd(self.handle, cmd)))
 
         match err:
             case 0:
@@ -281,8 +293,7 @@ class JIGM3:
 
         # self.CmdSentSignal.emit(cmd)
 
-        err, datas, * \
-            _ = self.assertResult(json.loads(luacmd(self.handle, cmd)))
+        err, datas, *_ = self.assertResult(json.loads(luacmd(self.handle, cmd)))
 
         match err:
             case 0:
@@ -337,8 +348,7 @@ class JIGM3:
 
         # self.CmdSentSignal.emit(cmd)
 
-        err, datas, * \
-            _ = self.assertResult(json.loads(luacmd(self.handle, cmd)))
+        err, datas, *_ = self.assertResult(json.loads(luacmd(self.handle, cmd)))
 
         match err:
             case 0:
@@ -392,16 +402,17 @@ class JIGM3:
         send string from V4 to get MCU work for cute g
         """
         command0 = str(command0)
+        result = "default result"
         if self.sim_mcu == 0:
             # object in simulation mode
             print(f"simulation mode for MCU, command is \n {command0}")
             pass
         else:
             print(f"real mode with command \n {command0}")
-            self.ezCommand(command0)
+            result = self.ezCommand(command0)
             pass
 
-        pass
+        return result
 
     def i_o_config(self, port_sel0="PG", i_o_sel0="out", all_out0=1):
         """
@@ -666,31 +677,23 @@ class JIGM3:
 
         if mode_index == 1:
             # shut_down
-            self.i_o_change(self, port0=port_optional0,
-                            set_or_clr0=0, pin_num0=pin_EN0)
-            self.i_o_change(self, port0=port_optional0,
-                            set_or_clr0=0, pin_num0=pin_SW0)
+            self.i_o_change(self, port0=port_optional0, set_or_clr0=0, pin_num0=pin_EN0)
+            self.i_o_change(self, port0=port_optional0, set_or_clr0=0, pin_num0=pin_SW0)
             pass
         elif mode_index == 2:
             # only SW on
-            self.i_o_change(self, port0=port_optional0,
-                            set_or_clr0=0, pin_num0=pin_EN0)
-            self.i_o_change(self, port0=port_optional0,
-                            set_or_clr0=1, pin_num0=pin_SW0)
+            self.i_o_change(self, port0=port_optional0, set_or_clr0=0, pin_num0=pin_EN0)
+            self.i_o_change(self, port0=port_optional0, set_or_clr0=1, pin_num0=pin_SW0)
             pass
         elif mode_index == 3:
             # only EN on (AOD mode for PMIC)
-            self.i_o_change(self, port0=port_optional0,
-                            set_or_clr0=1, pin_num0=pin_EN0)
-            self.i_o_change(self, port0=port_optional0,
-                            set_or_clr0=0, pin_num0=pin_SW0)
+            self.i_o_change(self, port0=port_optional0, set_or_clr0=1, pin_num0=pin_EN0)
+            self.i_o_change(self, port0=port_optional0, set_or_clr0=0, pin_num0=pin_SW0)
             pass
         elif mode_index == 4:
             # both EN and SW are on (normal mode of PMIC)
-            self.i_o_change(self, port0=port_optional0,
-                            set_or_clr0=1, pin_num0=pin_EN0)
-            self.i_o_change(self, port0=port_optional0,
-                            set_or_clr0=1, pin_num0=pin_SW0)
+            self.i_o_change(self, port0=port_optional0, set_or_clr0=1, pin_num0=pin_EN0)
+            self.i_o_change(self, port0=port_optional0, set_or_clr0=1, pin_num0=pin_SW0)
             pass
 
         pass
@@ -699,7 +702,26 @@ class JIGM3:
         """
         only reserve the function for MSP430 function mapping, prevent function call error
         """
-        print('Grace just take in charge of the efficiency environment')
+        if self.sim_mcu == 1:
+            # re-run the process of open JIGM3
+            path = self.listdevices()
+
+            self.DevPath = path
+            self.handle = opendev(path)
+
+            self.CmdSentSignal = 9
+
+            self.Version = self.getversion()
+
+            logging.info(f"OpenJIGM3[{self.Version}]")
+
+            print(f"the device get from com_open is{self.Version}")
+
+        else:
+            print("open in simulation mode")
+
+        # update the path for JIGM3
+        print("Grace just take in charge of the efficiency environment")
 
         pass
 
@@ -707,7 +729,7 @@ class JIGM3:
         """
         only reserve the function for MSP430 function mapping, prevent function call error
         """
-        print('Grace is cursing the layout team from MAtek XD')
+        print("Grace is cursing the layout team from MAtek XD")
 
         pass
 
@@ -762,12 +784,14 @@ class JIGM3:
             )
             self.g_ezcommand(cmd_str)
             time.sleep(t_dly_s)
-            print('Grace is looking for GPIB control tool')
+            print("Grace is looking for GPIB control tool")
 
         pass
 
-    def glitch_test_H(self, start_us0=10, step_us0=10, stop_us0=500, pin_num0=0, port0="PG"):
-        '''
+    def glitch_test_H(
+        self, start_us0=10, step_us0=10, stop_us0=500, pin_num0=0, port0="PG"
+    ):
+        """
         this function is planned to do the glitch testing of IO pin with
         but pattern generator can only use ns as unit, better use us
         as the testing step
@@ -778,16 +802,15 @@ class JIGM3:
         follow i_o_change
 
         for H_version (high pulse) select pin and the other state will be 0 (all pin0)
-        '''
+        """
 
         # config the pin for deglitch
 
         i_o_cmd0 = self.i_o_pin_num_set[pin_num0]
 
         c_glitch = 0
-        x_glitch = int(stop_us0/start_us0)
+        x_glitch = int(stop_us0 / start_us0)
         while c_glitch < x_glitch:
-
             x_glitch = x_glitch + 1
             pass
 
@@ -849,6 +872,9 @@ if __name__ == "__main__":
     # ====
     path = JIGM3.listdevices()
     g_mcu = JIGM3(devpath=path[0], sim_mcu0=1)
+    # set simulation mode or normal mode
+    g_mcu.sim_mcu = 0
+    g_mcu.com_open()
     # set all the IO to output
     g_mcu.i_o_config()
     # ====
@@ -928,8 +954,7 @@ if __name__ == "__main__":
         )
         unit_time = 10000
         extra_function = 0
-        g_mcu.pattern_gen(pattern0=pattern,
-                          unit_time_ns0=unit_time, extra_function0=2)
+        g_mcu.pattern_gen(pattern0=pattern, unit_time_ns0=unit_time, extra_function0=2)
         time.sleep(5)
         g_mcu.pattern_gen_full_str(cmd_str0=full_str)
 
