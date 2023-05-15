@@ -16,17 +16,14 @@ class JIGM3:
         self.DevPath = devpath
         try:
             self.handle = opendev(devpath)
+            self.Version = self.getversion()
 
         except:
             self.handle = 1
+            self.Version = "not open success"
             print("error or in simulation mode")
 
         self.CmdSentSignal = CmdSentSignal
-
-        if self.handle != 1:
-            self.Version = self.getversion()
-        else:
-            self.Version = "not open success"
 
         logging.info(f"OpenJIGM3[{self.Version}]")
 
@@ -704,7 +701,8 @@ class JIGM3:
         """
         if self.sim_mcu == 1:
             # re-run the process of open JIGM3
-            path = self.listdevices()
+            path_list = self.listdevices()
+            path = path_list[0]
 
             self.DevPath = path
             self.handle = opendev(path)
@@ -873,7 +871,7 @@ if __name__ == "__main__":
     path = JIGM3.listdevices()
     g_mcu = JIGM3(devpath=path[0], sim_mcu0=1)
     # set simulation mode or normal mode
-    g_mcu.sim_mcu = 0
+    g_mcu.sim_mcu = 1
     g_mcu.com_open()
     # set all the IO to output
     g_mcu.i_o_config()
