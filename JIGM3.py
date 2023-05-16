@@ -35,6 +35,8 @@ class JIGM3:
 
         self.sim_mcu = sim_mcu0
         self.com_addr = com_addr0
+        # default config for PG1 and PG2 is EN and SW setting (default high)
+        self.en_sw_pin = 1
 
         # port number assignment
         self.i_o_port_num = {"PG": "0", "IO": "1", "IOx": "2", "IOy": "3"}
@@ -407,6 +409,7 @@ class JIGM3:
         else:
             print(f"real mode with command \n {command0}")
             result = self.ezCommand(command0)
+            time.sleep(0.2)
             pass
 
         return result
@@ -437,7 +440,11 @@ class JIGM3:
             self.g_ezcommand(f"mcu.gpio.setdir(0xFFFF, 3)")
 
             # and send output to 0, so it can be aligned to default state
-            self.g_ezcommand(f"mcu.gpio.setout(0x0, 0)")
+            if self.en_sw_pin == 1:
+                self.g_ezcommand(f"mcu.gpio.setout(0x3, 0)")
+                pass
+            else:
+                self.g_ezcommand(f"mcu.gpio.setout(0x0, 0)")
             self.g_ezcommand(f"mcu.gpio.setout(0x0, 1)")
             self.g_ezcommand(f"mcu.gpio.setout(0x0, 2)")
             self.g_ezcommand(f"mcu.gpio.setout(0x0, 3)")
@@ -551,7 +558,8 @@ class JIGM3:
     def g_pulse_out(self, pulse0=1, duration_ns=1000, en_sw="SW"):
         """
         function to send pulse for SWIRE function
-        output will be 10*duration !!
+        output will be 10*duration !! \n
+        PG1(EN) and PG2(SW) as output
         """
 
         """
@@ -729,6 +737,7 @@ class JIGM3:
         """
         print("Grace is cursing the layout team from MAtek XD")
 
+        self.close()
         pass
 
     def back_to_initial(self):
@@ -817,7 +826,8 @@ class JIGM3:
     def g_pulse_out_V2(self, pulse0=1, duration_ns=1000, en_sw="SW", count0=1):
         """
         function to send pulse for SWIRE function
-        output will be count0*duration !!
+        output will be count0*duration !! \n
+        by using PG1(EN) and PG2(SW) as output
         """
 
         """
@@ -880,7 +890,7 @@ if __name__ == "__main__":
     a = g_mcu.getversion()
     print(f"the MCU version is {a}")
 
-    test_index = 4
+    test_index = 1
     """
     testing index settings
 
@@ -974,3 +984,5 @@ if __name__ == "__main__":
         g_mcu.g_pulse_out_V2(pulse0=3, duration_ns=1000, en_sw="SW", count0=10)
 
         g_mcu.g_pulse_out_V2(pulse0=1, duration_ns=500, en_sw="SW", count0=10)
+
+        g_mcu.com_close()

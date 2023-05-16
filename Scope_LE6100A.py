@@ -1532,12 +1532,12 @@ if __name__ == "__main__":
             ch_name = {
                 "CH1": "name1",
                 "CH2": "name2",
-                "CH3": "LX",
-                "CH4": "name4",
+                "CH3": "LDO",
+                "CH4": "EN2",
                 "CH5": "Iout",
-                "CH6": "Boot",
+                "CH6": "EN1",
                 "CH7": "EN",
-                "CH8": "Vout",
+                "CH8": "Buck",
             }
         elif label_pos_sel == 1:
             ch_name = {
