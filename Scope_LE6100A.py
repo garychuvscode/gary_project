@@ -1368,6 +1368,11 @@ class Scope_LE6100A(GInst):
         """
         trace_full = "C:\\g_auto_settings\\"
 
+        """
+        shoud be able to build the setting files for easier recall, but list down the
+        recall name in program or other place
+        """
+
         if trace0 == 0:
             # save the setup in the default trace
             print("default trace selected, doning nothing")

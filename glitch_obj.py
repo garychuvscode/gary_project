@@ -77,9 +77,15 @@ class glitch_mea:
         self.scope_ini = scope0
         # self.single_ini = single0
 
-        """
+
+        self.setup_index_array = ["NT50970_glitch", "NT50374_glitch" ]
 
         """
+        program setting of this object
+        these setting can be change before operation, to save deveop time cost
+        update settings directly in the source code
+        """
+        self.setup_name = self.setup_index_array[0]
 
         pass
 
