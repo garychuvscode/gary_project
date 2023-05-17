@@ -5,21 +5,25 @@
 
 # excel parameter and settings
 import parameter_load_obj as par
+
 # for the jump out window
 # # also for the jump out window, same group with win32con
 import win32api
 from win32con import MB_SYSTEMMODAL
+
 # for the delay function
 import time
+
 # include for atof function => transfer string to float
 import locale as lo
 
 import logging as log
 
 
-class ripple_test ():
-
-    def __init__(self, excel0, pwr0, met_v0, loader_0, mcu0, src0, met_i0, chamber0, scope0):
+class ripple_test:
+    def __init__(
+        self, excel0, pwr0, met_v0, loader_0, mcu0, src0, met_i0, chamber0, scope0
+    ):
         prog_only = 1
         if prog_only == 0:
             # ======== only for object programming
@@ -27,27 +31,29 @@ class ripple_test ():
             # need to become comment when the OBJ is finished
             import mcu_obj as mcu
             import inst_pkg_d as inst
+
             # add the libirary from Geroge
             import Scope_LE6100A as sco
+
             # initial the object and set to simulation mode
-            pwr0 = inst.LPS_505N(3.7, 0.5, 3, 1, 'off')
+            pwr0 = inst.LPS_505N(3.7, 0.5, 3, 1, "off")
             pwr0.sim_inst = 0
             # initial the object and set to simulation mode
             met_v0 = inst.Met_34460(0.0001, 30, 0.000001, 2.5, 21)
             met_v0.sim_inst = 0
-            loader_0 = inst.chroma_63600(1, 7, 'CCL')
+            loader_0 = inst.chroma_63600(1, 7, "CCL")
             loader_0.sim_inst = 0
             # mcu is also config as simulation mode
             mcu0 = mcu.MCU_control(0, 3)
             # using the main control book as default
-            excel0 = par.excel_parameter('obj_main')
-            src0 = inst.Keth_2440(0, 0, 24, 'off', 'CURR', 15)
+            excel0 = par.excel_parameter("obj_main")
+            src0 = inst.Keth_2440(0, 0, 24, "off", "CURR", 15)
             src0.sim_inst = 0
             met_i0 = inst.Met_34460(0.0001, 7, 0.000001, 2.5, 20)
             met_i0.sim_inst = 0
-            chamber0 = inst.chamber_su242(25, 10, 'off', -45, 180, 0)
+            chamber0 = inst.chamber_su242(25, 10, "off", -45, 180, 0)
             chamber0.sim_inst = 0
-            scope0 = sco.Scope_LE6100A('GPIB: 15', 0, 0)
+            scope0 = sco.Scope_LE6100A("GPIB: 15", 0, 0)
             # ======== only for object programming
 
         # assign the input information to object variable
@@ -66,18 +72,18 @@ class ripple_test ():
         self.obj_sim_mode = 1
 
         # 221226 add the new mode for PMIC buck selection
-        '''
+        """
         default set to 0 and used for PMIC mode for different operation selection
-        '''
+        """
         self.pmic_buck = 0
 
         pass
 
     def para_loaded(self):
-        '''
+        """
         verification type default is 0 => ripple and line/load transient
         set to 1 => inrush current and power on off sequence
-        '''
+        """
         # since format gen will update the mapped parameter for diferent
         # sheet, need to re-call after change the sheet
         # loaded the parameter from the input excel object
@@ -90,11 +96,11 @@ class ripple_test ():
         # fixed start point of the format gen (waveform element)
         self.format_start_y = self.excel_ini.format_start_y
         self.format_start_x = self.excel_ini.format_start_x
-        self.en_i2c_mode = self.sh_verification_control.range('B10').value
-        self.i2c_group = self.sh_verification_control.range('B11').value
-        self.c_i2c = self.sh_verification_control.range('B12').value
-        self.avdd_current_3ch = self.sh_verification_control.range('B13').value
-        self.ch_index = int(self.sh_verification_control.range('B14').value)
+        self.en_i2c_mode = self.sh_verification_control.range("B10").value
+        self.i2c_group = self.sh_verification_control.range("B11").value
+        self.c_i2c = self.sh_verification_control.range("B12").value
+        self.avdd_current_3ch = self.sh_verification_control.range("B13").value
+        self.ch_index = int(self.sh_verification_control.range("B14").value)
         self.scope_adj = 1
         # scope adj is to decide show the output channel or not, not to disable the auto scope
         # setting, it's different, scope initial setting is from sheet (scope_initial_en)
@@ -104,32 +110,30 @@ class ripple_test ():
             self.ch_index = self.ch_index - 3
             self.scope_adj = 0
 
-        self.ripple_line_load = float(
-            self.sh_verification_control.range('B15').value)
+        self.ripple_line_load = float(self.sh_verification_control.range("B15").value)
         self.c_data_mea = self.excel_ini.c_data_mea
-        self.scope_initial_en = int(
-            self.sh_verification_control.range('B16').value)
+        self.scope_initial_en = int(self.sh_verification_control.range("B16").value)
 
         # add selection for the line and load transient selection
         if self.ripple_line_load == 0:
-            self.excel_ini.extra_file_name = '_ripple'
+            self.excel_ini.extra_file_name = "_ripple"
         elif self.ripple_line_load == 1:
-            self.excel_ini.extra_file_name = '_line_tran'
+            self.excel_ini.extra_file_name = "_line_tran"
         elif self.ripple_line_load == 2:
-            self.excel_ini.extra_file_name = '_load_tran'
+            self.excel_ini.extra_file_name = "_load_tran"
         elif self.ripple_line_load == 2.5:
             # this is chroma loder load transient
-            self.excel_ini.extra_file_name = '_load_tran_chroma'
+            self.excel_ini.extra_file_name = "_load_tran_chroma"
         elif self.ripple_line_load == 6:
-            self.excel_ini.extra_file_name = '_inrush_current'
+            self.excel_ini.extra_file_name = "_inrush_current"
         elif self.ripple_line_load == 7:
-            self.excel_ini.extra_file_name = '_pwr_seq'
+            self.excel_ini.extra_file_name = "_pwr_seq"
 
         # setup the information for each different sheet
 
         # path need to be assign after every format gen finished
-        self.wave_path = self.sh_verification_control.range('C36').value
-        self.scope_setting = self.sh_verification_control.range('C39').value
+        self.wave_path = self.sh_verification_control.range("C36").value
+        self.scope_setting = self.sh_verification_control.range("C39").value
         self.excel_ini.wave_path = self.wave_path
         # the sheet name record for the saving waveform
         self.wave_sheet = self.sh_verification_control.name
@@ -138,39 +142,47 @@ class ripple_test ():
         pass
 
     def pre_test_inst(self):
-
         # power supply channel (channel on setting)
         if self.excel_ini.pre_test_en == 1:
-            self.pwr_ini.chg_out(self.excel_ini.pre_vin, self.excel_ini.pre_sup_iout,
-                                 self.excel_ini.relay0_ch, 'on')
-            print('pre-power on here')
+            self.pwr_ini.chg_out(
+                self.excel_ini.pre_vin,
+                self.excel_ini.pre_sup_iout,
+                self.excel_ini.relay0_ch,
+                "on",
+            )
+            print("pre-power on here")
             # turn off the power and load
 
-            self.loader_ini.chg_out(0, self.excel_ini.loader_ELch, 'off')
-            self.loader_ini.chg_out(0, self.excel_ini.loader_VCIch, 'off')
+            self.loader_ini.chg_out(0, self.excel_ini.loader_ELch, "off")
+            self.loader_ini.chg_out(0, self.excel_ini.loader_VCIch, "off")
 
-            print('also turn all load off')
+            print("also turn all load off")
 
             if self.excel_ini.en_start_up_check == 1:
-                self.excel_ini.message_box('press enter if hardware configuration is correct',
-                                           'Pre-power on for system test under Vin= ' + str(self.excel_ini.pre_vin) + 'Iin= ' + str(self.excel_ini.pre_sup_iout))
+                self.excel_ini.message_box(
+                    "press enter if hardware configuration is correct",
+                    "Pre-power on for system test under Vin= "
+                    + str(self.excel_ini.pre_vin)
+                    + "Iin= "
+                    + str(self.excel_ini.pre_sup_iout),
+                )
 
         pass
 
     def run_verification(self, pmic_buck0=0):
-        '''
+        """
         run ripple testing verification
         pmic_buck0 = 0 in default, PMIC mode, buck set to 1
-        '''
+        """
         self.pmic_buck = pmic_buck0
 
         # default wait time can be change by interrupt during operation
-        '''
+        """
         this wait time can be change during operaion to speed up process,
         but it will reset every time call ren_verification \n
         just change the default_wait during operation
         so does adjust before save
-        '''
+        """
         self.default_wait = 2
         self.adj_before_save = 0
 
@@ -183,7 +195,7 @@ class ripple_test ():
         # call from excel object for the control of flexible file name
 
         # reset the content of the extra comments every time before the loop start
-        extra_comments = ''
+        extra_comments = ""
         # this used to save the in
 
         # make sure MCU back to initial
@@ -256,13 +268,13 @@ class ripple_test ():
             c_sw_i2c = self.c_i2c
             # group control for i2c
             c_i2c_group = self.i2c_group
-            extra_comments = 'i2c'
+            extra_comments = "i2c"
             pass
 
         elif self.en_i2c_mode == 0:
             #  pulse mode enable
             c_sw_i2c = self.c_pulse_i2c
-            extra_comments = 'swire_pulse'
+            extra_comments = "swire_pulse"
             pass
 
         c_vin = self.c_vin
@@ -274,42 +286,43 @@ class ripple_test ():
 
         if self.ch_index == 0:
             #  EL mode
-            extra_comments = extra_comments + '_EL'
+            extra_comments = extra_comments + "_EL"
             pass
         elif self.ch_index == 1:
             #  VCI mode
-            extra_comments = extra_comments + '_VCI'
+            extra_comments = extra_comments + "_VCI"
             pass
         elif self.ch_index == 2:
             #  3-ch mode
-            extra_comments = extra_comments + '_3ch'
+            extra_comments = extra_comments + "_3ch"
             pass
 
         # the loop for pulse and i2c control
         x_sw_i2c = 0
-        extra_comments2 = ''
+        extra_comments2 = ""
         while x_sw_i2c < c_sw_i2c:
-
             # assign pulse or i2c command
             if self.en_i2c_mode == 1:
                 x_i2c_group = 0
 
                 while x_i2c_group < c_i2c_group:
-
                     # send the i2c command from MCU
 
                     # I2C control loop
                     # set up the i2c related data
                     reg_i2c = excel_s.sh_format_gen.range(
-                        (43 + c_i2c_group * x_sw_i2c + x_i2c_group, 5)).value
+                        (43 + c_i2c_group * x_sw_i2c + x_i2c_group, 5)
+                    ).value
                     data_i2c = excel_s.sh_format_gen.range(
-                        (43 + c_i2c_group * x_sw_i2c + x_i2c_group, 6)).value
-                    print('register: ' + reg_i2c)
-                    print('data: ' + data_i2c)
+                        (43 + c_i2c_group * x_sw_i2c + x_i2c_group, 6)
+                    ).value
+                    print("register: " + reg_i2c)
+                    print("data: " + data_i2c)
 
                     mcu_s.i2c_single_write(reg_i2c, data_i2c)
-                    extra_comments2 = extra_comments2 + '_' + \
-                        str(reg_i2c) + '-' + str(data_i2c)
+                    extra_comments2 = (
+                        extra_comments2 + "_" + str(reg_i2c) + "-" + str(data_i2c)
+                    )
                     pass
 
                     # excel_s.sh_ref_table.range('B1')
@@ -322,15 +335,14 @@ class ripple_test ():
                 pass
 
             elif self.en_i2c_mode == 0:
-                pulse1 = excel_s.sh_format_gen.range(
-                    (43 + x_sw_i2c, 5)).value
-                pulse2 = excel_s.sh_format_gen.range(
-                    (43 + x_sw_i2c, 6)).value
+                pulse1 = excel_s.sh_format_gen.range((43 + x_sw_i2c, 5)).value
+                pulse2 = excel_s.sh_format_gen.range((43 + x_sw_i2c, 6)).value
 
                 mcu_s.pulse_out(pulse1, pulse2)
 
-                extra_comments2 = extra_comments2 + '_' + \
-                    str(int(pulse1)) + '_' + str(int(pulse2))
+                extra_comments2 = (
+                    extra_comments2 + "_" + str(int(pulse1)) + "_" + str(int(pulse2))
+                )
 
                 pass
 
@@ -350,25 +362,21 @@ class ripple_test ():
             #         scope_s.find_signal(i)
 
             # table should be assign when generation of format gen
-            excel_s.sh_ref_table.range(
-                'B1').value = extra_comments + extra_comments2
+            excel_s.sh_ref_table.range("B1").value = extra_comments + extra_comments2
             # reset extra_comments2 after setting into the condition
-            extra_comments2 = ''
+            extra_comments2 = ""
             # the loop for vin
             x_vin = 0
             while x_vin < c_vin:
-
                 # assign vin command on power supply and ideal V
 
                 # 221114: change for load transient
                 if self.ripple_line_load == 1 or self.ripple_line_load == 0:
-                    v_target = excel_s.sh_format_gen.range(
-                        (43 + x_vin, 4)).value
+                    v_target = excel_s.sh_format_gen.range((43 + x_vin, 4)).value
 
-                    pwr_s.chg_out(v_target, excel_s.pre_imax,
-                                  excel_s.relay0_ch, 'on')
+                    pwr_s.chg_out(v_target, excel_s.pre_imax, excel_s.relay0_ch, "on")
 
-                    pro_status_str = 'Vin:' + str(v_target)
+                    pro_status_str = "Vin:" + str(v_target)
                     excel_s.vin_status = str(v_target)
                     excel_s.program_status(pro_status_str)
 
@@ -377,16 +385,15 @@ class ripple_test ():
                 # reset to box_ctrl to no and will stop every condition
                 box_ctrl = 7
                 while x_iload < c_load_curr:
-
                     # 221114: change for load transient
                     if self.ripple_line_load == 2 or self.ripple_line_load == 2.5:
-                        v_target = excel_s.sh_format_gen.range(
-                            (43 + x_iload, 4)).value
+                        v_target = excel_s.sh_format_gen.range((43 + x_iload, 4)).value
 
-                        pwr_s.chg_out(v_target, excel_s.pre_imax,
-                                      excel_s.relay0_ch, 'on')
+                        pwr_s.chg_out(
+                            v_target, excel_s.pre_imax, excel_s.relay0_ch, "on"
+                        )
 
-                        pro_status_str = 'Vin:' + str(v_target)
+                        pro_status_str = "Vin:" + str(v_target)
                         excel_s.vin_status = str(v_target)
                         excel_s.program_status(pro_status_str)
 
@@ -422,13 +429,16 @@ class ripple_test ():
 
                         elif x_iload == 1:
                             scope_s.Hor_scale_adj(
-                                scope_s.set_general['time_scale'], scope_s.set_general['time_offset'])
+                                scope_s.set_general["time_scale"],
+                                scope_s.set_general["time_offset"],
+                            )
 
                     # assign i_load on related channel
                     # 221114: to prevent error of load transient
                     if self.ripple_line_load != 2:
                         iload_target = excel_s.sh_format_gen.range(
-                            (43 + x_iload, 7)).value
+                            (43 + x_iload, 7)
+                        ).value
 
                     else:
                         # 221222: set to 0 for MOSFET load transient
@@ -436,12 +446,10 @@ class ripple_test ():
                         iload_target = 0
 
                     if self.ripple_line_load == 2.5:
-                        iload_L1 = excel_s.sh_format_gen.range(
-                            (43 + x_vin, 7)).value
-                        iload_L2 = excel_s.sh_format_gen.range(
-                            (43 + x_vin, 8)).value
+                        iload_L1 = excel_s.sh_format_gen.range((43 + x_vin, 7)).value
+                        iload_L2 = excel_s.sh_format_gen.range((43 + x_vin, 8)).value
 
-                    pro_status_str = 'setting iload_target current'
+                    pro_status_str = "setting iload_target current"
                     excel_s.i_el_status = str(iload_target)
                     print(pro_status_str)
                     excel_s.program_status(pro_status_str)
@@ -454,83 +462,154 @@ class ripple_test ():
                     if self.ch_index == 0:
                         # EL power settings
                         if self.ripple_line_load != 2.5:
-                            load_s.chg_out2(
-                                iload_target, excel_s.loader_ELch, 'on')
-                            load_s.chg_out2(0, excel_s.loader_VCIch, 'off')
+                            load_s.chg_out2(iload_target, excel_s.loader_ELch, "on")
+                            load_s.chg_out2(0, excel_s.loader_VCIch, "off")
                         else:
-                            '''
+                            """
                             Buck: is for LDO load transient, check LDO and VCC
                             221229 update: for the LDO load transient, need to use CCDL
                             to have better slew rate
-                            '''
+                            """
+
+                            """
+                            230517 add Vout check
+                            """
+                            vout_check = float(
+                                load_s.read_vout(act_ch1=excel_s.loader_ELch)
+                            )
+                            if vout_check < 0.4:
+                                while vout_check < 0.4:
+                                    # need to re-toggle Vin if there are issue of Vout, before turn the loader on
+                                    pwr_s.chg_out(
+                                        v_target,
+                                        excel_s.pre_imax,
+                                        excel_s.relay0_ch,
+                                        "off",
+                                    )
+                                    time.sleep(1)
+                                    print("re-toggle power supply for Grace")
+                                    pwr_s.chg_out(
+                                        v_target,
+                                        excel_s.pre_imax,
+                                        excel_s.relay0_ch,
+                                        "on",
+                                    )
+                                    time.sleep(0.5)
+                                    vout_check = float(
+                                        load_s.read_vout(act_ch1=excel_s.loader_ELch)
+                                    )
+                                    pass
+
+                                pass
+
                             load_s.dynamic_config(L1=iload_L1, L2=iload_L2)
                             load_s.dynamic_ctrl(
-                                act_ch1=excel_s.loader_ELch, status0='on', smooth_on_off=1, mode0='CCDL')
+                                act_ch1=excel_s.loader_ELch,
+                                status0="on",
+                                smooth_on_off=1,
+                                mode0="CCDL",
+                            )
                         # trigger OVDD
                         # 221205: no need to change the level here, change to no input since there
                         # are auto level already
                         if self.ripple_line_load == 0:
                             # for the line and load transient, follow the original trigger channel setting
-                            '''
+                            """
                             ine/load transient need to trigger the Vin or load turrent, can't change with
                             different channel index
-                            '''
-                            scope_s.trigger_adj(mode='Auto', source='C6')
+                            """
+                            scope_s.trigger_adj(mode="Auto", source="C6")
 
                         pass
                     elif self.ch_index == 1:
                         # VCI power settings
                         if self.ripple_line_load != 2.5:
-                            load_s.chg_out2(
-                                iload_target, excel_s.loader_VCIch, 'on')
-                            load_s.chg_out2(0, excel_s.loader_ELch, 'off')
+                            load_s.chg_out2(iload_target, excel_s.loader_VCIch, "on")
+                            load_s.chg_out2(0, excel_s.loader_ELch, "off")
                         else:
-                            '''
+                            """
                             Buck: is for Buck load transient, check Buck(1CH)
-                            '''
+                            """
+
+                            """
+                            230517 add Vout check
+                            """
+                            vout_check = float(
+                                load_s.read_vout(act_ch1=excel_s.loader_VCIch)
+                            )
+                            if vout_check < 0.4:
+                                while vout_check < 0.4:
+                                    # need to re-toggle Vin if there are issue of Vout, before turn the loader on
+                                    pwr_s.chg_out(
+                                        v_target,
+                                        excel_s.pre_imax,
+                                        excel_s.relay0_ch,
+                                        "off",
+                                    )
+                                    time.sleep(1)
+                                    print("re-toggle power supply for Grace")
+                                    pwr_s.chg_out(
+                                        v_target,
+                                        excel_s.pre_imax,
+                                        excel_s.relay0_ch,
+                                        "on",
+                                    )
+                                    time.sleep(0.5)
+                                    vout_check = float(
+                                        load_s.read_vout(act_ch1=excel_s.loader_VCIch)
+                                    )
+                                    pass
+
+                                pass
+
                             load_s.dynamic_config(L1=iload_L1, L2=iload_L2)
                             load_s.dynamic_ctrl(
-                                act_ch1=excel_s.loader_VCIch, status0='on', smooth_on_off=1)
+                                act_ch1=excel_s.loader_VCIch,
+                                status0="on",
+                                smooth_on_off=1,
+                            )
                         # trigger AVDD
                         # 221205: no need to change the level here, change to no input since there
                         # are auto level already
                         if self.ripple_line_load == 0:
                             # for the line and load transient, follow the original trigger channel setting
-                            scope_s.trigger_adj(mode='Auto', source='C1')
+                            scope_s.trigger_adj(mode="Auto", source="C1")
 
                         pass
                     elif self.ch_index == 2:
                         # 3-ch power settings
                         if self.ripple_line_load != 2.5:
-                            load_s.chg_out2(
-                                iload_target, excel_s.loader_ELch, 'on')
+                            load_s.chg_out2(iload_target, excel_s.loader_ELch, "on")
 
                             # load other target for VCI
-                            i_VCI_target = excel_s.sh_format_gen.range(
-                                'B13').value
-                            load_s.chg_out2(
-                                i_VCI_target, excel_s.loader_VCIch, 'on')
+                            i_VCI_target = excel_s.sh_format_gen.range("B13").value
+                            load_s.chg_out2(i_VCI_target, excel_s.loader_VCIch, "on")
 
                         # trigger OVDD
                         # 221205: no need to change the level here, change to no input since there
                         # are auto level already
                         if self.ripple_line_load == 0:
                             # for the line and load transient, follow the original trigger channel setting
-                            scope_s.trigger_adj(mode='Auto', source='C6')
+                            scope_s.trigger_adj(mode="Auto", source="C6")
                         pass
 
                     # add auto exception for line/load transient testing
 
-                    if (self.ripple_line_load == 1 or self.ripple_line_load == 2):
+                    if self.ripple_line_load == 1 or self.ripple_line_load == 2:
                         # 221222: no need for chroma auto load trnasient, don't have 2.5
                         if box_ctrl == 7:
                             # use below selection to skip the message box
                             # if self.obj_sim_mode == 1 and box_ctrl == 7:
                             setup_temp = excel_s.sh_format_gen.range(
-                                43 + x_vin, 2).value
+                                43 + x_vin, 2
+                            ).value
                             # box control will become 7 when
                             box_ctrl = excel_s.message_box(
-                                f'choose to skip until next line or not\nset to {setup_temp} and continue ', 'g: stop for transient', auto_exception=1, box_type=4)
+                                f"choose to skip until next line or not\nset to {setup_temp} and continue ",
+                                "g: stop for transient",
+                                auto_exception=1,
+                                box_type=4,
+                            )
 
                     """
                     230517 to prevent OVP turn off
@@ -539,47 +618,57 @@ class ripple_test ():
                     # calibration Vin
 
                     temp_v = pwr_s.vin_clibrate_singal_met(
-                        0, v_target, met_v_s, mcu_s, excel_s)
+                        0, v_target, met_v_s, mcu_s, excel_s
+                    )
 
                     # setup waveform name
-                    excel_s.wave_info_update(
-                        typ='ripple', v=v_target, i=iload_target)
+                    excel_s.wave_info_update(typ="ripple", v=v_target, i=iload_target)
 
                     # measure and capture waveform
 
                     scope_s.capture_full(
-                        path_t=0, find_level=1, wait_time_s=self.default_wait, adj_before_save=self.adj_before_save)
+                        path_t=0,
+                        find_level=1,
+                        wait_time_s=self.default_wait,
+                        adj_before_save=self.adj_before_save,
+                    )
                     # for simulation path using path_t=0.5
                     # scope_s.printScreenToPC(0)
 
                     # select the related range
-                    '''
+                    """
                     here is to choose related cell for wafeform capture, x is x axis and y is y axis,
                     need to input (y, x) for the range input, and x y define is not reverse
 
-                    '''
+                    """
                     x_index = x_iload
                     y_index = x_vin
 
-                    active_range = excel_s.sh_ref_table.range(self.format_start_y + y_index * (2 + self.c_data_mea),
-                                                              self.format_start_x + x_index)
+                    active_range = excel_s.sh_ref_table.range(
+                        self.format_start_y + y_index * (2 + self.c_data_mea),
+                        self.format_start_x + x_index,
+                    )
                     # (1 + ripple_item) is waveform + ripple item + one current line
 
                     # add the setting of condition in the blank
-                    active_range.value = f'Vin={v_target}_i_load={iload_target}'
+                    active_range.value = f"Vin={v_target}_i_load={iload_target}"
                     if self.ripple_line_load == 2.5:
                         # chroma load transient index input the the cell
-                        active_range.value = f'Vin={v_target}_i_load= {iload_L1} to {iload_L2}'
+                        active_range.value = (
+                            f"Vin={v_target}_i_load= {iload_L1} to {iload_L2}"
+                        )
 
                     if self.obj_sim_mode == 0:
                         excel_s.scope_capture(
-                            excel_s.sh_ref_table, active_range, default_trace=0.5)
+                            excel_s.sh_ref_table, active_range, default_trace=0.5
+                        )
                     else:
                         excel_s.scope_capture(
-                            excel_s.sh_ref_table, active_range, default_trace=0)
+                            excel_s.sh_ref_table, active_range, default_trace=0
+                        )
                         pass
 
-                    print('check point')
+                    print("check point")
 
                     # # to capture waveforms
                     # scope_s.trigger_adj('Stopped')
@@ -590,54 +679,96 @@ class ripple_test ():
                         # OVDD is at P6, OVSS is at P4
 
                         # capture waveform result
-                        ovdd_r = scope_s.read_mea('P3', excel_s.scope_value)
-                        ovss_r = scope_s.read_mea('P2', excel_s.scope_value)
+                        ovdd_r = scope_s.read_mea("P3", excel_s.scope_value)
+                        ovss_r = scope_s.read_mea("P2", excel_s.scope_value)
                         # trasnfer to float
                         ovdd_r = excel_s.float_gene(ovdd_r)
                         ovss_r = excel_s.float_gene(ovss_r)
                         # save below waveform
-                        excel_s.sh_ref_table.range(self.format_start_y + y_index * (2 + self.c_data_mea) + 1,
-                                                   self.format_start_x + x_index).value = ovdd_r
-                        excel_s.sh_ref_table.range(self.format_start_y + y_index * (2 + self.c_data_mea) + 2,
-                                                   self.format_start_x + x_index).value = ovss_r
+                        excel_s.sh_ref_table.range(
+                            self.format_start_y + y_index * (2 + self.c_data_mea) + 1,
+                            self.format_start_x + x_index,
+                        ).value = ovdd_r
+                        excel_s.sh_ref_table.range(
+                            self.format_start_y + y_index * (2 + self.c_data_mea) + 2,
+                            self.format_start_x + x_index,
+                        ).value = ovss_r
                         # add to the summary table
                         excel_s.sum_table_gen(
-                            excel_s.summary_start_x, excel_s.summary_start_y, 1 + x_index, 1 + y_index + x_sw_i2c * (c_vin + excel_s.summary_gap), ovdd_r)
-                        excel_s.sum_table_gen(excel_s.summary_start_x, excel_s.summary_start_y,
-                                              1 + x_index + (c_load_curr + excel_s.summary_gap), 1 + y_index + x_sw_i2c * (c_vin + excel_s.summary_gap), ovss_r)
+                            excel_s.summary_start_x,
+                            excel_s.summary_start_y,
+                            1 + x_index,
+                            1 + y_index + x_sw_i2c * (c_vin + excel_s.summary_gap),
+                            ovdd_r,
+                        )
+                        excel_s.sum_table_gen(
+                            excel_s.summary_start_x,
+                            excel_s.summary_start_y,
+                            1 + x_index + (c_load_curr + excel_s.summary_gap),
+                            1 + y_index + x_sw_i2c * (c_vin + excel_s.summary_gap),
+                            ovss_r,
+                        )
 
                         pass
                     elif self.ch_index == 1:
                         # VCI channel get measure and record to excel
                         # or the items for single buck
-                        avdd_r = scope_s.read_mea('P1', excel_s.scope_value)
+                        avdd_r = scope_s.read_mea("P1", excel_s.scope_value)
                         avdd_r = excel_s.float_gene(avdd_r)
-                        excel_s.sh_ref_table.range(self.format_start_y + y_index * (2 + self.c_data_mea) + 1,
-                                                   self.format_start_x + x_index).value = avdd_r
+                        excel_s.sh_ref_table.range(
+                            self.format_start_y + y_index * (2 + self.c_data_mea) + 1,
+                            self.format_start_x + x_index,
+                        ).value = avdd_r
                         excel_s.sum_table_gen(
-                            excel_s.summary_start_x, excel_s.summary_start_y, 1 + x_index, 1 + y_index + x_sw_i2c * (c_vin + excel_s.summary_gap), avdd_r)
+                            excel_s.summary_start_x,
+                            excel_s.summary_start_y,
+                            1 + x_index,
+                            1 + y_index + x_sw_i2c * (c_vin + excel_s.summary_gap),
+                            avdd_r,
+                        )
 
                         pass
                     elif self.ch_index == 2:
                         # 3-ch get measure and record
-                        ovdd_r = scope_s.read_mea('P3', excel_s.scope_value)
-                        ovss_r = scope_s.read_mea('P2', excel_s.scope_value)
+                        ovdd_r = scope_s.read_mea("P3", excel_s.scope_value)
+                        ovss_r = scope_s.read_mea("P2", excel_s.scope_value)
                         ovdd_r = excel_s.float_gene(ovdd_r)
                         ovss_r = excel_s.float_gene(ovss_r)
-                        excel_s.sh_ref_table.range(self.format_start_y + y_index * (2 + self.c_data_mea) + 1,
-                                                   self.format_start_x + x_index).value = ovdd_r
-                        excel_s.sh_ref_table.range(self.format_start_y + y_index * (2 + self.c_data_mea) + 2,
-                                                   self.format_start_x + x_index).value = ovss_r
-                        avdd_r = scope_s.read_mea('P1', excel_s.scope_value)
+                        excel_s.sh_ref_table.range(
+                            self.format_start_y + y_index * (2 + self.c_data_mea) + 1,
+                            self.format_start_x + x_index,
+                        ).value = ovdd_r
+                        excel_s.sh_ref_table.range(
+                            self.format_start_y + y_index * (2 + self.c_data_mea) + 2,
+                            self.format_start_x + x_index,
+                        ).value = ovss_r
+                        avdd_r = scope_s.read_mea("P1", excel_s.scope_value)
                         avdd_r = excel_s.float_gene(avdd_r)
-                        excel_s.sh_ref_table.range(self.format_start_y + y_index * (2 + self.c_data_mea) + 3,
-                                                   self.format_start_x + x_index).value = avdd_r
+                        excel_s.sh_ref_table.range(
+                            self.format_start_y + y_index * (2 + self.c_data_mea) + 3,
+                            self.format_start_x + x_index,
+                        ).value = avdd_r
                         excel_s.sum_table_gen(
-                            excel_s.summary_start_x, excel_s.summary_start_y, 1 + x_index, 1 + y_index + x_sw_i2c * (c_vin + excel_s.summary_gap), ovdd_r)
-                        excel_s.sum_table_gen(excel_s.summary_start_x, excel_s.summary_start_y,
-                                              1 + x_index + 1 * (c_load_curr + excel_s.summary_gap), 1 + y_index + x_sw_i2c * (c_vin + excel_s.summary_gap), ovss_r)
-                        excel_s.sum_table_gen(excel_s.summary_start_x, excel_s.summary_start_y,
-                                              1 + x_index + 2 * (c_load_curr + excel_s.summary_gap), 1 + y_index + x_sw_i2c * (c_vin + excel_s.summary_gap), avdd_r)
+                            excel_s.summary_start_x,
+                            excel_s.summary_start_y,
+                            1 + x_index,
+                            1 + y_index + x_sw_i2c * (c_vin + excel_s.summary_gap),
+                            ovdd_r,
+                        )
+                        excel_s.sum_table_gen(
+                            excel_s.summary_start_x,
+                            excel_s.summary_start_y,
+                            1 + x_index + 1 * (c_load_curr + excel_s.summary_gap),
+                            1 + y_index + x_sw_i2c * (c_vin + excel_s.summary_gap),
+                            ovss_r,
+                        )
+                        excel_s.sum_table_gen(
+                            excel_s.summary_start_x,
+                            excel_s.summary_start_y,
+                            1 + x_index + 2 * (c_load_curr + excel_s.summary_gap),
+                            1 + y_index + x_sw_i2c * (c_vin + excel_s.summary_gap),
+                            avdd_r,
+                        )
                         pass
 
                     # buck_ripple = scope_s.read_mea('P1', "last")
@@ -649,7 +780,7 @@ class ripple_test ():
                     # excel_s.sh_ref_table.range(self.format_start_y + y_index * (2 + self.c_data_mea) + 1,
                     #                            self.format_start_x + x_index).value = buck_ripple
 
-                    scope_s.trigger_adj('Auto')
+                    scope_s.trigger_adj("Auto")
                     # need to have scope read and scope capture here
 
                     # need to have all measure data process
@@ -659,20 +790,19 @@ class ripple_test ():
                     # turn off load and change condition
                     if self.ch_index == 0:
                         # EL power settings
-                        load_s.chg_out2(0, excel_s.loader_ELch, 'on')
-                        load_s.chg_out2(0, excel_s.loader_VCIch, 'off')
+                        load_s.chg_out2(0, excel_s.loader_ELch, "on")
+                        load_s.chg_out2(0, excel_s.loader_VCIch, "off")
 
                         pass
                     elif self.ch_index == 1:
                         # VCI power settings
-                        load_s.chg_out2(
-                            0, excel_s.loader_VCIch, 'on')
-                        load_s.chg_out2(0, excel_s.loader_ELch, 'off')
+                        load_s.chg_out2(0, excel_s.loader_VCIch, "on")
+                        load_s.chg_out2(0, excel_s.loader_ELch, "off")
 
                         pass
                     elif self.ch_index == 2:
                         # 3-ch power settings
-                        load_s.chg_out2(0, excel_s.loader_ELch, 'on')
+                        load_s.chg_out2(0, excel_s.loader_ELch, "on")
 
                     x_iload = x_iload + 1
                     # end of iload loop
@@ -704,14 +834,14 @@ class ripple_test ():
         pass
 
     def pwr_seq(self, vin_cal=0, pwr_off=0):
-        '''
+        """
         testing for the power on and off sequence
         221230, add new default setting, not calibate Vin(vin_cal=0)\n
         pwr_off = 1 is to include the power off measurement (only for record the waveform)
         plan:add the input loop in MCU control and in input function from the terminal
         when get out from the terminal, record the wave and cursor measurement
 
-        '''
+        """
         self.para_loaded()
         # the general loop will start from pulse
 
@@ -720,7 +850,7 @@ class ripple_test ():
 
         # for the measurement result, need to set to max for current
         scope_value_temp = self.excel_ini.scope_value
-        self.excel_ini.scope_value = 'max'
+        self.excel_ini.scope_value = "max"
         print(f'the scope value now set to : "{self.excel_ini.scope_value}" ')
         # and it will return the setting after program ended
 
@@ -732,8 +862,9 @@ class ripple_test ():
                 self.scope_ini.nor_v_off = 1
                 pass
             # turn off pwr if original is on, prevent error position
-            self.pwr_ini.chg_out(0, self.excel_ini.pre_imax,
-                                 self.excel_ini.relay0_ch, 'off')
+            self.pwr_ini.chg_out(
+                0, self.excel_ini.pre_imax, self.excel_ini.relay0_ch, "off"
+            )
             self.scope_ini.scope_initial(self.scope_setting)
 
             pass
@@ -759,48 +890,45 @@ class ripple_test ():
 
         if self.ripple_line_load == 7:
             # EN=SW together
-            self.scope_ini.trigger_adj(source='C4', level=1.8)
+            self.scope_ini.trigger_adj(source="C4", level=1.8)
             # C4 change to EN in sequence mode
         elif self.ripple_line_load == 8:
             # EN
-            self.scope_ini.trigger_adj(source='C4', level=1.8)
+            self.scope_ini.trigger_adj(source="C4", level=1.8)
         elif self.ripple_line_load == 9:
             # SW
-            self.scope_ini.trigger_adj(source='C8', level=1.8)
+            self.scope_ini.trigger_adj(source="C8", level=1.8)
         elif self.ripple_line_load == 10:
             # SW (EN rising first)
-            self.scope_ini.trigger_adj(source='C8', level=1.8)
+            self.scope_ini.trigger_adj(source="C8", level=1.8)
 
         # load target Vin
-        v_target = self.excel_ini.sh_format_gen.range(
-            'B23').value
-        scaling = self.excel_ini.sh_format_gen.range(
-            'B24').value
+        v_target = self.excel_ini.sh_format_gen.range("B23").value
+        scaling = self.excel_ini.sh_format_gen.range("B24").value
 
         # table should be assign when generation of format gen
         self.excel_ini.sh_ref_table.range(
-            'B1').value = f'power sequence testing with Vin= {v_target}V'
+            "B1"
+        ).value = f"power sequence testing with Vin= {v_target}V"
 
         # the loop for pulse and i2c control
         x_sheet = 0
         while x_sheet < c_sheet:
-
             # assign pulse or i2c command
 
             # the loop for vin
             x_row = 0
             while x_row < c_row:
-
                 # 0 => EN SW together; 1 => only EN; 2=> only SW, 3 SW after EN
                 self.mcu_ini.pmic_mode(1)
                 # 230108 change to 2 since the discharge time for sequence is not enough
                 # 230419 change to 15
-                if x_row == 0 :
+                if x_row == 0:
                     time.sleep(15)
                     pass
-                else :
+                else:
                     time.sleep(5)
-                self.scope_ini.trigger_adj('Auto')
+                self.scope_ini.trigger_adj("Auto")
 
                 # the loop for different i load
                 x_column = 0
@@ -813,17 +941,27 @@ class ripple_test ():
                         # only setup the pwr and scope for the first time
 
                         # 221213: change v_target loading before update sheet message
-                        self.pwr_ini.chg_out(v_target, self.excel_ini.pre_imax,
-                                             self.excel_ini.relay0_ch, 'on')
+                        self.pwr_ini.chg_out(
+                            v_target,
+                            self.excel_ini.pre_imax,
+                            self.excel_ini.relay0_ch,
+                            "on",
+                        )
 
                         # calibration Vin
                         if vin_cal == 1:
                             temp_v = self.pwr_ini.vin_clibrate_singal_met(
-                                0, v_target, self.met_v_ini, self.mcu_ini, self.excel_ini)
+                                0,
+                                v_target,
+                                self.met_v_ini,
+                                self.mcu_ini,
+                                self.excel_ini,
+                            )
 
                         # setup waveform name
                         self.excel_ini.wave_info_update(
-                            typ='seq', v=v_target, seq=x_row)
+                            typ="seq", v=v_target, seq=x_row
+                        )
 
                         # measure and capture waveform
 
@@ -855,51 +993,65 @@ class ripple_test ():
                         self.scope_ini.waitTriggered()
 
                     index_msg = self.excel_ini.sh_format_gen.range(
-                        43 + x_column, 1).value
+                        43 + x_column, 1
+                    ).value
 
                     self.excel_ini.message_box(
-                        f'setup the cursor properly and save waveform for {index_msg} ', 'g: stop for cursor', auto_exception=1, box_type=0)
+                        f"setup the cursor properly and save waveform for {index_msg} ",
+                        "g: stop for cursor",
+                        auto_exception=1,
+                        box_type=0,
+                    )
 
                     self.scope_ini.printScreenToPC(path=0)
 
                     # select the related range
-                    '''
+                    """
                     here is to choose related cell for wafeform capture, x is x axis and y is y axis,
                     need to input (y, x) for the range input, and x y define is not reverse
 
-                    '''
+                    """
                     x_index = x_column
                     y_index = x_row
 
-                    active_range = self.excel_ini.sh_ref_table.range(self.format_start_y + y_index * (2 + self.c_data_mea),
-                                                                     self.format_start_x + x_index)
+                    active_range = self.excel_ini.sh_ref_table.range(
+                        self.format_start_y + y_index * (2 + self.c_data_mea),
+                        self.format_start_x + x_index,
+                    )
                     # (1 + ripple_item) is waveform + ripple item + one current line
 
                     # add the setting of condition in the blank
-                    active_range.value = f'Vin={v_target}_seq={x_row}'
+                    active_range.value = f"Vin={v_target}_seq={x_row}"
 
                     if self.obj_sim_mode == 0:
                         self.excel_ini.scope_capture(
-                            self.excel_ini.sh_ref_table, active_range, default_trace=0.5)
+                            self.excel_ini.sh_ref_table, active_range, default_trace=0.5
+                        )
                     else:
                         self.excel_ini.scope_capture(
-                            self.excel_ini.sh_ref_table, active_range, default_trace=0)
+                            self.excel_ini.sh_ref_table, active_range, default_trace=0
+                        )
                         pass
 
-                    print('check point')
+                    print("check point")
 
                     # need to change to the cursor difference
                     # curr_peak = self.scope_ini.read_mea('P6', self.excel_ini.scope_value)
-                    curr_peak = self.scope_ini.cursor_delta(
-                        x_y=0, scaling=scaling)
+                    curr_peak = self.scope_ini.cursor_delta(x_y=0, scaling=scaling)
                     curr_peak = self.excel_ini.float_gene(curr_peak)
-                    self.excel_ini.sh_ref_table.range(self.format_start_y + y_index * (2 + self.c_data_mea) + 1,
-                                                      self.format_start_x + x_index).value = curr_peak
+                    self.excel_ini.sh_ref_table.range(
+                        self.format_start_y + y_index * (2 + self.c_data_mea) + 1,
+                        self.format_start_x + x_index,
+                    ).value = curr_peak
                     self.excel_ini.sum_table_gen(
-                        self.excel_ini.summary_start_x, self.excel_ini.summary_start_y, 1 + x_index, 1 + y_index + x_sheet * (c_row + self.excel_ini.summary_gap), curr_peak)
+                        self.excel_ini.summary_start_x,
+                        self.excel_ini.summary_start_y,
+                        1 + x_index,
+                        1 + y_index + x_sheet * (c_row + self.excel_ini.summary_gap),
+                        curr_peak,
+                    )
 
                     if x_column == 0:
-
                         # back to power off status, only need for the first time
                         self.mcu_ini.pmic_mode(1)
                         time.sleep(0.3)
@@ -927,7 +1079,7 @@ class ripple_test ():
         # for the measurement result, need to set to max for current
         # return to previous settings
         self.excel_ini.scope_value = scope_value_temp
-        print(f'the scope value now return to : {self.excel_ini.scope_value}')
+        print(f"the scope value now return to : {self.excel_ini.scope_value}")
         # and it will return the setting after program ended
 
         self.end_of_exp()
@@ -935,12 +1087,12 @@ class ripple_test ():
         pass
 
     def inrush_current(self, vin_cal=0):
-        '''
+        """
         run the inrush current tsting with related Vin
         only one line
         c_sheet and c_row will auto set to 1 unless needed
         need to change code if not 1
-        '''
+        """
         self.para_loaded()
         # the general loop will start from pulse
 
@@ -949,8 +1101,8 @@ class ripple_test ():
 
         # for the measurement result, need to set to max for current
         scope_value_temp = self.excel_ini.scope_value
-        self.excel_ini.scope_value = 'max'
-        print(f'the scope value now set to : {self.excel_ini.scope_value}')
+        self.excel_ini.scope_value = "max"
+        print(f"the scope value now set to : {self.excel_ini.scope_value}")
         # and it will return the setting after program ended
 
         # put the scope initial before the pre-power on, no need to adjust the position based on
@@ -964,8 +1116,9 @@ class ripple_test ():
                 self.scope_ini.nor_v_off = 1
                 pass
             # turn off pwr if original is on, prevent error position
-            self.pwr_ini.chg_out(0, self.excel_ini.pre_imax,
-                                 self.excel_ini.relay0_ch, 'off')
+            self.pwr_ini.chg_out(
+                0, self.excel_ini.pre_imax, self.excel_ini.relay0_ch, "off"
+            )
             self.scope_ini.scope_initial(self.scope_setting)
 
             pass
@@ -992,41 +1145,34 @@ class ripple_test ():
         # the loop for pulse and i2c control
 
         # table should be assign when generation of format gen
-        self.excel_ini.sh_ref_table.range(
-            'B1').value = 'inrush current testing'
+        self.excel_ini.sh_ref_table.range("B1").value = "inrush current testing"
 
         x_sheet = 0
         while x_sheet < c_sheet:
-
             # assign pulse or i2c command
 
             # the loop for vin
             x_row = 0
             while x_row < c_row:
-
                 # 0 => EN SW together; 1 => only EN; 2=> only SW
 
                 if x_row == 0:
                     # EN=SW together
-                    self.scope_ini.trigger_adj(
-                        source='C4', level=1.8, slope='Positive')
+                    self.scope_ini.trigger_adj(source="C4", level=1.8, slope="Positive")
                     # C4 change to EN in sequence mode
                 elif x_row == 1:
                     # EN
-                    self.scope_ini.trigger_adj(
-                        source='C4', level=1.8, slope='Positive')
+                    self.scope_ini.trigger_adj(source="C4", level=1.8, slope="Positive")
                 elif x_row == 2:
                     # SW
-                    self.scope_ini.trigger_adj(
-                        source='C8', level=1.8, slope='Positive')
+                    self.scope_ini.trigger_adj(source="C8", level=1.8, slope="Positive")
                 elif x_row == 3:
                     # 221219, EN on first, also trigger SW
-                    self.scope_ini.trigger_adj(
-                        source='C8', level=1.8, slope='Positive')
+                    self.scope_ini.trigger_adj(source="C8", level=1.8, slope="Positive")
 
                 self.mcu_ini.pmic_mode(1)
                 time.sleep(0.2)
-                self.scope_ini.trigger_adj('Auto')
+                self.scope_ini.trigger_adj("Auto")
 
                 # the loop for different i load
                 x_column = 0
@@ -1043,19 +1189,24 @@ class ripple_test ():
 
                     # load target Vin
                     v_target = self.excel_ini.sh_format_gen.range(
-                        (43 + x_column, 7)).value
+                        (43 + x_column, 7)
+                    ).value
 
-                    self.pwr_ini.chg_out(v_target, self.excel_ini.pre_imax,
-                                         self.excel_ini.relay0_ch, 'on')
+                    self.pwr_ini.chg_out(
+                        v_target,
+                        self.excel_ini.pre_imax,
+                        self.excel_ini.relay0_ch,
+                        "on",
+                    )
 
                     # calibration Vin
                     if vin_cal == 1:
                         temp_v = self.pwr_ini.vin_clibrate_singal_met(
-                            0, v_target, self.met_v_ini, self.mcu_ini, self.excel_ini)
+                            0, v_target, self.met_v_ini, self.mcu_ini, self.excel_ini
+                        )
 
                     # setup waveform name
-                    self.excel_ini.wave_info_update(
-                        typ='inrush', v=v_target, seq=x_row)
+                    self.excel_ini.wave_info_update(typ="inrush", v=v_target, seq=x_row)
 
                     # measure and capture waveform
 
@@ -1084,38 +1235,50 @@ class ripple_test ():
                     self.mcu_ini.pmic_mode(1)
 
                     # select the related range
-                    '''
+                    """
                     here is to choose related cell for wafeform capture, x is x axis and y is y axis,
                     need to input (y, x) for the range input, and x y define is not reverse
 
-                    '''
+                    """
                     x_index = x_column
                     y_index = x_row
 
-                    active_range = self.excel_ini.sh_ref_table.range(self.format_start_y + y_index * (2 + self.c_data_mea),
-                                                                     self.format_start_x + x_index)
+                    active_range = self.excel_ini.sh_ref_table.range(
+                        self.format_start_y + y_index * (2 + self.c_data_mea),
+                        self.format_start_x + x_index,
+                    )
                     # (1 + ripple_item) is waveform + ripple item + one current line
 
                     # add the setting of condition in the blank
-                    active_range.value = f'Vin={v_target}_seq={x_row}'
+                    active_range.value = f"Vin={v_target}_seq={x_row}"
 
                     if self.obj_sim_mode == 0:
                         self.excel_ini.scope_capture(
-                            self.excel_ini.sh_ref_table, active_range, default_trace=0.5)
+                            self.excel_ini.sh_ref_table, active_range, default_trace=0.5
+                        )
                     else:
                         self.excel_ini.scope_capture(
-                            self.excel_ini.sh_ref_table, active_range, default_trace=0)
+                            self.excel_ini.sh_ref_table, active_range, default_trace=0
+                        )
                         pass
 
-                    print('check point')
+                    print("check point")
 
                     curr_peak = self.scope_ini.read_mea(
-                        'P6', self.excel_ini.scope_value)
+                        "P6", self.excel_ini.scope_value
+                    )
                     curr_peak = self.excel_ini.float_gene(curr_peak)
-                    self.excel_ini.sh_ref_table.range(self.format_start_y + y_index * (2 + self.c_data_mea) + 1,
-                                                      self.format_start_x + x_index).value = curr_peak
+                    self.excel_ini.sh_ref_table.range(
+                        self.format_start_y + y_index * (2 + self.c_data_mea) + 1,
+                        self.format_start_x + x_index,
+                    ).value = curr_peak
                     self.excel_ini.sum_table_gen(
-                        self.excel_ini.summary_start_x, self.excel_ini.summary_start_y, 1 + x_index, 1 + y_index + x_sheet * (c_row + self.excel_ini.summary_gap), curr_peak)
+                        self.excel_ini.summary_start_x,
+                        self.excel_ini.summary_start_y,
+                        1 + x_index,
+                        1 + y_index + x_sheet * (c_row + self.excel_ini.summary_gap),
+                        curr_peak,
+                    )
 
                     x_column = x_column + 1
                     # end of iload loop
@@ -1141,7 +1304,7 @@ class ripple_test ():
         # for the measurement result, need to set to max for current
         # return to previous settings
         self.excel_ini.scope_value = scope_value_temp
-        print(f'the scope value now return to : {self.excel_ini.scope_value}')
+        print(f"the scope value now return to : {self.excel_ini.scope_value}")
         # and it will return the setting after program ended
 
         self.end_of_exp()
@@ -1162,7 +1325,6 @@ class ripple_test ():
         pass
 
     def general_loop(self):
-
         # this sub is used to put the general loop format for this kind of sheet and
         # and it can be use to similiar sheet with several stage of loop needed
         # usually the temperature will be at the out side of the loop
@@ -1186,19 +1348,16 @@ class ripple_test ():
         # the loop for pulse and i2c control
         x_sheet = 0
         while x_sheet < c_sheet:
-
             # assign pulse or i2c command
 
             # the loop for vin
             x_row = 0
             while x_row < c_row:
-
                 # assign vin command on power supply and ideal V
 
                 # the loop for different i load
                 x_column = 0
                 while x_column < c_column:
-
                     # assign i_load on related channel
                     # calibration Vin
 
@@ -1230,22 +1389,22 @@ class ripple_test ():
 
     def extra_file_name_setup(self):
         if self.ripple_line_load == 0:
-            self.excel_ini.extra_file_name = '_ripple'
+            self.excel_ini.extra_file_name = "_ripple"
         elif self.ripple_line_load == 1:
-            self.excel_ini.extra_file_name = '_line_tran'
+            self.excel_ini.extra_file_name = "_line_tran"
         elif self.ripple_line_load == 2:
-            self.excel_ini.extra_file_name = '_load_tran'
+            self.excel_ini.extra_file_name = "_load_tran"
         elif self.ripple_line_load == 6:
-            self.excel_ini.extra_file_name = '_inrush_current'
+            self.excel_ini.extra_file_name = "_inrush_current"
         elif self.ripple_line_load == 7:
-            self.excel_ini.extra_file_name = '_pwr_seq_EN=SW'
+            self.excel_ini.extra_file_name = "_pwr_seq_EN=SW"
         elif self.ripple_line_load == 8:
-            self.excel_ini.extra_file_name = '_pwr_seq_EN'
+            self.excel_ini.extra_file_name = "_pwr_seq_EN"
         elif self.ripple_line_load == 9:
-            self.excel_ini.extra_file_name = '_pwr_seq_SW'
+            self.excel_ini.extra_file_name = "_pwr_seq_SW"
         elif self.ripple_line_load == 10:
             # add the case with EN rising first
-            self.excel_ini.extra_file_name = '_pwr_seq_SW(EN)'
+            self.excel_ini.extra_file_name = "_pwr_seq_SW(EN)"
 
         pass
 
@@ -1281,7 +1440,7 @@ class ripple_test ():
                     pass
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     #  the testing code for this file object
     sim_test_set = 0
 
@@ -1293,9 +1452,10 @@ if __name__ == '__main__':
     import Scope_LE6100A as sco
     import parameter_load_obj as par
     import Power_BK9141 as bk
+
     # initial the object and set to simulation mode
-    excel_t = par.excel_parameter('obj_main')
-    pwr_t = inst.LPS_505N(3.7, 0.5, 3, 1, 'off')
+    excel_t = par.excel_parameter("obj_main")
+    pwr_t = inst.LPS_505N(3.7, 0.5, 3, 1, "off")
     pwr_t.sim_inst = sim_test_set
     pwr_t.open_inst()
     pwr_bk_t = bk.Power_BK9141(sim_inst0=sim_test_set, excel0=excel_t, addr=2)
@@ -1305,19 +1465,19 @@ if __name__ == '__main__':
     met_v_t = inst.Met_34460(0.0001, 30, 0.000001, 2.5, 20)
     met_v_t.sim_inst = sim_test_set
     met_v_t.open_inst()
-    load_t = inst.chroma_63600(1, 7, 'CCL')
+    load_t = inst.chroma_63600(1, 7, "CCL")
     load_t.sim_inst = sim_test_set
     load_t.open_inst()
     met_i_t = inst.Met_34460(0.0001, 7, 0.000001, 2.5, 21)
     met_i_t.sim_inst = 0
     met_i_t.open_inst()
-    src_t = inst.Keth_2440(0, 0, 24, 'off', 'CURR', 15)
+    src_t = inst.Keth_2440(0, 0, 24, "off", "CURR", 15)
     src_t.sim_inst = 0
     src_t.open_inst()
-    chamber_t = inst.chamber_su242(25, 10, 'off', -45, 180, 0)
+    chamber_t = inst.chamber_su242(25, 10, "off", -45, 180, 0)
     chamber_t.sim_inst = 0
     chamber_t.open_inst()
-    scope_t = sco.Scope_LE6100A('GPIB: 5', 0, sim_test_set, excel_t)
+    scope_t = sco.Scope_LE6100A("GPIB: 5", 0, sim_test_set, excel_t)
     # mcu is also config as simulation mode
     # COM address of Gary_SONY is 3
     mcu_t = mcu.MCU_control(sim_test_set, 4)
@@ -1351,12 +1511,22 @@ if __name__ == '__main__':
 
     if excel_t.pwr_select == 0:
         # set to 0 is to use LPS505
-        ripple_t = ripple_test(excel_t, pwr_t, met_v_t, load_t,
-                               mcu_t, src_t, met_i_t, chamber_t, scope_t)
+        ripple_t = ripple_test(
+            excel_t, pwr_t, met_v_t, load_t, mcu_t, src_t, met_i_t, chamber_t, scope_t
+        )
     elif excel_t.pwr_select == 1:
         # set to 1 is to use BK9141
-        ripple_t = ripple_test(excel_t, pwr_bk_t, met_v_t, load_t,
-                               mcu_t, src_t, met_i_t, chamber_t, scope_t)
+        ripple_t = ripple_test(
+            excel_t,
+            pwr_bk_t,
+            met_v_t,
+            load_t,
+            mcu_t,
+            src_t,
+            met_i_t,
+            chamber_t,
+            scope_t,
+        )
     # define the simulation mode of ibject
     ripple_t.obj_sim_mode = sim_test_set
 
@@ -1364,7 +1534,7 @@ if __name__ == '__main__':
         # create one object
 
         # this riple is for 374 ripple testing
-        format_g.set_sheet_name('CTRL_sh_ripple')
+        format_g.set_sheet_name("CTRL_sh_ripple")
         format_g.sheet_gen()
         format_g.run_format_gen()
 
@@ -1375,8 +1545,7 @@ if __name__ == '__main__':
         excel_t.end_of_file(0)
 
     elif version_select == 1:
-
-        format_g.set_sheet_name('CTRL_sh_ex')
+        format_g.set_sheet_name("CTRL_sh_ex")
         # 221108: integrated sheet_gen() and run_format_gen() into set_sheet_name()
         # format_g.sheet_gen()
         # format_g.run_format_gen()

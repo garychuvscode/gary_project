@@ -8,6 +8,7 @@
 # === add on import
 # for the excel related operation
 import xlwings as xw
+
 # this import is for the VBA function
 import win32com.client
 
@@ -60,25 +61,54 @@ excel_m = para.excel_parameter(str(sh.file_setting))
 
 # ==============
 # instrument startup configuration
-pwr_m = inst.LPS_505N(excel_m.pwr_vset, excel_m.pwr_iset,
-                      excel_m.pwr_act_ch, excel_m.pwr_supply_addr, excel_m.pwr_ini_state)
-met_v_m = inst.Met_34460(excel_m.met_v_res, excel_m.met_v_max,
-                         excel_m.met_i_res, excel_m.met_i_max, excel_m.meter1_v_addr)
-met_i_m = inst.Met_34460(excel_m.met_v_res, excel_m.met_v_max,
-                         excel_m.met_i_res, excel_m.met_i_max, excel_m.meter2_i_addr)
+pwr_m = inst.LPS_505N(
+    excel_m.pwr_vset,
+    excel_m.pwr_iset,
+    excel_m.pwr_act_ch,
+    excel_m.pwr_supply_addr,
+    excel_m.pwr_ini_state,
+)
+met_v_m = inst.Met_34460(
+    excel_m.met_v_res,
+    excel_m.met_v_max,
+    excel_m.met_i_res,
+    excel_m.met_i_max,
+    excel_m.meter1_v_addr,
+)
+met_i_m = inst.Met_34460(
+    excel_m.met_v_res,
+    excel_m.met_v_max,
+    excel_m.met_i_res,
+    excel_m.met_i_max,
+    excel_m.meter2_i_addr,
+)
 loader_chr_m = inst.chroma_63600(
-    excel_m.loader_act_ch, excel_m.loader_addr, excel_m.loader_ini_mode)
-src_m = inst.Keth_2440(excel_m.src_vset, excel_m.src_iset, excel_m.loader_src_addr,
-                       excel_m.src_ini_state, excel_m.src_ini_type, excel_m.src_clamp_ini)
-chamber_m = inst.chamber_su242(excel_m.cham_tset_ini, excel_m.chamber_addr,
-                               excel_m.cham_ini_state, excel_m.cham_l_limt, excel_m.cham_h_limt, excel_m.cham_hyst)
+    excel_m.loader_act_ch, excel_m.loader_addr, excel_m.loader_ini_mode
+)
+src_m = inst.Keth_2440(
+    excel_m.src_vset,
+    excel_m.src_iset,
+    excel_m.loader_src_addr,
+    excel_m.src_ini_state,
+    excel_m.src_ini_type,
+    excel_m.src_clamp_ini,
+)
+chamber_m = inst.chamber_su242(
+    excel_m.cham_tset_ini,
+    excel_m.chamber_addr,
+    excel_m.cham_ini_state,
+    excel_m.cham_l_limt,
+    excel_m.cham_h_limt,
+    excel_m.cham_hyst,
+)
 
 
 # default turn the MCU on
 mcu_m = mcu.MCU_control(1, excel_m.mcu_com_addr)
 scope_m = sco.Scope_LE6100A(excel0=excel_m, main_off_line0=main_off_line)
 pwr_bk_m = bk.Power_BK9141(
-    excel0=excel_m, GP_addr0=excel_m.pwr_bk_addr, main_off_line0=main_off_line)
+    excel0=excel_m, GP_addr0=excel_m.pwr_bk_addr, main_off_line0=main_off_line
+)
 
 
 # instrument startup configuration
@@ -120,17 +150,29 @@ def sim_mode_all(main_off_line0):
 
     pass
 
+
 # sim_mode_independent(pwr=1, met_v=1, met_i=1, loader=1, src=1, chamber=1,
 # scope=1, bk_pwr=1, main_off_line0=main_off_line, single_mode0=single_mode)
 
 
-def sim_mode_independent(pwr=0, met_v=0, met_i=0, loader=0, src=0, chamber=0, scope=0, bk_pwr=0, main_off_line0=1, single_mode0=0):
+def sim_mode_independent(
+    pwr=0,
+    met_v=0,
+    met_i=0,
+    loader=0,
+    src=0,
+    chamber=0,
+    scope=0,
+    bk_pwr=0,
+    main_off_line0=1,
+    single_mode0=0,
+):
     # independent setting for instrument simulation mode
-    '''
+    """
     if the test mode = 0, default disable all the single simulation mode function\n
     only based on the setting of GPIB address to decide the setting of simulation mode
     for the
-    '''
+    """
     if main_off_line0 == 0 and single_mode0 == 1:
         if pwr == 1:
             pwr_m.sim_inst = 1
@@ -208,14 +250,14 @@ def open_inst_and_name():
     # for the instrument in simulation mode, name will be set to simulation mode
 
     # link the name to the sheet
-    excel_m.inst_name_sheet('PWR1', pwr_m.inst_name())
-    excel_m.inst_name_sheet('MET1', met_v_m.inst_name())
-    excel_m.inst_name_sheet('MET2', met_i_m.inst_name())
-    excel_m.inst_name_sheet('LOAD1', loader_chr_m.inst_name())
-    excel_m.inst_name_sheet('LOADSR', src_m.inst_name())
-    excel_m.inst_name_sheet('chamber', chamber_m.inst_name())
-    excel_m.inst_name_sheet('scope', scope_m.inst_name())
-    excel_m.inst_name_sheet('bkpwr', pwr_bk_m.inst_name())
+    excel_m.inst_name_sheet("PWR1", pwr_m.inst_name())
+    excel_m.inst_name_sheet("MET1", met_v_m.inst_name())
+    excel_m.inst_name_sheet("MET2", met_i_m.inst_name())
+    excel_m.inst_name_sheet("LOAD1", loader_chr_m.inst_name())
+    excel_m.inst_name_sheet("LOADSR", src_m.inst_name())
+    excel_m.inst_name_sheet("chamber", chamber_m.inst_name())
+    excel_m.inst_name_sheet("scope", scope_m.inst_name())
+    excel_m.inst_name_sheet("bkpwr", pwr_bk_m.inst_name())
 
     # pending: think about the name of scope, how to input?
 
@@ -223,17 +265,26 @@ def open_inst_and_name():
 
 
 def change_file_name(new_file_name_str):
-    excel_m.wb.sheets('main').range('B8').value = str(new_file_name_str)
+    excel_m.wb.sheets("main").range("B8").value = str(new_file_name_str)
 
     pass
 
 
 def loader_cal_excel():
-    loader_chr_m.current_cal_setup(excel_m.loader_cal_offset_ELch, excel_m.loader_cal_offset_VCIch,
-                                   0, 0, excel_m.loader_cal_leakage_ELch, excel_m.loader_cal_leakage_VCIch, 0, 0)
+    loader_chr_m.current_cal_setup(
+        excel_m.loader_cal_offset_ELch,
+        excel_m.loader_cal_offset_VCIch,
+        0,
+        0,
+        excel_m.loader_cal_leakage_ELch,
+        excel_m.loader_cal_leakage_VCIch,
+        0,
+        0,
+    )
     # turn on the calibration mode
     loader_chr_m.cal_mode_en = 1
     pass
+
 
 # ==============
 
@@ -241,24 +292,38 @@ def loader_cal_excel():
 # add the supported verification item and create the related object name
 iq_test = iq.iq_scan(excel_m, pwr_m, met_i_m, mcu_m)
 sw_test = sw.sw_scan(excel_m, pwr_m, met_v_m, loader_chr_m, mcu_m)
-eff_test = eff.eff_mea(excel_m, pwr_m, met_v_m,
-                       loader_chr_m, mcu_m, src_m, met_i_m, chamber_m)
-in_scan = ins_scan.instrument_scan(excel_m, pwr_m, met_v_m,
-                                   loader_chr_m, mcu_m, src_m, met_i_m, chamber_m)
+eff_test = eff.eff_mea(
+    excel_m, pwr_m, met_v_m, loader_chr_m, mcu_m, src_m, met_i_m, chamber_m
+)
+in_scan = ins_scan.instrument_scan(
+    excel_m, pwr_m, met_v_m, loader_chr_m, mcu_m, src_m, met_i_m, chamber_m
+)
 format_g = form_g.format_gen(excel_m)
-general_t = gene_t.general_test(excel_m, pwr_m, met_v_m,
-                                loader_chr_m, mcu_m, src_m, met_i_m, chamber_m)
-general_t_bk = gene_t.general_test(excel_m, pwr_bk_m, met_v_m,
-                                   loader_chr_m, mcu_m, src_m, met_i_m, chamber_m)
+general_t = gene_t.general_test(
+    excel_m, pwr_m, met_v_m, loader_chr_m, mcu_m, src_m, met_i_m, chamber_m
+)
+general_t_bk = gene_t.general_test(
+    excel_m, pwr_bk_m, met_v_m, loader_chr_m, mcu_m, src_m, met_i_m, chamber_m
+)
 
 if excel_m.pwr_select == 0:
     # set to 0 is to use LPS505
-    ripple_t = rip.ripple_test(excel_m, pwr_m, met_v_m,
-                               loader_chr_m, mcu_m, src_m, met_i_m, chamber_m, scope_m)
+    ripple_t = rip.ripple_test(
+        excel_m, pwr_m, met_v_m, loader_chr_m, mcu_m, src_m, met_i_m, chamber_m, scope_m
+    )
 elif excel_m.pwr_select == 1:
     # set to 1 is to use BK9141
-    ripple_t = rip.ripple_test(excel_m, pwr_bk_m, met_v_m,
-                               loader_chr_m, mcu_m, src_m, met_i_m, chamber_m, scope_m)
+    ripple_t = rip.ripple_test(
+        excel_m,
+        pwr_bk_m,
+        met_v_m,
+        loader_chr_m,
+        mcu_m,
+        src_m,
+        met_i_m,
+        chamber_m,
+        scope_m,
+    )
 
 # scope cpature setting for waveform related testing item
 if main_off_line == 1:
@@ -270,7 +335,7 @@ else:
 
 # ==============
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     #  the testing code for this file object
 
     # main program structure
@@ -290,9 +355,9 @@ if __name__ == '__main__':
 
     # Single IQ
     if program_group == 0:
-        '''
+        """
         item for exe file operaing, don't change after confirm with experiment
-        '''
+        """
         excel_m.open_result_book()
         excel_m.excel_save()
         # here is the single test for IQ
@@ -309,14 +374,14 @@ if __name__ == '__main__':
 
         # remember that this is only call by main, not by  object
         excel_m.end_of_file(multi_item)
-        print('end of the IQ object testing program')
+        print("end of the IQ object testing program")
         pass
 
     # single SWIRE
     elif program_group == 1:
-        '''
+        """
         item for exe file operaing, don't change after confirm with experiment
-        '''
+        """
         excel_m.open_result_book()
         excel_m.excel_save()
         # SWIRE scan single verififcation
@@ -324,8 +389,9 @@ if __name__ == '__main__':
         multi_item = 0
         # set simulation for the used instrument
         # pwr, met_v, met_i, loader, src, chamber
-        sim_mode_independent(pwr=1, met_v=1, met_i=1,
-                             loader=1, main_off_line0=main_off_line)
+        sim_mode_independent(
+            pwr=1, met_v=1, met_i=1, loader=1, main_off_line0=main_off_line
+        )
         # open instrument and add the name
         open_inst_and_name()
 
@@ -334,14 +400,14 @@ if __name__ == '__main__':
 
         # remember that this is only call by main, not by  object
         excel_m.end_of_file(multi_item)
-        print('end of the SWIRE object testing program')
+        print("end of the SWIRE object testing program")
         pass
 
     # SWIRE + IQ testing
     elif program_group == 2:
-        '''
+        """
         item for exe file operaing, don't change after confirm with experiment
-        '''
+        """
         excel_m.open_result_book()
         excel_m.excel_save()
         # SWIRE + IQ testing
@@ -351,8 +417,9 @@ if __name__ == '__main__':
         # if not off line testing, setup the the instrument needed independently
         # set simulation for the used instrument
         # pwr, met_v, met_i, loader, src, chamber
-        sim_mode_independent(pwr=1, met_v=1, met_i=1,
-                             loader=1, main_off_line0=main_off_line)
+        sim_mode_independent(
+            pwr=1, met_v=1, met_i=1, loader=1, main_off_line0=main_off_line
+        )
         # sim_mode_independent(pwr=1, met_v=1, met_i=1, loader=1, src=1, chamber=1, scope=1, bk_pwr=1, main_off_line0=main_off_line, single_mode0=single_mode)
 
         # open instrument and add the name
@@ -364,14 +431,14 @@ if __name__ == '__main__':
 
         # remember that this is only call by main, not by  object
         excel_m.end_of_file(multi_item)
-        print('end of the IQ and SWIRE object testing program')
+        print("end of the IQ and SWIRE object testing program")
         pass
 
     # single test for efficiency chamber option
     elif program_group == 3:
-        '''
+        """
         item for exe file operaing, don't change after confirm with experiment
-        '''
+        """
         excel_m.open_result_book()
         excel_m.excel_save()
         # efficiency testing ( I2C and SWIRE-normal mode )
@@ -379,8 +446,15 @@ if __name__ == '__main__':
         multi_item = 0
         # set simulation for the used instrument
         # pwr, met_v, met_i, loader, src, chamber
-        sim_mode_independent(pwr=1, met_v=1, met_i=1, loader=1,
-                             src=1, chamber=1, main_off_line0=main_off_line)
+        sim_mode_independent(
+            pwr=1,
+            met_v=1,
+            met_i=1,
+            loader=1,
+            src=1,
+            chamber=1,
+            main_off_line0=main_off_line,
+        )
         # open instrument and add the name
         open_inst_and_name()
 
@@ -390,15 +464,15 @@ if __name__ == '__main__':
 
         # remember that this is only call by main, not by  object
         excel_m.end_of_file(multi_item)
-        print('end of the EFF object testing program')
+        print("end of the EFF object testing program")
 
         pass
 
     # IQ + SWIRE + efficiency (eff default in 1 file)
     elif program_group == 4:
-        '''
+        """
         item for exe file operaing, don't change after confirm with experiment
-        '''
+        """
         excel_m.open_result_book()
         # excel_m.excel_save()
         # verification items
@@ -409,8 +483,15 @@ if __name__ == '__main__':
         # set simulation for the used instrument
         # pwr, met_v, met_i, loader, src, chamber
         # sim_mode_independent(1, 1, 1, 1, 1, 0, main_off_line0=main_off_line)
-        sim_mode_independent(pwr=1, met_v=1, met_i=1, loader=1,
-                             src=1, chamber=1, main_off_line0=main_off_line)
+        sim_mode_independent(
+            pwr=1,
+            met_v=1,
+            met_i=1,
+            loader=1,
+            src=1,
+            chamber=1,
+            main_off_line0=main_off_line,
+        )
 
         # open instrument and add the name
         # must open after simulation mode setting(open real or sim)
@@ -421,30 +502,37 @@ if __name__ == '__main__':
 
         # 220921 add the current calibration setting for loader
         loader_chr_m.current_cal_setup(
-            excel_m.loader_cal_offset_ELch, excel_m.loader_cal_offset_VCIch, 0, 0, 0, 0, 0, 0)
+            excel_m.loader_cal_offset_ELch,
+            excel_m.loader_cal_offset_VCIch,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+        )
 
         # start the testing
         iq_test.run_verification()
-        print('IQ test finished')
+        print("IQ test finished")
         sw_test.run_verification()
-        print('SW test finished')
+        print("SW test finished")
         # cancel this line if make eff single file available
         # single file = 1 => all in same file, 0 => all in different file
         excel_m.eff_single_file = 1
         eff_test.run_verification()
-        print('efficiency test finished')
+        print("efficiency test finished")
 
         # ===========
         # changeable area
 
         # remember that this is only call by main, not by  object
         excel_m.end_of_file(multi_item)
-        print('end of the program 4')
+        print("end of the program 4")
         pass
 
     # single verification, independent file
     elif program_group == 4.5:
-
         # single setting of the object need to be 1 => no needed single
         multi_item = 1
         # if not off line testing, setup the the instrument needed independently
@@ -469,10 +557,10 @@ if __name__ == '__main__':
         excel_m.end_of_file(0)
 
         excel_m.open_result_book()
-        general_t.set_sheet_name('general_1')
+        general_t.set_sheet_name("general_1")
         general_t.run_verification()
 
-        general_t.set_sheet_name('general_2')
+        general_t.set_sheet_name("general_2")
         general_t.run_verification()
         excel_m.end_of_file(0)
 
@@ -480,9 +568,9 @@ if __name__ == '__main__':
 
     # instrument control panel only
     elif program_group == 5:
-        '''
+        """
         item for exe file operaing, don't change after confirm with experiment
-        '''
+        """
         # fixed part, open one result book and save the book
         # in temp name
         # excel_m.open_result_book()
@@ -503,7 +591,7 @@ if __name__ == '__main__':
         # open instrument and add the name
         # must open after simulation mode setting(open real or sim)
         open_inst_and_name()
-        print('open instrument with real or simulation mode')
+        print("open instrument with real or simulation mode")
 
         # changeable area
         # ===========
@@ -512,14 +600,14 @@ if __name__ == '__main__':
             # the program exit will be check after the check inst update
             # the loop will break automatically after change the program exit
 
-        print('finished XX verification')
+        print("finished XX verification")
 
         # ===========
         # changeable area
 
         # remember that this is only call by main, not by  object
         # excel_m.end_of_file(multi_item)
-        print('end of the program')
+        print("end of the program")
 
         pass
 
@@ -535,11 +623,11 @@ if __name__ == '__main__':
         # open instrument and add the name
         # must open after simulation mode setting(open real or sim)
         open_inst_and_name()
-        print('open instrument with real or simulation mode')
+        print("open instrument with real or simulation mode")
 
         loader_chr_m.current_calibration(met_i_m, pwr_m, 3, 1, 6.6)
 
-        print('finished the loader calibration, check result')
+        print("finished the loader calibration, check result")
         # give interrupt for the parameter check
         input()
         loader_chr_m.current_calibration(met_i_m, pwr_m, 3, 2, 3.3)
@@ -552,12 +640,12 @@ if __name__ == '__main__':
     # single test for general test
     elif program_group >= 6 and program_group < 7:
         # fixed part, open one result book and save the book
-        '''
+        """
         6 => new file, cal_vin
         6.1 => old file, cal_vin
         6.2 => new file
         6.3 => old file
-        '''
+        """
         # in temp name
         if program_group == 6.1 or program_group == 6.3:
             # track previous report and save at the end
@@ -572,18 +660,28 @@ if __name__ == '__main__':
         # if not off line testing, setup the the instrument needed independently
         # set simulation for the used instrument
         # pwr, met_v, met_i, loader, src, chamber, main offline
-        sim_mode_independent(pwr=1, met_v=1, met_i=1, loader=1, src=1, chamber=1,
-                             scope=1, bk_pwr=1, main_off_line0=main_off_line, single_mode0=single_mode)
+        sim_mode_independent(
+            pwr=1,
+            met_v=1,
+            met_i=1,
+            loader=1,
+            src=1,
+            chamber=1,
+            scope=1,
+            bk_pwr=1,
+            main_off_line0=main_off_line,
+            single_mode0=single_mode,
+        )
         # open instrument and add the name
         # must open after simulation mode setting(open real or sim)
         open_inst_and_name()
-        print('open instrument with real or simulation mode')
+        print("open instrument with real or simulation mode")
 
         # changeable area
         # ===========
 
         temp_str = str(excel_m.single_test_mapped_general)
-        print(f'now is single test for {temp_str}')
+        print(f"now is single test for {temp_str}")
         general_t.set_sheet_name(temp_str)
         if program_group == 6:
             general_t.run_verification()
@@ -591,7 +689,7 @@ if __name__ == '__main__':
             # 6.1 is the version without Vin calibration
             general_t.run_verification(vin_cal=0)
 
-        print('finished general_test verification')
+        print("finished general_test verification")
 
         # ===========
         # changeable area
@@ -599,7 +697,7 @@ if __name__ == '__main__':
         # remember that this is only call by main, not by  object
         excel_m.end_of_file(multi_item)
         # end of file can also be call between each item
-        print('end of the program')
+        print("end of the program")
 
         pass
 
@@ -616,22 +714,32 @@ if __name__ == '__main__':
         # if not off line testing, setup the the instrument needed independently
         # set simulation for the used instrument
         # pwr, met_v, met_i, loader, src, chamber, main offline
-        sim_mode_independent(pwr=1, met_v=1, met_i=1, loader=1, src=1, chamber=1,
-                             scope=1, bk_pwr=1, main_off_line0=main_off_line, single_mode0=single_mode)
+        sim_mode_independent(
+            pwr=1,
+            met_v=1,
+            met_i=1,
+            loader=1,
+            src=1,
+            chamber=1,
+            scope=1,
+            bk_pwr=1,
+            main_off_line0=main_off_line,
+            single_mode0=single_mode,
+        )
         # open instrument and add the name
         # must open after simulation mode setting(open real or sim)
         open_inst_and_name()
-        print('open instrument with real or simulation mode')
+        print("open instrument with real or simulation mode")
 
         # changeable area
         # ===========
         temp_str = str(excel_m.single_test_mapped_wave)
-        print(f'now is single test for {temp_str}')
+        print(f"now is single test for {temp_str}")
 
         format_g.set_sheet_name(temp_str)
 
         # add the protection of line transient setting pwr as real mode
-        if excel_m.sh_format_gen.range('B15').value == 1:
+        if excel_m.sh_format_gen.range("B15").value == 1:
             # set the pwr to simulation mode
             pwr_m.sim_inst = 0
             pwr_bk_m.sim_inst = 0
@@ -639,7 +747,7 @@ if __name__ == '__main__':
         ripple_t.run_verification()
         # format_g.table_return()
 
-        print('finished waveform test verification')
+        print("finished waveform test verification")
 
         # ===========
         # changeable area
@@ -647,7 +755,7 @@ if __name__ == '__main__':
         # remember that this is only call by main, not by  object
         excel_m.end_of_file(multi_item)
         # end of file can also be call between each item
-        print('end of the program')
+        print("end of the program")
 
         pass
 
@@ -664,7 +772,7 @@ if __name__ == '__main__':
         # open instrument and add the name
         # must open after simulation mode setting(open real or sim)
         open_inst_and_name()
-        print('open instrument with real or simulation mode')
+        print("open instrument with real or simulation mode")
 
         # changeable area
         # ===========
@@ -672,11 +780,11 @@ if __name__ == '__main__':
         # 7.89 will be continuous verification
         serial_veri = 0
         if program_group == 7.89:
-            '''
+            """
             total sequence
             1. Buck ripple and load transient (full auto)
             2. LDO ripple and load transitne (full auto)
-            '''
+            """
             program_group = 7.2
             # change program group after each item to make
             serial_veri = 1
@@ -684,12 +792,12 @@ if __name__ == '__main__':
         # For the HV buck ripple, line and load transient, setup from main
         if program_group == 7.1:
             temp_str = str(excel_m.single_test_mapped_wave)
-            print(f'now is single test for {temp_str}')
+            print(f"now is single test for {temp_str}")
 
             format_g.set_sheet_name(temp_str)
 
             # add the protection of line transient setting pwr as real mode
-            if excel_m.sh_format_gen.range('B15').value == 1:
+            if excel_m.sh_format_gen.range("B15").value == 1:
                 # set the pwr to simulation mode
                 pwr_m.sim_inst = 0
                 pwr_bk_m.sim_inst = 0
@@ -698,10 +806,13 @@ if __name__ == '__main__':
                 # this is only for HV buck
                 excel_m.relay0_ch = 1
                 excel_m.message_box(
-                    'high V buck setting, parallel output for BK9141\n control channel is set to CH1', 'watch out', auto_exception=1)
+                    "high V buck setting, parallel output for BK9141\n control channel is set to CH1",
+                    "watch out",
+                    auto_exception=1,
+                )
 
             ripple_t.run_verification()
-            print(f'finished waveform test verification ind_{program_group}')
+            print(f"finished waveform test verification ind_{program_group}")
 
             pass
 
@@ -711,14 +822,17 @@ if __name__ == '__main__':
                 # this is only for HV buck
                 excel_m.relay0_ch = 1
                 excel_m.message_box(
-                    'high V buck setting, parallel output for BK9141\n control channel is set to CH1', 'watch out', auto_exception=1)
+                    "high V buck setting, parallel output for BK9141\n control channel is set to CH1",
+                    "watch out",
+                    auto_exception=1,
+                )
             # ripple
-            format_g.set_sheet_name('CTRL_sh_ripple_SY')
-            ripple_t.run_verification(pmic_buck0=1)
+            # format_g.set_sheet_name("CTRL_sh_ripple_SY")
+            # ripple_t.run_verification(pmic_buck0=1)
             # load transient
-            format_g.set_sheet_name('CTRL_sh_load_SY')
+            format_g.set_sheet_name("CTRL_sh_load_SY")
             ripple_t.run_verification(pmic_buck0=1)
-            print(f'finished waveform test verification ind_{program_group}')
+            print(f"finished waveform test verification ind_{program_group}")
 
             if serial_veri == 1:
                 # change program group if need to operation in one file
@@ -727,17 +841,19 @@ if __name__ == '__main__':
             pass
 
         if program_group == 7.3:
-
             excel_m.message_box(
-                'high V buck setting, change EN1 to L and start LDO testing', 'watch out', auto_exception=1)
+                "high V buck setting, change EN1 to L and start LDO testing",
+                "watch out",
+                auto_exception=1,
+            )
 
             # ripple
-            format_g.set_sheet_name('CTRL_sh_ripple_SY_LDO')
+            format_g.set_sheet_name("CTRL_sh_ripple_SY_LDO")
             ripple_t.run_verification(pmic_buck0=2)
             # load transient
-            format_g.set_sheet_name('CTRL_sh_load_SY_LDO')
+            format_g.set_sheet_name("CTRL_sh_load_SY_LDO")
             ripple_t.run_verification(pmic_buck0=2)
-            print(f'finished waveform test verification ind_{program_group}')
+            print(f"finished waveform test verification ind_{program_group}")
 
             pass
 
@@ -747,7 +863,7 @@ if __name__ == '__main__':
         # remember that this is only call by main, not by  object
         excel_m.end_of_file(multi_item)
         # end of file can also be call between each item
-        print('end of the program')
+        print("end of the program")
 
         pass
 
@@ -766,7 +882,7 @@ if __name__ == '__main__':
         pwr_bk_m.sim_inst = 0
         pwr_m.sim_inst = 0
         open_inst_and_name()
-        print('open instrument with real or simulation mode')
+        print("open instrument with real or simulation mode")
 
         # changeable area
         # ===========
@@ -775,12 +891,15 @@ if __name__ == '__main__':
             # this is only for HV buck
             excel_m.relay0_ch = 1
             excel_m.message_box(
-                'high V buck setting, parallel output(CH1 and CH2) for BK9141\n control channel is set to CH1', 'watch out', auto_exception=1)
+                "high V buck setting, parallel output(CH1 and CH2) for BK9141\n control channel is set to CH1",
+                "watch out",
+                auto_exception=1,
+            )
         # line transient
-        format_g.set_sheet_name('CTRL_sh_line_SY')
+        format_g.set_sheet_name("CTRL_sh_line_SY")
         ripple_t.run_verification(pmic_buck0=1)
 
-        print('finished waveform test verification')
+        print("finished waveform test verification")
 
         # ===========
         # changeable area
@@ -788,7 +907,7 @@ if __name__ == '__main__':
         # remember that this is only call by main, not by  object
         excel_m.end_of_file(multi_item)
         # end of file can also be call between each item
-        print('end of the program')
+        print("end of the program")
 
         pass
 
@@ -807,19 +926,22 @@ if __name__ == '__main__':
         pwr_bk_m.sim_inst = 0
         pwr_m.sim_inst = 0
         open_inst_and_name()
-        print('open instrument with real or simulation mode')
+        print("open instrument with real or simulation mode")
 
         # changeable area
         # ===========
 
         if excel_m.pwr_select == 1:
             excel_m.message_box(
-                'high V buck setting, line transient operation(LDO)', 'watch out', auto_exception=1)
+                "high V buck setting, line transient operation(LDO)",
+                "watch out",
+                auto_exception=1,
+            )
         # line transient
-        format_g.set_sheet_name('CTRL_sh_line_SY_LDO')
+        format_g.set_sheet_name("CTRL_sh_line_SY_LDO")
         ripple_t.run_verification(pmic_buck0=1)
 
-        print('finished waveform test verification')
+        print("finished waveform test verification")
 
         # ===========
         # changeable area
@@ -827,15 +949,15 @@ if __name__ == '__main__':
         # remember that this is only call by main, not by  object
         excel_m.end_of_file(multi_item)
         # end of file can also be call between each item
-        print('end of the program')
+        print("end of the program")
 
         pass
 
     # pre_short testing of suff
     elif program_group == 8:
-        '''
+        """
         pre-short testing, watch out the pwr supply channel
-        '''
+        """
         # fixed part, open one result book and save the book
         # in temp name
         excel_m.open_result_book()
@@ -847,22 +969,29 @@ if __name__ == '__main__':
         # if not off line testing, setup the the instrument needed independently
         # set simulation for the used instrument
         # pwr, met_v, met_i, loader, src, chamber, main offline
-        sim_mode_independent(pwr=1, met_v=1, met_i=1, loader=1,
-                             src=1, chamber=1, main_off_line0=main_off_line)
+        sim_mode_independent(
+            pwr=1,
+            met_v=1,
+            met_i=1,
+            loader=1,
+            src=1,
+            chamber=1,
+            main_off_line0=main_off_line,
+        )
         # open instrument and add the name
         # must open after simulation mode setting(open real or sim)
         open_inst_and_name()
-        print('open instrument with real or simulation mode')
+        print("open instrument with real or simulation mode")
 
         # changeable area
         # ===========
 
-        general_t.set_sheet_name('gen_pre_short_HT_HV')
+        general_t.set_sheet_name("gen_pre_short_HT_HV")
         # using the default channel setting, not the main sheet setting
         # ch2(relay0), ch1(relay6), ch3(relay7) => excel sequence
         general_t.pre_short(pwr_iout=1, sheet_seq=0)
 
-        general_t.set_sheet_name('gen_pre_short_LT_HV')
+        general_t.set_sheet_name("gen_pre_short_LT_HV")
         general_t.pre_short(pwr_iout=1, sheet_seq=0)
 
         # ===========
@@ -871,7 +1000,7 @@ if __name__ == '__main__':
         # remember that this is only call by main, not by  object
         excel_m.end_of_file(multi_item)
         # end of file can also be call between each item
-        print('end of the program')
+        print("end of the program")
 
         pass
 
@@ -894,7 +1023,7 @@ if __name__ == '__main__':
         # open instrument and add the name
         # must open after simulation mode setting(open real or sim)
         open_inst_and_name()
-        print('open instrument with real or simulation mode')
+        print("open instrument with real or simulation mode")
 
         # changeable area
         # ===========
@@ -904,16 +1033,16 @@ if __name__ == '__main__':
         # start the testing
 
         iq_test.run_verification()
-        print('IQ test finished')
+        print("IQ test finished")
         sw_test.run_verification()
-        print('SW test finished')
+        print("SW test finished")
         # cancel this line if make eff single file available
         # single file = 1 => all in same file, 0 => all in different file
         excel_m.eff_single_file = 1
         eff_test.run_verification()
-        print('efficiency test finished')
+        print("efficiency test finished")
         temp_str = str(excel_m.single_test_mapped_wave)
-        print(f'now is single test for {temp_str}')
+        print(f"now is single test for {temp_str}")
         format_g.set_sheet_name(temp_str)
         ripple_t.run_verification()
         # format_g.table_return()
@@ -924,7 +1053,7 @@ if __name__ == '__main__':
         # remember that this is only call by main, not by  object
         excel_m.end_of_file(multi_item)
         # end of file can also be call between each item
-        print('end of the program IQ + SW + eff + ripple')
+        print("end of the program IQ + SW + eff + ripple")
 
         pass
 
@@ -945,7 +1074,7 @@ if __name__ == '__main__':
         # open instrument and add the name
         # must open after simulation mode setting(open real or sim)
         open_inst_and_name()
-        print('open instrument with real or simulation mode')
+        print("open instrument with real or simulation mode")
 
         # changeable area
         # ===========
@@ -954,7 +1083,7 @@ if __name__ == '__main__':
 
         # start the testing
 
-        format_g.set_sheet_name('CTRL_sh_ex_ripple')
+        format_g.set_sheet_name("CTRL_sh_ex_ripple")
         ripple_t.run_verification()
         # format_g.table_return()
 
@@ -964,7 +1093,7 @@ if __name__ == '__main__':
         # remember that this is only call by main, not by  object
         excel_m.end_of_file(multi_item)
         # end of file can also be call between each item
-        print('end of the program')
+        print("end of the program")
 
         pass
 
@@ -978,25 +1107,35 @@ if __name__ == '__main__':
         # single setting of the object need to be 1 => no needed single
         multi_item = 0
         # setup instruement for test mode, only for debug, no need to change)
-        sim_mode_independent(pwr=1, met_v=1, met_i=1, loader=1, src=1, chamber=1,
-                             scope=1, bk_pwr=1, main_off_line0=main_off_line, single_mode0=single_mode)
+        sim_mode_independent(
+            pwr=1,
+            met_v=1,
+            met_i=1,
+            loader=1,
+            src=1,
+            chamber=1,
+            scope=1,
+            bk_pwr=1,
+            main_off_line0=main_off_line,
+            single_mode0=single_mode,
+        )
         # open instrument and add the name to result book
         open_inst_and_name()
-        print('open instrument with real or simulation mode')
+        print("open instrument with real or simulation mode")
 
         # changeable area
         # ===========
 
-        format_g.set_sheet_name('CTRL_sh_seq_EN=SW')
+        format_g.set_sheet_name("CTRL_sh_seq_EN=SW")
         ripple_t.pwr_seq()
         # format_g.table_return()
-        format_g.set_sheet_name('CTRL_sh_seq_EN')
+        format_g.set_sheet_name("CTRL_sh_seq_EN")
         ripple_t.pwr_seq()
         # format_g.table_return()
-        format_g.set_sheet_name('CTRL_sh_seq_SW')
+        format_g.set_sheet_name("CTRL_sh_seq_SW")
         ripple_t.pwr_seq()
         # format_g.table_return()
-        excel_m.extra_file_name = '_pwr_seq_wave'
+        excel_m.extra_file_name = "_pwr_seq_wave"
 
         # ===========
         # changeable area
@@ -1004,7 +1143,7 @@ if __name__ == '__main__':
         # remember that this is only call by main, not by object
         excel_m.end_of_file(multi_item)
         # end of file can also be call between each item
-        print('end of the program')
+        print("end of the program")
 
         pass
 
@@ -1018,11 +1157,21 @@ if __name__ == '__main__':
         # single setting of the object need to be 1 => no needed single
         multi_item = 0
         # setup instruement for test mode, only for debug, no need to change)
-        sim_mode_independent(pwr=1, met_v=1, met_i=1, loader=1, src=1, chamber=1,
-                             scope=1, bk_pwr=1, main_off_line0=main_off_line, single_mode0=single_mode)
+        sim_mode_independent(
+            pwr=1,
+            met_v=1,
+            met_i=1,
+            loader=1,
+            src=1,
+            chamber=1,
+            scope=1,
+            bk_pwr=1,
+            main_off_line0=main_off_line,
+            single_mode0=single_mode,
+        )
         # open instrument and add the name to result book
         open_inst_and_name()
-        print('open instrument with real or simulation mode')
+        print("open instrument with real or simulation mode")
 
         # changeable area
         # ===========
@@ -1033,7 +1182,7 @@ if __name__ == '__main__':
         # remember that this is only call by main, not by object
         excel_m.end_of_file(multi_item)
         # end of file can also be call between each item
-        print('end of the program')
+        print("end of the program")
 
         pass
 
@@ -1047,11 +1196,21 @@ if __name__ == '__main__':
         # single setting of the object need to be 1 => no needed single
         multi_item = 0
         # setup instruement for test mode, only for debug, no need to change)
-        sim_mode_independent(pwr=1, met_v=1, met_i=1, loader=1, src=1, chamber=1,
-                             scope=1, bk_pwr=1, main_off_line0=main_off_line, single_mode0=single_mode)
+        sim_mode_independent(
+            pwr=1,
+            met_v=1,
+            met_i=1,
+            loader=1,
+            src=1,
+            chamber=1,
+            scope=1,
+            bk_pwr=1,
+            main_off_line0=main_off_line,
+            single_mode0=single_mode,
+        )
         # open instrument and add the name to result book
         open_inst_and_name()
-        print('open instrument with real or simulation mode')
+        print("open instrument with real or simulation mode")
 
         # changeable area
         # ===========
@@ -1061,7 +1220,7 @@ if __name__ == '__main__':
         # format_g.set_sheet_name(temp_str)
 
         # fix the sheet lock to CTRL_sh_inrush
-        format_g.set_sheet_name('CTRL_sh_inrush')
+        format_g.set_sheet_name("CTRL_sh_inrush")
         ripple_t.inrush_current()
         # format_g.table_return()
 
@@ -1071,7 +1230,7 @@ if __name__ == '__main__':
         # remember that this is only call by main, not by object
         excel_m.end_of_file(multi_item)
         # end of file can also be call between each item
-        print('end of the program')
+        print("end of the program")
 
         pass
 
@@ -1085,32 +1244,42 @@ if __name__ == '__main__':
         # single setting of the object need to be 1 => no needed single
         multi_item = 0
         # setup instruement for test mode, only for debug, no need to change)
-        sim_mode_independent(pwr=1, met_v=1, met_i=1, loader=1, src=1, chamber=1,
-                             scope=1, bk_pwr=1, main_off_line0=main_off_line, single_mode0=single_mode)
+        sim_mode_independent(
+            pwr=1,
+            met_v=1,
+            met_i=1,
+            loader=1,
+            src=1,
+            chamber=1,
+            scope=1,
+            bk_pwr=1,
+            main_off_line0=main_off_line,
+            single_mode0=single_mode,
+        )
         # open instrument and add the name to result book
         open_inst_and_name()
-        print('open instrument with real or simulation mode')
+        print("open instrument with real or simulation mode")
 
         # changeable area
         # ===========
 
         # fix the sheet lock to CTRL_sh_seq_EN=SW, CTRL_sh_seq_EN, CTRL_sh_seq_SW
-        format_g.set_sheet_name('CTRL_sh_inrush')
+        format_g.set_sheet_name("CTRL_sh_inrush")
         ripple_t.inrush_current()
 
-        format_g.set_sheet_name('CTRL_sh_seq_EN=SW')
+        format_g.set_sheet_name("CTRL_sh_seq_EN=SW")
         ripple_t.pwr_seq()
         # format_g.table_return()
-        format_g.set_sheet_name('CTRL_sh_seq_EN')
+        format_g.set_sheet_name("CTRL_sh_seq_EN")
         ripple_t.pwr_seq()
         # format_g.table_return()
-        format_g.set_sheet_name('CTRL_sh_seq_SW')
+        format_g.set_sheet_name("CTRL_sh_seq_SW")
         ripple_t.pwr_seq()
         # format_g.table_return()
-        format_g.set_sheet_name('CTRL_sh_seq_SW(EN)')
+        format_g.set_sheet_name("CTRL_sh_seq_SW(EN)")
         ripple_t.pwr_seq()
         # format_g.table_return()
-        excel_m.extra_file_name = '_inrush_pwr_seq'
+        excel_m.extra_file_name = "_inrush_pwr_seq"
 
         # ===========
         # changeable area
@@ -1118,7 +1287,7 @@ if __name__ == '__main__':
         # remember that this is only call by main, not by object
         excel_m.end_of_file(multi_item)
         # end of file can also be call between each item
-        print('end of the program')
+        print("end of the program")
 
         pass
 
@@ -1132,11 +1301,21 @@ if __name__ == '__main__':
         # single setting of the object need to be 1 => no needed single
         multi_item = 0
         # setup instruement for test mode, only for debug, no need to change)
-        sim_mode_independent(pwr=1, met_v=1, met_i=1, loader=1, src=1, chamber=1,
-                             scope=1, bk_pwr=1, main_off_line0=main_off_line, single_mode0=single_mode)
+        sim_mode_independent(
+            pwr=1,
+            met_v=1,
+            met_i=1,
+            loader=1,
+            src=1,
+            chamber=1,
+            scope=1,
+            bk_pwr=1,
+            main_off_line0=main_off_line,
+            single_mode0=single_mode,
+        )
         # open instrument and add the name to result book
         open_inst_and_name()
-        print('open instrument with real or simulation mode')
+        print("open instrument with real or simulation mode")
 
         # changeable area
         # ===========
@@ -1146,38 +1325,38 @@ if __name__ == '__main__':
 
         if AD_version == 0:
             # fix the sheet lock to CTRL_sh_seq_EN=SW, CTRL_sh_seq_EN, CTRL_sh_seq_SW
-            format_g.set_sheet_name('CTRL_sh_inrush_BK')
+            format_g.set_sheet_name("CTRL_sh_inrush_BK")
             ripple_t.inrush_current()
 
-            format_g.set_sheet_name('CTRL_sh_seq_EN=SW_BK')
+            format_g.set_sheet_name("CTRL_sh_seq_EN=SW_BK")
             ripple_t.pwr_seq()
             # format_g.table_return()
-            format_g.set_sheet_name('CTRL_sh_seq_EN_BK')
+            format_g.set_sheet_name("CTRL_sh_seq_EN_BK")
             ripple_t.pwr_seq()
             # format_g.table_return()
-            format_g.set_sheet_name('CTRL_sh_seq_SW_BK')
+            format_g.set_sheet_name("CTRL_sh_seq_SW_BK")
             ripple_t.pwr_seq()
             # format_g.table_return()
-            format_g.set_sheet_name('CTRL_sh_seq_SW(EN)_BK')
+            format_g.set_sheet_name("CTRL_sh_seq_SW(EN)_BK")
             ripple_t.pwr_seq()
             # format_g.table_return()
-            excel_m.extra_file_name = '_inrush_pwr_seq_BK'
+            excel_m.extra_file_name = "_inrush_pwr_seq_BK"
 
             pass
         else:
             # A or D version of testing, need to change by hand
 
             # fix the sheet lock to CTRL_sh_seq_EN=SW, CTRL_sh_seq_EN, CTRL_sh_seq_SW
-            format_g.set_sheet_name('CTRL_sh_inrush_BK_AD')
+            format_g.set_sheet_name("CTRL_sh_inrush_BK_AD")
             # since the first step of inrush is EN2=EN1, both EN_mcu or SW_mcu can connect to EN pin of buck
             # suggest to connect EN_mcu to EN_buck
             ripple_t.inrush_current()
 
             # since A and D version is only 1 EN, there is no sequence issue, one sheet is enough
-            format_g.set_sheet_name('CTRL_sh_seq_EN_BK_AD')
+            format_g.set_sheet_name("CTRL_sh_seq_EN_BK_AD")
             ripple_t.pwr_seq()
 
-            excel_m.extra_file_name = '_inrush_pwr_seq_BK_AD'
+            excel_m.extra_file_name = "_inrush_pwr_seq_BK_AD"
 
             pass
 
@@ -1187,18 +1366,18 @@ if __name__ == '__main__':
         # remember that this is only call by main, not by object
         excel_m.end_of_file(multi_item)
         # end of file can also be call between each item
-        print('end of the program')
+        print("end of the program")
 
         pass
 
     # OTP testing for HV buck
     elif program_group >= 14 and program_group < 15:
         # fixed part, open one result book and save the book
-        '''
+        """
         explanation of different number settings
         14 => new file
         14.1 => old file
-        '''
+        """
         # in temp name
         if program_group == 14.1:
             # track previous report and save at the end
@@ -1210,16 +1389,26 @@ if __name__ == '__main__':
         # single setting of the object need to be 1 => no needed single
         multi_item = 0
         # setup instruement for test mode, only for debug, no need to change)
-        sim_mode_independent(pwr=1, met_v=1, met_i=1, loader=1, src=1, chamber=1,
-                             scope=1, bk_pwr=1, main_off_line0=main_off_line, single_mode0=single_mode)
+        sim_mode_independent(
+            pwr=1,
+            met_v=1,
+            met_i=1,
+            loader=1,
+            src=1,
+            chamber=1,
+            scope=1,
+            bk_pwr=1,
+            main_off_line0=main_off_line,
+            single_mode0=single_mode,
+        )
         # open instrument and add the name to result book
         open_inst_and_name()
-        print('open instrument with real or simulation mode')
+        print("open instrument with real or simulation mode")
 
         # changeable area
         # ===========
 
-        general_t.set_sheet_name('gen_OTP')
+        general_t.set_sheet_name("gen_OTP")
         general_t.run_verification(ctrl_ind_1=1)
 
         # ===========
@@ -1228,7 +1417,7 @@ if __name__ == '__main__':
         # remember that this is only call by main, not by object
         excel_m.end_of_file(multi_item)
         # end of file can also be call between each item
-        print('end of the program')
+        print("end of the program")
 
         pass
 
@@ -1236,11 +1425,11 @@ if __name__ == '__main__':
     # sequence with record)
     elif program_group >= 15 and program_group < 16:
         # fixed part, open one result book and save the book
-        '''
+        """
         explanation of different number settings
         15 => new file
         15.1 => old file
-        '''
+        """
         # in temp name
         if program_group == 15.1:
             # track previous report and save at the end
@@ -1252,17 +1441,27 @@ if __name__ == '__main__':
         # single setting of the object need to be 1 => no needed single
         multi_item = 0
         # setup instruement for test mode, only for debug, no need to change)
-        sim_mode_independent(pwr=1, met_v=1, met_i=1, loader=1, src=1, chamber=1,
-                             scope=1, bk_pwr=1, main_off_line0=main_off_line, single_mode0=single_mode)
+        sim_mode_independent(
+            pwr=1,
+            met_v=1,
+            met_i=1,
+            loader=1,
+            src=1,
+            chamber=1,
+            scope=1,
+            bk_pwr=1,
+            main_off_line0=main_off_line,
+            single_mode0=single_mode,
+        )
         # open instrument and add the name to result book
         open_inst_and_name()
-        print('open instrument with real or simulation mode')
+        print("open instrument with real or simulation mode")
 
         # changeable area
         # ===========
 
-        general_t.set_sheet_name('gen_pwr_on_off_35', 0)
-        general_t.set_sheet_name('gen_pwr_on_off_35', 1, '_pwr_off')
+        general_t.set_sheet_name("gen_pwr_on_off_35", 0)
+        general_t.set_sheet_name("gen_pwr_on_off_35", 1, "_pwr_off")
         general_t.gen_pwr_on_off()
 
         # ===========
@@ -1271,18 +1470,18 @@ if __name__ == '__main__':
         # remember that this is only call by main, not by object
         excel_m.end_of_file(multi_item)
         # end of file can also be call between each item
-        print('end of the program')
+        print("end of the program")
 
         pass
 
     # for HV buck chamber related testing
     elif program_group >= 16 and program_group < 17:
         # fixed part, open one result book and save the book
-        '''
+        """
         explanation of different number settings
         16 => new file
         16.1 => old file
-        '''
+        """
         # in temp name
         if program_group == 16.1:
             # track previous report and save at the end
@@ -1294,46 +1493,60 @@ if __name__ == '__main__':
         # single setting of the object need to be 1 => no needed single
         multi_item = 0
         # setup instruement for test mode, only for debug, no need to change)
-        sim_mode_independent(pwr=1, met_v=1, met_i=1, loader=1, src=1, chamber=1,
-                             scope=1, bk_pwr=1, main_off_line0=main_off_line, single_mode0=single_mode)
+        sim_mode_independent(
+            pwr=1,
+            met_v=1,
+            met_i=1,
+            loader=1,
+            src=1,
+            chamber=1,
+            scope=1,
+            bk_pwr=1,
+            main_off_line0=main_off_line,
+            single_mode0=single_mode,
+        )
         # open instrument and add the name to result book
         open_inst_and_name()
-        print('open instrument with real or simulation mode')
+        print("open instrument with real or simulation mode")
 
         # changeable area
         # ===========
 
         # first should be the band gap
         general_t.set_sheet_name(
-            ctrl_sheet_name0='gen_BK_band_gap', extra_sheet=0, extra_name='_BK')
+            ctrl_sheet_name0="gen_BK_band_gap", extra_sheet=0, extra_name="_BK"
+        )
         general_t.set_sheet_name(
-            ctrl_sheet_name0='gen_BK_band_gap', extra_sheet=1, extra_name='_LDO')
+            ctrl_sheet_name0="gen_BK_band_gap", extra_sheet=1, extra_name="_LDO"
+        )
         general_t.run_verification(ctrl_ind_1=2)
 
         # OTP not toggle EN1
-        general_t.set_sheet_name(
-            'gen_BK_OTP', extra_sheet=0, extra_name='_EN1_keep')
+        general_t.set_sheet_name("gen_BK_OTP", extra_sheet=0, extra_name="_EN1_keep")
         general_t.run_verification(ctrl_ind_1=0)
-        general_t.set_sheet_name(
-            'gen_BK_OTP', extra_sheet=0, extra_name='_EN1_toggle')
+        general_t.set_sheet_name("gen_BK_OTP", extra_sheet=0, extra_name="_EN1_toggle")
         general_t.run_verification(ctrl_ind_1=1)
 
         # high temp power on off
         general_t.set_sheet_name(
-            'gen_BK_pwr_on_off_85', extra_sheet=0, extra_name='_on')
+            "gen_BK_pwr_on_off_85", extra_sheet=0, extra_name="_on"
+        )
         general_t.set_sheet_name(
-            'gen_BK_pwr_on_off_85', extra_sheet=1, extra_name='_off')
+            "gen_BK_pwr_on_off_85", extra_sheet=1, extra_name="_off"
+        )
         general_t.gen_pwr_on_off()
 
         # low temp power on off
         general_t.set_sheet_name(
-            'gen_BK_pwr_on_off_-40', extra_sheet=0, extra_name='_on')
+            "gen_BK_pwr_on_off_-40", extra_sheet=0, extra_name="_on"
+        )
         general_t.set_sheet_name(
-            'gen_BK_pwr_on_off_-40', extra_sheet=1, extra_name='_off')
+            "gen_BK_pwr_on_off_-40", extra_sheet=1, extra_name="_off"
+        )
         general_t.gen_pwr_on_off()
 
         # file name index
-        general_t.extra_file_name_setup('_chamber_mix')
+        general_t.extra_file_name_setup("_chamber_mix")
 
         # ===========
         # changeable area
@@ -1341,19 +1554,19 @@ if __name__ == '__main__':
         # remember that this is only call by main, not by object
         excel_m.end_of_file(multi_item)
         # end of file can also be call between each item
-        print('end of the program')
+        print("end of the program")
 
         pass
 
     # for HV buck VTH related testing
     elif program_group >= 17 and program_group < 18:
         # fixed part, open one result book and save the book
-        '''
+        """
         explanation of different number settings
         17 => new file
         17.1 => old file
         > choose the control variable if the setting is for A version or not (A_version)
-        '''
+        """
         # in temp name
         if program_group == 17.1:
             # track previous report and save at the end
@@ -1365,11 +1578,21 @@ if __name__ == '__main__':
         # single setting of the object need to be 1 => no needed single
         multi_item = 0
         # setup instruement for test mode, only for debug, no need to change)
-        sim_mode_independent(pwr=1, met_v=1, met_i=1, loader=1, src=1, chamber=1,
-                             scope=1, bk_pwr=1, main_off_line0=main_off_line, single_mode0=single_mode)
+        sim_mode_independent(
+            pwr=1,
+            met_v=1,
+            met_i=1,
+            loader=1,
+            src=1,
+            chamber=1,
+            scope=1,
+            bk_pwr=1,
+            main_off_line0=main_off_line,
+            single_mode0=single_mode,
+        )
         # open instrument and add the name to result book
         open_inst_and_name()
-        print('open instrument with real or simulation mode')
+        print("open instrument with real or simulation mode")
 
         # changeable area
         # ===========
@@ -1383,35 +1606,39 @@ if __name__ == '__main__':
         if A_version == 0:
             # EN=Vin/2 testing (non-A version)
             general_t_bk.set_sheet_name(
-                ctrl_sheet_name0='gen_BK_ENd2', extra_sheet=0, extra_name='_')
+                ctrl_sheet_name0="gen_BK_ENd2", extra_sheet=0, extra_name="_"
+            )
             general_t_bk.pwr_iout_set(iout_r0=0.2, iout_r6=0.2, iout_r7=0.2)
             general_t_bk.run_verification(ctrl_ind_1=0, vin_cal=0)
 
         else:
-
             # EN=Vin/2 testing (A version)
             general_t_bk.set_sheet_name(
-                ctrl_sheet_name0='gen_BK_ENd2_A', extra_sheet=0, extra_name='_')
+                ctrl_sheet_name0="gen_BK_ENd2_A", extra_sheet=0, extra_name="_"
+            )
             general_t_bk.pwr_iout_set(iout_r0=0.2, iout_r6=0.2, iout_r7=0.2)
             general_t_bk.run_verification(ctrl_ind_1=0, vin_cal=0)
 
         # EN1 testing
         general_t_bk.set_sheet_name(
-            ctrl_sheet_name0='gen_BK_EN1', extra_sheet=0, extra_name='_')
+            ctrl_sheet_name0="gen_BK_EN1", extra_sheet=0, extra_name="_"
+        )
         general_t_bk.run_verification(ctrl_ind_1=0, vin_cal=0)
 
         # EN2 testing
         general_t_bk.set_sheet_name(
-            ctrl_sheet_name0='gen_BK_EN2', extra_sheet=0, extra_name='_')
+            ctrl_sheet_name0="gen_BK_EN2", extra_sheet=0, extra_name="_"
+        )
         general_t_bk.run_verification(ctrl_ind_1=0, vin_cal=0)
 
         # UVLO testing
         general_t_bk.set_sheet_name(
-            ctrl_sheet_name0='gen_BK_Vin', extra_sheet=0, extra_name='_')
+            ctrl_sheet_name0="gen_BK_Vin", extra_sheet=0, extra_name="_"
+        )
         general_t_bk.run_verification(ctrl_ind_1=0, vin_cal=0)
 
         # file name index
-        general_t_bk.extra_file_name_setup('_VTH_mix')
+        general_t_bk.extra_file_name_setup("_VTH_mix")
 
         # ===========
         # changeable area
@@ -1419,18 +1646,18 @@ if __name__ == '__main__':
         # remember that this is only call by main, not by object
         excel_m.end_of_file(multi_item)
         # end of file can also be call between each item
-        print('end of the program')
+        print("end of the program")
 
         pass
 
     # testin for BK9141 EN/2
     elif program_group == 100:
         # fixed part, open one result book and save the book
-        '''
+        """
         explanation of different number settings
         17 => new file
         17.1 => old file
-        '''
+        """
         # in temp name
         if program_group == 100.1:
             # track previous report and save at the end
@@ -1442,18 +1669,29 @@ if __name__ == '__main__':
         # single setting of the object need to be 1 => no needed single
         multi_item = 0
         # setup instruement for test mode, only for debug, no need to change)
-        sim_mode_independent(pwr=1, met_v=1, met_i=1, loader=1, src=1, chamber=1,
-                             scope=1, bk_pwr=1, main_off_line0=main_off_line, single_mode0=single_mode)
+        sim_mode_independent(
+            pwr=1,
+            met_v=1,
+            met_i=1,
+            loader=1,
+            src=1,
+            chamber=1,
+            scope=1,
+            bk_pwr=1,
+            main_off_line0=main_off_line,
+            single_mode0=single_mode,
+        )
         # open instrument and add the name to result book
         open_inst_and_name()
-        print('open instrument with real or simulation mode')
+        print("open instrument with real or simulation mode")
 
         # changeable area
         # ===========
 
         # EN=Vin/2 testing
         general_t_bk.set_sheet_name(
-            ctrl_sheet_name0='gen_BK_ENd2', extra_sheet=0, extra_name='_')
+            ctrl_sheet_name0="gen_BK_ENd2", extra_sheet=0, extra_name="_"
+        )
         general_t_bk.run_verification(ctrl_ind_1=0, vin_cal=0)
 
         # # EN1 testing
@@ -1472,7 +1710,7 @@ if __name__ == '__main__':
         # general_t_bk.run_verification(ctrl_ind_1=0, vin_cal=0)
 
         # file name index
-        general_t.extra_file_name_setup('_BK_temp_test')
+        general_t.extra_file_name_setup("_BK_temp_test")
 
         # ===========
         # changeable area
@@ -1480,20 +1718,20 @@ if __name__ == '__main__':
         # remember that this is only call by main, not by object
         excel_m.end_of_file(multi_item)
         # end of file can also be call between each item
-        print('end of the program')
+        print("end of the program")
 
         pass
 
     # reference code
     elif program_group >= 1000 and program_group < 1001:
         # fixed part, open one result book and save the book
-        '''
+        """
         explanation of different number settings
         1000 => new file, cal_vin
         1000.1 => old file, cal_vin
         1000.2 => new file
         1000.3 => old file
-        '''
+        """
         # in temp name
         if program_group == 1000.1 or program_group == 1000.3:
             # track previous report and save at the end
@@ -1505,17 +1743,27 @@ if __name__ == '__main__':
         # single setting of the object need to be 1 => no needed single
         multi_item = 0
         # setup instruement for test mode, only for debug, no need to change)
-        sim_mode_independent(pwr=1, met_v=1, met_i=1, loader=1, src=1, chamber=1,
-                             scope=1, bk_pwr=1, main_off_line0=main_off_line, single_mode0=single_mode)
+        sim_mode_independent(
+            pwr=1,
+            met_v=1,
+            met_i=1,
+            loader=1,
+            src=1,
+            chamber=1,
+            scope=1,
+            bk_pwr=1,
+            main_off_line0=main_off_line,
+            single_mode0=single_mode,
+        )
         # open instrument and add the name to result book
         open_inst_and_name()
-        print('open instrument with real or simulation mode')
+        print("open instrument with real or simulation mode")
 
         # changeable area
         # ===========
 
         temp_str = str(excel_m.single_test_mapped_general)
-        print(f'now is single test for {temp_str}')
+        print(f"now is single test for {temp_str}")
         general_t.set_sheet_name(temp_str)
         if program_group == 1000:
             general_t.run_verification()
@@ -1529,12 +1777,12 @@ if __name__ == '__main__':
         # remember that this is only call by main, not by object
         excel_m.end_of_file(multi_item)
         # end of file can also be call between each item
-        print('end of the program')
+        print("end of the program")
 
         pass
 
     # 221229 simplify for the selection of 7 series function
-    '''
+    """
     # single test for waveform capture
     elif program_group == 7:
         # fixed part, open one result book and save the book
@@ -1753,4 +2001,4 @@ if __name__ == '__main__':
 
         pass
 
-    '''
+    """
