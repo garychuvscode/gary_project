@@ -90,25 +90,69 @@ class glitch_mea:
 
         pass
 
-    def run_verification(self, pmic_buck0=0):
-        # step of each glitch (amount of unit width)
-        pulse_step = 5
+    def run_verification(
+        self, H_L_pulse=0, start_us0=1, count0=5, step_us0=1, pin_num0=1
+    ):
+        """
+        H_L_pulse default setting is low pulse => H-L-H, L programmable \n
+        step_us0 = step of each pulse \n
+        minimum unit is set to us \n
+        pin_num0 = 1 or 2 (default PG1 or PG2)
+        """
+        # mapped pint string
+        if pin_num0 == 1:
+            pin_str = "EN"
+            # default state is low, and send high pulse, then back to low
+            # other pin don't care (become L)
+            single_cell_state1 = "1"
+            single_cell_state2 = "0"
+        else:
+            pin_str = "SW"
+            # other pin don't care (become L)
+            single_cell_state1 = "2"
+            single_cell_state2 = "0"
+
+        # change the initial state of I/O high low
+        if H_L_pulse == 0:
+            # sending low pulse, no need change initial state
+            pass
+        else:
+            self.mcu_ini.i_o_change(set_or_clr0=0, pin_num0=pin_num0)
+            # pin 1 is EN and pin 2 is SW
 
         # testing of pulse
         x_glitch = 0
         # amount of testing items
-        c_glitch = 10
+        c_glitch = count0
         while x_glitch < c_glitch:
             # define the length from pulse step
-            length_us = (x_glitch + 1) * pulse_step
+            length_us = start_us0 + (x_glitch) * step_us0
 
-            self.mcu_ini.g_pulse_out_V2(
-                pulse0=1, duration_ns=1000, en_sw="EN", count0=length_us
-            )
+            # scope trigger here
+
+            if H_L_pulse == 0:
+                # default is low pulse
+                self.mcu_ini.g_pulse_out_V2(
+                    pulse0=1, duration_ns=1000, en_sw=pin_str, count0=length_us
+                )
+                pass
+            else:
+                pattern = (
+                    f"'0$1`{single_cell_state1}${length_us}`{single_cell_state2}$1`'"
+                )
+                full_str = f"mcu.pattern.setupX( {{{pattern}}},1000, 0 )"
+                self.mcu_ini.pattern_gen_full_str(cmd_str0=full_str)
+
+                pass
+
+            # scope capture here
 
             time.sleep(1)
             x_glitch = x_glitch + 1
             pass
+
+        # back to MCU default state
+        self.mcu_ini.back_to_initial()
 
         pass
 
@@ -177,6 +221,12 @@ if __name__ == "__main__":
         excel_t, pwr_t, met_v_t, load_t, mcu_t, src_t, met_i_t, chamber_t, scope_t
     )
 
-    gli_test.run_verification()
+    gli_test.run_verification(
+        H_L_pulse=1, start_us0=10, count0=5, step_us0=5, pin_num0=1
+    )
+    time.sleep(2)
+    gli_test.run_verification(
+        H_L_pulse=0, start_us0=10, count0=10, step_us0=10, pin_num0=1
+    )
 
     pass

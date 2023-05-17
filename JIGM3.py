@@ -444,12 +444,12 @@ class JIGM3:
                 # self.g_ezcommand(f"mcu.gpio.setout(0x3, 0)")
                 self.i_o_change(port0="PG", set_or_clr0=1, pin_num0=1)
                 self.i_o_change(port0="PG", set_or_clr0=1, pin_num0=2)
-                for i in range (3, 16, 1):
+                for i in range(3, 16, 1):
                     self.i_o_change(port0="PG", set_or_clr0=1, pin_num0=i)
 
                 pass
             else:
-                for i in range (1, 16, 1):
+                for i in range(1, 16, 1):
                     self.i_o_change(port0="PG", set_or_clr0=1, pin_num0=i)
 
                 # self.g_ezcommand(f"mcu.gpio.setout(0x0, 0)")
@@ -679,11 +679,11 @@ class JIGM3:
 
         pass
 
-    def pmic_mode(self, mode_index=1, port_optional0="PG", pin_EN0=16, pin_SW0=15):
+    def pmic_mode(self, mode_index=1, port_optional0="PG", pin_EN0=1, pin_SW0=2):
         """
         (EN,SW) or (EN2, EN1) \n
         1:(0,0); 2:(0,1); 3:(1,0); 4:(1,1)
-        default using PG16 as EN and PG15 as SW in JIGM3
+        default using PG1 as EN and PG2 as SW in JIGM3
 
         port_optional0, pin_EN0, pin_SW0 refer to the IO settings
         """
@@ -696,23 +696,23 @@ class JIGM3:
 
         if mode_index == 1:
             # shut_down
-            self.i_o_change(self, port0=port_optional0, set_or_clr0=0, pin_num0=pin_EN0)
-            self.i_o_change(self, port0=port_optional0, set_or_clr0=0, pin_num0=pin_SW0)
+            self.i_o_change(port0=port_optional0, set_or_clr0=0, pin_num0=pin_EN0)
+            self.i_o_change(port0=port_optional0, set_or_clr0=0, pin_num0=pin_SW0)
             pass
         elif mode_index == 2:
             # only SW on
-            self.i_o_change(self, port0=port_optional0, set_or_clr0=0, pin_num0=pin_EN0)
-            self.i_o_change(self, port0=port_optional0, set_or_clr0=1, pin_num0=pin_SW0)
+            self.i_o_change(port0=port_optional0, set_or_clr0=0, pin_num0=pin_EN0)
+            self.i_o_change(port0=port_optional0, set_or_clr0=1, pin_num0=pin_SW0)
             pass
         elif mode_index == 3:
             # only EN on (AOD mode for PMIC)
-            self.i_o_change(self, port0=port_optional0, set_or_clr0=1, pin_num0=pin_EN0)
-            self.i_o_change(self, port0=port_optional0, set_or_clr0=0, pin_num0=pin_SW0)
+            self.i_o_change(port0=port_optional0, set_or_clr0=1, pin_num0=pin_EN0)
+            self.i_o_change(port0=port_optional0, set_or_clr0=0, pin_num0=pin_SW0)
             pass
         elif mode_index == 4:
             # both EN and SW are on (normal mode of PMIC)
-            self.i_o_change(self, port0=port_optional0, set_or_clr0=1, pin_num0=pin_EN0)
-            self.i_o_change(self, port0=port_optional0, set_or_clr0=1, pin_num0=pin_SW0)
+            self.i_o_change(port0=port_optional0, set_or_clr0=1, pin_num0=pin_EN0)
+            self.i_o_change(port0=port_optional0, set_or_clr0=1, pin_num0=pin_SW0)
             pass
 
         pass
