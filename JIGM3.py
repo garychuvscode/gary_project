@@ -409,7 +409,7 @@ class JIGM3:
         else:
             print(f"real mode with command \n {command0}")
             result = self.ezCommand(command0)
-            time.sleep(0.2)
+            # time.sleep(0.2)
             pass
 
         return result
@@ -483,11 +483,17 @@ class JIGM3:
             i_o_cmd = i_o_state_tmp & i_o_cmd0
             print(f"final command is {i_o_cmd}")
 
-        cmd_str = f"mcu.gpio.setout({i_o_cmd}, {port_cmd})"
-        # update the status of MCU
-        self.i_o_state[port0] = i_o_cmd
+        if port0 == "PG":
+            # when use PG pin as IO, need to drive with pattern gen function
+            cmd_str = f"mcu.pattern.setupX( {{'{i_o_cmd}$1e5`'}}, 10000, 0 )"
+            pass
+        else:
+            cmd_str = f"mcu.gpio.setout({i_o_cmd}, {port_cmd})"
 
         self.g_ezcommand(cmd_str)
+
+        # update the status of MCU
+        self.i_o_state[port0] = i_o_cmd
 
         pass
 
@@ -729,6 +735,12 @@ class JIGM3:
         # update the path for JIGM3
         print("Grace just take in charge of the efficiency environment")
 
+        # 230516
+        # run the IO config after COM open, son no need extra function at main
+
+        # set all the IO to output
+        self.i_o_config()
+
         pass
 
     def com_close(self):
@@ -935,6 +947,13 @@ if __name__ == "__main__":
             g_mcu.i_o_change(port0="IO", set_or_clr0=0, pin_num0=2)
             time.sleep(2)
             g_mcu.i_o_change(port0="IO", set_or_clr0=0, pin_num0=3)
+            time.sleep(2)
+
+            g_mcu.i_o_change(port0="PG", set_or_clr0=1, pin_num0=1)
+            time.sleep(2)
+            g_mcu.i_o_change(port0="PG", set_or_clr0=1, pin_num0=2)
+            time.sleep(2)
+            g_mcu.i_o_change(port0="PG", set_or_clr0=0, pin_num0=1)
             time.sleep(2)
 
             pass
