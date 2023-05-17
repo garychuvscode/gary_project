@@ -441,10 +441,18 @@ class JIGM3:
 
             # and send output to 0, so it can be aligned to default state
             if self.en_sw_pin == 1:
-                self.g_ezcommand(f"mcu.gpio.setout(0x3, 0)")
+                # self.g_ezcommand(f"mcu.gpio.setout(0x3, 0)")
+                self.i_o_change(port0="PG", set_or_clr0=1, pin_num0=1)
+                self.i_o_change(port0="PG", set_or_clr0=1, pin_num0=2)
+                for i in range (3, 16, 1):
+                    self.i_o_change(port0="PG", set_or_clr0=1, pin_num0=i)
+
                 pass
             else:
-                self.g_ezcommand(f"mcu.gpio.setout(0x0, 0)")
+                for i in range (1, 16, 1):
+                    self.i_o_change(port0="PG", set_or_clr0=1, pin_num0=i)
+
+                # self.g_ezcommand(f"mcu.gpio.setout(0x0, 0)")
             self.g_ezcommand(f"mcu.gpio.setout(0x0, 1)")
             self.g_ezcommand(f"mcu.gpio.setout(0x0, 2)")
             self.g_ezcommand(f"mcu.gpio.setout(0x0, 3)")

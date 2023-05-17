@@ -91,6 +91,25 @@ class glitch_mea:
         pass
 
     def run_verification(self, pmic_buck0=0):
+        # step of each glitch (amount of unit width)
+        pulse_step = 5
+
+        # testing of pulse
+        x_glitch = 0
+        # amount of testing items
+        c_glitch = 10
+        while x_glitch < c_glitch:
+            # define the length from pulse step
+            length_us = (x_glitch + 1) * pulse_step
+
+            self.mcu_ini.g_pulse_out_V2(
+                pulse0=1, duration_ns=1000, en_sw="EN", count0=length_us
+            )
+
+            time.sleep(1)
+            x_glitch = x_glitch + 1
+            pass
+
         pass
 
     def end_of_exp(self):
@@ -107,41 +126,57 @@ class glitch_mea:
         pass
 
     def extra_file_name_setup(self):
-        if self.ripple_line_load == 0:
-            self.excel_ini.extra_file_name = "_ripple"
-        elif self.ripple_line_load == 1:
-            self.excel_ini.extra_file_name = "_line_tran"
-        elif self.ripple_line_load == 2:
-            self.excel_ini.extra_file_name = "_load_tran"
-        elif self.ripple_line_load == 6:
-            self.excel_ini.extra_file_name = "_inrush_current"
-        elif self.ripple_line_load == 7:
-            self.excel_ini.extra_file_name = "_pwr_seq_EN=SW"
-        elif self.ripple_line_load == 8:
-            self.excel_ini.extra_file_name = "_pwr_seq_EN"
-        elif self.ripple_line_load == 9:
-            self.excel_ini.extra_file_name = "_pwr_seq_SW"
-        elif self.ripple_line_load == 10:
-            # add the case with EN rising first
-            self.excel_ini.extra_file_name = "_pwr_seq_SW(EN)"
-
-        pass
-
-    def end_of_exp(self):
-        self.pwr_ini.inst_single_close(self.excel_ini.relay0_ch)
-
-        self.loader_ini.inst_single_close(self.excel_ini.loader_ELch)
-        self.loader_ini.inst_single_close(self.excel_ini.loader_VCIch)
-
-        # also return MCU settings
-        self.mcu_ini.back_to_initial()
-
-        self.excel_ini.ready_to_off = 1
+        """
+        the mapped name doing glitch
+        """
+        self.excel_ini.extra_file_name = "_glitch"
 
         pass
 
 
 if __name__ == "__main__":
     # testing of glitch
+
+    #  the testing code for this file object
+    sim_test_set = 0
+
+    import mcu_obj as mcu_msp
+    import inst_pkg_d as inst
+    import Scope_LE6100A as sco
+    import JIGM3 as mcu_g
+
+    # initial the object and set to simulation mode
+    excel_t = par.excel_parameter("obj_main")
+    pwr_t = inst.LPS_505N(3.7, 0.5, 3, 1, "off")
+    pwr_t.sim_inst = sim_test_set
+    pwr_t.open_inst()
+
+    # initial the object and set to simulation mode
+    met_v_t = inst.Met_34460(0.0001, 30, 0.000001, 2.5, 20)
+    met_v_t.sim_inst = sim_test_set
+    met_v_t.open_inst()
+    load_t = inst.chroma_63600(1, 7, "CCL")
+    load_t.sim_inst = sim_test_set
+    load_t.open_inst()
+    met_i_t = inst.Met_34460(0.0001, 7, 0.000001, 2.5, 21)
+    met_i_t.sim_inst = 0
+    met_i_t.open_inst()
+    src_t = inst.Keth_2440(0, 0, 24, "off", "CURR", 15)
+    src_t.sim_inst = 0
+    src_t.open_inst()
+    chamber_t = inst.chamber_su242(25, 10, "off", -45, 180, 0)
+    chamber_t.sim_inst = 0
+    chamber_t.open_inst()
+    scope_t = sco.Scope_LE6100A(excel0=excel_t)
+    # mcu is also config as simulation mode
+    # COM address of Gary_SONY is 3
+    mcu_t = mcu_g.JIGM3(sim_mcu0=1, com_addr0=0)
+    mcu_t.com_open()
+
+    gli_test = glitch_mea(
+        excel_t, pwr_t, met_v_t, load_t, mcu_t, src_t, met_i_t, chamber_t, scope_t
+    )
+
+    gli_test.run_verification()
 
     pass

@@ -471,37 +471,6 @@ class ripple_test:
                             to have better slew rate
                             """
 
-                            """
-                            230517 add Vout check
-                            """
-                            vout_check = float(
-                                load_s.read_vout(act_ch1=excel_s.loader_ELch)
-                            )
-                            if vout_check < 0.4:
-                                while vout_check < 0.4:
-                                    # need to re-toggle Vin if there are issue of Vout, before turn the loader on
-                                    pwr_s.chg_out(
-                                        v_target,
-                                        excel_s.pre_imax,
-                                        excel_s.relay0_ch,
-                                        "off",
-                                    )
-                                    time.sleep(1)
-                                    print("re-toggle power supply for Grace")
-                                    pwr_s.chg_out(
-                                        v_target,
-                                        excel_s.pre_imax,
-                                        excel_s.relay0_ch,
-                                        "on",
-                                    )
-                                    time.sleep(0.5)
-                                    vout_check = float(
-                                        load_s.read_vout(act_ch1=excel_s.loader_ELch)
-                                    )
-                                    pass
-
-                                pass
-
                             load_s.dynamic_config(L1=iload_L1, L2=iload_L2)
                             load_s.dynamic_ctrl(
                                 act_ch1=excel_s.loader_ELch,
@@ -531,36 +500,11 @@ class ripple_test:
                             Buck: is for Buck load transient, check Buck(1CH)
                             """
 
-                            """
-                            230517 add Vout check
-                            """
-                            vout_check = float(
-                                load_s.read_vout(act_ch1=excel_s.loader_VCIch)
+                            self.check_vout_fun(
+                                v_target=v_target,
+                                pwr_ch=excel_s.relay0_ch,
+                                loader_ch=excel_s.loader_VCIch,
                             )
-                            if vout_check < 0.4:
-                                while vout_check < 0.4:
-                                    # need to re-toggle Vin if there are issue of Vout, before turn the loader on
-                                    pwr_s.chg_out(
-                                        v_target,
-                                        excel_s.pre_imax,
-                                        excel_s.relay0_ch,
-                                        "off",
-                                    )
-                                    time.sleep(1)
-                                    print("re-toggle power supply for Grace")
-                                    pwr_s.chg_out(
-                                        v_target,
-                                        excel_s.pre_imax,
-                                        excel_s.relay0_ch,
-                                        "on",
-                                    )
-                                    time.sleep(0.5)
-                                    vout_check = float(
-                                        load_s.read_vout(act_ch1=excel_s.loader_VCIch)
-                                    )
-                                    pass
-
-                                pass
 
                             load_s.dynamic_config(L1=iload_L1, L2=iload_L2)
                             load_s.dynamic_ctrl(
@@ -568,6 +512,15 @@ class ripple_test:
                                 status0="on",
                                 smooth_on_off=1,
                             )
+
+                            # 230517 check again after loader is on to prevent off after loader turn on
+                            self.check_vout_fun(
+                                v_target=v_target,
+                                pwr_ch=excel_s.relay0_ch,
+                                loader_ch=excel_s.loader_VCIch,
+                                loader_toggle=1,
+                            )
+
                         # trigger AVDD
                         # 221205: no need to change the level here, change to no input since there
                         # are auto level already
@@ -1438,6 +1391,52 @@ class ripple_test:
                     self.scope_ini.ch_view(3, 0)
                     self.scope_ini.find_signal(ch=1, variable_index=0)
                     pass
+                pass
+            pass
+        pass
+
+    def check_vout_fun(self, v_target=0, pwr_ch=1, loader_ch=1, loader_toggle=0):
+        """
+        check Vout for DUT
+        """
+
+        """
+        230517 add Vout check
+        """
+        vout_check = float(self.loader_ini.read_vout(act_ch1=loader_ch))
+        if vout_check < 0.4:
+            if loader_toggle == 1:
+                # this check after loader turn on, need to toggle loader
+                self.loader_ini.chg_out2(0, act_ch1=loader_ch, state1="off")
+                pass
+            while vout_check < 0.4:
+                # need to re-toggle Vin if there are issue of Vout, before turn the loader on
+                self.pwr_ini.chg_out(
+                    v_target,
+                    self.excel_ini.pre_imax,
+                    pwr_ch,
+                    "off",
+                )
+                time.sleep(1)
+                print("re-toggle power supply for Grace")
+                self.pwr_ini.chg_out(
+                    v_target,
+                    self.excel_ini.pre_imax,
+                    pwr_ch,
+                    "on",
+                )
+                time.sleep(1)
+                vout_check = float(self.loader_ini.read_vout(act_ch1=loader_ch))
+                pass
+
+            if loader_toggle == 1:
+                self.loader_ini.dynamic_ctrl(
+                    act_ch1=loader_ch, status0="on", smooth_on_off=1
+                )
+
+            pass
+
+        pass
 
 
 if __name__ == "__main__":
