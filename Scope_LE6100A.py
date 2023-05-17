@@ -1532,10 +1532,10 @@ if __name__ == "__main__":
             ch_name = {
                 "CH1": "name1",
                 "CH2": "name2",
-                "CH3": "LDO",
-                "CH4": "EN2",
-                "CH5": "Iout",
-                "CH6": "EN1",
+                "CH3": "EN2",
+                "CH4": "VCC",
+                "CH5": "I_dis",
+                "CH6": "LDO",
                 "CH7": "EN",
                 "CH8": "Buck",
             }

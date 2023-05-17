@@ -446,6 +446,10 @@ class ripple_test ():
                     print(pro_status_str)
                     excel_s.program_status(pro_status_str)
 
+                    """
+                    before turn the loader on check read Vout, if less than 0.4V, re-power on
+                    """
+
                     # need to be int, not string for self.ch_index
                     if self.ch_index == 0:
                         # EL power settings
@@ -527,6 +531,10 @@ class ripple_test ():
                             # box control will become 7 when
                             box_ctrl = excel_s.message_box(
                                 f'choose to skip until next line or not\nset to {setup_temp} and continue ', 'g: stop for transient', auto_exception=1, box_type=4)
+
+                    """
+                    230517 to prevent OVP turn off
+                    """
 
                     # calibration Vin
 
