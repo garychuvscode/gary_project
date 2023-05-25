@@ -1007,7 +1007,7 @@ class chroma_63600:
             print('loader read the voltage with below GPIB string')
             print(str(self.cmd_str_ch_set))
             print(str(self.cmd_str_V_read))
-            self.v_out = 'sim_vout'
+            self.v_out = '0.5474009'
             # to show the program had been run through this place
             # the result change after run through
 
