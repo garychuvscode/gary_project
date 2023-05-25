@@ -3,7 +3,8 @@ import re
 
 from .GInst import *
 
-
+# turn off the formatter
+# fmt: off
 class FuncGen_AFG31000(GInst):
 
     def __init__(self, link, ch = 0) :
@@ -32,7 +33,7 @@ class FuncGen_AFG31000(GInst):
         if 'AFG3' in idn:
             self.inst_type = "AFG3x"
         else:
-            raise Exception(f'<>< FuncGen_AFG31000 ><> AFG31 not fit in "{idn}"!')       
+            raise Exception(f'<>< FuncGen_AFG31000 ><> AFG31 not fit in "{idn}"!')
 
 
     def outpIMP(self, set_val) :
@@ -101,7 +102,7 @@ class FuncGen_AFG31000(GInst):
         [funcgen(channel) set Frequence]
         :param frquence:
         :return: None.
-        """        
+        """
         if not self.PwmByPulseMode:
             self.inst.write(f"SOUR{self.chConvert[self.ch]}:FUNC:SHAPE PULS\n")
             self.inst.write(f"SOUR{self.chConvert[self.ch]}:VOLT:LEV:IMM:HIGH 3.3V\n")
@@ -111,28 +112,28 @@ class FuncGen_AFG31000(GInst):
         self.PwmByPulseFreq = frquence
 
     @GInstGetMethod(unit = '%')
-    def setDuty(self, duty):   
+    def setDuty(self, duty):
         """
         funcgen.setDuty(duty) -> None
         ================================================================
         [funcgen(channel) set Duty]
         :param duty: 0-100 for 0-100%
         :return: None.
-        """          
+        """
         if duty < 0.001 :
             self.inst.write(f"SOUR{self.chConvert[self.ch]}:VOLT:LEV:IMM:HIGH 0.2V\n")
             self.PwmByPulseMode = False
 
         elif duty > 99.999 :
             self.inst.write(f"SOUR{self.chConvert[self.ch]}:VOLT:LEV:IMM:LOW 3.1V\n")
-            self.PwmByPulseMode = False            
+            self.PwmByPulseMode = False
 
         else :
             if not self.PwmByPulseMode:
                 self.inst.write(f"SOUR{self.chConvert[self.ch]}:FUNC:SHAPE PULS\n")
                 self.inst.write(f"SOUR{self.chConvert[self.ch]}:VOLT:LEV:IMM:HIGH 3.3V\n")
                 self.inst.write(f"SOUR{self.chConvert[self.ch]}:VOLT:LEV:IMM:LOW  0.0V\n")
-                self.PwmByPulseMode = True 
+                self.PwmByPulseMode = True
 
             pulse_width = duty / (self.PwmByPulseFreq * 100)
             self.inst.write(f"SOUR{self.chConvert[self.ch]}:PULSE:WIDTH {pulse_width:E}\n")

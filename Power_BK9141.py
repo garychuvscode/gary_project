@@ -11,6 +11,8 @@ wait_time = 0.2
 
 rm = pyvisa.ResourceManager()
 
+# turn off the formatter
+# fmt: off
 
 class Power_BK9141(GInst):
     """

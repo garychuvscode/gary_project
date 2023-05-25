@@ -3,6 +3,9 @@ import time
 
 rm = pyvisa.ResourceManager()
 
+# turn off the formatter
+# fmt: off
+
 uart_cmd_str = 0
 # UART command string
 wait_time = 0.5

@@ -1,15 +1,17 @@
-'''
+"""
 since this library is from Geroge, need to modify before mapped to the testing system
 1. need to have the fake GInst in the related folder
 2. need to cancel all the deccorator
 3. check how to build up the interface to connect two library
-'''
+"""
 
 import pyvisa
 import re
 
 from .GInst import *
 
+# turn off the formatter
+# fmt: off
 
 class Chamber_SU242(GInst):
 

@@ -445,7 +445,7 @@ class format_gen:
                 # self.sh_result.copy(self.sh_ref)
                 x_sheets = x_sheets + 1
                 pass
-                # assign to the first sheet after the generation
+            # assign to the first sheet after the generation
             self.excel_ini.sh_ref_table = self.excel_ini.ref_table_list[0]
             pass
 
@@ -593,12 +593,8 @@ if __name__ == "__main__":
     elif version_select == 2:
         """
         230518 add the format gen used to build big waveform table
+        use this function to build general table
         """
-
-        # 230525 sequence of width and heigh seems to be reverse
-        width = 145.2
-        heigh = 45
-
 
         import sheet_ctrl_main_obj as sh
 
@@ -608,6 +604,7 @@ if __name__ == "__main__":
         excel_m.excel_save()
 
         format_gen_1 = format_gen(excel_m)
-        format_gen_1.set_sheet_name("glitch")
+        format_gen_1.set_sheet_name("wave_gen")
+        # this is for the general sheet of saving waveform with comments
 
         pass

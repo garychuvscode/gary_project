@@ -352,7 +352,15 @@ class ripple_test:
                 excel_s.sh_ref_table = excel_s.ref_table_list[x_sw_i2c]
                 # 221223: add comments, scope reload can help to find the porper signal
                 # find the signal at different SWIRE pulse and put in the window
-                self.scope_reload()
+                if self.pmic_buck == 1:
+                    self.scope_reload(pmic_buck0=self.pmic_buck, ind0=x_sw_i2c)
+                    """
+                    different index is used to call the different scale of scope setting
+                    scope setting + "_x_sw_i2c"
+                    """
+                    pass
+                else:
+                    self.scope_reload()
 
             # if the command is not default, need to find signal
             # 221206 command is already operated in the scope
@@ -1366,7 +1374,7 @@ class ripple_test:
 
         pass
 
-    def scope_reload(self):
+    def scope_reload(self, pmic_buck0=0, ind0=0):
         # used to reset the scope after changing to different condition
 
         # scope initialization
@@ -1376,7 +1384,15 @@ class ripple_test:
                 # turn the offset setting to normalizaiton setting
                 self.scope_ini.nor_v_off = 1
                 pass
-            self.scope_ini.scope_initial(self.scope_setting)
+
+            # 230525 add the pmic_buck change scope setting for different sheet
+            if pmic_buck0 == 0:
+                # keep the original setting
+                self.scope_ini.scope_initial(self.scope_setting)
+            else:
+                # change to another scope setting
+                temp_scope_setting = str(self.scope_setting + f"_{int(ind0)}")
+                self.scope_ini.scope_initial(temp_scope_setting)
 
             if self.scope_adj == 1:
                 # change the position and turn off related signal

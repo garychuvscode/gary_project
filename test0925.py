@@ -1,12 +1,16 @@
-
 # excel related package
 
 import win32api
 from win32con import MB_SYSTEMMODAL
+
 # from pickle import NONE
 import xlwings as xw
+
 print("testing output ")
 print("testing output123 ")
+
+# turn off the formatter
+# fmt: off
 
 # 匯入 xlwings 套件
 # 讓 xlwings 動態開啟一個新的 Excel 檔案，並將該檔案存入 workbook 變數

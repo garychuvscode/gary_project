@@ -3,10 +3,13 @@
 # import for excel control
 from datetime import datetime
 import xlwings as xw
+
 # this import is for the VBA function
 import win32com.client
+
 # application of array
 import numpy as np
+
 # include for atof function => transfer string to float
 import locale as lo
 
@@ -14,9 +17,12 @@ import locale as lo
 import win32api
 
 import time
+
 # import for the program exit sys.exit()
 import sys
 
+# turn off the formatter
+# fmt: off
 
 # ======== excel application related
 # 開啟 Excel 的app

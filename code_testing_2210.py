@@ -5,14 +5,18 @@ import locale as lo
 import sys
 import time
 from datetime import datetime
+
 #  add MCU testing for old version board
 import mcu_obj as m
 
 import win32api
 from win32con import MB_SYSTEMMODAL
+
 mcu_s = m.MCU_control(0, 3)
 mcu_s.com_open()
 
+# turn off the formatter
+# fmt: off
 
 class test_calass():
 

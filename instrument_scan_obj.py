@@ -3,7 +3,8 @@
 # other function wait for future
 import time
 
-
+# turn off the formatter
+# fmt: off
 class instrument_scan ():
 
     def __init__(self, excel0, pwr0, met_v0, loader_0, mcu0, src0, met_i0, chamber0):

@@ -6,11 +6,13 @@
 
 import time
 import pyvisa
+
 rm = pyvisa.ResourceManager()
 
 #  not only one class for all the stuff, separate for few class definition
 
-
+# turn off the formatter
+# fmt: off
 class MCU_control ():
 
     def __init__(self, sim_mcu0, com_addr0):

@@ -1,5 +1,6 @@
 #  define the structure general class for future work efficiency
-
+# turn off the formatter
+# fmt: off
 '''
 here is define as the long comments for python
 here will shown the general format for the class definition, used for future example

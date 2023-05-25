@@ -4,6 +4,8 @@ this is the glitch testing program, should include pwr, loader
 mainly MCU(JIGM3 with pattern generator), scope, excel; other may be optional
 """
 
+# turn off the formatter
+# fmt: off
 
 # excel parameter and settings
 import parameter_load_obj as par

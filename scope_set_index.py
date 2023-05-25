@@ -1,5 +1,5 @@
 # this file is used to save the scope setting for different testing items
-
+# fmt: off
 
 class scope_config():
 

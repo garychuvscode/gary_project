@@ -9,6 +9,7 @@ import pyvisa
 
 import scope_set_index as sc_set
 
+# fmt: off
 
 # maybe the instrument need the delay time
 rm = pyvisa.ResourceManager()

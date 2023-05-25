@@ -4,15 +4,20 @@
 
 # excel parameter and settings
 import parameter_load_obj as par
+
 # for the jump out window
 # # also for the jump out window, same group with win32con
 import win32api
 from win32con import MB_SYSTEMMODAL
+
 # for the delay function
 import time
+
 # include for atof function => transfer string to float
 import locale as lo
 
+# turn off the formatter
+# fmt: off
 
 class eff_mea:
 

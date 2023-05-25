@@ -12,6 +12,8 @@ wait_time = 0.2
 # maybe the instrument need the delay time
 rm = pyvisa.ResourceManager()
 
+# turn off the formatter
+# fmt: off
 
 class LPS_505N:
     # comments for the explanation of the power supply
