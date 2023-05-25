@@ -757,7 +757,13 @@ class ripple_test:
                         pass
                     elif self.ch_index == 1:
                         # VCI power settings
-                        load_s.chg_out2(0, excel_s.loader_VCIch, "on")
+                        if pmic_buck0 != 1:
+                            # 230525 don't turn off the loader for Buck testing
+                            """
+                            since this may be too critical for turn off load and turns back
+                            on again
+                            """
+                            load_s.chg_out2(0, excel_s.loader_VCIch, "on")
                         load_s.chg_out2(0, excel_s.loader_ELch, "off")
 
                         pass

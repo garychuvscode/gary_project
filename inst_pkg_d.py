@@ -1,11 +1,15 @@
 import pyvisa
+
 # # also for the jump out window, same group with win32con
 import win32api
 from win32con import MB_SYSTEMMODAL
+
 # for float operation of string
 import locale as lo
+
 # for the delay function
 import time
+
 wait_samll = 0.05
 wait_time = 0.2
 # 100ms of waiting time for the separation of GPIB command
@@ -916,9 +920,9 @@ class chroma_63600:
         # auto change iset based on different loading requirement
         if iset1 > 2:
             # this should be CCM mode
-            self.chg_mode(act_ch1, "CCH")
             if iset1 > 20:
                 iset1 = 20
+            self.chg_mode(act_ch1, "CCH")
         elif iset1 > 0.2:
             # this should be CCM mode
             self.chg_mode(act_ch1, "CCM")
@@ -930,7 +934,7 @@ class chroma_63600:
         print(self.i_sel_ch)
         self.state_o[int(self.act_ch_o) - 1] = state1
         print(self.state_o)
-        # decide witch channel to use first
+        # decide whitch channel to use first
         self.cmd_str_ch_set = "CHAN " + str(int(self.act_ch_o))
         print(self.cmd_str_ch_set)
         # mode setting update map with the array
@@ -938,6 +942,141 @@ class chroma_63600:
             str(self.mode_o[int(self.act_ch_o) - 1])
         print(self.cmd_str_mode_set)
         # update the string for current definition (map from the related array element)
+
+        # 220921: reduce the error cause from leakage
+        self.cmd_str_I_load = "curr:stat:L1 " + \
+            str(self.i_sel_ch[int(self.act_ch_o) - 1])
+        print(self.cmd_str_I_load)
+
+        if self.cal_mode_en == 1:
+            self.cmd_str_I_load = "curr:stat:L1 " + \
+                str(self.i_sel_ch[int(self.act_ch_o) - 1] -
+                    self.i_cal_leakage_ch[int(self.act_ch_o) - 1])
+            print('after calibration')
+            print(self.cmd_str_I_load)
+
+        # update the status of on and off
+        self.cmd_str_status = ("Load " + self.state_o[int(self.act_ch_o) - 1])
+        print(self.cmd_str_status)
+        # all command string using self because you can reference after the function is over,
+        # it will left in the object, not disappear
+
+        if self.sim_inst == 1:
+            # 220830 update for the independent simulation mode
+            # write the command string for change power supply output
+            # writring sequence: channel => current setting => status update
+            # check if it changes like power supply? need to update status to refresh command
+            self.inst_obj.write(self.cmd_str_ch_set)
+            self.inst_obj.write(self.cmd_str_mode_set)
+            self.inst_obj.write(self.cmd_str_I_load)
+            self.inst_obj.write(self.cmd_str_status)
+            # add the break point here to double if the command update based on the write command of status
+            time.sleep(wait_samll)
+
+            pass
+        else:
+            # for the simulatiom mode of change output
+            print('change loader output now with below GPIB string')
+            print(str(self.cmd_str_ch_set))
+            print(str(self.cmd_str_mode_set))
+            print(str(self.cmd_str_I_load))
+            print(str(self.cmd_str_status))
+
+            pass
+
+        return self.errflag
+        # return error when there are load current setting error
+        # it should also be ok to not setting the return variable
+
+    def chg_out2(self, iset1, act_ch1, state1):
+        '''
+        202305 new version, auto change CCH, CCM and CCL based on iset
+        and add the soft start function after change mode
+        '''
+        self.act_ch_o = act_ch1
+        # update the current and state setting in related channel for record in the class
+        # record in class can prevent error change or setting when not refresh
+        # only change one in each sub program call, adjust one channel at a time
+
+        # need to make sure all the input become correct type
+        iset1 = float(iset1)
+        act_ch1 = int(act_ch1)
+
+        # CCL => 200mA, CCM => 2A, CCH => 20A
+        # auto change iset based on different loading requirement
+        if iset1 > 2:
+            # this should be CCM mode
+            if iset1 > 20:
+                iset1 = 20
+            self.chg_mode(act_ch1, "CCH")
+        elif iset1 > 0.2:
+            # this should be CCM mode
+            self.chg_mode(act_ch1, "CCM")
+        else:
+            # this should be CCL mode
+            self.chg_mode(act_ch1, "CCL")
+
+        self.i_sel_ch[int(self.act_ch_o) - 1] = iset1
+        print(self.i_sel_ch)
+        self.state_o[int(self.act_ch_o) - 1] = state1
+        print(self.state_o)
+        # decide whitch channel to use first
+        self.cmd_str_ch_set = "CHAN " + str(int(self.act_ch_o))
+        print(self.cmd_str_ch_set)
+        # mode setting update map with the array
+        self.cmd_str_mode_set = "MODE " + \
+            str(self.mode_o[int(self.act_ch_o) - 1])
+        print(self.cmd_str_mode_set)
+        # update the string for current definition (map from the related array element)
+
+        # add while loop for soft start
+        if state1 == "on":
+            # only soft start for turn on
+            x_soft = 1
+            c_soft_step = 5
+            # 5 step used to soft start
+            while x_soft < c_soft_step :
+
+                # soft start doesn't consider any correction/calibration
+                temp_iset = self.i_sel_ch[int(self.act_ch_o) - 1]*(x_soft/5)
+                self.cmd_str_I_load = "curr:stat:L1 " + \
+                str(temp_iset)
+
+                # update the status of on and off
+                self.cmd_str_status = ("Load " + self.state_o[int(self.act_ch_o) - 1])
+                print(self.cmd_str_status)
+
+                if x_soft == 4:
+                    # system pause point for checking
+                    pass
+
+                if self.sim_inst == 1:
+                    # 220830 update for the independent simulation mode
+                    # write the command string for change power supply output
+                    # writring sequence: channel => current setting => status update
+                    # check if it changes like power supply? need to update status to refresh command
+                    self.inst_obj.write(self.cmd_str_ch_set)
+                    self.inst_obj.write(self.cmd_str_mode_set)
+                    self.inst_obj.write(self.cmd_str_I_load)
+                    self.inst_obj.write(self.cmd_str_status)
+                    # add the break point here to double if the command update based on the write command of status
+                    time.sleep(wait_samll/10)
+
+                    pass
+                else:
+                    # for the simulatiom mode of change output
+                    print('change loader output now with below GPIB string')
+                    print(str(self.cmd_str_ch_set))
+                    print(str(self.cmd_str_mode_set))
+                    print(str(self.cmd_str_I_load))
+                    print(str(self.cmd_str_status))
+
+                    pass
+
+                x_soft = x_soft + 1
+                # end of the soft start loop
+                print(f"soft start with iset{iset1} and x_soft{x_soft}")
+                pass
 
         # 220921: reduce the error cause from leakage
         self.cmd_str_I_load = "curr:stat:L1 " + \
@@ -1362,7 +1501,13 @@ class chroma_63600:
 
     # used to change output mode
 
-    def chg_mode(self, act_ch1, mode0):
+    def chg_mode(self, act_ch1, mode0, iset0=0):
+        """
+        change mode for loader setting,
+        230525 add the function for soft start after each mode change,
+        since mode change active each time call, need to soft start to prevent damage of IC
+        add iset0 parameter for further soft start control
+        """
         self.act_ch_o = act_ch1
 
         # lock the mode selection only in CC mode, set to CCH if there are error

@@ -130,7 +130,7 @@ class scope_config():
                           'label_name': 'name', 'label_position': 0, 'label_view': 'TRUE', 'coupling': 'DC1M', 'v_offset_ind': 1}
             # setting of general
             self.set_general = {'trigger_mode': 'Auto', 'trigger_source': 'C1', 'trigger_level': '0',
-                                'trigger_slope': 'Positive', 'time_scale': '0.00005', 'time_offset': '0', 'sample_mode': 'RealTime', 'fixed_sample_rate': '5GS/s'}
+                                'trigger_slope': 'Positive', 'time_scale': '0.000002', 'time_offset': '0', 'sample_mode': 'RealTime', 'fixed_sample_rate': '5GS/s'}
             # note: ripple measurement follow robert's measurement
 
             # add the two dimension index for the find signal reference
