@@ -595,6 +595,11 @@ if __name__ == "__main__":
         230518 add the format gen used to build big waveform table
         """
 
+        # 230525 sequence of width and heigh seems to be reverse
+        width = 145.2
+        heigh = 45
+
+
         import sheet_ctrl_main_obj as sh
 
         excel_m = par.excel_parameter(str(sh.file_setting))

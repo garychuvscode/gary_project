@@ -479,6 +479,57 @@ class Power_BK9141(GInst):
 
                 vin_diff = vin_target - v_res_temp_f
 
+                # 230517 plan to add the function reading current prevent
+                # burned down of IC and keep doing the testing
+                # need to call the pause if IC burned down and turn off powr supply
+                damage_check = float(self.read_iout(1))
+
+                damage_index = self.max_i * 0.95
+                if damage_check > damage_index:
+                    print("power supply short, please check if sample damaged")
+
+                    # turn off related power supply channel
+                    if vin_ch == 0:
+                        # self.change_V(vin_new, excel0.relay0_ch)
+                        self.chg_out(
+                            act_ch1=excel0.relay0_ch, vset1=vin_new, state1="off"
+                        )
+                        # send the new Vin command for the auto testing channel
+                        # break
+                        pass
+
+                    elif vin_ch == 6:
+                        # self.change_V(vin_new, excel0.relay6_ch)
+                        self.chg_out(
+                            act_ch1=excel0.relay6_ch, vset1=vin_new, state1="off"
+                        )
+                        # change the vsetting of channel 1 (mapped in program)
+                        # break
+                        pass
+
+                    elif vin_ch == 7:
+                        # self.change_V(vin_new, excel0.relay7_ch)
+                        self.chg_out(
+                            act_ch1=excel0.relay7_ch, vset1=vin_new, state1="off"
+                        )
+                        # change the vsetting of channel 2 (mapped in program)
+                        # break
+                        pass
+
+                    excel0.message_box(
+                        content_str="power supply short, please check if sample damaged",
+                        title_str="short detected from power supply",
+                        auto_exception=1,
+                    )
+
+
+                    # stop to program from doing other stuff
+                    input()
+
+                    pass
+
+                print("current readed and checked from the power supply\n")
+
             # after the loop is finished, record the Vin meausred result (for full load) at the end
             # excel0.sh_org_tab.range((10, 9)).value = lo.atof(v_res_temp)
             # the Vin calibration ends from here
@@ -497,11 +548,7 @@ class Power_BK9141(GInst):
 
             damage_index = self.max_i * 0.95
             if damage_check > damage_index:
-                excel0.message_box(
-                    content_str="power supply short, please check if sample damaged",
-                    title_str="short detected from power supply",
-                    auto_exception=1,
-                )
+
                 print("power supply short, please check if sample damaged")
                 # turn off related power supply channel
 
@@ -509,23 +556,35 @@ class Power_BK9141(GInst):
                     # self.change_V(vin_new, excel0.relay0_ch)
                     self.chg_out(act_ch1=excel0.relay0_ch, vset1=vin_new, state1="off")
                     # send the new Vin command for the auto testing channel
+
                     pass
 
                 elif vin_ch == 6:
                     # self.change_V(vin_new, excel0.relay6_ch)
                     self.chg_out(act_ch1=excel0.relay6_ch, vset1=vin_new, state1="off")
                     # change the vsetting of channel 1 (mapped in program)
+
                     pass
 
                 elif vin_ch == 7:
                     # self.change_V(vin_new, excel0.relay7_ch)
                     self.chg_out(act_ch1=excel0.relay7_ch, vset1=vin_new, state1="off")
                     # change the vsetting of channel 2 (mapped in program)
+
                     pass
 
+                excel0.message_box(
+                    content_str="power supply short, please check if sample damaged",
+                    title_str="short detected from power supply",
+                    auto_exception=1,
+                )
+
+                # stop to program from doing other stuff
+                input()
                 pass
 
-            print("current readed and checked from the power supply")
+            print("current readed and checked from the power supply (out)")
+
         else:
             v_res_temp = float(v_res_temp)
             v_res_temp = v_res_temp + 1

@@ -827,8 +827,8 @@ if __name__ == "__main__":
                     auto_exception=1,
                 )
             # ripple
-            # format_g.set_sheet_name("CTRL_sh_ripple_SY")
-            # ripple_t.run_verification(pmic_buck0=1)
+            format_g.set_sheet_name("CTRL_sh_ripple_SY")
+            ripple_t.run_verification(pmic_buck0=1)
             # load transient
             format_g.set_sheet_name("CTRL_sh_load_SY")
             ripple_t.run_verification(pmic_buck0=1)
