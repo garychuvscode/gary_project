@@ -791,6 +791,11 @@ class chroma_63600:
     # the different mode of the load setting, to prevent crash of the load during auto testing
     # the accuracy and current operating range will also be different for the different mode
 
+        # 230526 => add for soft on off control, default set to 1 => only on
+        self.soft_sel = 1
+        # 230526 => default setting for the critical set to enable, refer to soft_sel
+        self.critical = 0
+
     def open_inst(self):
 
         # maybe no need to define rm for global variable
@@ -988,11 +993,25 @@ class chroma_63600:
         # return error when there are load current setting error
         # it should also be ok to not setting the return variable
 
-    def chg_out2(self, iset1, act_ch1, state1):
+    def chg_out2(self, iset1, act_ch1, state1, critical0=0):
         '''
         202305 new version, auto change CCH, CCM and CCL based on iset
-        and add the soft start function after change mode
+        and add the soft start function after change mode \n
+        \n
+        230526 if not to use soft turn on, critical on off loader, set
+        critical0 to 1 \n
         '''
+
+        # 230526 add the variable to control soft start selection
+        self.soft_sel = 2
+        self.critical = critical0
+        """
+        1 => only on
+        2 => on and off
+        0 => disable soft on and off
+        """
+
+
         self.act_ch_o = act_ch1
         # update the current and state setting in related channel for record in the class
         # record in class can prevent error change or setting when not refresh
@@ -1008,13 +1027,18 @@ class chroma_63600:
             # this should be CCM mode
             if iset1 > 20:
                 iset1 = 20
-            self.chg_mode(act_ch1, "CCH")
+
+            if self.mode_o[int(self.act_ch_o) - 1] != "CCH" :
+                # 230526 to reduce the change mode operation if no need to
+                self.chg_mode(act_ch1, "CCH")
         elif iset1 > 0.2:
             # this should be CCM mode
-            self.chg_mode(act_ch1, "CCM")
+            if self.mode_o[int(self.act_ch_o) - 1] != "CCM" :
+                self.chg_mode(act_ch1, "CCM")
         else:
             # this should be CCL mode
-            self.chg_mode(act_ch1, "CCL")
+            if self.mode_o[int(self.act_ch_o) - 1] != "CCL" :
+                self.chg_mode(act_ch1, "CCL")
 
         self.i_sel_ch[int(self.act_ch_o) - 1] = iset1
         print(self.i_sel_ch)
@@ -1030,52 +1054,56 @@ class chroma_63600:
         # update the string for current definition (map from the related array element)
 
         # add while loop for soft start
-        if state1 == "on":
-            # only soft start for turn on
-            x_soft = 1
-            c_soft_step = 5
-            # 5 step used to soft start
-            while x_soft < c_soft_step :
+        if self.critical == 0:
+            if state1 == "on" and (self.soft_sel == 1 or self.soft_sel ==2):
+                # oft start for turn on
+                x_soft = 1
+                c_soft_step = 5
+                # 5 step used to soft start
+                while x_soft < c_soft_step :
 
-                # soft start doesn't consider any correction/calibration
-                temp_iset = self.i_sel_ch[int(self.act_ch_o) - 1]*(x_soft/5)
-                self.cmd_str_I_load = "curr:stat:L1 " + \
-                str(temp_iset)
+                    # soft start doesn't consider any correction/calibration
+                    temp_iset = self.i_sel_ch[int(self.act_ch_o) - 1]*(x_soft/5)
+                    self.cmd_str_I_load = "curr:stat:L1 " + \
+                    str(temp_iset)
 
-                # update the status of on and off
-                self.cmd_str_status = ("Load " + self.state_o[int(self.act_ch_o) - 1])
-                print(self.cmd_str_status)
+                    # update the status of on and off
+                    self.cmd_str_status = ("Load " + self.state_o[int(self.act_ch_o) - 1])
+                    print(self.cmd_str_status)
 
-                if x_soft == 4:
-                    # system pause point for checking
+                    if x_soft == 4:
+                        # system pause point for checking
+                        pass
+
+                    if self.sim_inst == 1:
+                        # 220830 update for the independent simulation mode
+                        # write the command string for change power supply output
+                        # writring sequence: channel => current setting => status update
+                        # check if it changes like power supply? need to update status to refresh command
+                        self.inst_obj.write(self.cmd_str_ch_set)
+                        self.inst_obj.write(self.cmd_str_mode_set)
+                        self.inst_obj.write(self.cmd_str_I_load)
+                        self.inst_obj.write(self.cmd_str_status)
+                        # add the break point here to double if the command update based on the write command of status
+                        time.sleep(wait_samll/10)
+
+                        pass
+                    else:
+                        # for the simulatiom mode of change output
+                        print('change loader output now with below GPIB string')
+                        print(str(self.cmd_str_ch_set))
+                        print(str(self.cmd_str_mode_set))
+                        print(str(self.cmd_str_I_load))
+                        print(str(self.cmd_str_status))
+
+                        pass
+
+                    x_soft = x_soft + 1
+                    # end of the soft start loop
+                    print(f"soft start with iset{iset1} and x_soft{x_soft}")
                     pass
 
-                if self.sim_inst == 1:
-                    # 220830 update for the independent simulation mode
-                    # write the command string for change power supply output
-                    # writring sequence: channel => current setting => status update
-                    # check if it changes like power supply? need to update status to refresh command
-                    self.inst_obj.write(self.cmd_str_ch_set)
-                    self.inst_obj.write(self.cmd_str_mode_set)
-                    self.inst_obj.write(self.cmd_str_I_load)
-                    self.inst_obj.write(self.cmd_str_status)
-                    # add the break point here to double if the command update based on the write command of status
-                    time.sleep(wait_samll/10)
-
-                    pass
-                else:
-                    # for the simulatiom mode of change output
-                    print('change loader output now with below GPIB string')
-                    print(str(self.cmd_str_ch_set))
-                    print(str(self.cmd_str_mode_set))
-                    print(str(self.cmd_str_I_load))
-                    print(str(self.cmd_str_status))
-
-                    pass
-
-                x_soft = x_soft + 1
-                # end of the soft start loop
-                print(f"soft start with iset{iset1} and x_soft{x_soft}")
+                # end of state on
                 pass
 
         # 220921: reduce the error cause from leakage
@@ -1509,6 +1537,101 @@ class chroma_63600:
         add iset0 parameter for further soft start control
         """
         self.act_ch_o = act_ch1
+        # decide whitch channel to use first
+        self.cmd_str_ch_set = "CHAN " + str(int(self.act_ch_o))
+        print(self.cmd_str_ch_set)
+
+        """
+        230526 add the soft turn off when mode change, prevent issue of IC
+        burned down
+
+        refer to the sofe_sel setup from the chg_out2, decide to do soft turn off or not
+        soft turn off is set at the change mode function
+        but the soft turn on is set at the chg_out2 function
+        """
+        # # need to turn off channel of there are mode change
+        # self.chg_out(0, self.act_ch_o, 'off')
+
+        if (self.soft_sel == 2 and self.critical == 0):
+            # oft start for turn on
+            x_soft = 1
+            c_soft_step = 5
+            # 5 step used to soft start
+            while x_soft < c_soft_step :
+
+                # soft start doesn't consider any correction/calibration
+                temp_iset = self.i_sel_ch[int(self.act_ch_o) - 1]*((5-x_soft)/5)
+                self.cmd_str_I_load = "curr:stat:L1 " + \
+                str(temp_iset)
+
+                # update the status of on and off
+                self.cmd_str_status = ("Load " + self.state_o[int(self.act_ch_o) - 1])
+                print(self.cmd_str_status)
+
+                if x_soft == 4:
+                    # system pause point for checking
+                    pass
+
+                if self.sim_inst == 1:
+                    # 220830 update for the independent simulation mode
+                    # write the command string for change power supply output
+                    # writring sequence: channel => current setting => status update
+                    # check if it changes like power supply? need to update status to refresh command
+                    self.inst_obj.write(self.cmd_str_ch_set)
+                    self.inst_obj.write(self.cmd_str_mode_set)
+                    self.inst_obj.write(self.cmd_str_I_load)
+                    self.inst_obj.write(self.cmd_str_status)
+                    # add the break point here to double if the command update based on the write command of status
+                    time.sleep(wait_samll/10)
+
+                    pass
+                else:
+                    # for the simulatiom mode of change output
+                    print('change loader output now with below GPIB string')
+                    print(str(self.cmd_str_ch_set))
+                    print(str(self.cmd_str_mode_set))
+                    print(str(self.cmd_str_I_load))
+                    print(str(self.cmd_str_status))
+
+                    pass
+
+                x_soft = x_soft + 1
+                # end of the soft start loop
+                print(f"soft off with iset{0} and x_soft{x_soft}")
+                pass
+
+            temp_iset = self.i_sel_ch[int(self.act_ch_o) - 1]*((5-x_soft)/5)
+            self.cmd_str_I_load = "curr:stat:L1 " + \
+            str(temp_iset)
+
+            if self.sim_inst == 1:
+                # 220830 update for the independent simulation mode
+                # write the command string for change power supply output
+                # writring sequence: channel => current setting => status update
+                # check if it changes like power supply? need to update status to refresh command
+                self.inst_obj.write(self.cmd_str_ch_set)
+                self.inst_obj.write(self.cmd_str_mode_set)
+                self.inst_obj.write(self.cmd_str_I_load)
+                self.inst_obj.write(self.cmd_str_status)
+                # add the break point here to double if the command update based on the write command of status
+                time.sleep(wait_samll/10)
+
+                pass
+            else:
+                # for the simulatiom mode of change output
+                print('change loader output now with below GPIB string')
+                print(str(self.cmd_str_ch_set))
+                print(str(self.cmd_str_mode_set))
+                print(str(self.cmd_str_I_load))
+                print(str(self.cmd_str_status))
+
+                pass
+
+            # end of state off, it's ok to be on with current set to 0
+            pass
+        else:
+            # if there are no soft turn off command, turn off directly
+            self.chg_out(0, self.act_ch_o, 'off')
 
         # lock the mode selection only in CC mode, set to CCH if there are error
         if mode0 == 'CCL' or mode0 == 'CCM' or mode0 == 'CCH':
@@ -1519,8 +1642,6 @@ class chroma_63600:
             self.mode_o[int(act_ch1)-1] = mode0
             self.errflag = 1
 
-        # need to turn off channel of there are mode change
-        self.chg_out(0, self.act_ch_o, 'off')
 
         # !! dont have other mode setting cmd string in the chg out, it should be based on the mode to choose different command string
         # lock down mode selection for only CC mode in this object

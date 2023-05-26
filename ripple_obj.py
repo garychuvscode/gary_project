@@ -353,6 +353,7 @@ class ripple_test:
                 # 221223: add comments, scope reload can help to find the porper signal
                 # find the signal at different SWIRE pulse and put in the window
                 if self.pmic_buck == 1:
+                    # also need to set the Vin and Iout to initial
                     self.scope_reload(pmic_buck0=self.pmic_buck, ind0=x_sw_i2c)
                     """
                     different index is used to call the different scale of scope setting
@@ -751,25 +752,30 @@ class ripple_test:
                     # turn off load and change condition
                     if self.ch_index == 0:
                         # EL power settings
-                        load_s.chg_out2(0, excel_s.loader_ELch, "on")
+                        load_s.chg_out2(0, excel_s.loader_ELch, "off")
                         load_s.chg_out2(0, excel_s.loader_VCIch, "off")
+                        # 230526 change the status to off since
+                        # there are issue for load transeint if keep loader on
 
                         pass
                     elif self.ch_index == 1:
                         # VCI power settings
-                        if pmic_buck0 != 1:
-                            # 230525 don't turn off the loader for Buck testing
-                            """
-                            since this may be too critical for turn off load and turns back
-                            on again
-                            """
-                            load_s.chg_out2(0, excel_s.loader_VCIch, "on")
+
+                        # if pmic_buck0 != 1:
+                        #     # 230525 don't turn off the loader for Buck testing
+                        #     """
+                        #     since this may be too critical for turn off load and turns back
+                        #     on again
+                        #     """
+                        #     load_s.chg_out2(0, excel_s.loader_VCIch, "on")
+
+                        load_s.chg_out2(0, excel_s.loader_VCIch, "off")
                         load_s.chg_out2(0, excel_s.loader_ELch, "off")
 
                         pass
                     elif self.ch_index == 2:
                         # 3-ch power settings
-                        load_s.chg_out2(0, excel_s.loader_ELch, "on")
+                        load_s.chg_out2(0, excel_s.loader_ELch, "off")
 
                     x_iload = x_iload + 1
                     # end of iload loop
@@ -787,6 +793,15 @@ class ripple_test:
 
             x_sw_i2c = x_sw_i2c + 1
             # the end of i2c or pulse loop
+
+            """
+            230526 - modification needed
+            for the each SWIRE command, need to reset the Vin to default
+            to prevent normalization method of scope re-load causing issue for
+            waveform display
+            """
+            self.pre_test_inst()
+
             pass
 
         # call the file name update after run verification finished
@@ -1439,8 +1454,9 @@ class ripple_test:
                     pwr_ch,
                     "off",
                 )
-                time.sleep(1)
                 print("re-toggle power supply for Grace")
+                time.sleep(1)
+
                 self.pwr_ini.chg_out(
                     v_target,
                     self.excel_ini.pre_imax,

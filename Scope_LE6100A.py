@@ -1391,10 +1391,10 @@ class Scope_LE6100A(GInst):
             save_s = "Save"
 
             # update trace
-            temp_str = f'app.SaveRecall.Setup.{save_s}SetupFilename = "{trace_full}{file_name0}--00000.lss"'
+            temp_str = f'app.SaveRecall.Setup.{save_s}SetupFilename = "{trace_full}{file_name0}.lss"'
             print(temp_str)
             self.writeVBS(
-                f'app.SaveRecall.Setup.{save_s}SetupFilename = "{trace_full}{file_name0}--00000.lss"'
+                f'app.SaveRecall.Setup.{save_s}SetupFilename = "{trace_full}{file_name0}.lss"'
             )
             pass
 
@@ -1451,7 +1451,7 @@ if __name__ == "__main__":
     excel_t.wave_path = default_path
     scope.open_inst()
 
-    test_index = 4
+    test_index = 5
     """
     set 3 to update the channel and others
     set 4 to change the label name
@@ -1537,13 +1537,13 @@ if __name__ == "__main__":
             # list of channel name
             ch_name = {
                 "CH1": "name1",
-                "CH2": "name2",
-                "CH3": "name3",
-                "CH4": "name4",
+                "CH2": "LDO",
+                "CH3": "LX",
+                "CH4": "EN",
                 "CH5": "name5",
-                "CH6": "name6",
-                "CH7": "name7",
-                "CH8": "name8",
+                "CH6": "VCC",
+                "CH7": "PG",
+                "CH8": "Buck",
             }
         elif label_pos_sel == 1:
             ch_name = {
@@ -1631,7 +1631,11 @@ if __name__ == "__main__":
 
         # set to 0 using default trace 'C:\\g_auto_settings\\'
         trace_in = 0
-        file_name_in = "auto3p55"
+        file_name_in = "compal_seq"
+        """
+        setup history
+        compal_seq => compal power on and off sequence
+        """
         # 1-> save; 0-> recall last; 2-> recall specific
         """
         recall last can be used when change the scope for different capture, but need to recover after nex capature

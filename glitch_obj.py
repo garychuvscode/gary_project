@@ -197,9 +197,14 @@ if __name__ == "__main__":
     import Scope_LE6100A as sco
     import JIGM3 as mcu_g
 
+    # add the excel sheet mapping
+    import format_gen_obj as form_g
+
     # initial the object and set to simulation mode
     excel_t = par.excel_parameter("obj_main")
     pwr_t = inst.LPS_505N(3.7, 0.5, 3, 1, "off")
+
+
     pwr_t.sim_inst = sim_test_set
     pwr_t.open_inst()
 
@@ -222,12 +227,19 @@ if __name__ == "__main__":
     scope_t = sco.Scope_LE6100A(excel0=excel_t)
     # mcu is also config as simulation mode
     # COM address of Gary_SONY is 3
-    mcu_t = mcu_g.JIGM3(sim_mcu0=1, com_addr0=0)
+    mcu_t = mcu_g.JIGM3(sim_mcu0=0, com_addr0=0)
     mcu_t.com_open()
 
+    # define the verification item
     gli_test = glitch_mea(
         excel_t, pwr_t, met_v_t, load_t, mcu_t, src_t, met_i_t, chamber_t, scope_t
     )
+    # define the format gen needed for glitch testing
+    # for the items need waveform capture, need to use format gen to setup
+    # related excel sheet
+    format_g = form_g.format_gen(excel_t)
+
+    format_g.set_sheet_name('glitch')
 
     gli_test.run_verification(
         H_L_pulse=1, start_us0=10, count0=5, step_us0=5, pin_num0=1
