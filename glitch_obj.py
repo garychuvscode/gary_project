@@ -200,8 +200,15 @@ if __name__ == "__main__":
     # add the excel sheet mapping
     import format_gen_obj as form_g
 
+    import sheet_ctrl_main_obj as sh
+
+    excel_t = par.excel_parameter(str(sh.file_setting))
+
+    excel_t.open_result_book()
+    excel_t.excel_save()
+
     # initial the object and set to simulation mode
-    excel_t = par.excel_parameter("obj_main")
+    # excel_t = par.excel_parameter("obj_main")
     pwr_t = inst.LPS_505N(3.7, 0.5, 3, 1, "off")
 
 
@@ -248,5 +255,8 @@ if __name__ == "__main__":
     gli_test.run_verification(
         H_L_pulse=0, start_us0=10, count0=10, step_us0=10, pin_num0=1
     )
+
+    excel_t.end_of_file(1)
+    print("end of glitch testing program")
 
     pass
