@@ -3,6 +3,7 @@
 # need to input the excel obj to reference the format gen sheet and related index
 # different pages need to use different index loaded
 
+# fmt: off
 # excel parameter and settings
 import parameter_load_obj as par
 

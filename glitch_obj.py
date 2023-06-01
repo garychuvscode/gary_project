@@ -93,20 +93,96 @@ class glitch_mea:
 
     def para_loaded(self):
         """
-        load settings from excel
+        load settings from excel, same format with excel in ripple
         """
+
+        # since format gen will update the mapped parameter for diferent
+        # sheet, need to re-call after change the sheet
+        # loaded the parameter from the input excel object
+        self.c_vin = self.excel_ini.c_ctrl_var1
+        self.c_iload = self.excel_ini.c_ctrl_var4
+        self.c_data_mea = self.excel_ini.c_data_mea
+        self.c_pulse_i2c = self.excel_ini.c_ctrl_var2
+        # record the mapped sheet have related command
+        self.sh_verification_control = self.excel_ini.sh_format_gen
+        # fixed start point of the format gen (waveform element)
+        self.format_start_y = self.excel_ini.format_start_y
+        self.format_start_x = self.excel_ini.format_start_x
+        self.en_i2c_mode = self.sh_verification_control.range("B10").value
+        self.i2c_group = self.sh_verification_control.range("B11").value
+        self.c_i2c = self.sh_verification_control.range("B12").value
+        self.avdd_current_3ch = self.sh_verification_control.range("B13").value
+        self.ch_index = int(self.sh_verification_control.range("B14").value)
+        self.scope_adj = 1
+        # scope adj is to decide show the output channel or not, not to disable the auto scope
+        # setting, it's different, scope initial setting is from sheet (scope_initial_en)
+
+        if self.ch_index > 2:
+            # extra channel setting for measurement
+            self.ch_index = self.ch_index - 3
+            self.scope_adj = 0
+
+        self.ripple_line_load = float(self.sh_verification_control.range("B15").value)
+        self.c_data_mea = self.excel_ini.c_data_mea
+        self.scope_initial_en = int(self.sh_verification_control.range("B16").value)
+
+        # add extra name
+        self.excel_ini.extra_file_name = "_glitch"
+
+
+        # setup the information for each different sheet
+
+        # path need to be assign after every format gen finished
+        self.wave_path = self.sh_verification_control.range("C36").value
+        self.scope_setting = self.sh_verification_control.range("C39").value
+        self.excel_ini.wave_path = self.wave_path
+        # the sheet name record for the saving waveform
+        self.wave_sheet = self.sh_verification_control.name
+        self.excel_ini.wave_sheet = self.wave_sheet
 
         pass
 
-    def run_verification(
-        self, H_L_pulse=0, start_us0=1, count0=5, step_us0=1, pin_num0=1
-    ):
+
+
+
+        pass
+
+    def run_verification(self, H_L_pulse=0, start_us0=1, count0=5, step_us0=1, pin_num0=1, scope_set0="970_glitch"):
         """
         H_L_pulse default setting is low pulse => H-L-H, L programmable \n
         step_us0 = step of each pulse \n
         minimum unit is set to us \n
         pin_num0 = 1 or 2 (default PG1 or PG2)
         """
+
+        # reset MCU after each time start
+        self.mcu_ini.back_to_initial()
+        # pre-test turn on for the instrument
+        self.pre_test_inst()
+        # load the important parameter
+        self.para_loaded()
+
+
+
+        # scope initialization
+        if self.scope_initial_en > 0:
+            # enable and change to initial
+            self.scope_ini.change_setup(save0=0, trace0=0,file_name0=scope_set0)
+
+            """
+            this part is for the normalization check, but using the glitch scope
+            setting from loading the file
+            """
+            # if self.scope_initial_en > 1:
+            #     # 221205 added
+            #     # turn the offset setting to normalizaiton setting
+            #     self.scope_ini.nor_v_off = 1
+            #     pass
+            # self.scope_ini.scope_initial(self.scope_setting)
+
+        # pwr ovoc setting
+        self.pwr_ini.ov_oc_set(self.excel_ini.pre_vin_max, self.excel_ini.pre_imax)
+
         # mapped pint string
         if pin_num0 == 1:
             pin_str = "EN"
@@ -123,10 +199,28 @@ class glitch_mea:
         # change the initial state of I/O high low
         if H_L_pulse == 0:
             # sending low pulse, no need change initial state
+            # initial state is high
             pass
         else:
             self.mcu_ini.i_o_change(set_or_clr0=0, pin_num0=pin_num0)
             # pin 1 is EN and pin 2 is SW
+            # depends on different IO port send in
+            pass
+
+        # the loop for vin
+        c_vin = self.c_vin
+        x_vin = 0
+        while x_vin < c_vin:
+            # assign vin command on power supply and ideal V
+
+
+            # power supply setting here
+            v_target = self.excel_ini.sh_format_gen.range((43 + x_vin, 4)).value
+            self.pwr_ini.chg_out(v_target, self.excel_ini.pre_imax, self.excel_ini.relay0_ch, "on")
+
+        # add scope initial here
+
+
 
         # testing of pulse
         x_glitch = 0
@@ -185,6 +279,34 @@ class glitch_mea:
 
         pass
 
+
+    def pre_test_inst(self):
+        # power supply channel (channel on setting)
+        if self.excel_ini.pre_test_en == 1:
+            self.pwr_ini.chg_out(
+                self.excel_ini.pre_vin,
+                self.excel_ini.pre_sup_iout,
+                self.excel_ini.relay0_ch,
+                "on",
+            )
+            print("pre-power on here")
+            # turn off the power and load
+
+            self.loader_ini.chg_out(0, self.excel_ini.loader_ELch, "off")
+            self.loader_ini.chg_out(0, self.excel_ini.loader_VCIch, "off")
+
+            print("also turn all load off")
+
+            if self.excel_ini.en_start_up_check == 1:
+                self.excel_ini.message_box(
+                    "press enter if hardware configuration is correct",
+                    "Pre-power on for system test under Vin= "
+                    + str(self.excel_ini.pre_vin)
+                    + "Iin= "
+                    + str(self.excel_ini.pre_sup_iout),
+                )
+
+        pass
 
 if __name__ == "__main__":
     # testing of glitch

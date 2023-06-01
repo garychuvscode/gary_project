@@ -5,6 +5,8 @@
 # 2. program => system loop and sequence arragement, instrument initialization,
 # result sheet saving (after each function)
 
+
+# fmt: off
 # === add on import
 # for the excel related operation
 import xlwings as xw
