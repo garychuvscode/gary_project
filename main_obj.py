@@ -640,8 +640,8 @@ if __name__ == "__main__":
         pass
 
     # single test for general test
-    elif program_group >= 6 and program_group < 7:
         # fixed part, open one result book and save the book
+    elif program_group >= 6 and program_group < 7:
         """
         6 => new file, cal_vin
         6.1 => old file, cal_vin

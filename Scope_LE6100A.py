@@ -1451,7 +1451,7 @@ if __name__ == "__main__":
     excel_t.wave_path = default_path
     scope.open_inst()
 
-    test_index = 5
+    test_index = 4
     """
     set 3 to update the channel and others
     set 4 to change the label name
@@ -1536,11 +1536,11 @@ if __name__ == "__main__":
         if label_pos_sel == 0:
             # list of channel name
             ch_name = {
-                "CH1": "name1",
+                "CH1": "Buck",
                 "CH2": "LDO",
                 "CH3": "LX",
-                "CH4": "EN",
-                "CH5": "name5",
+                "CH4": "LX",
+                "CH5": "I_L",
                 "CH6": "VCC",
                 "CH7": "PG",
                 "CH8": "Buck",
@@ -1631,10 +1631,13 @@ if __name__ == "__main__":
 
         # set to 0 using default trace 'C:\\g_auto_settings\\'
         trace_in = 0
-        file_name_in = "compal_seq"
+        file_name_in = "compal_load_tran"
         """
-        setup history
+        setup history and list
         compal_seq => compal power on and off sequence
+        compal_load_tran => compal load transient
+        compal_line_tran => compal line transient
+        on_time_check_BK => on time check (for ripple and on time)
         """
         # 1-> save; 0-> recall last; 2-> recall specific
         """

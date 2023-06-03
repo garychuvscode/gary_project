@@ -437,11 +437,24 @@ class ripple_test:
                                 # scope_s.Hor_scale_adj(0.005)
                                 pass
 
-                        elif x_iload == 1:
+                        elif x_iload == 1 and self.pmic_buck == 0:
+                            # pmic_buck = 0 => OLED PMIC
                             scope_s.Hor_scale_adj(
                                 scope_s.set_general["time_scale"],
                                 scope_s.set_general["time_offset"],
                             )
+                        elif x_iload < 3 and self.pmic_buck == 1 and x_sw_i2c > 0:
+                            # single buck operation
+                            # x_sw_i2c is only for the second sheet with smaller time scale
+                            scope_s.Hor_scale_adj(0.00002)
+
+                        elif x_iload == 3 and self.pmic_buck == 1:
+                            # single buck operation
+                            scope_s.Hor_scale_adj(
+                                scope_s.set_general["time_scale"],
+                                scope_s.set_general["time_offset"],
+                            )
+
 
                     # assign i_load on related channel
                     # 221114: to prevent error of load transient
