@@ -218,40 +218,44 @@ class glitch_mea:
             v_target = self.excel_ini.sh_format_gen.range((43 + x_vin, 4)).value
             self.pwr_ini.chg_out(v_target, self.excel_ini.pre_imax, self.excel_ini.relay0_ch, "on")
 
-        # add scope initial here
+            # add scope initial here
 
 
 
-        # testing of pulse
-        x_glitch = 0
-        # amount of testing items
-        c_glitch = count0
-        while x_glitch < c_glitch:
-            # define the length from pulse step
-            length_us = start_us0 + (x_glitch) * step_us0
+            # testing of pulse
+            x_glitch = 0
+            # amount of testing items
+            c_glitch = count0
+            while x_glitch < c_glitch:
+                # define the length from pulse step
+                length_us = start_us0 + (x_glitch) * step_us0
 
-            # scope trigger here
+                # scope trigger here
 
-            if H_L_pulse == 0:
-                # default is low pulse
-                self.mcu_ini.g_pulse_out_V2(
-                    pulse0=1, duration_ns=1000, en_sw=pin_str, count0=length_us
-                )
+                if H_L_pulse == 0:
+                    # default is low pulse
+                    self.mcu_ini.g_pulse_out_V2(
+                        pulse0=1, duration_ns=1000, en_sw=pin_str, count0=length_us
+                    )
+                    # since this is low pulse, it can also be achieve by using pulse out function
+                    # otherwise, it should be using pattern gen should be a better way
+                    pass
+                else:
+                    pattern = (
+                        f"'0$1`{single_cell_state1}${length_us}`{single_cell_state2}$1`'"
+                    )
+                    full_str = f"mcu.pattern.setupX( {{{pattern}}},1000, 0 )"
+                    self.mcu_ini.pattern_gen_full_str(cmd_str0=full_str)
+
+                    pass
+
+                # scope capture here
+
+                time.sleep(1)
+                x_glitch = x_glitch + 1
                 pass
-            else:
-                pattern = (
-                    f"'0$1`{single_cell_state1}${length_us}`{single_cell_state2}$1`'"
-                )
-                full_str = f"mcu.pattern.setupX( {{{pattern}}},1000, 0 )"
-                self.mcu_ini.pattern_gen_full_str(cmd_str0=full_str)
 
-                pass
-
-            # scope capture here
-
-            time.sleep(1)
-            x_glitch = x_glitch + 1
-            pass
+            x_vin = x_vin + 1
 
         # back to MCU default state
         self.mcu_ini.back_to_initial()
@@ -353,10 +357,13 @@ if __name__ == "__main__":
     chamber_t = inst.chamber_su242(25, 10, "off", -45, 180, 0)
     chamber_t.sim_inst = 0
     chamber_t.open_inst()
-    scope_t = sco.Scope_LE6100A(excel0=excel_t)
+
+    # main_off_line setting can also used to turn off the scope in test mode
+    scope_t = sco.Scope_LE6100A(excel0=excel_t, main_off_line0=1)
+
     # mcu is also config as simulation mode
     # COM address of Gary_SONY is 3
-    mcu_t = mcu_g.JIGM3(sim_mcu0=0, com_addr0=0)
+    mcu_t = mcu_g.JIGM3(sim_mcu0=1, com_addr0=0)
     mcu_t.com_open()
 
     # define the verification item
