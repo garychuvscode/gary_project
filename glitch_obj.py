@@ -20,7 +20,12 @@ import time
 
 # include for atof function => transfer string to float
 import locale as lo
-
+'''
+230616 if only testing glitch without record waveform,
+set the test mode to 1, bypass the instrument and
+jump message box for each capture
+'''
+temp_test_mode = 1
 
 class glitch_mea:
     # this class is used to measure glitch from the DUT
@@ -227,6 +232,9 @@ class glitch_mea:
             # amount of testing items
             c_glitch = count0
             while x_glitch < c_glitch:
+
+                excel_t.message_box("press enater for next pattern", "you're in test mode", auto_exception=temp_test_mode)
+
                 # define the length from pulse step
                 length_us = start_us0 + (x_glitch) * step_us0
 
@@ -377,12 +385,12 @@ if __name__ == "__main__":
 
     format_g.set_sheet_name('glitch')
 
+    # gli_test.run_verification(
+    #     H_L_pulse=1, start_us0=10, count0=20, step_us0=10, pin_num0=1
+    # )
+    # time.sleep(2)
     gli_test.run_verification(
-        H_L_pulse=1, start_us0=10, count0=5, step_us0=5, pin_num0=1
-    )
-    time.sleep(2)
-    gli_test.run_verification(
-        H_L_pulse=0, start_us0=10, count0=10, step_us0=10, pin_num0=1
+        H_L_pulse=0, start_us0=10, count0=20, step_us0=10, pin_num0=1
     )
 
     excel_t.end_of_file(1)
