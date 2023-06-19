@@ -172,12 +172,17 @@ class glitch_mea:
         # scope initialization
         if self.scope_initial_en > 0:
             # enable and change to initial
-            self.scope_ini.change_setup(save0=0, trace0=0,file_name0=scope_set0)
+            self.scope_ini.change_setup(save0=0, trace0=0, file_name0=scope_set0)
 
             """
             this part is for the normalization check, but using the glitch scope
             setting from loading the file
             """
+
+            '''
+            0616 note: HOL scale can use 50us/div (consider)
+            '''
+
             # if self.scope_initial_en > 1:
             #     # 221205 added
             #     # turn the offset setting to normalizaiton setting
