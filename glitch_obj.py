@@ -147,11 +147,6 @@ class glitch_mea:
 
         pass
 
-
-
-
-        pass
-
     def run_verification(self, H_L_pulse=0, start_us0=1, count0=5, step_us0=1, pin_num0=1, scope_set0="970_glitch"):
         """
         H_L_pulse default setting is low pulse => H-L-H, L programmable \n
@@ -267,6 +262,7 @@ class glitch_mea:
 
         # back to MCU default state
         self.mcu_ini.back_to_initial()
+        self.end_of_exp()
 
         pass
 
