@@ -82,7 +82,12 @@ class glitch_mea:
         self.met_i_ini = met_i0
         self.chamber_ini = chamber0
         self.scope_ini = scope0
-        # self.single_ini = single0
+        # self.single_ini = single0f
+
+        # default setting of two channel current (in A)
+        self.load_curr_EL_LDO = 0.1
+        self.load_curr_VCI_BUCK = 0.5
+
 
 
         self.setup_index_array = ["NT50970_glitch", "NT50374_glitch" ]
@@ -93,6 +98,17 @@ class glitch_mea:
         update settings directly in the source code
         """
         self.setup_name = self.setup_index_array[0]
+
+        pass
+
+    def change_i_load(self, i_EL_LDO=0.1, i_VCI_BUCK=0.5):
+        '''
+        used to change the setting of loader current for each channel
+        EL_LDO = CH1
+        VCI_BUCK = CH2
+        '''
+        self.load_curr_EL_LDO = i_EL_LDO
+        self.load_curr_VCI_BUCK = i_VCI_BUCK
 
         pass
 
@@ -188,18 +204,35 @@ class glitch_mea:
         # pwr ovoc setting
         self.pwr_ini.ov_oc_set(self.excel_ini.pre_vin_max, self.excel_ini.pre_imax)
 
-        # mapped pint string
+        # mapped pin string
+
+        '''
+        config scope to normal mode with different trigger:
+        1. set the mode to normal and change the trigger channel to related one
+        2. EN_EN2 (C4) => same with pwr_seq in ripple
+        3. SW_EN1 (C8) => same with pwr_seq in ripple
+        trigger level default set to 1.8V
+        '''
+
+        # set the trigger to normal mode
+        self.scope_ini.trigger_adj(mode="Normal")
+
+
         if pin_num0 == 1:
             pin_str = "EN"
             # default state is low, and send high pulse, then back to low
             # other pin don't care (become L)
             single_cell_state1 = "1"
             single_cell_state2 = "0"
+            # set scope to trigger EN_EN2
+            self.scope_ini.trigger_adj(source="C4", level=1.8)
         else:
             pin_str = "SW"
             # other pin don't care (become L)
             single_cell_state1 = "2"
             single_cell_state2 = "0"
+            # set scope to trigger EN_EN2
+            self.scope_ini.trigger_adj(source="C8", level=1.8)
 
         # change the initial state of I/O high low
         if H_L_pulse == 0:
@@ -212,6 +245,11 @@ class glitch_mea:
             # depends on different IO port send in
             pass
 
+
+        # setting for loader to better see glitch testing result
+        self.loader_ini.chg_out2(self.load_curr_EL_LDO, self.excel_ini.loader_ELch, "on")
+        self.loader_ini.chg_out2(self.load_curr_VCI_BUCK, self.excel_ini.loader_VCIch, "on")
+
         # the loop for vin
         c_vin = self.c_vin
         x_vin = 0
@@ -223,15 +261,12 @@ class glitch_mea:
             v_target = self.excel_ini.sh_format_gen.range((43 + x_vin, 4)).value
             self.pwr_ini.chg_out(v_target, self.excel_ini.pre_imax, self.excel_ini.relay0_ch, "on")
 
-            # add scope initial here
-
-
-
             # testing of pulse
             x_glitch = 0
             # amount of testing items
             c_glitch = count0
             while x_glitch < c_glitch:
+                # this loop is same with load current level => load current is inner than Vin level
 
                 excel_t.message_box("press enater for next pattern", "you're in test mode", auto_exception=temp_test_mode)
 
@@ -239,6 +274,7 @@ class glitch_mea:
                 length_us = start_us0 + (x_glitch) * step_us0
 
                 # scope trigger here
+                self.scope_ini.capture_1st(clear_sweep=1)
 
                 if H_L_pulse == 0:
                     # default is low pulse
@@ -258,6 +294,9 @@ class glitch_mea:
                     pass
 
                 # scope capture here
+                self.scope_ini.capture_2nd()
+
+
 
                 time.sleep(1)
                 x_glitch = x_glitch + 1
