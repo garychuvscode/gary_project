@@ -444,7 +444,7 @@ class ripple_test:
                                 scope_s.set_general["time_offset"],
                             )
                         elif x_iload < 3 and self.pmic_buck == 1 and x_sw_i2c > 0:
-                            # single buck operation
+                            # single buck operation (Buck only)
                             # x_sw_i2c is only for the second sheet with smaller time scale
                             scope_s.Hor_scale_adj(0.00002)
 
@@ -1426,6 +1426,10 @@ class ripple_test:
                 self.scope_ini.scope_initial(self.scope_setting)
             else:
                 # change to another scope setting
+                '''
+                when operate buck, need to use different scale for the ripple testing
+                so there are different
+                '''
                 temp_scope_setting = str(self.scope_setting + f"_{int(ind0)}")
                 self.scope_ini.scope_initial(temp_scope_setting)
 
