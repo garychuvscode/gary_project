@@ -135,26 +135,17 @@ class glitch_mea:
         # fixed start point of the format gen (waveform element)
         self.format_start_y = self.excel_ini.format_start_y
         self.format_start_x = self.excel_ini.format_start_x
-        self.en_i2c_mode = self.sh_verification_control.range("B10").value
-        self.i2c_group = self.sh_verification_control.range("B11").value
-        self.c_i2c = self.sh_verification_control.range("B12").value
-        self.avdd_current_3ch = self.sh_verification_control.range("B13").value
-        self.ch_index = int(self.sh_verification_control.range("B14").value)
-        self.scope_adj = 1
-        # scope adj is to decide show the output channel or not, not to disable the auto scope
-        # setting, it's different, scope initial setting is from sheet (scope_initial_en)
-
-        if self.ch_index > 2:
-            # extra channel setting for measurement
-            self.ch_index = self.ch_index - 3
-            self.scope_adj = 0
-
-        self.ripple_line_load = float(self.sh_verification_control.range("B15").value)
-        self.c_data_mea = self.excel_ini.c_data_mea
+        self.H_L_excel = self.sh_verification_control.range("B10").value
+        self.start_excel = self.sh_verification_control.range("B11").value
+        self.step_us_excel = self.sh_verification_control.range("B12").value
+        self.count_excel = self.sh_verification_control.range("B13").value
+        self.pin_num_excel = int(self.sh_verification_control.range("B14").value)
+        self.optional_mode_excel = float(self.sh_verification_control.range("B15").value)
         self.scope_initial_en = int(self.sh_verification_control.range("B16").value)
 
         # add extra name
         self.excel_ini.extra_file_name = "_glitch"
+        self.extra_comments = "glitch"
 
 
         # setup the information for each different sheet
@@ -169,12 +160,12 @@ class glitch_mea:
 
         pass
 
-    def run_verification(self, H_L_pulse=0, start_us0=1, count0=5, step_us0=1, pin_num0=1, scope_set0="970_glitch", optional_mode=0):
+    def run_verification(self, H_L_pulse=0, start_us0=0, count0=5, step_us0=1, pin_num0=1, scope_set0="970_glitch", optional_mode=0):
         """
         H_L_pulse default setting is low pulse => H-L-H, L programmable \n
         step_us0 = step of each pulse \n
         minimum unit is set to us \n
-        pin_num0 = 1 or 2 (default PG1 or PG2)
+        pin_num0 = 1 or 2 (default PG1-EN-C4 or PG2-SW-C8)
         optional mode = 1 => define parameter from run_verification input,
         for set to 0, load from the excel sheet
         """
@@ -185,6 +176,34 @@ class glitch_mea:
         self.pre_test_inst()
         # load the important parameter
         self.para_loaded()
+
+
+
+        if optional_mode == 0 and self.optional_mode_excel == 1 :
+            # update the control parameter from excel if optional mode is 0
+            H_L_pulse = self.H_L_excel
+            start_us0 = self.start_excel
+            count0 = self.count_excel
+            step_us0 = self.step_us_excel
+            pin_num0 = self.pin_num_excel
+            scope_set0 = self.scope_setting
+
+            '''
+            if self.optional mode == 1 => use the setting from excel and
+            run the pattern not follow the raw setting
+            '''
+            pass
+        elif optional_mode == 0 and self.optional_mode_excel == 0 :
+            # follow the setting in excel table (just like ripple and transient)
+            count0 = self.c_iload
+            H_L_pulse = self.H_L_excel
+            start_us0 = self.start_excel
+            # count0 = self.count_excel
+            step_us0 = self.step_us_excel
+            pin_num0 = self.pin_num_excel
+            scope_set0 = self.scope_setting
+
+            pass
 
 
 
@@ -201,13 +220,6 @@ class glitch_mea:
             '''
             0616 note: HOL scale can use 50us/div (consider)
             '''
-
-            # if self.scope_initial_en > 1:
-            #     # 221205 added
-            #     # turn the offset setting to normalizaiton setting
-            #     self.scope_ini.nor_v_off = 1
-            #     pass
-            # self.scope_ini.scope_initial(self.scope_setting)
 
         # pwr ovoc setting
         self.pwr_ini.ov_oc_set(self.excel_ini.pre_vin_max, self.excel_ini.pre_imax)
@@ -234,6 +246,7 @@ class glitch_mea:
             single_cell_state2 = "0"
             # set scope to trigger EN_EN2
             self.scope_ini.trigger_adj(source="C4", level=1.8)
+
         else:
             pin_str = "SW"
             # other pin don't care (become L)
@@ -248,6 +261,7 @@ class glitch_mea:
             # initial state is high
             # 230620 trigger falling edge for low pulse
             self.scope_ini.trigger_adj(slope='Negative')
+            self.extra_comments = self.extra_comments + f'_{pin_str}_low_pulse'
             pass
         else:
             self.mcu_ini.i_o_change(set_or_clr0=0, pin_num0=pin_num0)
@@ -255,6 +269,7 @@ class glitch_mea:
             # depends on different IO port send in
             # 230620 trigger rising edge for high pulse
             self.scope_ini.trigger_adj(slope='Positive')
+            self.extra_comments = self.extra_comments + f'_{pin_str}_high_pulse'
             pass
 
         # setting for scope cursor initialize
@@ -265,6 +280,9 @@ class glitch_mea:
         # setting for loader to better see glitch testing result
         self.loader_ini.chg_out2(self.load_curr_EL_LDO, self.excel_ini.loader_ELch, "on")
         self.loader_ini.chg_out2(self.load_curr_VCI_BUCK, self.excel_ini.loader_VCIch, "on")
+
+        # table should be assign when generation of format gen
+        self.excel_ini.sh_ref_table.range("B1").value = self.extra_comments
 
         # the loop for vin
         c_vin = self.c_vin
@@ -287,7 +305,13 @@ class glitch_mea:
                 excel_t.message_box("press enater for next pattern", "you're in test mode", auto_exception=self.temp_test_mode)
 
                 # define the length from pulse step
-                length_us = start_us0 + (x_glitch) * step_us0
+                if optional_mode == 0 and self.optional_mode_excel == 0 :
+                    length_us = int(self.excel_ini.sh_format_gen.range(
+                            (43 + x_glitch, 7)).value)
+                    pass
+                else:
+                    length_us = start_us0 + (x_glitch) * step_us0
+                    pass
                 temp_cur_target = length_us * 0.000001
                 # change the X2 to related position
                 self.scope_ini.set_cursor(target0=temp_cur_target)
@@ -344,8 +368,6 @@ class glitch_mea:
                     pass
 
                 print("check point")
-
-
 
                 time.sleep(1)
                 x_glitch = x_glitch + 1

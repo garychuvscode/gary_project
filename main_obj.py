@@ -506,13 +506,7 @@ if __name__ == "__main__":
         loader_chr_m.current_cal_setup(
             excel_m.loader_cal_offset_ELch,
             excel_m.loader_cal_offset_VCIch,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-        )
+            0, 0, 0, 0, 0, 0,)
 
         # start the testing
         iq_test.run_verification()
