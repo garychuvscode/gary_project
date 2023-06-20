@@ -1184,22 +1184,26 @@ class Scope_LE6100A(GInst):
 
         pass
 
-    def cursor_delta(self, abs_val=1, x_y=0, scaling=1):
+    def cursor_delta(self, abs_val=1, x_y=0, scaling=1, ch='C1'):
         """
         get the cursor measurement, cursor need to on first\n
         abs default 1 => if not getting abs, set to 0\n
         x_y: 0 -> x and 1 -> y
+
+        230620 => add the channel selection of x and y delta result reading,
+        default set to 'C1', can also change when reading different channel delta y
+        for the delta of x, all the channel are the same
         """
 
         if x_y == 0:
             # look for x delta
             temp_res = self.readVBS(
-                f"return = app.Cursors.StdCursOfC1.DeltaX.Result.Value"
+                f"return = app.Cursors.StdCursOf{ch}.DeltaX.Result.Value"
             )
         elif x_y == 1:
             # look for y delta
             temp_res = self.readVBS(
-                f"return = app.Cursors.StdCursOfC1.DeltaY.Result.Value"
+                f"return = app.Cursors.StdCursOf{ch}.DeltaY.Result.Value"
             )
 
         if abs_val == 1:
