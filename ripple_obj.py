@@ -1033,7 +1033,7 @@ class ripple_test:
 
                     # need to change to the cursor difference
                     # curr_peak = self.scope_ini.read_mea('P6', self.excel_ini.scope_value)
-                    curr_peak = self.scope_ini.cursor_delta(x_y=0, scaling=scaling)
+                    curr_peak = self.scope_ini.cursor_delta(x_y=0, scaling0=scaling)
                     curr_peak = self.excel_ini.float_gene(curr_peak)
                     self.excel_ini.sh_ref_table.range(
                         self.format_start_y + y_index * (2 + self.c_data_mea) + 1,

@@ -25,7 +25,7 @@ import locale as lo
 set the test mode to 1, bypass the instrument and
 jump message box for each capture
 '''
-temp_test_mode = 1
+
 
 class glitch_mea:
     # this class is used to measure glitch from the DUT
@@ -99,6 +99,12 @@ class glitch_mea:
         """
         self.setup_name = self.setup_index_array[0]
 
+        # object sumulation mode, defaut active (sim mode change to 0)
+        self.obj_sim_mode = 0
+
+        # message window for glitch pattern checking
+        self.temp_test_mode = 0
+
         pass
 
     def change_i_load(self, i_EL_LDO=0.1, i_VCI_BUCK=0.5):
@@ -163,12 +169,14 @@ class glitch_mea:
 
         pass
 
-    def run_verification(self, H_L_pulse=0, start_us0=1, count0=5, step_us0=1, pin_num0=1, scope_set0="970_glitch"):
+    def run_verification(self, H_L_pulse=0, start_us0=1, count0=5, step_us0=1, pin_num0=1, scope_set0="970_glitch", optional_mode=0):
         """
         H_L_pulse default setting is low pulse => H-L-H, L programmable \n
         step_us0 = step of each pulse \n
         minimum unit is set to us \n
         pin_num0 = 1 or 2 (default PG1 or PG2)
+        optional mode = 1 => define parameter from run_verification input,
+        for set to 0, load from the excel sheet
         """
 
         # reset MCU after each time start
@@ -238,12 +246,20 @@ class glitch_mea:
         if H_L_pulse == 0:
             # sending low pulse, no need change initial state
             # initial state is high
+            # 230620 trigger falling edge for low pulse
+            self.scope_ini.trigger_adj(slope='Negative')
             pass
         else:
             self.mcu_ini.i_o_change(set_or_clr0=0, pin_num0=pin_num0)
             # pin 1 is EN and pin 2 is SW
             # depends on different IO port send in
+            # 230620 trigger rising edge for high pulse
+            self.scope_ini.trigger_adj(slope='Positive')
             pass
+
+        # setting for scope cursor initialize
+        # set the X2 to 0 and change X1 is easier
+        self.scope_ini.set_cursor(x_y0='X', c1_c2=2, view0='true', type0='HorizRel', target0=0)
 
 
         # setting for loader to better see glitch testing result
@@ -268,10 +284,13 @@ class glitch_mea:
             while x_glitch < c_glitch:
                 # this loop is same with load current level => load current is inner than Vin level
 
-                excel_t.message_box("press enater for next pattern", "you're in test mode", auto_exception=temp_test_mode)
+                excel_t.message_box("press enater for next pattern", "you're in test mode", auto_exception=self.temp_test_mode)
 
                 # define the length from pulse step
                 length_us = start_us0 + (x_glitch) * step_us0
+                temp_cur_target = length_us * 0.000001
+                # change the X2 to related position
+                self.scope_ini.set_cursor(target0=temp_cur_target)
 
                 # scope trigger here
                 self.scope_ini.capture_1st(clear_sweep=1)
@@ -295,6 +314,36 @@ class glitch_mea:
 
                 # scope capture here
                 self.scope_ini.capture_2nd()
+
+                # select the related range
+                """
+                here is to choose related cell for wafeform capture, x is x axis and y is y axis,
+                need to input (y, x) for the range input, and x y define is not reverse
+
+                """
+                x_index = x_glitch
+                y_index = x_vin
+
+                active_range = self.excel_ini.sh_ref_table.range(
+                    self.format_start_y + y_index * (2 + self.c_data_mea),
+                    self.format_start_x + x_index,
+                )
+                # (1 + ripple_item) is waveform + ripple item + one current line
+
+                # add the setting of condition in the blank
+                active_range.value = f"Vin={v_target}_glitch={length_us}us"
+
+                if self.obj_sim_mode == 0:
+                    self.excel_ini.scope_capture(
+                        self.excel_ini.sh_ref_table, active_range, default_trace=0.5
+                    )
+                else:
+                    self.excel_ini.scope_capture(
+                        self.excel_ini.sh_ref_table, active_range, default_trace=0
+                    )
+                    pass
+
+                print("check point")
 
 
 
@@ -425,15 +474,15 @@ if __name__ == "__main__":
 
     format_g.set_sheet_name('glitch')
 
-    # gli_test.run_verification(
-    #     H_L_pulse=1, start_us0=10, count0=20, step_us0=10, pin_num0=1
-    # )
-    # time.sleep(2)
+    gli_test.run_verification(
+        H_L_pulse=1, start_us0=10, count0=20, step_us0=10, pin_num0=1
+    )
+    time.sleep(2)
     gli_test.run_verification(
         H_L_pulse=0, start_us0=10, count0=20, step_us0=10, pin_num0=1
     )
 
-    excel_t.end_of_file(1)
+    excel_t.end_of_file(0)
     print("end of glitch testing program")
 
     pass

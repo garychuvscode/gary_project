@@ -395,9 +395,10 @@ class Scope_LE6100A(GInst):
         """
 
         if self.sim_inst == 1:
-            import time
+            # 230619 : here don't need to import time again
+            # import time
 
-            interval_ms = 330
+            interval_ms = 100
 
             for t in range(0, timeout_ms, interval_ms):
                 if self.readVBS(f"return = app.Acquisition.TriggerMode") == "Stopped":
@@ -405,6 +406,13 @@ class Scope_LE6100A(GInst):
                 time.sleep(interval_ms / 1000)
 
             return False
+
+            '''
+            to know success trigger or not, check the returned value of waitTriggered
+            if true, good, and if false, bad
+            '''
+
+
             # if 0 == self.inst.WaitForOPC():
             #     raise Exception('LecroyActiveDSO acquire fail.')
 
@@ -1184,7 +1192,7 @@ class Scope_LE6100A(GInst):
 
         pass
 
-    def cursor_delta(self, abs_val=1, x_y=0, scaling=1):
+    def cursor_delta(self, abs_val=1, x_y=0, scaling0=1):
         """
         get the cursor measurement, cursor need to on first\n
         abs default 1 => if not getting abs, set to 0\n
@@ -1206,9 +1214,26 @@ class Scope_LE6100A(GInst):
             # return the abs
             # 230419: it will have error if no turn on the cursor (error happened here)
             temp_res = float(temp_res)
-            temp_res = abs(temp_res) * float(scaling)
+            temp_res = abs(temp_res) * float(scaling0)
 
         return temp_res
+
+    def set_cursor(self, x_y0='X', c1_c2=1, view0='true', type0='HorizRel', target0=0):
+        '''
+        this function used to setup the position of cursor \n
+        for x-axis(X), need to know the hol scale settings(in unit: second), \n
+        for y-axis(Y), the input is the normalize value, from -4 to 4 \n
+        c1_c2(1 or 2), choose which cursor \n
+        view type is true or false, default true \n
+        type: HorizAbs, HorizRel(two), BothRel(two), VertAbs, VertRel(two)
+
+        '''
+
+        self.writeVBS(f'app.Cursors.View = "{view0}"')
+        self.writeVBS(f'app.Cursors.Type = "{type0}"')
+        self.writeVBS(f'app.Cursors.{x_y0}Pos{c1_c2} = "{target0}"')
+
+        pass
 
     def find_trig_level(self, ch=0):
         """
