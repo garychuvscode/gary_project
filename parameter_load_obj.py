@@ -2499,6 +2499,33 @@ class excel_parameter ():
 
         pass
 
+    def summary_file_gen(self):
+        '''
+        this function used to generate the summary file and related plot for
+        comparison
+
+        '''
+
+        '''
+        function plan:
+        1. use one summary sheet, generate the comparison table of selected
+        condition
+        2. keep the raw data behind comparison table
+        3. need summary list for which file used for collection
+        '''
+
+
+
+        pass
+
+    def column_copy(self, sheet0_dest=0, sheet0_source=0, x_index0_dest=0, y_index0_dest=0, x_index0_source=0, y_index0_source=0,length=1):
+        '''
+        copy the selected column to result sheet and book
+        '''
+
+
+        pass
+
 
 if __name__ == '__main__':
     #  the testing code for this file object
@@ -2601,6 +2628,10 @@ if __name__ == '__main__':
         first_val = list(colors.values())[0]
 
         def get_nth_key(dictionary, n=0):
+            '''
+            230621 added comments:
+            this function used to get nth key of the dictionary
+            '''
 
             if n < 0:
                 n += len(dictionary)
@@ -2612,6 +2643,10 @@ if __name__ == '__main__':
             pass
 
         def get_nth_value(dictionary, n=0):
+            '''
+            230621 added comments:
+            this function used to get nth value of the dictionary
+            '''
 
             if n < 0:
                 n += len(dictionary)

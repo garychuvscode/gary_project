@@ -12,6 +12,8 @@ import mcu_obj as m
 import win32api
 from win32con import MB_SYSTEMMODAL
 
+import xlwings as xw
+
 mcu_s = m.MCU_control(0, 3)
 mcu_s.com_open()
 
@@ -219,9 +221,24 @@ class test_calass():
 
         pass
 
+    def copy_range_test(self):
+
+        temp_range = self.sh_dest.range((10, 10), (3, 10))
+        self.sh_sor.range((10, 10), (3, 10)).copy(temp_range)
+
+        pass
+
+    def excel_open(self):
+        self.wb = xw.Book()
+        self.sh_sor = self.wb.sheets.add('test_source')
+        self.sh_dest = self.wb.sheets.add('test_dest')
+        self.sh_sor.range((10, 10), (3, 10)).value = '1010abc'
+
+        pass
+
 
 t_s = test_calass()
-testing_index = 7
+testing_index = 8
 
 if testing_index == 0:
     print('a')
@@ -317,5 +334,13 @@ elif testing_index == 6:
 elif testing_index == 7:
 
     t_s.logic_operator()
+
+    pass
+
+elif testing_index == 8:
+
+    t_s.excel_open()
+    input()
+    t_s.copy_range_test()
 
     pass
