@@ -86,7 +86,21 @@ class eff_mea:
         elif self.excel_ini.channel_mode == 2:
             self.excel_ini.extra_file_name = '_3ch_EFF'
             pass
+
+        # 230621 add the index array for the naming of items
+        self.item_name_arry_PMIC = ['Vin', 'Iin', 'ELVDD', 'ELVSS', 'I_EL', 'AVDD', 'I_AVDD', 'Eff', 'VOP', 'VON']
+        self.item_name_arry_Buck = ['Vin', 'Iin', 'LDO', 'NA', 'I_LDO', 'Buck', 'I_BUCK', 'Eff', 'VCC', 'PG']
+        if self.excel_ini.special_function_eff == 1 or 2 :
+            self.item_name_arry = self.item_name_arry_Buck
+            pass
+        else:
+            self.item_name_arry = self.item_name_arry_PMIC
+            pass
+
+
+
         pass
+
 
     # since there are more than 1 file for efficiency test, need to call file name reset
     def extra_file_name_setup(self):
@@ -154,6 +168,14 @@ class eff_mea:
         pass
 
     def run_verification(self):
+        '''
+        230621 add comments, special_function
+        special function = 1 => use pwr read iout as the Iin measureemnt, default 0,
+        wearable PMIC only meter is enough
+        # below meter mapping is for efficiency measurement
+        # meter channel indicator: 0: Vin, 1: AVDD(BK), 2: OVDD(LDO), 3: OVSS(GND), 4: VOP(VCC), 5: VON(PG)
+        '''
+
         # this function is to run the main item, for all the instrument control and main loop will be in this sub function
         # for the parameter only loaded to the program, no need to call from boject all the time
         # save to local variable every time call the run_verification program
@@ -244,8 +266,8 @@ class eff_mea:
                 print('pre-power on here')
                 # turn off the power and load
 
-                load_s.chg_out(0, loader_ELch, 'off')
-                load_s.chg_out(0, loader_VCIch, 'off')
+                load_s.chg_out2(0, loader_ELch, 'off')
+                load_s.chg_out2(0, loader_VCIch, 'off')
 
                 if source_meter_channel == 1 or source_meter_channel == 2:
                     load_src_s.load_off()
@@ -274,9 +296,9 @@ class eff_mea:
             # loader channel and current
             # default off, will be turn on and off based on the loop control
 
-            # load_s.chg_out(iload1_set, loader_ELch, 'off')
+            # load_s.chg_out2(iload1_set, loader_ELch, 'off')
             # # load set for EL-power
-            # load_s.chg_out(iload2_set, loader_VCIch, 'off')
+            # load_s.chg_out2(iload2_set, loader_VCIch, 'off')
             # # load set for AVDD
 
             time.sleep(wait_time)
@@ -580,7 +602,7 @@ class eff_mea:
                         # AVDD load current here
 
                         # if sim_real == 1 :
-                        #     load_s.chg_out(curr_avdd, loader_VCIch, 'on')
+                        #     load_s.chg_out2(curr_avdd, loader_VCIch, 'on')
                         #     # turn the load of AVDD on when after load the current
                         # else:
                         #     print('finished set the current and turn load on')
@@ -625,25 +647,25 @@ class eff_mea:
 
                             # for the raw data sheet index
                             raw_active.range(
-                                (11 + raw_gap * x_vin, 2)).value = 'Vin'
+                                (11 + raw_gap * x_vin, 2)).value = self.item_name_arry[0]
                             raw_active.range(
-                                (12 + raw_gap * x_vin, 2)).value = 'Iin'
+                                (12 + raw_gap * x_vin, 2)).value = self.item_name_arry[1]
                             raw_active.range(
-                                (13 + raw_gap * x_vin, 2)).value = 'ELVDD'
+                                (13 + raw_gap * x_vin, 2)).value = self.item_name_arry[2]
                             raw_active.range(
-                                (14 + raw_gap * x_vin, 2)).value = 'ELVSS'
+                                (14 + raw_gap * x_vin, 2)).value = self.item_name_arry[3]
                             raw_active.range(
-                                (15 + raw_gap * x_vin, 2)).value = 'I_EL'
+                                (15 + raw_gap * x_vin, 2)).value = self.item_name_arry[4]
                             raw_active.range(
-                                (16 + raw_gap * x_vin, 2)).value = 'AVDD'
+                                (16 + raw_gap * x_vin, 2)).value = self.item_name_arry[5]
                             raw_active.range((17 + raw_gap * x_vin, 2)
-                                             ).value = 'I_AVDD'
+                                             ).value = self.item_name_arry[6]
                             raw_active.range(
-                                (18 + raw_gap * x_vin, 2)).value = 'Eff'
+                                (18 + raw_gap * x_vin, 2)).value = self.item_name_arry[7]
                             raw_active.range(
-                                (19 + raw_gap * x_vin, 2)).value = 'VOP'
+                                (19 + raw_gap * x_vin, 2)).value = self.item_name_arry[8]
                             raw_active.range(
-                                (20 + raw_gap * x_vin, 2)).value = 'VON'
+                                (20 + raw_gap * x_vin, 2)).value = self.item_name_arry[9]
 
                             # adjust the vin voltage
                             # 221110 add the pre-increase setting for power supply
@@ -754,7 +776,7 @@ class eff_mea:
                                         # selection only at the iload_target but not curr_avdd
 
                                         # turn on AVDD load channel, must be chroma
-                                        load_s.chg_out(curr_avdd,
+                                        load_s.chg_out2(curr_avdd,
                                                        loader_VCIch, 'on')
 
                                         # choose the source meter or the chroma load
@@ -765,7 +787,7 @@ class eff_mea:
 
                                         else:
                                             # not using source meter for EL, it's chroma loader
-                                            load_s.chg_out(
+                                            load_s.chg_out2(
                                                 iload_target, loader_ELch, 'on')
 
                                     elif channel_mode == 0:
@@ -778,7 +800,7 @@ class eff_mea:
 
                                         else:
                                             # not using source meter for EL, it's chroma loader
-                                            load_s.chg_out(
+                                            load_s.chg_out2(
                                                 iload_target, loader_ELch, 'on')
                                     elif channel_mode == 1:
                                         # only turn the AVDD on
@@ -790,7 +812,7 @@ class eff_mea:
 
                                         else:
                                             # not using source meter for EL, it's chroma loader
-                                            load_s.chg_out(
+                                            load_s.chg_out2(
                                                 iload_target, loader_VCIch, 'on')
 
                                 # need to set muc_sim to 1 before using calibration
@@ -896,9 +918,19 @@ class eff_mea:
                                 # v_res_temp = v_res_temp.replace('A', '')
                                 # # this part can also consider to move to the next ints_pkg file
                                 # # can help to improve the complexity
-
-                                # adjust the Iin measurement from power supply to meter
-                                v_res_temp = met_i_s.mea_i()
+                                if self.excel_ini.special_function_eff == 1 :
+                                    # 230621 add the special function for change Iin measurement
+                                    v_res_temp = pwr_s.read_iout(relay0_ch)
+                                    pass
+                                elif self.excel_ini.special_function_eff == 2 :
+                                    # 230621 for the condition with smaller than 500mA, set function to 2
+                                    # also use the meter to measure I_in
+                                    v_res_temp = met_i_s.mea_i()
+                                    pass
+                                else:
+                                    # adjust the Iin measurement from power supply to meter
+                                    v_res_temp = met_i_s.mea_i()
+                                    pass
                                 excel_s.data_latch(
                                     'iin', v_res_temp, x_vin, x_iload, value_i_offset1, value_i_offset2)
                                 time.sleep(wait_time)
@@ -1023,31 +1055,31 @@ class eff_mea:
                                 # release loading
                                 # turn the load off after measurement
                                 if channel_mode == 2:
-                                    # load_s.chg_out(curr_avdd, loader_VCIch, 'off')
-                                    # load_s.chg_out(iload_target, loader_ELch, 'off')
-                                    load_s.chg_out(
+                                    # load_s.chg_out2(curr_avdd, loader_VCIch, 'off')
+                                    # load_s.chg_out2(iload_target, loader_ELch, 'off')
+                                    load_s.chg_out2(
                                         0, loader_VCIch, 'on')
-                                    load_s.chg_out(
+                                    load_s.chg_out2(
                                         0, loader_ELch, 'on')
                                 elif channel_mode == 0:
                                     # only turn the EL on
-                                    # load_s.chg_out(iload_target, loader_ELch, 'off')
+                                    # load_s.chg_out2(iload_target, loader_ELch, 'off')
                                     if source_meter_channel == 1 or source_meter_channel == 2:
                                         # load_src_s.load_off()
                                         # change to turn off at each voltage cycle for loadr and source meter
                                         load_src_s.change_I(0, 'on')
                                     else:
-                                        load_s.chg_out(
+                                        load_s.chg_out2(
                                             0, loader_ELch, 'on')
                                 elif channel_mode == 1:
                                     # only turn the AVDD on
-                                    # load_s.chg_out(iload_target, loader_VCIch, 'off')
+                                    # load_s.chg_out2(iload_target, loader_VCIch, 'off')
                                     if source_meter_channel == 1 or source_meter_channel == 2:
                                         # load_src_s.load_off()
                                         # change to turn off at each voltage cycle for loadr and source meter
                                         load_src_s.change_I(0, 'on')
                                     else:
-                                        load_s.chg_out(
+                                        load_s.chg_out2(
                                             0, loader_VCIch, 'on')
 
                                 # 20220429 since release the load and set to turn off is ok,

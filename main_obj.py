@@ -308,6 +308,11 @@ general_t_bk = gene_t.general_test(
     excel_m, pwr_bk_m, met_v_m, loader_chr_m, mcu_m, src_m, met_i_m, chamber_m
 )
 
+# 230621 add for BK_9141 efficiency testing
+eff_test_bk = eff.eff_mea(
+    excel_m, pwr_bk_m, met_v_m, loader_chr_m, mcu_m, src_m, met_i_m, chamber_m
+)
+
 if excel_m.pwr_select == 0:
     # set to 0 is to use LPS505
     ripple_t = rip.ripple_test(
@@ -462,6 +467,40 @@ if __name__ == "__main__":
 
         # start the testing
         eff_test.run_verification()
+        # issue for using end of file should be solve for efficiency test
+
+        # remember that this is only call by main, not by  object
+        excel_m.end_of_file(multi_item)
+        print("end of the EFF object testing program")
+
+        pass
+
+    # single test for efficiency chamber option (Buck)
+    elif program_group == 3.1:
+        """
+        item for exe file operaing, don't change after confirm with experiment
+        """
+        excel_m.open_result_book()
+        excel_m.excel_save()
+        # efficiency testing ( I2C and SWIRE-normal mode )
+        # single setting of the object need to be 1 => no needed single
+        multi_item = 0
+        # set simulation for the used instrument
+        # pwr, met_v, met_i, loader, src, chamber
+        sim_mode_independent(
+            pwr=1,
+            met_v=1,
+            met_i=1,
+            loader=1,
+            src=1,
+            chamber=1,
+            main_off_line0=main_off_line,
+        )
+        # open instrument and add the name
+        open_inst_and_name()
+
+        # start the testing
+        eff_test_bk.run_verification()
         # issue for using end of file should be solve for efficiency test
 
         # remember that this is only call by main, not by  object

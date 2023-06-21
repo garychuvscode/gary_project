@@ -27,7 +27,8 @@ class MCU_control ():
 
         # because MCU will be separate with GPIB for implementation and test
         self.mcu_cmd_arry = ['01', '02', '04', '08', '10', '20', '40', '80']
-        # meter channel indicator: 0: Vin, 1: AVDD, 2: OVDD, 3: OVSS, 4: VOP, 5: VON
+        # below meter mapping is for efficiency measurement
+        # meter channel indicator: 0: Vin, 1: AVDD(BK), 2: OVDD(LDO), 3: OVSS(GND), 4: VOP(VCC), 5: VON(PG)
         # array mpaaing for the relay control
         self.meter_ch_ctrl = 0
         self.array_rst = '00'

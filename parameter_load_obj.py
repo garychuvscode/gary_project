@@ -368,6 +368,22 @@ class excel_parameter ():
 
         # this is the sheet for efficiency testing command
         self.sh_volt_curr_cmd = self.wb.sheets(str(self.sh_volt_curr_cmd_name))
+
+        '''
+        230621: add the special_function variable for Buck operation
+        change the naming of items and sheets
+        '''
+        self.special_function_eff = self.sh_volt_curr_cmd.range('T2').value
+        self.item_name_arry_PMIC = ['Vin', 'Iin', 'ELVDD', 'ELVSS', 'I_EL', 'AVDD', 'I_AVDD', 'Eff', 'VOP', 'VON']
+        self.item_name_arry_Buck = ['Vin', 'Iin', 'LDO', 'NA', 'I_LDO', 'Buck', 'I_BUCK', 'Eff', 'VCC', 'PG']
+        if self.special_function_eff == 1 or 2 :
+            self.item_name_arry = self.item_name_arry_Buck
+            pass
+        else:
+            self.item_name_arry = self.item_name_arry_PMIC
+            pass
+
+
         # this is the sheet for I2C command
         self.sh_i2c_cmd = self.wb.sheets(str(self.sh_i2c_cmd_name))
 
@@ -2004,7 +2020,7 @@ class excel_parameter ():
                 # here is to open a new sheet for data saving
 
                 # AVDD operation
-                sheet_temp = 'AVDD'
+                sheet_temp = self.item_name_arry[5]
                 # assign the AVDD settting to blue blank of the sheet
                 sh_org_tab2.range(21, 3).value = 'NA'
                 # here is for AVDD eff
@@ -2020,7 +2036,7 @@ class excel_parameter ():
                 # here is to open a new sheet for data saving
 
                 # AVDD operation
-                sheet_temp = 'Vout'
+                sheet_temp = self.item_name_arry[8]
                 # assign the AVDD settting to blue blank of the sheet
                 sh_org_tab2.range(21, 3).value = 'NA'
                 # here is for AVDD eff
