@@ -222,7 +222,8 @@ class test_calass():
         pass
 
     def copy_range_test(self):
-
+        # assign the destination range and add into the source range.copy
+        # function to copy related ranage to the dest range
         temp_range = self.sh_dest.range((10, 10), (3, 10))
         self.sh_sor.range((10, 10), (3, 10)).copy(temp_range)
 

@@ -509,6 +509,11 @@ class excel_parameter ():
         # the full path used to load the waveform from HDD
         self.full_path = ''
 
+        # 230624 summary table parameter
+
+        self.summary_ref_sheet = self.wb.sheets("summary_file_ctrl")
+
+
         # =============
         # instrument control related
 
@@ -1265,6 +1270,13 @@ class excel_parameter ():
         pass
 
     def open_result_book(self, keep_last=0):
+        '''
+        update new comments, the function only contains the copy of main sheet and asisgn the
+        reference sheet to the rewsult book
+        for the copy of different control book, need to add in each verification item
+        independently
+        keep_last, is to open old book and continue
+        '''
 
         # before open thr result book to check index, first check and correct
         # index (will be update to the obj_main)
@@ -2325,6 +2337,11 @@ class excel_parameter ():
 
     # to plot the result in different sheet
     def plot_single_sheet(self, v_cnt, i_cnt, sheet_n):
+        '''
+        input the dimension of v(x) and i(y) , to get the related plot
+        this plot is from C2 to J16, which define from the excel VBA function
+        change in excel sheet if needed
+        '''
 
         book_n = str(self.full_result_name) + '.xlsx'
         # plot the sheet based on the input sheet name and element length
@@ -2499,12 +2516,19 @@ class excel_parameter ():
 
         pass
 
-    def summary_file_gen(self):
+    def summary_file_gen(self, sheet_name0=0, wb_sum_res=0):
         '''
         this function used to generate the summary file and related plot for
         comparison
-
+        230624: this function is same with run_verification
+        need open result book before
         '''
+        prog_fake = 0
+        if prog_fake == 1:
+            wb = xw.Book()
+            sheet_name0 = wb.sheets.add('summary_file_ctrl')
+
+            pass
 
         '''
         function plan:
@@ -2514,14 +2538,50 @@ class excel_parameter ():
         3. need summary list for which file used for collection
         '''
 
+        self.summary_ref_sheet = wb.sheets(sheet_name0)
+        # load important parameter from the sheet(same with format gen, select result sheet list)
+        self.sum_ctrl_ind_x = int(self.summary_ref_sheet.range(10,3).value)
+        self.sum_ctrl_ind_y = int(self.summary_ref_sheet.range(11,3).value)
+        self.sum_row_index_name = self.summary_ref_sheet.range('G12').value
+        self.sum_col_index_name = self.summary_ref_sheet.range('G13').value
 
+        # the table should all refernce to the control index
+        self.c_file_count = self.summary_ref_sheet.range((self.sum_ctrl_ind_y + (-1), self.sum_ctrl_ind_x + (0)))
+        x_file_count = 0
+        # start of the loop to copy
+        while(x_file_count < self.c_file_count):
+            # load file name and open the file
+            tmep_file_name =    str(self.summary_ref_sheet.range((self.sum_ctrl_ind_y + (x_file_count), self.sum_ctrl_ind_x + (0))))
+            temp_sheet_name =   str(self.summary_ref_sheet.range((self.sum_ctrl_ind_y + (x_file_count), self.sum_ctrl_ind_x + (1))))
+            start_x =           int(self.summary_ref_sheet.range((self.sum_ctrl_ind_y + (x_file_count), self.sum_ctrl_ind_x + (2))))
+            start_y =           int(self.summary_ref_sheet.range((self.sum_ctrl_ind_y + (x_file_count), self.sum_ctrl_ind_x + (3))))
+            brief_comment =     str(self.summary_ref_sheet.range((self.sum_ctrl_ind_y + (x_file_count), self.sum_ctrl_ind_x + (4))))
+            extra_comment =     str(self.summary_ref_sheet.range((self.sum_ctrl_ind_y + (x_file_count), self.sum_ctrl_ind_x + (5))))
+
+            # result book here is set to default, the result book in main
+            if wb_sum_res == 0 :
+                # use the default result book for saving
+                wb_sum_res = self.wb_res
+                # else no action needed, use the input result book
+                pass
+
+
+
+
+
+
+            pass
 
         pass
 
-    def column_copy(self, sheet0_dest=0, sheet0_source=0, x_index0_dest=0, y_index0_dest=0, x_index0_source=0, y_index0_source=0,length=1):
+    def range_copy(self, sheet0_dest=0, sheet0_source=0, x_ind0_dest_start=0, y_ind0_dest_start=0, x_ind0_dest_end=0, y_ind0_dest_end=0, x_ind0_sour_srart=0, y_ind0_sour_start=0, x_ind0_sour_end=0, y_ind0_sour_end=0):
         '''
-        copy the selected column to result sheet and book
+        copy the selected range to result sheet and book
+        using number input to assign the copy range (row-y,column-x)
         '''
+        temp_range = sheet0_dest.range((y_ind0_dest_start, x_ind0_dest_start), (y_ind0_dest_end, x_ind0_dest_end))
+        sheet0_source.range((y_ind0_sour_start, x_ind0_sour_srart), (y_ind0_sour_end, x_ind0_sour_end)).copy(temp_range)
+
 
 
         pass
