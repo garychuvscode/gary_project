@@ -1685,6 +1685,60 @@ if __name__ == "__main__":
 
         pass
 
+    # use the summary plot function to summarize similiar result
+    elif program_group >= 18 and program_group < 19:
+        # fixed part, open one result book and save the book
+        """
+        explanation of different number settings
+        1000 => new file, cal_vin
+        1000.1 => old file, cal_vin
+        1000.2 => new file
+        1000.3 => old file
+        """
+        # in temp name
+        if program_group == 18.1 :
+            # track previous report and save at the end
+            excel_m.open_result_book(keep_last=1)
+        else:
+            excel_m.open_result_book(keep_last=0)
+        # auto save after the book is generate
+        excel_m.excel_save()
+        # single setting of the object need to be 1 => no needed single
+        multi_item = 0
+        # setup instruement for test mode, only for debug, no need to change)
+        sim_mode_independent(
+            pwr=1,
+            met_v=1,
+            met_i=1,
+            loader=1,
+            src=1,
+            chamber=1,
+            scope=1,
+            bk_pwr=1,
+            main_off_line0=main_off_line,
+            single_mode0=single_mode,
+        )
+        # open instrument and add the name to result book
+        open_inst_and_name()
+        print("open instrument with real or simulation mode")
+
+        # changeable area
+        # ===========
+
+        excel_m.summary_file_gen('summary_file_ctrl')
+
+
+        # ===========
+        # changeable area
+
+        # remember that this is only call by main, not by object
+        excel_m.end_of_file(multi_item)
+        # end of file can also be call between each item
+        print("end of the program")
+
+        pass
+
+
     # testin for BK9141 EN/2
     elif program_group == 100:
         # fixed part, open one result book and save the book

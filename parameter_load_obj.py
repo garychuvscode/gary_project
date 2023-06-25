@@ -512,6 +512,7 @@ class excel_parameter ():
         # 230624 summary table parameter
 
         self.summary_ref_sheet = self.wb.sheets("summary_file_ctrl")
+        self.summary_res_sheet = self.wb.sheets("summary_file_ctrl")
 
 
         # =============
@@ -2527,6 +2528,8 @@ class excel_parameter ():
         if prog_fake == 1:
             wb = xw.Book()
             sheet_name0 = wb.sheets.add('summary_file_ctrl')
+            self.summary_ref_sheet = wb.sheets('summary_file_ctrl')
+            self.summary_res_sheet = wb.sheets('summary_file_ctrl')
 
             pass
 
@@ -2538,39 +2541,103 @@ class excel_parameter ():
         3. need summary list for which file used for collection
         '''
 
-        self.summary_ref_sheet = wb.sheets(sheet_name0)
+        # result book here is set to default, the result book in main
+        if wb_sum_res == 0 :
+            # use the default result book for saving
+            wb_sum_res = self.wb_res
+            # else no action needed, use the input result book
+            pass
+
+        self.extra_file_name = '_sum_plot'
+
+
+        self.summary_ref_sheet = self.wb.sheets(sheet_name0)
+        # copy the control sheet to result book, and assing as control sheet
+        self.summary_ref_sheet = self.summary_ref_sheet.copy(self.sh_ref)
+
+
         # load important parameter from the sheet(same with format gen, select result sheet list)
-        self.sum_ctrl_ind_x = int(self.summary_ref_sheet.range(10,3).value)
-        self.sum_ctrl_ind_y = int(self.summary_ref_sheet.range(11,3).value)
-        self.sum_row_index_name = self.summary_ref_sheet.range('G12').value
-        self.sum_col_index_name = self.summary_ref_sheet.range('G13').value
+        self.sum_ctrl_ind_x =       int(self.summary_ref_sheet.range(10,3).value)
+        # add the offset for easier loading parameters
+        self.sum_ctrl_ind_y =       int(self.summary_ref_sheet.range(11,3).value) + 1
+        self.sum_row_index_name =   self.summary_ref_sheet.range('G12').value
+        self.sum_col_index_name =   self.summary_ref_sheet.range('G13').value
+        self.sum_res_sh_name =      str(self.summary_ref_sheet.range('G14').value)
+
+        self.column_condition_enable = int(self.summary_ref_sheet.range('I15').value)
+
+        # update the name of result raw sheet
+        self.summary_res_sheet = self.wb_res.sheets.add(self.sum_res_sh_name,self.sh_ref.name)
+        res_sh = self.summary_res_sheet
+
+        # this is the row count of each file (fix for all file)
+        self.c_row_count =       int(self.summary_ref_sheet.range(('C12')).value)
 
         # the table should all refernce to the control index
-        self.c_file_count = self.summary_ref_sheet.range((self.sum_ctrl_ind_y + (-1), self.sum_ctrl_ind_x + (0)))
+        self.c_file_count = int(self.summary_ref_sheet.range((self.sum_ctrl_ind_y + (-2), self.sum_ctrl_ind_x + (0))).value)
         x_file_count = 0
         # start of the loop to copy
         while(x_file_count < self.c_file_count):
+
+
             # load file name and open the file
-            tmep_file_name =    str(self.summary_ref_sheet.range((self.sum_ctrl_ind_y + (x_file_count), self.sum_ctrl_ind_x + (0))))
-            temp_sheet_name =   str(self.summary_ref_sheet.range((self.sum_ctrl_ind_y + (x_file_count), self.sum_ctrl_ind_x + (1))))
-            start_x =           int(self.summary_ref_sheet.range((self.sum_ctrl_ind_y + (x_file_count), self.sum_ctrl_ind_x + (2))))
-            start_y =           int(self.summary_ref_sheet.range((self.sum_ctrl_ind_y + (x_file_count), self.sum_ctrl_ind_x + (3))))
-            brief_comment =     str(self.summary_ref_sheet.range((self.sum_ctrl_ind_y + (x_file_count), self.sum_ctrl_ind_x + (4))))
-            extra_comment =     str(self.summary_ref_sheet.range((self.sum_ctrl_ind_y + (x_file_count), self.sum_ctrl_ind_x + (5))))
+            tmep_file_name =    str(self.summary_ref_sheet.range((self.sum_ctrl_ind_y + (x_file_count), self.sum_ctrl_ind_x + (0))).value)
+            temp_sheet_name =   str(self.summary_ref_sheet.range((self.sum_ctrl_ind_y + (x_file_count), self.sum_ctrl_ind_x + (1))).value)
+            start_x =           int(self.summary_ref_sheet.range((self.sum_ctrl_ind_y + (x_file_count), self.sum_ctrl_ind_x + (2))).value)
+            start_y =           int(self.summary_ref_sheet.range((self.sum_ctrl_ind_y + (x_file_count), self.sum_ctrl_ind_x + (3))).value)
+            brief_comment =     str(self.summary_ref_sheet.range((self.sum_ctrl_ind_y + (x_file_count), self.sum_ctrl_ind_x + (4))).value)
+            extra_comment =     str(self.summary_ref_sheet.range((self.sum_ctrl_ind_y + (x_file_count), self.sum_ctrl_ind_x + (5))).value)
+            column_select =     int(self.summary_ref_sheet.range((self.sum_ctrl_ind_y + (x_file_count), self.sum_ctrl_ind_x + (6))).value)
+            if self.column_condition_enable == 1 :
+                plot_comment =  str(self.summary_ref_sheet.range((self.sum_ctrl_ind_y + (x_file_count), self.sum_ctrl_ind_x + (7))).value)
+            else:
+                plot_comment =  str(self.summary_ref_sheet.range((self.sum_ctrl_ind_y + (x_file_count), self.sum_ctrl_ind_x + (8))).value)
 
-            # result book here is set to default, the result book in main
-            if wb_sum_res == 0 :
-                # use the default result book for saving
-                wb_sum_res = self.wb_res
-                # else no action needed, use the input result book
+            # open the related file for coping
+            wb_temp = xw.Book(f'c:\\py_gary\\test_excel\\{tmep_file_name}.xlsx')
+            # connect to source sheet
+            sor_sh = wb_temp.sheets(temp_sheet_name)
+
+            if x_file_count == 0 :
+                # build up row condition(current), row name(Iout) and column name(Vin) from file one
+                # row name(Iout)
+                res_sh.range((start_y + 1, start_x + 0)).value = str(self.sum_row_index_name)
+                # column name(Vin)
+                res_sh.range((start_y + 0, start_x + 1)).value = str(self.sum_col_index_name)
+                # current index (row condirion)
+                # temp_range = res_sh.range((25, 2), (60, 2))
+                # sor_sh.range((25, 2), (60, 2)).copy(temp_range)
+                self.range_copy(sheet0_dest=res_sh, sheet0_source=sor_sh, x_ind0_dest_start=start_x + 0, y_ind0_dest_start=start_y + 2, x_ind0_dest_end=start_x + 0, y_ind0_dest_end=start_y + 2 + self.c_row_count, x_ind0_sour_srart=start_x + 0, y_ind0_sour_start=start_y + 2, x_ind0_sour_end=start_x + 0, y_ind0_sour_end=start_y + 2 + self.c_row_count)
+
+                res_sh.range((start_y + (-1), start_x + 0)).value = 'note'
+
+                res_sh.range((start_y + 2 + self.c_row_count, start_x + 0)).value = 'comment'
+
                 pass
+            # for the content
+            # for content - load column index
+            if self.column_condition_enable == 1 :
+                res_sh.range((start_y + 1, start_x + 1 + x_file_count)).value = plot_comment + str(sor_sh.range((start_y + 1, start_x + column_select)).value)
+                pass
+            else:
+                res_sh.range((start_y + 1, start_x + 1 + x_file_count)).value = plot_comment
+            # for content - load brief comment
+            res_sh.range((start_y + (-1), start_x + 1 + x_file_count)).value = brief_comment
+            # for content - load extra comment
+            res_sh.range((start_y + 2 + self.c_row_count, start_x + 1 + x_file_count)).value = extra_comment
+            # for content - load content
+            self.range_copy(sheet0_dest=res_sh, sheet0_source=sor_sh, x_ind0_dest_start=start_x + column_select, y_ind0_dest_start=start_y + 2, x_ind0_dest_end=start_x + column_select, y_ind0_dest_end=start_y + 2 + self.c_row_count - 1, x_ind0_sour_srart=start_x + 1, y_ind0_sour_start=start_y + 2, x_ind0_sour_end=start_x + 1, y_ind0_sour_end=start_y + 2 + self.c_row_count - 1)
 
 
+            # close previous file before enter next item
+            wb_temp.close()
 
-
-
-
+            x_file_count = x_file_count + 1
             pass
+
+        # after the data collection finished, call the plot to build up final plot
+        res_sh_name = res_sh.name
+        self.plot_single_sheet(v_cnt=self.c_file_count, i_cnt=self.c_row_count, sheet_n=res_sh_name)
 
         pass
 

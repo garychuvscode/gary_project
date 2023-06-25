@@ -224,15 +224,16 @@ class test_calass():
     def copy_range_test(self):
         # assign the destination range and add into the source range.copy
         # function to copy related ranage to the dest range
-        temp_range = self.sh_dest.range((10, 10), (3, 10))
-        self.sh_sor.range((10, 10), (3, 10)).copy(temp_range)
+        temp_range = self.sh_dest.range((3, 10), (10, 10))
+        self.sh_sor.range((3, 10), (10, 10)).copy(temp_range)
 
         pass
 
     def excel_open(self):
         self.wb = xw.Book()
+        self.wb2 = xw.Book()
         self.sh_sor = self.wb.sheets.add('test_source')
-        self.sh_dest = self.wb.sheets.add('test_dest')
+        self.sh_dest = self.wb2.sheets.add('test_dest')
         self.sh_sor.range((10, 10), (3, 10)).value = '1010abc'
 
         pass
