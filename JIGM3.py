@@ -774,7 +774,7 @@ class JIGM3:
 
         pass
 
-    def relay_ctrl(self, channel_index=0, relay_mode0="", t_dly_s=0.05):
+    def relay_ctrl(self, channel_index=0, relay_mode0=1, t_dly_s=0.05):
         """
         MSP relay control \n
         use IO1(index0)-IO8(index7) as the related \n
@@ -914,6 +914,11 @@ if __name__ == "__main__":
     test_index = 1
     """
     testing index settings
+    1 => IO control
+    2 => PWM control
+    3 => pattern gen
+    4 => pulse output for deglitch function or SWIRE
+    5 => IO toggle for relay function of MSP(IO1-IO8)
 
     """
 
@@ -935,6 +940,8 @@ if __name__ == "__main__":
     elif test_index == 1:
         # send IO signal to MCU
 
+        # since all out is set to 1, no need specific port_sel, then
+        # system set all pin to output automatically
         g_mcu.i_o_config(port_sel0="PG")
 
         # infinite toggle IO
@@ -1014,3 +1021,25 @@ if __name__ == "__main__":
         g_mcu.g_pulse_out_V2(pulse0=1, duration_ns=500, en_sw="SW", count0=10)
 
         g_mcu.com_close()
+
+        pass
+
+    elif test_index == 5 :
+        # add the testing functino for relay, should be same with IO pin
+        g_mcu.relay_ctrl(channel_index=0)
+        time.sleep(0.1)
+        g_mcu.relay_ctrl(channel_index=1)
+        time.sleep(0.1)
+        g_mcu.relay_ctrl(channel_index=2)
+        time.sleep(0.1)
+        g_mcu.relay_ctrl(channel_index=3)
+        time.sleep(0.1)
+        g_mcu.relay_ctrl(channel_index=4)
+        time.sleep(0.1)
+        g_mcu.relay_ctrl(channel_index=5)
+        time.sleep(0.1)
+        g_mcu.relay_ctrl(channel_index=6)
+        time.sleep(0.1)
+        g_mcu.relay_ctrl(channel_index=7)
+
+        pass
