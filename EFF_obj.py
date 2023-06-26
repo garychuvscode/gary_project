@@ -485,6 +485,7 @@ class eff_mea:
                             pmic_mode = 4
                             mcu_s.pmic_mode(pmic_mode)
                             print('MCU mode is set to (EN, SW) = (1, 1)')
+                            pass
                         else:
                             excel_s.i_avdd_status = 0
                             # since the i2c don't have the mode selection function, don't care
@@ -504,6 +505,32 @@ class eff_mea:
                             # and update the MCU write commanad
                             mcu_s.pmic_mode(pmic_mode)
                             print('MCU mode is set to (EN, SW) = (1, 0)')
+                            pass
+
+                        # add the special function filter for buck operation
+                        if self.excel_ini.special_function_eff > 0 :
+                            # the MCU power mode function of Buck is added here
+
+                            # AVDD mode => mapped to buck related measurement
+                            '''
+                            this mode need to have EN2(EN) and EN1(SW) at the same time,
+                            change the mode to 4-normal mode
+                            0 -> EL only, LDO and VCC
+                            1 -> AVDD only, Buck only
+                            2 -> 3ch, Buck, LDO and VCC
+                            '''
+                            if channel_mode == 1 or channel_mode == 2 :
+                                pmic_mode = 4
+                                mcu_s.pmic_mode(pmic_mode)
+                                print('MCU mode is set to (EN, SW) = (1, 1) = (EN2, EN1)')
+                                pass
+                            elif channel_mode == 0 :
+                                pmic_mode = 3
+                                mcu_s.pmic_mode(pmic_mode)
+                                print('MCU mode is set to (EN, SW) = (1, 0) = (EN2, EN1)')
+                                pass
+
+                            pass
 
                         pro_status_str = 'AVDD current : ' + str(curr_avdd)
                         excel_s.program_status(pro_status_str)
