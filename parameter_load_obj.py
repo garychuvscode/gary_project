@@ -374,9 +374,11 @@ class excel_parameter ():
         change the naming of items and sheets
         '''
         self.special_function_eff = self.sh_volt_curr_cmd.range('T2').value
+        if self.special_function_eff == None:
+            self.special_function_eff = 0
         self.item_name_arry_PMIC = ['Vin', 'Iin', 'ELVDD', 'ELVSS', 'I_EL', 'AVDD', 'I_AVDD', 'Eff', 'VOP', 'VON']
         self.item_name_arry_Buck = ['Vin', 'Iin', 'LDO', 'NA', 'I_LDO', 'Buck', 'I_BUCK', 'Eff', 'VCC', 'PG']
-        if self.special_function_eff == 1 or 2 :
+        if self.special_function_eff == 1 or self.special_function_eff == 2 :
             self.item_name_arry = self.item_name_arry_Buck
             pass
         else:
@@ -1886,7 +1888,7 @@ class excel_parameter ():
                         3 + x_sheet_copy, 4).value
                 else:
                     # EL operation
-                    sheet_temp = 'EFF'
+                    sheet_temp = self.item_name_arry[7]
                     # assign the AVDD settting to blue blank of the sheet
                     sh_org_tab2.range(21, 3).value = '0'
                     # no AVDD current, but channel turn on in this operation
@@ -1925,7 +1927,7 @@ class excel_parameter ():
                         3 + x_sheet_copy, 4).value
                 else:
                     # EL operation
-                    sheet_temp = 'ELVDD'
+                    sheet_temp = self.item_name_arry[2]
                     # assign the AVDD settting to blue blank of the sheet
                     sh_org_tab2.range(21, 3).value = '0'
                     # no AVDD current, but channel turn on in this operation
@@ -1947,7 +1949,7 @@ class excel_parameter ():
                         3 + x_sheet_copy, 4).value
                 else:
                     # EL operation
-                    sheet_temp = 'ELVSS'
+                    sheet_temp = self.item_name_arry[3]
                     # assign the AVDD settting to blue blank of the sheet
                     sh_org_tab2.range(21, 3).value = '0'
                     # no AVDD current, but channel turn on in this operation
@@ -1968,7 +1970,7 @@ class excel_parameter ():
                         3 + x_sheet_copy, 4).value
                 else:
                     # EL operation
-                    sheet_temp = 'Vop'
+                    sheet_temp = self.item_name_arry[8]
                     # assign the AVDD settting to blue blank of the sheet
                     sh_org_tab2.range(21, 3).value = '0'
                     # no AVDD current, but channel turn on in this operation
@@ -1990,7 +1992,7 @@ class excel_parameter ():
                         3 + x_sheet_copy, 4).value
                 else:
                     # EL operation
-                    sheet_temp = 'Von'
+                    sheet_temp = self.item_name_arry[9]
                     # assign the AVDD settting to blue blank of the sheet
                     sh_org_tab2.range(21, 3).value = '0'
                     # no AVDD current, but channel turn on in this operation
@@ -2009,7 +2011,7 @@ class excel_parameter ():
                 # here is to open a new sheet for data saving
 
                 # AVDD operation
-                sheet_temp = 'EFF'
+                sheet_temp = self.item_name_arry[7]
                 # assign the AVDD settting to blue blank of the sheet
                 sh_org_tab2.range(21, 3).value = 'NA'
                 # here is for AVDD eff

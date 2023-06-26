@@ -90,7 +90,7 @@ class eff_mea:
         # 230621 add the index array for the naming of items
         self.item_name_arry_PMIC = ['Vin', 'Iin', 'ELVDD', 'ELVSS', 'I_EL', 'AVDD', 'I_AVDD', 'Eff', 'VOP', 'VON']
         self.item_name_arry_Buck = ['Vin', 'Iin', 'LDO', 'NA', 'I_LDO', 'Buck', 'I_BUCK', 'Eff', 'VCC', 'PG']
-        if self.excel_ini.special_function_eff == 1 or 2 :
+        if self.excel_ini.special_function_eff == 1 or self.excel_ini.special_function_eff == 2 :
             self.item_name_arry = self.item_name_arry_Buck
             pass
         else:
