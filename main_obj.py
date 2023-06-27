@@ -19,6 +19,7 @@ import win32com.client
 # for the instrument objects
 import inst_pkg_d as inst
 import mcu_obj as mcu
+import JIGM3 as mcu_g
 
 # for the excel sheet control
 # only the main program use this method to separate the excel and program
@@ -111,6 +112,9 @@ scope_m = sco.Scope_LE6100A(excel0=excel_m, main_off_line0=main_off_line)
 pwr_bk_m = bk.Power_BK9141(
     excel0=excel_m, GP_addr0=excel_m.pwr_bk_addr, main_off_line0=main_off_line
 )
+
+# add JIGM3 into the system
+mcu_mg = mcu_g.JIGM3(sim_mcu0=1)
 
 
 # instrument startup configuration

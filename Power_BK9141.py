@@ -187,6 +187,11 @@ class Power_BK9141(GInst):
         """
         self.max_v = max_v0
         self.max_i = max_i0
+        # new added function prevent OC setting too big, but change
+        # pre_imax is also able to achieve function
+        # no need for final, just reserve for record
+        # if max_i0 < 3 :
+        #     self.excel_s.message_box(f'oc seeting need to change to {max_i0} by hand! ', 'watch out the OCP', auto_exception=1)
 
         pass
 

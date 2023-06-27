@@ -530,6 +530,11 @@ class eff_mea:
                                 print('MCU mode is set to (EN, SW) = (1, 0) = (EN2, EN1)')
                                 pass
 
+                            if self.excel_ini.special_function_eff == 2 :
+                                # change I_max directly
+                                # protect the fuse of meter from damage
+                                pre_imax = 0.7
+
                             pass
 
                         pro_status_str = 'AVDD current : ' + str(curr_avdd)
@@ -841,6 +846,15 @@ class eff_mea:
                                             # not using source meter for EL, it's chroma loader
                                             load_s.chg_out2(
                                                 iload_target, loader_VCIch, 'on')
+                                            pass
+                                        pass
+                                    pass
+                                else:
+                                    # when x_iload = 0, do the current calibration ?
+                                    # change to channel mode place for calibration
+                                    # plan to add the calibration function here is loader have error
+                                    pass
+
 
                                 # need to set muc_sim to 1 before using calibration
                                 v_res_temp = pwr_s.vin_clibrate_singal_met(

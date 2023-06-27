@@ -796,6 +796,10 @@ class chroma_63600:
         # 230526 => default setting for the critical set to enable, refer to soft_sel
         self.critical = 0
 
+        # 230626 add the auto current fast calibration
+        self.fast_iout_calibration_en = 0
+        self.fast_iout_calibration_result = 0
+
     def open_inst(self):
 
         # maybe no need to define rm for global variable
@@ -1184,9 +1188,26 @@ class chroma_63600:
 
     # this function used to feedback the output current measurement
 
-    def read_iout(self, act_ch1):
+    def read_iout(self, act_ch1, fast_cal_en=0):
         # also need to input the channel to check, and it will update the final channel
         self.act_ch_o = act_ch1
+
+        if fast_cal_en == 1:
+            # 230626 add, current calibration
+            # only check this part when there are issue for reading current
+
+            x_cal = 0
+            curr_temp = 0
+            while x_cal < 20 :
+                # 20 times of calibration for read current error
+
+                curr_temp = curr_temp + float(self.read_iout(act_ch1))
+                time.sleep(0.05)
+
+                x_cal = x_cal + 1
+                pass
+
+            self.fast_iout_calibration_result = curr_temp / 20
 
         # string setting and update
         self.cmd_str_ch_set = "CHAN " + str(int(self.act_ch_o))
@@ -1198,6 +1219,8 @@ class chroma_63600:
             self.inst_obj.write(self.cmd_str_ch_set)
             self.i_out = self.inst_obj.query(self.cmd_str_V_read)
             time.sleep(wait_samll)
+
+            # self.i_out = str( float(self.i_out) - float(self.fast_iout_calibration_result) )
 
             if self.cal_mode_en == 1:
                 # 1 is constant calibration mode
