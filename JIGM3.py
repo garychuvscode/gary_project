@@ -808,7 +808,7 @@ class JIGM3:
             time.sleep(t_dly_s)
 
             cmd_str = (
-                f"mcu.gpio.setout({self.i_o_pin_num_set[channel_index]}, {port_cmd})"
+                f"mcu.gpio.setout({self.i_o_pin_num_set[str(channel_index + 1)]}, {port_cmd})"
             )
             self.g_ezcommand(cmd_str)
             time.sleep(t_dly_s)
@@ -911,7 +911,7 @@ if __name__ == "__main__":
     a = g_mcu.getversion()
     print(f"the MCU version is {a}")
 
-    test_index = 1
+    test_index = 5
     """
     testing index settings
     1 => IO control
