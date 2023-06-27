@@ -738,6 +738,9 @@ class JIGM3:
 
             print(f"the device get from com_open is{self.Version}")
 
+            # also add IO config into the com open function
+            self.i_o_config()
+
         else:
             print("open in simulation mode")
 
