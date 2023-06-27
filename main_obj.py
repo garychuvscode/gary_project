@@ -234,7 +234,11 @@ def sim_mode_independent(
     pass
 
 
-def open_inst_and_name():
+def open_inst_and_name(mcu_sel=0):
+    '''
+    open the instrument for program
+    mcu_sel = 0 => MSP430, mcu_sel = 1 => JIGM3
+    '''
     # this used to turn all the instrument on after program start
     # setup simulation mode help to prevent error
 
@@ -249,7 +253,16 @@ def open_inst_and_name():
     loader_chr_m.open_inst()
     src_m.open_inst()
     chamber_m.open_inst()
-    mcu_m.com_open()
+    if mcu_sel == 0 :
+        # MCU MSP430
+        mcu_m.com_open()
+    else:
+        # MCU JIGM3
+        mcu_mg.com_open()
+        # transfer mcum obj to JIGM3
+        mcu_m = mcu_mg
+
+
     scope_m.open_inst()
     pwr_bk_m.open_inst()
 

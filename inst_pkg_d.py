@@ -500,6 +500,11 @@ class Met_34460:
         self.mea_i_out = 0
         self.cmd_str_name = 0
 
+        # PLC usually have 1 10 and 100, which means the time used to
+        # measure, higher PLC need more time but more accurate
+        # 230627 modify
+        self.measurement_PLC = 100
+
         if self.GP_addr_ini != 100:
             self.sim_inst = 1
         else:
@@ -526,6 +531,11 @@ class Met_34460:
             # in simulation mode, inst_obj need to be define for the simuation mode
             self.inst_obj = 'meter simulation mode object'
             pass
+
+        # set the PLC to default after open inst
+        self.plc_change()
+        pass
+
 
     def mea_v(self):
         # definie the command string and send the command string out to GPIB
@@ -709,6 +719,78 @@ class Met_34460:
 
             pass
         return self.in_name
+
+    def query_write(self, cmd=0):
+        # mix write function for better debug or change
+        if cmd == 0:
+            # send the default command
+            print(
+                f'query write with command: "{self.default_cmd}" with sim={self.sim_inst}')
+            if self.sim_inst == 1:
+                self.inst_obj.query(str(self.default_cmd))
+
+        else:
+            print(f'query write with command: "{cmd}"')
+            if self.sim_inst == 1:
+                self.inst_obj.query(str(cmd))
+
+        pass
+
+    def only_write(self, cmd=0):
+        # mix write function for better debug or change
+        if cmd == 0:
+            # send the default command
+            print(
+                f'query write with command: "{self.default_cmd}" with sim={self.sim_inst}')
+            if self.sim_inst == 1:
+                self.inst_obj.write(str(self.default_cmd))
+        else:
+            print(
+                f'query write with command: "{cmd}" with sim={self.sim_inst}')
+            if self.sim_inst == 1:
+                self.inst_obj.write(str(cmd))
+
+        pass
+
+    def read(self, cmd=0):
+        # mix read function for better debug or change
+        if cmd == 0:
+            # send the default command
+            print(
+                f'query write with command: "{self.default_cmd}" with sim={self.sim_inst}')
+            if self.sim_inst == 1:
+                self.inst_obj.read(str(self.default_cmd))
+
+        else:
+            print(
+                f'query write with command: "{cmd}" with sim={self.sim_inst}')
+            if self.sim_inst == 1:
+                self.inst_obj.read(str(cmd))
+
+        pass
+
+    def plc_change(self, plc0=100, type0=0):
+        '''
+        PLC setting for meter, no need to change in normal operation
+        default of meter is 1 PLC and default program setting will be 100PLC
+        for better resolution and accurate result
+        type 0 -> V and I; 'V' -> volt; 'I' -> curr
+        '''
+        plc0 = int(plc0)
+
+        if type0 == 0 :
+            # change for voltage and current PLC
+            self.only_write(cmd=f'SENS:VOLT:DC:NPLC {plc0}')
+            self.only_write(cmd=f'SENS:CURR:DC:NPLC {plc0}')
+            pass
+        elif type0 == 'V' :
+            self.only_write(cmd=f'SENS:VOLT:DC:NPLC {plc0}')
+            pass
+        elif type0 == 'I' :
+            self.only_write(cmd=f'SENS:CURR:DC:NPLC {plc0}')
+            pass
+
+        pass
 
 
 class chroma_63600:

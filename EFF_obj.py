@@ -795,7 +795,8 @@ class eff_mea:
                                 # clear result for each round of the current loop
 
                                 value_eff = 0
-                                if x_iload > 0:
+                                # change to >= from > to prevent there is only first item have Iin = 0 A
+                                if x_iload >= 0:
                                     # turn the load on to setting i_load (when x > 0)
 
                                     # 20220429 method to assign source meter for the PMIC measurement
@@ -1157,6 +1158,7 @@ class eff_mea:
 
                                 x_iload = x_iload + 1
                                 # end of the 4th loop
+                                pass
 
                             # wb_res.save(result_book_trace)
                             excel_s.excel_save()
@@ -1355,6 +1357,23 @@ class eff_mea:
 
         self.excel_ini.ready_to_off = 1
 
+        pass
+
+    def obj_read_current(self):
+        '''
+        read the current, based on the setting of instrument, not limit from the meter or power supply
+        call this for current measurement and knowing which device to choose
+        define from the code? (main file?)
+        '''
+
+
+        pass
+    def obj_read_voltage(self):
+        '''
+        need to think more about this since there are different measurement method...
+        1. from the instruemnt
+        2. from the relay and using met_V
+        '''
         pass
 
 

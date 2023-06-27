@@ -752,6 +752,8 @@ class JIGM3:
 
         # set all the IO to output
         self.i_o_config()
+        # default setting for EN and SWIRE to high
+        self.pmic_mode(4)
 
         pass
 
@@ -908,7 +910,10 @@ if __name__ == "__main__":
     g_mcu.sim_mcu = 1
     g_mcu.com_open()
     # set all the IO to output
-    g_mcu.i_o_config()
+
+    # 230627 since this function been put into the com_open, no need this command here
+    # g_mcu.i_o_config()
+
     # ====
 
     a = g_mcu.getversion()
