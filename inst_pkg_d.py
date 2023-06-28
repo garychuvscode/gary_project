@@ -616,9 +616,12 @@ class Met_34460:
 
         if self.sim_inst == 1:
             # 220830 update for the independent simulation mode
-            self.mea_i_out = self.inst_obj.query(self.cmd_str_mea_i)
+            self.mea_i_out = self.inst_obj.query(self.cmd_str_mea_i, 3.5)
             print('i measure is: ' + self.mea_i_out)
             time.sleep(wait_samll)
+            if float(self.mea_i_out) < 0 :
+                # to prevent error of return 0 for eff
+                self.mea_i_out = 0.0000001
 
             pass
         else:
@@ -657,9 +660,12 @@ class Met_34460:
         # self.mea_i_out = self.mea_i_out + 1
         if self.sim_inst == 1:
             # 220830 update for the independent simulation mode
-            self.mea_i_out = self.inst_obj.query(self.cmd_str_mea_i)
-            print('I measure V2 is: ' + self.mea_i_out)
+            self.mea_i_out = self.inst_obj.query(self.cmd_str_mea_i, 3.5)
+            print('I measure I2 is: ' + self.mea_i_out)
             time.sleep(wait_samll)
+            if float(self.mea_i_out) < 0 :
+                # to prevent error of return 0 for eff
+                self.mea_i_out = 0.0000001
 
             pass
         else:
