@@ -95,6 +95,8 @@ class JIGM3:
 
         # relay function enable or disable, not to use IO1-IO8 if relay mode enable
         self.relay0 = 0
+        # define for temp relay channel in Vin calibration function
+        self.meter_ch_ctrl = 0
 
     @staticmethod
     def listdevices():
@@ -790,6 +792,10 @@ class JIGM3:
         port_cmd = 1
         # set the control index to 1 => means the IO1-IO8 is set to
         # relay control
+
+        # 230628 add the channel record for power supply Vin calibration
+        self.meter_ch_ctrl = int(channel_index)
+
         if relay_mode0 == 1:
             # set relay mode to 1 and disable other GIPO control
             self.relay0 = 1

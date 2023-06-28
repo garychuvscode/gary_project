@@ -47,7 +47,9 @@ single_mode = 0
 # this is the variable control file name, single or the multi item
 # adjust after the if selection of program_group
 multi_item = 0
-
+# choose which MCU is using for the verification
+# 'MSP' is MSP430 , and 'g' is JIGM3(GPL_tool)
+mcu_sel = 'g'
 
 # ==============
 # excel setting for main program
@@ -106,15 +108,23 @@ chamber_m = inst.chamber_su242(
 )
 
 
-# default turn the MCU on
-mcu_m = mcu.MCU_control(1, excel_m.mcu_com_addr)
+
 scope_m = sco.Scope_LE6100A(excel0=excel_m, main_off_line0=main_off_line)
 pwr_bk_m = bk.Power_BK9141(
     excel0=excel_m, GP_addr0=excel_m.pwr_bk_addr, main_off_line0=main_off_line
 )
 
-# add JIGM3 into the system
-mcu_mg = mcu_g.JIGM3(sim_mcu0=1)
+if mcu_sel == 'MSP' :
+    # choose to use MSP430
+    # default turn the MCU on
+    mcu_m = mcu.MCU_control(1, excel_m.mcu_com_addr)
+    print('MSP MCU selected for Gary')
+    pass
+elif mcu_sel == 'g' :
+    # choose to use JIGM3
+    # add JIGM3 into the system
+    mcu_m = mcu_g.JIGM3(sim_mcu0=1)
+    print('JIGM3 MCU selected for Grace')
 
 
 # instrument startup configuration
@@ -234,7 +244,7 @@ def sim_mode_independent(
     pass
 
 
-def open_inst_and_name(mcu_sel=0):
+def open_inst_and_name():
     '''
     open the instrument for program
     mcu_sel = 0 => MSP430, mcu_sel = 1 => JIGM3
@@ -242,7 +252,6 @@ def open_inst_and_name(mcu_sel=0):
     # this used to turn all the instrument on after program start
     # setup simulation mode help to prevent error
 
-    global mcu_m
 
     if main_off_line == 1:
         sim_mode_all(main_off_line)
@@ -255,14 +264,10 @@ def open_inst_and_name(mcu_sel=0):
     loader_chr_m.open_inst()
     src_m.open_inst()
     chamber_m.open_inst()
-    if mcu_sel == 0 :
-        # MCU MSP430
-        mcu_m.com_open()
-    else:
-        # MCU JIGM3
-        mcu_mg.com_open()
-        # transfer mcum obj to JIGM3
-        mcu_m = mcu_mg
+    # mcu_m here will be the MCU choose to use
+    # it's been decide when define the MCU object
+    mcu_m.com_open()
+
 
 
     scope_m.open_inst()
@@ -516,7 +521,7 @@ if __name__ == "__main__":
             main_off_line0=main_off_line,
         )
         # open instrument and add the name
-        open_inst_and_name(mcu_sel=1)
+        open_inst_and_name()
 
         # start the testing
         eff_test_bk.run_verification()
