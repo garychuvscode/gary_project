@@ -242,6 +242,8 @@ def open_inst_and_name(mcu_sel=0):
     # this used to turn all the instrument on after program start
     # setup simulation mode help to prevent error
 
+    global mcu_m
+
     if main_off_line == 1:
         sim_mode_all(main_off_line)
         # all instrument turn to simulation mode
@@ -514,7 +516,7 @@ if __name__ == "__main__":
             main_off_line0=main_off_line,
         )
         # open instrument and add the name
-        open_inst_and_name()
+        open_inst_and_name(mcu_sel=1)
 
         # start the testing
         eff_test_bk.run_verification()
