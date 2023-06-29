@@ -1456,7 +1456,7 @@ class Scope_LE6100A(GInst):
             )
             pass
 
-            pass
+
 
         # run save or recall
         temp_str = f"app.SaveRecall.Setup.Do{save_s}SetupFileDoc2"
@@ -1565,14 +1565,14 @@ if __name__ == "__main__":
         if label_pos_sel == 0:
             # list of channel name
             ch_name = {
-                "CH1": "Buck",
-                "CH2": "LDO",
+                "CH1": "LX",
+                "CH2": "Short",
                 "CH3": "LX",
                 "CH4": "LX",
                 "CH5": "I_L",
                 "CH6": "VCC",
                 "CH7": "PG",
-                "CH8": "Buck",
+                "CH8": "Long",
             }
         elif label_pos_sel == 1:
             ch_name = {
