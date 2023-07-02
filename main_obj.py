@@ -39,7 +39,7 @@ import instrument_scan_obj as ins_scan
 import format_gen_obj as form_g
 import general_test_obj as gene_t
 import ripple_obj as rip
-
+import glitch_obj as gli
 
 # off line test, set to 1 set all the instrument to simulation mode
 main_off_line = 1
@@ -356,6 +356,18 @@ elif excel_m.pwr_select == 1:
         scope_m,
     )
 
+gli_test = gli.glitch_mea(
+        excel_m,
+        pwr_bk_m,
+        met_v_m,
+        loader_chr_m,
+        mcu_m,
+        src_m,
+        met_i_m,
+        chamber_m,
+        scope_m,
+    )
+
 # scope cpature setting for waveform related testing item
 if main_off_line == 1:
     ripple_t.obj_sim_mode = 0
@@ -524,21 +536,21 @@ if __name__ == "__main__":
 
         # 230629: to chage the setting of each efficiency condition
         excel_m.open_result_book()
-        excel_m.flexible_naming('Buck')
+        excel_m.flexible_naming('_Buck')
         excel_m.sh_volt_curr_cmd = excel_m.wb.sheets('BK_V_I_com(500mA)')
         excel_m.channel_mode = 1
         eff_test_bk.run_verification()
         excel_m.end_of_file(0)
 
         excel_m.open_result_book()
-        excel_m.flexible_naming('LDO_only')
+        excel_m.flexible_naming('_LDO_only')
         excel_m.sh_volt_curr_cmd = excel_m.wb.sheets('BK_V_I_com(500mA)LDO')
         excel_m.channel_mode = 0
         eff_test_bk.run_verification()
         excel_m.end_of_file(0)
 
         excel_m.open_result_book()
-        excel_m.flexible_naming('LDO_buck_on')
+        excel_m.flexible_naming('_LDO_buck_on')
         excel_m.sh_volt_curr_cmd = excel_m.wb.sheets('BK_V_I_com(500mA)')
         excel_m.channel_mode = 0
         eff_test_bk.run_verification()
@@ -1407,16 +1419,28 @@ if __name__ == "__main__":
 
             format_g.set_sheet_name("CTRL_sh_seq_EN=SW_BK")
             ripple_t.pwr_seq()
-            # format_g.table_return()
+
             format_g.set_sheet_name("CTRL_sh_seq_EN_BK")
             ripple_t.pwr_seq()
-            # format_g.table_return()
+
             format_g.set_sheet_name("CTRL_sh_seq_SW_BK")
             ripple_t.pwr_seq()
-            # format_g.table_return()
+
             format_g.set_sheet_name("CTRL_sh_seq_SW(EN)_BK")
             ripple_t.pwr_seq()
-            # format_g.table_return()
+
+            format_g.set_sheet_name('glitch_BK_EN2_L')
+            gli_test.run_verification()
+
+            format_g.set_sheet_name('glitch_BK_EN2_H')
+            gli_test.run_verification()
+
+            format_g.set_sheet_name('glitch_BK_EN1_L')
+            gli_test.run_verification()
+
+            format_g.set_sheet_name('glitch_BK_EN1_H')
+            gli_test.run_verification()
+
             excel_m.extra_file_name = "_inrush_pwr_seq_BK"
 
             pass

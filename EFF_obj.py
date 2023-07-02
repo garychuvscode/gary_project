@@ -77,15 +77,17 @@ class eff_mea:
         #     # item can decide the extra file name is it's the only item
         #     self.excel_ini.extra_file_name = '_SWIRE_pulse'
         #     pass
-        if self.excel_ini.channel_mode == 0:
-            self.excel_ini.extra_file_name = '_EL_EFF'
-            pass
-        elif self.excel_ini.channel_mode == 1:
-            self.excel_ini.extra_file_name = '_AVDD_EFF'
-            pass
-        elif self.excel_ini.channel_mode == 2:
-            self.excel_ini.extra_file_name = '_3ch_EFF'
-            pass
+
+        # # 230702: take off default file name setup to prevent error file name
+        # if self.excel_ini.channel_mode == 0:
+        #     self.excel_ini.extra_file_name = '_EL_EFF'
+        #     pass
+        # elif self.excel_ini.channel_mode == 1:
+        #     self.excel_ini.extra_file_name = '_AVDD_EFF'
+        #     pass
+        # elif self.excel_ini.channel_mode == 2:
+        #     self.excel_ini.extra_file_name = '_3ch_EFF'
+        #     pass
 
         # 230621 add the index array for the naming of items
         self.item_name_arry_PMIC = ['Vin', 'Iin', 'ELVDD', 'ELVSS', 'I_EL', 'AVDD', 'I_AVDD', 'Eff', 'VOP', 'VON']
@@ -104,16 +106,21 @@ class eff_mea:
 
     # since there are more than 1 file for efficiency test, need to call file name reset
     def extra_file_name_setup(self):
-        if self.excel_ini.channel_mode == 0:
-            self.excel_ini.extra_file_name = '_EL_EFF'
+
+        # 230702 add special function file name configuration
+        if self.excel_ini.special_function_eff == 0 :
+            if self.excel_ini.channel_mode == 0:
+                self.excel_ini.extra_file_name = '_EL_EFF'
+                pass
+            elif self.excel_ini.channel_mode == 1:
+                self.excel_ini.extra_file_name = '_AVDD_EFF'
+                pass
+            elif self.excel_ini.channel_mode == 2:
+                self.excel_ini.extra_file_name = '_3ch_EFF'
+                pass
             pass
-        elif self.excel_ini.channel_mode == 1:
-            self.excel_ini.extra_file_name = '_AVDD_EFF'
-            pass
-        elif self.excel_ini.channel_mode == 2:
-            self.excel_ini.extra_file_name = '_3ch_EFF'
-            pass
-        pass
+        else:
+            self.excel_ini.extra_file_name = 'HVBK'
 
     def sheet_gen(self):
         # this function is a must have function to generate the related excel for this verification item
@@ -227,6 +234,10 @@ class eff_mea:
         c_iload = excel_s.c_iload
         c_vin = excel_s.c_vin
         # eff_rerun_en = excel_s.eff_rerun_en
+
+        # 230702 - relaod special function from mapped sheet when start to run
+        # otherwise causing error if not use single operation from excel
+        excel_s.special_function_eff = excel_s.sh_volt_curr_cmd.range('T2').value
 
         # move all as much as possible index to the front of sub program and easier to modify
         # and less chance to fail when change index
@@ -520,24 +531,13 @@ class eff_mea:
                             1 -> AVDD only, Buck only
                             2 -> 3ch, Buck, LDO and VCC
                             '''
-                            if channel_mode == 1 or channel_mode == 2 :
+                            if self.excel_ini.special_function_eff == 1 :
+                                # only channel mode = 1 option, for buck opeation
+                                # 8A buck testing, use pwr supply as Iin
+                                # PMIC mode fixed 4
                                 pmic_mode = 4
                                 mcu_s.pmic_mode(pmic_mode)
                                 print('MCU mode is set to (EN, SW) = (1, 1) = (EN2, EN1)')
-                                pass
-                            elif channel_mode == 0 :
-
-                                if self.excel_ini.special_function_eff == 3 :
-                                    # mode operation for special function 3 is LDO testing with Buck turn on
-                                    # mode operation is set to EL mode (OVDD-LDO) load regulation check
-                                    # channel_mode will be at
-                                    pmic_mode = 4
-                                    print('MCU mode is set to (EN, SW) = (1, 1) = (EN2, EN1), origin with EL mode')
-                                else:
-                                    pmic_mode = 3
-                                    print('MCU mode is set to (EN, SW) = (1, 0) = (EN2, EN1)')
-
-                                mcu_s.pmic_mode(pmic_mode)
 
                                 pass
 
@@ -545,12 +545,20 @@ class eff_mea:
                                 # change I_max directly
                                 # protect the fuse of meter from damage
                                 pre_imax = 0.8
+                                if channel_mode == 0 :
+                                    # 500mA check LDO eff and regulation
+                                    # PMIC mode 3
+                                    pmic_mode = 3
+                                    pass
+                                else:
+                                    # 500mA check buck eff and regulation
+                                    # PMIC mode keep 4
+                                    pmic_mode = 4
+                                    pass
+
                                 pass
 
-
-
-
-
+                            mcu_s.pmic_mode(pmic_mode)
                             pass
 
                         pro_status_str = 'AVDD current : ' + str(curr_avdd)

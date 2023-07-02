@@ -375,6 +375,7 @@ class excel_parameter ():
         '''
         self.special_function_eff = self.sh_volt_curr_cmd.range('T2').value
         if self.special_function_eff == None:
+            # make previous sheet with nothing in the blank, able to work fine
             self.special_function_eff = 0
         self.item_name_arry_PMIC = ['Vin', 'Iin', 'ELVDD', 'ELVSS', 'I_EL', 'AVDD', 'I_AVDD', 'Eff', 'VOP', 'VON']
         self.item_name_arry_Buck = ['Vin', 'Iin', 'LDO', 'NA', 'I_LDO', 'Buck', 'I_BUCK', 'Eff', 'VCC', 'PG']

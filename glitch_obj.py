@@ -135,9 +135,10 @@ class glitch_mea:
         # fixed start point of the format gen (waveform element)
         self.format_start_y = self.excel_ini.format_start_y
         self.format_start_x = self.excel_ini.format_start_x
-        self.H_L_excel = self.sh_verification_control.range("B10").value
+        # 230702: change B10 and B12 since conflict with format gen
+        self.H_L_excel = self.sh_verification_control.range("B17").value
         self.start_excel = self.sh_verification_control.range("B11").value
-        self.step_us_excel = self.sh_verification_control.range("B12").value
+        self.step_us_excel = self.sh_verification_control.range("B18").value
         self.count_excel = self.sh_verification_control.range("B13").value
         self.pin_num_excel = int(self.sh_verification_control.range("B14").value)
         self.optional_mode_excel = float(self.sh_verification_control.range("B15").value)
@@ -246,6 +247,7 @@ class glitch_mea:
             single_cell_state2 = "0"
             # set scope to trigger EN_EN2
             self.scope_ini.trigger_adj(source="C4", level=1.8)
+            # self.extra_comments = self.extra_comments + "_EN2"
 
         else:
             pin_str = "SW"
@@ -254,6 +256,7 @@ class glitch_mea:
             single_cell_state2 = "0"
             # set scope to trigger EN_EN2
             self.scope_ini.trigger_adj(source="C8", level=1.8)
+            # self.extra_comments = self.extra_comments + "_EN1"
 
         # change the initial state of I/O high low
         if H_L_pulse == 0:
@@ -262,6 +265,7 @@ class glitch_mea:
             # 230620 trigger falling edge for low pulse
             self.scope_ini.trigger_adj(slope='Negative')
             self.extra_comments = self.extra_comments + f'_{pin_str}_low_pulse'
+            self.excel_ini.extra_file_name = self.excel_ini.extra_file_name + '_L'
             pass
         else:
             self.mcu_ini.i_o_change(set_or_clr0=0, pin_num0=pin_num0)
@@ -270,6 +274,7 @@ class glitch_mea:
             # 230620 trigger rising edge for high pulse
             self.scope_ini.trigger_adj(slope='Positive')
             self.extra_comments = self.extra_comments + f'_{pin_str}_high_pulse'
+            self.excel_ini.extra_file_name = self.excel_ini.extra_file_name + '_H'
             pass
 
         # setting for scope cursor initialize
@@ -449,8 +454,7 @@ if __name__ == "__main__":
 
     excel_t = par.excel_parameter(str(sh.file_setting))
 
-    excel_t.open_result_book()
-    excel_t.excel_save()
+
 
     # initial the object and set to simulation mode
     # excel_t = par.excel_parameter("obj_main")
@@ -482,7 +486,7 @@ if __name__ == "__main__":
 
     # mcu is also config as simulation mode
     # COM address of Gary_SONY is 3
-    mcu_t = mcu_g.JIGM3(sim_mcu0=1, com_addr0=0)
+    mcu_t = mcu_g.JIGM3(sim_mcu0=0, com_addr0=0)
     mcu_t.com_open()
 
     # define the verification item
@@ -494,16 +498,23 @@ if __name__ == "__main__":
     # related excel sheet
     format_g = form_g.format_gen(excel_t)
 
-    format_g.set_sheet_name('glitch')
 
+    excel_t.open_result_book()
+    format_g.set_sheet_name('glitch_BK_EN2_L')
     gli_test.run_verification(
         H_L_pulse=1, start_us0=10, count0=20, step_us0=10, pin_num0=1
     )
-    time.sleep(2)
+
+    format_g.set_sheet_name('glitch_BK_EN2_H')
     gli_test.run_verification(
         H_L_pulse=0, start_us0=10, count0=20, step_us0=10, pin_num0=1
     )
 
+    format_g.set_sheet_name('glitch_BK_EN1_L')
+    gli_test.run_verification()
+
+    format_g.set_sheet_name('glitch_BK_EN1_H')
+    gli_test.run_verification()
     excel_t.end_of_file(0)
     print("end of glitch testing program")
 
