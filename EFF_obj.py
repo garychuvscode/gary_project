@@ -515,7 +515,8 @@ class eff_mea:
                             '''
                             this mode need to have EN2(EN) and EN1(SW) at the same time,
                             change the mode to 4-normal mode
-                            0 -> EL only, LDO and VCC
+                            0 -> EL only, LDO and VCC (speical=3, test LDO(EL) with buck on)
+                            (also able no to change, since original setting in PMIC is 4)
                             1 -> AVDD only, Buck only
                             2 -> 3ch, Buck, LDO and VCC
                             '''
@@ -525,15 +526,30 @@ class eff_mea:
                                 print('MCU mode is set to (EN, SW) = (1, 1) = (EN2, EN1)')
                                 pass
                             elif channel_mode == 0 :
-                                pmic_mode = 3
+
+                                if self.excel_ini.special_function_eff == 3 :
+                                    # mode operation for special function 3 is LDO testing with Buck turn on
+                                    # mode operation is set to EL mode (OVDD-LDO) load regulation check
+                                    # channel_mode will be at
+                                    pmic_mode = 4
+                                    print('MCU mode is set to (EN, SW) = (1, 1) = (EN2, EN1), origin with EL mode')
+                                else:
+                                    pmic_mode = 3
+                                    print('MCU mode is set to (EN, SW) = (1, 0) = (EN2, EN1)')
+
                                 mcu_s.pmic_mode(pmic_mode)
-                                print('MCU mode is set to (EN, SW) = (1, 0) = (EN2, EN1)')
+
                                 pass
 
                             if self.excel_ini.special_function_eff == 2 :
                                 # change I_max directly
                                 # protect the fuse of meter from damage
-                                pre_imax = 0.7
+                                pre_imax = 0.8
+                                pass
+
+
+
+
 
                             pass
 

@@ -42,7 +42,7 @@ import ripple_obj as rip
 
 
 # off line test, set to 1 set all the instrument to simulation mode
-main_off_line = 0
+main_off_line = 1
 single_mode = 0
 # this is the variable control file name, single or the multi item
 # adjust after the if selection of program_group
@@ -499,14 +499,12 @@ if __name__ == "__main__":
 
         pass
 
-    # single test for efficiency chamber option (Buck)
+    # Buck efficiency
     elif program_group == 3.1:
         """
         item for exe file operaing, don't change after confirm with experiment
         """
-        excel_m.open_result_book()
-        excel_m.excel_save()
-        # efficiency testing ( I2C and SWIRE-normal mode )
+
         # single setting of the object need to be 1 => no needed single
         multi_item = 0
         # set simulation for the used instrument
@@ -522,9 +520,29 @@ if __name__ == "__main__":
         )
         # open instrument and add the name
         open_inst_and_name()
-
         # start the testing
+
+        # 230629: to chage the setting of each efficiency condition
+        excel_m.open_result_book()
+        excel_m.flexible_naming('Buck')
+        excel_m.sh_volt_curr_cmd = excel_m.wb.sheets('BK_V_I_com(500mA)')
+        excel_m.channel_mode = 1
         eff_test_bk.run_verification()
+        excel_m.end_of_file(0)
+
+        excel_m.open_result_book()
+        excel_m.flexible_naming('LDO_only')
+        excel_m.sh_volt_curr_cmd = excel_m.wb.sheets('BK_V_I_com(500mA)LDO')
+        excel_m.channel_mode = 0
+        eff_test_bk.run_verification()
+        excel_m.end_of_file(0)
+
+        excel_m.open_result_book()
+        excel_m.flexible_naming('LDO_buck_on')
+        excel_m.sh_volt_curr_cmd = excel_m.wb.sheets('BK_V_I_com(500mA)')
+        excel_m.channel_mode = 0
+        eff_test_bk.run_verification()
+        excel_m.end_of_file(0)
         # issue for using end of file should be solve for efficiency test
 
         # remember that this is only call by main, not by  object
