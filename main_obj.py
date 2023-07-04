@@ -1457,6 +1457,16 @@ if __name__ == "__main__":
             format_g.set_sheet_name("CTRL_sh_seq_EN_BK_AD")
             ripple_t.pwr_seq()
 
+            # since EN is mapped to EN2, mainly testing EN2 pin which connect to EN at
+            # A version
+            format_g.set_sheet_name('glitch_BK_EN2_L')
+            gli_test.run_verification()
+
+            format_g.set_sheet_name('glitch_BK_EN2_H')
+            gli_test.run_verification()
+
+            # for the mode pin, should be analog and change directly, not added here
+
             excel_m.extra_file_name = "_inrush_pwr_seq_BK_AD"
 
             pass
