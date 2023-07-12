@@ -125,6 +125,11 @@ class format_gen:
 
         self.new_sheet_name = str(self.sh_format_gen.range("C35").value)
 
+        if self.excel_ini.test_counter_en == 1:
+            # adjust the counter to testing counter to prevent too long of testing time
+            self.c_row_item = self.excel_ini.test_counter
+            self.c_column_item = self.excel_ini.test_counter
+
         print("sheet name ready")
         self.sheet_name_ready = 1
         self.sheet_gen()

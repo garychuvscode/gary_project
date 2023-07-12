@@ -140,6 +140,11 @@ class ripple_test:
         self.wave_sheet = self.sh_verification_control.name
         self.excel_ini.wave_sheet = self.wave_sheet
 
+        if self.excel_ini.test_counter_en == 1 :
+            # adjust the counter to testing counter to prevent too long of testing time
+            self.c_vin = self.excel_ini.test_counter
+            self.c_iload = self.excel_ini.test_counter
+
         pass
 
     def pre_test_inst(self):

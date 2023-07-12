@@ -50,6 +50,9 @@ multi_item = 0
 # choose which MCU is using for the verification
 # 'MSP' is MSP430 , and 'g' is JIGM3(GPL_tool)
 mcu_sel = 'g'
+# 230712 counter lock for real testing (1 to lock V I counter to 2)
+# for format gen related testing
+counter_lock = 1
 
 # ==============
 # excel setting for main program
@@ -126,6 +129,10 @@ elif mcu_sel == 'g' :
     mcu_m = mcu_g.JIGM3(sim_mcu0=1)
     print('JIGM3 MCU selected for Grace')
 
+
+if counter_lock == 1 :
+    # use this to lock counter for fast real testing
+    excel_m.test_counter_en = 1
 
 # instrument startup configuration
 # ==============
@@ -907,6 +914,13 @@ if __name__ == "__main__":
 
         # For the HV buck ripple, load transeint in 1
         if program_group == 7.2:
+
+            '''
+            230712
+            origin plan to add MCU control for the transition, but since the setup
+            need to change anyway, not to add MCU and change the EN setting by hand
+            '''
+
             if excel_m.pwr_select == 1:
                 # this is only for HV buck
                 excel_m.relay0_ch = 1
@@ -935,6 +949,11 @@ if __name__ == "__main__":
                 "watch out",
                 auto_exception=1,
             )
+            '''
+            230712
+            origin plan to add MCU control for the transition, but since the setup
+            need to change anyway, not to add MCU and change the EN setting by hand
+            '''
 
             # ripple
             format_g.set_sheet_name("CTRL_sh_ripple_SY_LDO")

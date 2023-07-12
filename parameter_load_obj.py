@@ -517,6 +517,9 @@ class excel_parameter ():
         self.summary_ref_sheet = self.wb.sheets("summary_file_ctrl")
         self.summary_res_sheet = self.wb.sheets("summary_file_ctrl")
 
+        # set to 1 will force all the counter to 3
+        self.test_counter_en = 0
+        self.test_counter = 2
 
         # =============
         # instrument control related

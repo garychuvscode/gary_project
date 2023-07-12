@@ -3,3 +3,9 @@ internet password
 
 \\192.168.8.106\work
 THE DISK FOR UI
+
+192.168.8.1
+
+this is the address of wifi router 
+account: admin
+password: admin
