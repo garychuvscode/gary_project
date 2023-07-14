@@ -978,6 +978,7 @@ class Scope_LE6100A(GInst):
 
         # send current trigger setting for the scope
         print(self.set_general)
+        time.sleep(0.5)
 
         pass
 
@@ -1173,6 +1174,7 @@ class Scope_LE6100A(GInst):
             self.find_trig_level()
             self.trigger_adj(mode="Single")
             # self.waitTriggered()
+            pass
 
         pass
 
@@ -1480,7 +1482,7 @@ if __name__ == "__main__":
     excel_t.wave_path = default_path
     scope.open_inst()
 
-    test_index = 4
+    test_index = 5
     """
     set 3 to update the channel and others
     set 4 to change the label name
@@ -1660,7 +1662,7 @@ if __name__ == "__main__":
 
         # set to 0 using default trace 'C:\\g_auto_settings\\'
         trace_in = 0
-        file_name_in = "compal_load_tran"
+        file_name_in = "BK_glitch"
         """
         setup history and list
         compal_seq => compal power on and off sequence

@@ -711,22 +711,22 @@ class scope_config():
             use the 'v_offset_ind' as the new offset normalization index
             '''
 
-            self.ch_c1 = {'ch_view': 'TRUE', 'volt_dev': '2', 'BW': '20MHz', 'filter': '2bits', 'v_offset': 0,
-                          'label_name': 'Buck', 'label_position': 0.001, 'label_view': 'TRUE', 'coupling': 'DC1M', 'v_offset_ind': 0}
+            self.ch_c1 = {'ch_view': 'TRUE', 'volt_dev': '1', 'BW': '20MHz', 'filter': '2bits', 'v_offset': 0,
+                          'label_name': 'Buck', 'label_position': 0.0008, 'label_view': 'TRUE', 'coupling': 'DC1M', 'v_offset_ind': -3.5}
             self.ch_c2 = {'ch_view': 'TRUE', 'volt_dev': '2', 'BW': '20MHz', 'filter': '2bits', 'v_offset': -2,
                           'label_name': 'VCC', 'label_position': 0.001, 'label_view': 'TRUE', 'coupling': 'DC1M', 'v_offset_ind': 1}
             self.ch_c3 = {'ch_view': 'TRUE', 'volt_dev': '5', 'BW': '20MHz', 'filter': '2bits', 'v_offset': -12.5,
-                          'label_name': 'Vin', 'label_position': 0.001, 'label_view': 'TRUE', 'coupling': 'DC1M', 'v_offset_ind': -2.5}
+                          'label_name': 'Vin', 'label_position': 0.0008, 'label_view': 'TRUE', 'coupling': 'DC1M', 'v_offset_ind': -2.5}
             self.ch_c4 = {'ch_view': 'TRUE', 'volt_dev': '2', 'BW': '20MHz', 'filter': '3bits', 'v_offset': 4,
                           'label_name': 'EN2_pin', 'label_position': 0.001, 'label_view': 'TRUE', 'coupling': 'DC1M', 'v_offset_ind': 3.5}
             self.ch_c5 = {'ch_view': 'TRUE', 'volt_dev': '0.5', 'BW': '20MHz', 'filter': '2bits', 'v_offset': -1.5,
-                          'label_name': 'Iin', 'label_position': 0.001, 'label_view': 'TRUE', 'coupling': 'DC50', 'v_offset_ind': -3}
+                          'label_name': 'Iin', 'label_position': 0.0008, 'label_view': 'TRUE', 'coupling': 'DC50', 'v_offset_ind': -3}
             self.ch_c6 = {'ch_view': 'TRUE', 'volt_dev': '2', 'BW': '20MHz', 'filter': '2bits', 'v_offset': -4,
                           'label_name': 'LDO', 'label_position': 0.001, 'label_view': 'TRUE', 'coupling': 'DC1M', 'v_offset_ind': -1}
-            self.ch_c7 = {'ch_view': 'TRUE', 'volt_dev': '5', 'BW': '20MHz', 'filter': '2bits', 'v_offset': -7.5,
-                          'label_name': 'PG', 'label_position': 0.001, 'label_view': 'TRUE', 'coupling': 'DC1M', 'v_offset_ind': -2}
+            self.ch_c7 = {'ch_view': 'TRUE', 'volt_dev': '10', 'BW': '20MHz', 'filter': '2bits', 'v_offset': -7.5,
+                          'label_name': 'PG', 'label_position': 0.0008, 'label_view': 'TRUE', 'coupling': 'DC1M', 'v_offset_ind': -2}
             self.ch_c8 = {'ch_view': 'TRUE', 'volt_dev': '2', 'BW': '20MHz', 'filter': '3bits', 'v_offset': 3,
-                          'label_name': 'EN1_pin', 'label_position': 0.001, 'label_view': 'TRUE', 'coupling': 'DC1M', 'v_offset_ind': 3}
+                          'label_name': 'EN1_pin', 'label_position': 0.0008, 'label_view': 'TRUE', 'coupling': 'DC1M', 'v_offset_ind': 3}
 
             # add the two dimension index for the find signal reference
             self.ch_index = {'C1': self.ch_c1, 'C2': self.ch_c2, 'C3': self.ch_c3, 'C4': self.ch_c4,
@@ -872,7 +872,7 @@ if __name__ == '__main__':
         # use the index correction or not
         scope.nor_v_off = 1
 
-        scope.scope_initial('NT50970A_pwr_seq_inrush')
+        scope.scope_initial('NT50970_pwr_seq_inrush')
         pass
 
     elif test_index == 1:
