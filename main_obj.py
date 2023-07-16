@@ -333,10 +333,10 @@ in_scan = ins_scan.instrument_scan(
 )
 format_g = form_g.format_gen(excel_m)
 general_t = gene_t.general_test(
-    excel_m, pwr_m, met_v_m, loader_chr_m, mcu_m, src_m, met_i_m, chamber_m
+    excel_m, pwr_m, met_v_m, loader_chr_m, mcu_m, src_m, met_i_m, chamber_m, pwr_bk=pwr_bk_m
 )
 general_t_bk = gene_t.general_test(
-    excel_m, pwr_bk_m, met_v_m, loader_chr_m, mcu_m, src_m, met_i_m, chamber_m
+    excel_m, pwr_bk_m, met_v_m, loader_chr_m, mcu_m, src_m, met_i_m, chamber_m, pwr_bk=pwr_bk_m
 )
 
 # 230621 add for BK_9141 efficiency testing
@@ -1643,17 +1643,18 @@ if __name__ == "__main__":
         # ===========
 
         # first should be the band gap
-        general_t.set_sheet_name(
-            ctrl_sheet_name0="gen_BK_band_gap", extra_sheet=0, extra_name="_BK"
-        )
-        general_t.set_sheet_name(
-            ctrl_sheet_name0="gen_BK_band_gap", extra_sheet=1, extra_name="_LDO"
-        )
-        general_t.run_verification(ctrl_ind_1=2)
+        # general_t.set_sheet_name(
+        #     ctrl_sheet_name0="gen_BK_band_gap", extra_sheet=0, extra_name="_BK"
+        # )
+        # general_t.set_sheet_name(
+        #     ctrl_sheet_name0="gen_BK_band_gap", extra_sheet=1, extra_name="_LDO"
+        # )
+        # general_t.run_verification(ctrl_ind_1=2)
 
         # OTP not toggle EN1
         general_t.set_sheet_name("gen_BK_OTP", extra_sheet=0, extra_name="_EN1_keep")
         general_t.run_verification(ctrl_ind_1=0)
+        # OTP not toggle EN1
         general_t.set_sheet_name("gen_BK_OTP", extra_sheet=0, extra_name="_EN1_toggle")
         general_t.run_verification(ctrl_ind_1=1)
 
