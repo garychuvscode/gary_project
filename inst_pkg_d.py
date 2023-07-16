@@ -2322,6 +2322,11 @@ class chamber_su242:
 
         self.cmd_str_name = ''
 
+        # 230716 add the temperature wait function option
+        # default don't wait, but able to wait stable time if needed
+        self.temperature_wait = 0
+        # change this setting in the main program if needed
+
     def query_write(self, cmd_str0):
         print(cmd_str0)
 
