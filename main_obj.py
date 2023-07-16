@@ -1659,11 +1659,19 @@ if __name__ == "__main__":
         )
         general_t.run_verification(ctrl_ind_1=2)
 
+        # 230716 wait for 60second when temperature arrived
+        chamber_m.temperature_wait = 60
+
         # OTP not toggle EN1
         general_t.set_sheet_name("gen_BK_OTP", extra_sheet=0, extra_name="_EN1_keep")
         general_t.run_verification(ctrl_ind_1=0)
+        # OTP toggle EN1
         general_t.set_sheet_name("gen_BK_OTP", extra_sheet=0, extra_name="_EN1_toggle")
         general_t.run_verification(ctrl_ind_1=1)
+
+        # 230716 no need to wait when power on off sequence
+        # this parameter default is 0
+        chamber_m.temperature_wait = 0
 
         # high temp power on off
         general_t.set_sheet_name(
