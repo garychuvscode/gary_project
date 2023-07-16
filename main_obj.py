@@ -333,10 +333,10 @@ in_scan = ins_scan.instrument_scan(
 )
 format_g = form_g.format_gen(excel_m)
 general_t = gene_t.general_test(
-    excel_m, pwr_m, met_v_m, loader_chr_m, mcu_m, src_m, met_i_m, chamber_m
+    excel_m, pwr_m, met_v_m, loader_chr_m, mcu_m, src_m, met_i_m, chamber_m, pwr_bk=pwr_bk_m
 )
 general_t_bk = gene_t.general_test(
-    excel_m, pwr_bk_m, met_v_m, loader_chr_m, mcu_m, src_m, met_i_m, chamber_m
+    excel_m, pwr_bk_m, met_v_m, loader_chr_m, mcu_m, src_m, met_i_m, chamber_m, pwr_bk=pwr_bk_m
 )
 
 # 230621 add for BK_9141 efficiency testing
@@ -1428,10 +1428,10 @@ if __name__ == "__main__":
         # changeable area
         # ===========
 
-        AD_version = 0
+        A_version = 0
         # 230419 add this to spearate A and D version testing
 
-        if AD_version == 0:
+        if A_version == 0:
             # fix the sheet lock to CTRL_sh_seq_EN=SW, CTRL_sh_seq_EN, CTRL_sh_seq_SW
 
             # for inrush current measurement, watch out the amount of Cin
@@ -1665,7 +1665,7 @@ if __name__ == "__main__":
         # OTP not toggle EN1
         general_t.set_sheet_name("gen_BK_OTP", extra_sheet=0, extra_name="_EN1_keep")
         general_t.run_verification(ctrl_ind_1=0)
-        # OTP toggle EN1
+        # OTP not toggle EN1
         general_t.set_sheet_name("gen_BK_OTP", extra_sheet=0, extra_name="_EN1_toggle")
         general_t.run_verification(ctrl_ind_1=1)
 
@@ -1747,7 +1747,7 @@ if __name__ == "__main__":
         excel_m.gen_pwr_i_set = 0.5
         # 230405 add the A_version setting for IQ checking due to not to check IQ during FCCM mode,
         #  change may not be seen from the IQ (0 is for non-A and 1 is for A )
-        A_version = 1
+        A_version = 0
 
         if A_version == 0:
             # EN=Vin/2 testing (non-A version)
