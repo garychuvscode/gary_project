@@ -1428,10 +1428,10 @@ if __name__ == "__main__":
         # changeable area
         # ===========
 
-        AD_version = 0
+        A_version = 0
         # 230419 add this to spearate A and D version testing
 
-        if AD_version == 0:
+        if A_version == 0:
             # fix the sheet lock to CTRL_sh_seq_EN=SW, CTRL_sh_seq_EN, CTRL_sh_seq_SW
 
             # for inrush current measurement, watch out the amount of Cin
@@ -1740,7 +1740,7 @@ if __name__ == "__main__":
         excel_m.gen_pwr_i_set = 0.5
         # 230405 add the A_version setting for IQ checking due to not to check IQ during FCCM mode,
         #  change may not be seen from the IQ (0 is for non-A and 1 is for A )
-        A_version = 1
+        A_version = 0
 
         if A_version == 0:
             # EN=Vin/2 testing (non-A version)
