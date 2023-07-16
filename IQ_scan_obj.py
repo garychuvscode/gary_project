@@ -148,7 +148,7 @@ class iq_scan:
 
         pass
 
-    def run_verification(self):
+    def run_verification(self, pmic_buck=0):
         # update the index for file reference
         self.excel_ini.current_item_index = 'iq'
         self.sheet_gen()
@@ -177,6 +177,9 @@ class iq_scan:
 
         print('pre-power on state finished and ready for next')
         time.sleep(self.excel_ini.wait_time)
+
+
+
 
         x_iq = 0
         # counter for SWIRE pulse amount
@@ -253,11 +256,52 @@ class iq_scan:
             if self.excel_ini.turn_inst_off == 1:
                 self.end_of_exp()
                 self.excel_ini.excel_save()
+                pass
+            pass
         # save the result after each counter finished
         # self.excel_ini.wb_res.save(self.excel_ini.result_book_trace)
         # 220903: end of test only call by main, because
         # not knowing if this is single or not
         # excel_ini.end_of_test()
+
+        # 230716 add Buck IQ measurement
+        if pmic_buck == 1 :
+            excel1.message_box(content_str='need to change to USM or FCCM', title_str='extra state for Buck', auto_exception=1)
+            x_iq = 0
+            while x_iq < (self.excel_ini.c_iq) :
+                # load the Vin command first
+                ideal_v = self.excel_ini.sh_iq_scan.range((7, 4 + x_iq)).value
+
+                # update the vin setting for different vin demand
+                self.pwr_ini.chg_out(
+                    ideal_v, self.excel_ini.pre_sup_iout, self.excel_ini.relay0_ch, 'on')
+
+                # measurement start after the AVDDEN and SWIRE is updated
+                time.sleep(self.excel_ini.wait_small)
+                v_res_temp = self.met_i_ini.mea_i()
+
+                # when the measurement is finished, update the result to excel table and map to the scaling
+                time.sleep(self.excel_ini.wait_small)
+                self.excel_ini.sh_iq_scan.range((8 + x_submode, 4 + x_iq)
+                                                ).value = lo.atof(v_res_temp) * self.excel_ini.iq_scaling
+                # iq_scaling is decide from the result table (unit is optional)
+
+
+                # update the counter for different Vin
+                # self.excel_ini.sh_iq_scan.range((6, 4 + x_iq)).value = ideal_v
+
+                x_iq = x_iq + 1
+                self.excel_ini.excel_save()
+                if self.excel_ini.turn_inst_off == 1:
+                    self.end_of_exp()
+                    self.excel_ini.excel_save()
+                    pass
+                pass
+
+            excel1.message_box(content_str='add comments for the extra row \n copy to result sheet? ', title_str='USM or FCCM Buck', auto_exception=1)
+            pass
+
+
 
         self.end_of_exp()
 
@@ -323,9 +367,31 @@ if __name__ == '__main__':
     # iq_test.sheet_gen()
 
     # start the testing
-    iq_test.run_verification()
 
-    # remember that this is only call by main, not by  object
-    excel1.end_of_file(0)
+    test_mode = 1
 
-    print('end of the IQ object testing program')
+    if test_mode == 0 :
+
+
+        iq_test.run_verification()
+
+        # remember that this is only call by main, not by  object
+        excel1.end_of_file(0)
+
+        print('end of the IQ object testing program')
+
+        pass
+
+    elif test_mode == 1 :
+        # test for PMIC mode operation
+
+        iq_test.run_verification(pmic_buck=1)
+
+        # remember that this is only call by main, not by  object
+        excel1.end_of_file(0)
+
+        print('end of the IQ of PMIC mode')
+
+
+
+        pass
