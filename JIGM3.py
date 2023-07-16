@@ -699,23 +699,31 @@ class JIGM3:
 
         if mode_index == 1:
             # shut_down
-            self.i_o_change(port0=port_optional0, set_or_clr0=0, pin_num0=pin_EN0)
-            self.i_o_change(port0=port_optional0, set_or_clr0=0, pin_num0=pin_SW0)
+            # 230712 since there need to change IO status at the same time, change to pattern gen operation
+            self.pattern_gen(pattern0="'0$1e5`'")
+            # self.i_o_change(port0=port_optional0, set_or_clr0=0, pin_num0=pin_EN0)
+            # self.i_o_change(port0=port_optional0, set_or_clr0=0, pin_num0=pin_SW0)
             pass
         elif mode_index == 2:
             # only SW on
-            self.i_o_change(port0=port_optional0, set_or_clr0=0, pin_num0=pin_EN0)
-            self.i_o_change(port0=port_optional0, set_or_clr0=1, pin_num0=pin_SW0)
+            # 230712 since there need to change IO status at the same time, change to pattern gen operation
+            self.pattern_gen(pattern0="'2$1e5`'")
+            # self.i_o_change(port0=port_optional0, set_or_clr0=0, pin_num0=pin_EN0)
+            # self.i_o_change(port0=port_optional0, set_or_clr0=1, pin_num0=pin_SW0)
             pass
         elif mode_index == 3:
             # only EN on (AOD mode for PMIC)
-            self.i_o_change(port0=port_optional0, set_or_clr0=1, pin_num0=pin_EN0)
-            self.i_o_change(port0=port_optional0, set_or_clr0=0, pin_num0=pin_SW0)
+            # 230712 since there need to change IO status at the same time, change to pattern gen operation
+            self.pattern_gen(pattern0="'1$1e5`'")
+            # self.i_o_change(port0=port_optional0, set_or_clr0=1, pin_num0=pin_EN0)
+            # self.i_o_change(port0=port_optional0, set_or_clr0=0, pin_num0=pin_SW0)
             pass
         elif mode_index == 4:
             # both EN and SW are on (normal mode of PMIC)
-            self.i_o_change(port0=port_optional0, set_or_clr0=1, pin_num0=pin_EN0)
-            self.i_o_change(port0=port_optional0, set_or_clr0=1, pin_num0=pin_SW0)
+            # 230712 since there need to change IO status at the same time, change to pattern gen operation
+            self.pattern_gen(pattern0="'3$1e5`'")
+            # self.i_o_change(port0=port_optional0, set_or_clr0=1, pin_num0=pin_EN0)
+            # self.i_o_change(port0=port_optional0, set_or_clr0=1, pin_num0=pin_SW0)
             pass
 
         pass
@@ -876,11 +884,11 @@ class JIGM3:
 
         # decide which pin to toggle
         if en_sw == "SW":
-            # toggle SW
+            # toggle SW (when EN is high)
             single_cell = f"`1${count0}`3${count0}"
             pass
         else:
-            # toggle EN
+            # toggle EN (when SW is high)
             single_cell = f"`2${count0}`3${count0}"
 
         # cmd_str_end = "`3$10`'"
@@ -925,7 +933,7 @@ if __name__ == "__main__":
     a = g_mcu.getversion()
     print(f"the MCU version is {a}")
 
-    test_index = 5
+    test_index = 6
     """
     testing index settings
     1 => IO control
@@ -933,6 +941,7 @@ if __name__ == "__main__":
     3 => pattern gen
     4 => pulse output for deglitch function or SWIRE
     5 => IO toggle for relay function of MSP(IO1-IO8)
+    6 => PMIC mode
 
     """
 
@@ -1057,3 +1066,14 @@ if __name__ == "__main__":
         g_mcu.relay_ctrl(channel_index=7)
 
         pass
+
+    elif test_index == 6 :
+        while 1 :
+            g_mcu.pmic_mode(mode_index=1)
+            time.sleep(1)
+            g_mcu.pmic_mode(mode_index=2)
+            time.sleep(1)
+            g_mcu.pmic_mode(mode_index=1)
+            time.sleep(1)
+            g_mcu.pmic_mode(mode_index=2)
+            time.sleep(1)

@@ -100,7 +100,7 @@ class glitch_mea:
         self.setup_name = self.setup_index_array[0]
 
         # object sumulation mode, defaut active (sim mode change to 0)
-        self.obj_sim_mode = 0
+        self.obj_sim_mode = 1
 
         # message window for glitch pattern checking
         self.temp_test_mode = 0
@@ -159,6 +159,12 @@ class glitch_mea:
         self.wave_sheet = self.sh_verification_control.name
         self.excel_ini.wave_sheet = self.wave_sheet
 
+        if self.excel_ini.test_counter_en == 1 :
+            # for faster testing
+            # adjust the counter to testing counter to prevent too long of testing time
+            self.c_vin = self.excel_ini.test_counter
+            self.c_iload = self.excel_ini.test_counter
+
         pass
 
     def run_verification(self, H_L_pulse=0, start_us0=0, count0=5, step_us0=1, pin_num0=1, scope_set0="970_glitch", optional_mode=0):
@@ -211,7 +217,7 @@ class glitch_mea:
         # scope initialization
         if self.scope_initial_en > 0:
             # enable and change to initial
-            self.scope_ini.change_setup(save0=0, trace0=0, file_name0=scope_set0)
+            self.scope_ini.change_setup(save0=2, trace0=0, file_name0=scope_set0)
 
             """
             this part is for the normalization check, but using the glitch scope
@@ -252,9 +258,17 @@ class glitch_mea:
         else:
             pin_str = "SW"
             # other pin don't care (become L)
+
+            # 230712: if only SW, don't care EN, follow below state
             single_cell_state1 = "2"
             single_cell_state2 = "0"
-            # set scope to trigger EN_EN2
+
+            # 230712: for SW need to be under EN is high
+            single_cell_state1 = "3"
+            single_cell_state2 = "1"
+
+
+            # set scope to trigger EN_EN1
             self.scope_ini.trigger_adj(source="C8", level=1.8)
             # self.extra_comments = self.extra_comments + "_EN1"
 
@@ -266,6 +280,13 @@ class glitch_mea:
             self.scope_ini.trigger_adj(slope='Negative')
             self.extra_comments = self.extra_comments + f'_{pin_str}_low_pulse'
             self.excel_ini.extra_file_name = self.excel_ini.extra_file_name + '_L'
+
+            # adjust status for EN low pulse
+            if pin_str == 'EN' :
+                # clear SW first and wait for a little bit of time
+                self.mcu_ini.i_o_change(set_or_clr0=0, pin_num0=2)
+                time.sleep(0.2)
+
             pass
         else:
             self.mcu_ini.i_o_change(set_or_clr0=0, pin_num0=pin_num0)
@@ -307,7 +328,7 @@ class glitch_mea:
             while x_glitch < c_glitch:
                 # this loop is same with load current level => load current is inner than Vin level
 
-                excel_t.message_box("press enater for next pattern", "you're in test mode", auto_exception=self.temp_test_mode)
+                self.excel_ini.message_box("press enater for next pattern", "you're in test mode", auto_exception=self.temp_test_mode)
 
                 # define the length from pulse step
                 if optional_mode == 0 and self.optional_mode_excel == 0 :
@@ -326,18 +347,49 @@ class glitch_mea:
 
                 if H_L_pulse == 0:
                     # default is low pulse
-                    self.mcu_ini.g_pulse_out_V2(
-                        pulse0=1, duration_ns=1000, en_sw=pin_str, count0=length_us
-                    )
-                    # since this is low pulse, it can also be achieve by using pulse out function
-                    # otherwise, it should be using pattern gen should be a better way
+
+                    if pin_str == 'SW' :
+                        # if SW low pulse case, EN keep high
+                        self.mcu_ini.g_pulse_out_V2(
+                            pulse0=1, duration_ns=1000, en_sw=pin_str, count0=length_us
+                        )
+                        # since this is low pulse, it can also be achieve by using pulse out function
+                        # otherwise, it should be using pattern gen should be a better way
+                        pass
+                    elif pin_str == 'EN' :
+                        # SW need to be low when checking EN's glitch
+                        # need to use flexible pattern gen
+                        pattern = (
+                        f"'1$1`{single_cell_state2}${length_us}`{single_cell_state1}$1`'"
+                        )
+                        full_str = f"mcu.pattern.setupX( {{{pattern}}},1000, 0 )"
+                        self.mcu_ini.pattern_gen_full_str(cmd_str0=full_str)
+
+
                     pass
                 else:
-                    pattern = (
-                        f"'0$1`{single_cell_state1}${length_us}`{single_cell_state2}$1`'"
-                    )
-                    full_str = f"mcu.pattern.setupX( {{{pattern}}},1000, 0 )"
-                    self.mcu_ini.pattern_gen_full_str(cmd_str0=full_str)
+
+                    if pin_str == 'EN' :
+                        pattern = (
+                            f"'0$1`{single_cell_state1}${length_us}`{single_cell_state2}$1`'"
+                        )
+                        full_str = f"mcu.pattern.setupX( {{{pattern}}},1000, 0 )"
+                        self.mcu_ini.pattern_gen_full_str(cmd_str0=full_str)
+                        pass
+                    elif pin_str == 'SW' :
+                        if x_glitch == 0 :
+                            # first time need to change the status to EN2 high
+                            pattern = f"'1$1`'"
+                            self.mcu_ini.pattern_gen(pattern0=pattern)
+                            time.sleep(0.1)
+                            pass
+
+                        pattern = (
+                            f"'1$1`{single_cell_state1}${length_us}`{single_cell_state2}$1`'"
+                        )
+                        full_str = f"mcu.pattern.setupX( {{{pattern}}},1000, 0 )"
+                        self.mcu_ini.pattern_gen_full_str(cmd_str0=full_str)
+                        pass
 
                     pass
 
