@@ -23,7 +23,7 @@ import locale as lo
 
 class general_test ():
 
-    def __init__(self, excel0, pwr0, met_v0, loader_0, mcu0, src0, met_i0, chamber0):
+    def __init__(self, excel0, pwr0, met_v0, loader_0, mcu0, src0, met_i0, chamber0, pwr_bk=0):
         prog_only = 1
         if prog_only == 0:
             # ======== only for object programming
@@ -31,9 +31,13 @@ class general_test ():
             # need to become comment when the OBJ is finished
             import mcu_obj as mcu
             import inst_pkg_d as inst
+            import Power_BK9141 as bk
             # initial the object and set to simulation mode
             pwr0 = inst.LPS_505N(3.7, 0.5, 3, 1, 'off')
             pwr0.sim_inst = 0
+            # 230714 add BK power
+            pwr_bk = bk.Power_BK9141(excel0=excel0, GP_addr0=2, main_off_line0=0)
+
             # initial the object and set to simulation mode
             met_v0 = inst.Met_34460(0.0001, 7, 0.000001, 2.5, 21)
             met_v0.sim_inst = 0
@@ -56,7 +60,15 @@ class general_test ():
 
         # assign the input information to object variable
         self.excel_ini = excel0
-        self.pwr_ini = pwr0
+        # 230714: both use address 0 or general_bk object are ok to use BK power
+        # add selection function for power, if LPS505 is set to 100, use BK power as power
+        if self.excel_ini.pwr_supply_addr == 100 :
+            # if the LPS address is set to 100, use BK power instead
+            self.pwr_ini = pwr_bk
+            pass
+        else:
+            self.pwr_ini = pwr0
+            pass
         self.loader_ini = loader_0
         self.met_v_ini = met_v0
         self.mcu_ini = mcu0

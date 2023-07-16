@@ -42,7 +42,7 @@ import ripple_obj as rip
 import glitch_obj as gli
 
 # off line test, set to 1 set all the instrument to simulation mode
-main_off_line = 1
+main_off_line = 0
 single_mode = 0
 # this is the variable control file name, single or the multi item
 # adjust after the if selection of program_group
@@ -52,7 +52,7 @@ multi_item = 0
 mcu_sel = 'g'
 # 230712 counter lock for real testing (1 to lock V I counter to 2)
 # for format gen related testing
-counter_lock = 1
+counter_lock = 0
 
 # ==============
 # excel setting for main program
@@ -945,7 +945,7 @@ if __name__ == "__main__":
 
         if program_group == 7.3:
             excel_m.message_box(
-                "high V buck setting, change EN1 to L and start LDO testing",
+                "high V buck setting, change EN1 to L and also the current probe to start LDO testing",
                 "watch out",
                 auto_exception=1,
             )
@@ -1428,11 +1428,14 @@ if __name__ == "__main__":
         # changeable area
         # ===========
 
-        AD_version = 1
+        AD_version = 0
         # 230419 add this to spearate A and D version testing
 
         if AD_version == 0:
             # fix the sheet lock to CTRL_sh_seq_EN=SW, CTRL_sh_seq_EN, CTRL_sh_seq_SW
+
+            # for inrush current measurement, watch out the amount of Cin
+
             format_g.set_sheet_name("CTRL_sh_inrush_BK")
             ripple_t.inrush_current()
 
@@ -1448,6 +1451,11 @@ if __name__ == "__main__":
             format_g.set_sheet_name("CTRL_sh_seq_SW(EN)_BK")
             ripple_t.pwr_seq()
 
+            # 230713 inturrupt for change environment setup
+            # glitch need extra loading, connect loader to setup
+
+            excel_m.message_box(content_str='need to add the loader onto the setup for glitch measurement', title_str='setup change request', auto_exception=1)
+
             format_g.set_sheet_name('glitch_BK_EN2_L')
             gli_test.run_verification()
 
@@ -1460,7 +1468,7 @@ if __name__ == "__main__":
             format_g.set_sheet_name('glitch_BK_EN1_H')
             gli_test.run_verification()
 
-            excel_m.extra_file_name = "_inrush_pwr_seq_BK"
+            excel_m.extra_file_name = "_inrush_pwr_seq_glitch_BK_mix"
 
             pass
         else:
