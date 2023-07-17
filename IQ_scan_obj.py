@@ -140,6 +140,12 @@ class iq_scan:
         # self.sh_main.copy(self.sh_ref_condition)
         # self.sh_result.copy(self.sh_ref)
 
+        # 230717, since this is the old item without parameter reload
+        # add the parameter reload in sheet_gen
+        # IQ testing related
+        self.excel_ini.c_iq = self.excel_ini.sh_iq_scan.range('C4').value
+        self.excel_ini.iq_scaling = self.excel_ini.sh_iq_scan.range('C5').value
+
         pass
 
     def table_plot(self):
@@ -266,7 +272,7 @@ class iq_scan:
 
         # 230716 add Buck IQ measurement
         if pmic_buck == 1 :
-            excel1.message_box(content_str='need to change to USM or FCCM', title_str='extra state for Buck', auto_exception=1)
+            self.excel_ini.message_box(content_str='need to change to USM or FCCM', title_str='extra state for Buck', auto_exception=1)
             x_iq = 0
             while x_iq < (self.excel_ini.c_iq) :
                 # load the Vin command first
@@ -298,7 +304,7 @@ class iq_scan:
                     pass
                 pass
 
-            excel1.message_box(content_str='add comments for the extra row \n copy to result sheet? ', title_str='USM or FCCM Buck', auto_exception=1)
+            self.excel_ini.message_box(content_str='add comments for the extra row \n copy to result sheet? ', title_str='USM or FCCM Buck', auto_exception=1)
             pass
 
 

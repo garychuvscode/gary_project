@@ -42,7 +42,7 @@ import ripple_obj as rip
 import glitch_obj as gli
 
 # off line test, set to 1 set all the instrument to simulation mode
-main_off_line = 0
+main_off_line = 1
 single_mode = 0
 # this is the variable control file name, single or the multi item
 # adjust after the if selection of program_group
@@ -404,7 +404,7 @@ if __name__ == "__main__":
     # decide by the program_group variable
 
     # Single IQ
-    if program_group == 0:
+    if program_group >= 0 and program_group < 1:
         """
         item for exe file operaing, don't change after confirm with experiment
         """
@@ -419,8 +419,28 @@ if __name__ == "__main__":
         # open instrument and add the name
         open_inst_and_name()
 
-        # start the testing
-        iq_test.run_verification()
+        if program_group == 0 :
+            # original IQ function
+            # start the testing
+            iq_test.run_verification()
+        elif program_group == 0.3 :
+            # IQ for PMIC buck
+            C_version = 0
+            if C_version == 0 :
+                # B C version mode
+                excel_m.sh_iq_scan = excel_m.wb.sheets('IQ_BK_C')
+                pass
+
+            else:
+                # B C version mode
+                excel_m.sh_iq_scan = excel_m.wb.sheets('IQ_BK_AB')
+                pass
+
+            # Run Buck version
+            iq_test.run_verification(pmic_buck=1)
+
+            pass
+
 
         # remember that this is only call by main, not by  object
         excel_m.end_of_file(multi_item)
