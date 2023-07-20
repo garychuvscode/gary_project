@@ -1482,7 +1482,7 @@ if __name__ == "__main__":
     excel_t.wave_path = default_path
     scope.open_inst()
 
-    test_index = 5
+    test_index = 4
     """
     set 3 to update the channel and others
     set 4 to change the label name
@@ -1567,14 +1567,14 @@ if __name__ == "__main__":
         if label_pos_sel == 0:
             # list of channel name
             ch_name = {
-                "CH1": "LX",
-                "CH2": "Short",
+                "CH1": "EN1",
+                "CH2": "Vout",
                 "CH3": "LX",
-                "CH4": "LX",
-                "CH5": "I_L",
-                "CH6": "VCC",
-                "CH7": "PG",
-                "CH8": "Long",
+                "CH4": "Vin",
+                "CH5": "Iin",
+                "CH6": "Buck",
+                "CH7": "EN1=EN2",
+                "CH8": "LDO",
             }
         elif label_pos_sel == 1:
             ch_name = {

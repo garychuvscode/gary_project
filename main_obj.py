@@ -42,7 +42,7 @@ import ripple_obj as rip
 import glitch_obj as gli
 
 # off line test, set to 1 set all the instrument to simulation mode
-main_off_line = 1
+main_off_line = 0
 single_mode = 0
 # this is the variable control file name, single or the multi item
 # adjust after the if selection of program_group
