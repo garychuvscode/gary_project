@@ -78,7 +78,20 @@ class ripple_test:
         """
         self.pmic_buck = 0
 
+        # 230723: add some debug mode between the operation
+        # debug control for different loop
+        self.a_debug_en_i = 0
+        self.a_debug_en_v = 0
+        self.a_debug_en_sw = 0
+
         pass
+
+    def debug_check(self):
+        '''
+        subprogram for checking debug status stop the program
+        '''
+
+        # thinking about if this function really needed or not
 
     def para_loaded(self):
         """
@@ -461,6 +474,11 @@ class ripple_test:
                                 scope_s.set_general["time_scale"],
                                 scope_s.set_general["time_offset"],
                             )
+
+                        elif x_iload == 3 and self.pmic_buck == 1 and x_sw_i2c > 0:
+                            # single buck operation (Buck only)
+                            # x_sw_i2c is only for the second sheet with smaller time scale
+                            scope_s.Hor_scale_adj(scope_s.set_general["time_scale"])
 
 
                     # assign i_load on related channel
