@@ -448,12 +448,14 @@ class ripple_test:
                                 scope_s.set_general["time_scale"],
                                 scope_s.set_general["time_offset"],
                             )
+
+
                         elif x_iload < 3 and self.pmic_buck == 1 and x_sw_i2c > 0:
                             # single buck operation (Buck only)
                             # x_sw_i2c is only for the second sheet with smaller time scale
                             scope_s.Hor_scale_adj(0.00002)
 
-                        elif x_iload == 3 and self.pmic_buck == 1:
+                        elif x_iload == 1 and self.pmic_buck == 1:
                             # single buck operation
                             scope_s.Hor_scale_adj(
                                 scope_s.set_general["time_scale"],
@@ -533,6 +535,15 @@ class ripple_test:
                                 pwr_ch=excel_s.relay0_ch,
                                 loader_ch=excel_s.loader_VCIch,
                             )
+
+                            if iload_L1 == 0 :
+                                # change the scale to 500mV/div if low current is set to 0
+                                # for special load transient in Buck testing
+                                scope_s.single_ch_change(ch=f'C{1}', ver_scale=0.5)
+
+                            else:
+                                # here is to return to original setting of the enviornment
+                                scope_s.single_ch_change(ch=f'C{1}', ver_scale=scope_s.ch_c1["volt_dev"])
 
                             load_s.dynamic_config(L1=iload_L1, L2=iload_L2)
                             load_s.dynamic_ctrl(

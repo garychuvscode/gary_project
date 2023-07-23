@@ -945,7 +945,7 @@ if __name__ == "__main__":
                 # this is only for HV buck
                 excel_m.relay0_ch = 1
                 excel_m.message_box(
-                    "high V buck setting, parallel output for BK9141\n control channel is set to CH1",
+                    "high V buck setting, parallel output for BK9141\n control channel is set to CH1 \n current probe set to 10x at scope and probe ",
                     "watch out",
                     auto_exception=1,
                 )
