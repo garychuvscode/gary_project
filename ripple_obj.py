@@ -83,6 +83,7 @@ class ripple_test:
         default power not toggle set ot 0, power toggle for transition
         if using i2c mode, not to toggle or turn off power after each testing
         '''
+        self.debug_target = ''
         self.power_not_toggle = 0
 
         pass
@@ -95,7 +96,7 @@ class ripple_test:
 
         # 230723 add issue adjustment and check point for debug
         # interrupt at the pass command to see status of program and settings before save the waveform
-        if x_iload0 == self.debug_target and self.debug_target != 0 :
+        if x_iload0 == self.debug_target and self.debug_target != '' :
             '''
             set debug target to string to continuous operation
             choose the index to stop when needed
