@@ -949,6 +949,16 @@ if __name__ == "__main__":
                     "watch out",
                     auto_exception=1,
                 )
+
+            '''
+            reserve for interrupt if needed to turn off power supply
+            toggle function
+            '''
+            pass
+            # 1 is not to toggle and 0 is to toggle
+            ripple_t.power_not_toggle = 1
+
+
             # ripple
             format_g.set_sheet_name("CTRL_sh_ripple_SY")
             ripple_t.run_verification(pmic_buck0=1)
