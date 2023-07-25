@@ -78,11 +78,12 @@ class ripple_test:
         """
         self.pmic_buck = 0
 
-        # 230723: add some debug mode between the operation
-        # debug control for different loop
-        self.a_debug_en_i = 0
-        self.a_debug_en_v = 0
-        self.a_debug_en_sw = 0
+        # 230724 add power not toggle control parameter
+        '''
+        default power not toggle set ot 0, power toggle for transition
+        if using i2c mode, not to toggle or turn off power after each testing
+        '''
+        self.power_not_toggle = 0
 
         pass
 
@@ -1145,10 +1146,15 @@ class ripple_test:
                 # turn the offset setting to normalizaiton setting
                 self.scope_ini.nor_v_off = 1
                 pass
-            # turn off pwr if original is on, prevent error position
-            self.pwr_ini.chg_out(
-                0, self.excel_ini.pre_imax, self.excel_ini.relay0_ch, "off"
-            )
+
+            if self.power_not_toggle == 0:
+                # 230724 => add function for not to turn off power supply
+
+                # turn off pwr if original is on, prevent error position
+                self.pwr_ini.chg_out(
+                    0, self.excel_ini.pre_imax, self.excel_ini.relay0_ch, "off"
+                )
+                pass
             self.scope_ini.scope_initial(self.scope_setting)
 
             pass
@@ -1342,7 +1348,9 @@ class ripple_test:
         pass
 
     def end_of_exp(self):
-        self.pwr_ini.inst_single_close(self.excel_ini.relay0_ch)
+
+        if self.power_not_toggle == 0:
+            self.pwr_ini.inst_single_close(self.excel_ini.relay0_ch)
 
         self.loader_ini.inst_single_close(self.excel_ini.loader_ELch)
         self.loader_ini.inst_single_close(self.excel_ini.loader_VCIch)
