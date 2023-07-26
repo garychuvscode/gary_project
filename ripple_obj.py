@@ -369,7 +369,8 @@ class ripple_test:
 
                 pass
 
-            elif self.en_i2c_mode == 0:
+            elif self.en_i2c_mode == 0 and pmic_buck0 == 0 :
+                # add new condition control for Buck and PMIC operation
                 pulse1 = excel_s.sh_format_gen.range((43 + x_sw_i2c, 5)).value
                 pulse2 = excel_s.sh_format_gen.range((43 + x_sw_i2c, 6)).value
 

@@ -289,10 +289,12 @@ class Power_BK9141(GInst):
                 self.only_write(f"INST {self.chConvert[ch_str]}")
                 print(f"INST {self.chConvert[ch_str]}")
             time.sleep(0.2)
-            valstr = self.query_write(f"MEAS:SCAL:CURR:DC?", 0.2)
+            # for the current reading, add error handling for simulation mode
+            # read current need to be string return, not the number for valstr
+            valstr = str(self.query_write(f"MEAS:SCAL:CURR:DC?", 0.2))
         except pyvisa.errors.VisaIOError:
             self.only_write(f"*CLS")
-            valstr = self.query_write(f"MEAS:SCAL:CURR:DC?", 0.2)
+            valstr = str(self.query_write(f"MEAS:SCAL:CURR:DC?", 0.2))
             # self.query_write(f'*CLS?')
 
         if self.sim_inst == 0:
@@ -306,7 +308,7 @@ class Power_BK9141(GInst):
         # 230405: add the error handling of result become none and don't have group(0) in the attribute
         if valstr == "Error queue overflow\n":
             # assign the fixed result and be able to show the error
-            valstr = "0.5203241314"
+            valstr = "5203241314"
             print("No match found!")
 
             pass
