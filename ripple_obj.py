@@ -83,14 +83,29 @@ class ripple_test:
         default power not toggle set ot 0, power toggle for transition
         if using i2c mode, not to toggle or turn off power after each testing
         '''
+        self.debug_target = ''
         self.power_not_toggle = 0
 
         pass
 
-    def debug_check(self):
+    def debug_check(self, x_iload0=0, info0=''):
         '''
         subprogram for checking debug status stop the program
+        change self.debug_target to meet specific i_load
         '''
+
+        # 230723 add issue adjustment and check point for debug
+        # interrupt at the pass command to see status of program and settings before save the waveform
+        if x_iload0 == self.debug_target and self.debug_target != '' :
+            '''
+            set debug target to string to continuous operation
+            choose the index to stop when needed
+            interrupt first at anywhere for setting up the debug target of
+            x_iload setting
+            '''
+            self.excel_ini.message_box(content_str=f'debug call with {info0}', title_str='debug check request', auto_exception=1)
+            pass
+            pass
 
         # thinking about if this function really needed or not
 
@@ -634,6 +649,10 @@ class ripple_test:
 
                     # setup waveform name
                     excel_s.wave_info_update(typ="ripple", v=v_target, i=iload_target)
+
+                    # call debug check if needed, change index from the program
+                    self.debug_check(x_iload0=x_iload, info0=f"Vin={v_target}_i_load={iload_target}")
+
 
                     # measure and capture waveform
 
