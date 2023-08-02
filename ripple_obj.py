@@ -419,7 +419,14 @@ class ripple_test:
                 if self.ripple_line_load == 1 or self.ripple_line_load == 0:
                     v_target = excel_s.sh_format_gen.range((43 + x_vin, 4)).value
 
-                    pwr_s.chg_out(v_target, excel_s.pre_imax, excel_s.relay0_ch, "on")
+                    # 230730 to prevent turn off of low Vin input
+                    if pmic_buck0 == 1 and float(v_target) < 12 :
+                        # to compensate the low V drop of Vin, only for HV buck
+                        v_target_pre = float(v_target) + 3
+                        pwr_s.chg_out(v_target_pre, excel_s.pre_imax, excel_s.relay0_ch, "on")
+
+                    else:
+                        pwr_s.chg_out(v_target, excel_s.pre_imax, excel_s.relay0_ch, "on")
 
                     pro_status_str = "Vin:" + str(v_target)
                     excel_s.vin_status = str(v_target)
