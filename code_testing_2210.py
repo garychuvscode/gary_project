@@ -224,10 +224,55 @@ class test_calass():
     def copy_range_test(self):
         # assign the destination range and add into the source range.copy
         # function to copy related ranage to the dest range
+
+        '''
+        for the input from the excel, using format in L1 ..
+        for the input from program, using the index of row and column
+        this should be the better way of implementation
+        '''
+
         temp_range = self.sh_dest.range((3, 10), (10, 10))
         self.sh_sor.range((3, 10), (10, 10)).copy(temp_range)
 
+        ind_start = 'L3'
+        ind_end = 'L10'
+
+        self.sh_sor.range(ind_start, ind_end).copy(temp_range)
+        time.sleep(0.2)
+
+        ind_start = (3, 10)
+        ind_end = (10, 10)
+
+        self.sh_sor.range(ind_start, ind_end).copy(temp_range)
+        time.sleep(0.2)
+
+        ind_start = 'L3'
+        ind_end = 'L10'
+
+        self.sh_sor.range(ind_start, ind_end).copy(temp_range)
+        time.sleep(0.2)
+
+        a = 3
+        b = 10
+
+        ind_start = (b, a)
+        ind_end = self.cell_gen(a, b)
+
+        self.sh_sor.range(ind_start, ind_end).copy(temp_range)
+
         pass
+
+    def cell_gen (self, a0=0, b0=0):
+        '''
+        use to gen the range setting fom row, column input
+        and return the list(array) of format needed to
+        operate range
+        '''
+        print(f'row setting is {a0}')
+        print(f'column setting is {b0}')
+
+
+        return (a0, b0)
 
     def excel_open(self):
         self.wb = xw.Book()
@@ -236,7 +281,11 @@ class test_calass():
         self.sh_dest = self.wb2.sheets.add('test_dest')
         self.sh_sor.range((10, 10), (3, 10)).value = '1010abc'
 
+        self.sh_sor.range('L3', 'L10').value = '09876'
+
         pass
+
+
 
 
 t_s = test_calass()

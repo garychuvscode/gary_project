@@ -9,6 +9,8 @@ to define
 
 """
 
+# whatch out the index of excel is y,x ; which is row, column
+
 import xlwings as xw
 
 
@@ -19,17 +21,17 @@ class table_gen:
         book_name0="",
         wb0=0,
         sheet_name0="",
-        nor_x0=0,
-        nor_y0=0,
+        nor_row0=0,
+        nor_col0=0,
         normal_random=0,
     ):
         """
         setup the table object by assign the trace or send
-        the wb in object to define
+        the wb in object to define => need to be wb obj, not file name
         normal_random => 0-normal; 1-random
         normal => with x, y index
         random => instrument_ctrl or others
-        nor_X0, nor_Y0 => table started index
+        nor_Row0, nor_Col0 => table started index
         """
 
         # loaded the work book to object
@@ -46,33 +48,49 @@ class table_gen:
             pass
 
         self.main_sheet = self.wb.sheets(str(sheet_name0))
-        self.nor_X = nor_x0
-        self.nor_Y = nor_y0
+        self.nor_Row = nor_row0
+        self.nor_Col = nor_col0
 
         pass
 
-    def get_value(self, inx_x0=0, ind_y0=0):
+    def get_value(self, ind_row0=0, ind_col0=0):
         """
-        get value with index_X and index_Y
+        get value with index_Row and index_Col
         """
         val_return = self.main_sheet.range(
-            (self.nor_X + inx_x0, self.nor_Y + ind_y0)
+            (self.nor_Row + ind_row0, self.nor_Col + ind_col0)
         ).value
         return val_return
         pass
 
-    def set_value(self, inx_x0=0, ind_y0=0, val_set=0):
+    def set_value(self, ind_row0=0, ind_col0=0, val_set=0):
         """
-        set value with index_X and index_Y
+        set value with index_Row and index_Col
         """
         self.main_sheet.range(
-            (self.nor_X + inx_x0, self.nor_Y + ind_y0)
+            (self.nor_Row + ind_row0, self.nor_Col + ind_col0)
         ).value = val_set
+
+        pass
 
     pass
 
 
 if __name__ == "__main__":
     #  the testing code for this file object
+
+    wb_test = xw.books("obj_main.xlsm")
+
+    table_test = table_gen(
+        wb0=wb_test,
+        sheet_name0="inst_ctrl",
+        nor_row0=12,
+        nor_col0=3,
+        normal_random=1,
+    )
+    a = table_test.get_value(ind_row0=5, ind_col0=0)
+    print(f"the value got is {a}")
+
+    table_test.set_value(ind_row0=5, ind_col0=0, val_set=3)
 
     pass

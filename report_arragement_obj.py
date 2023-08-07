@@ -24,9 +24,23 @@ class report_arragement:
         self.wb = xw.books(self.file_name)
         print(f"select {self.file_name} as report file")
 
+        # name of sheet for example operation
+        self.Buck_eff_example = "Eff_comp_ex"
+        self.LDO_reg_example = "regulation_comp_LDO_ex"
+
+        # name of source sheet
+        self.source_sheet = 0
+        self.destination_sheet = 0
+
         pass
 
-    def Buck_eff_load_regulation(self):
+    def Buck_eff_load_regulation(self, ind_row=0, ind_col=0):
+        """
+        operate the copy form the table reference of row and
+        column index input
+
+
+        """
         pass
 
     def LDO_load_regulation(self):
