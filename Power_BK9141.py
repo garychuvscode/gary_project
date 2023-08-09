@@ -103,6 +103,10 @@ class Power_BK9141(GInst):
         # 221226 correct the query issue => no reutnr value
         self.res_q = 0
 
+        # 230809 add the memory for the last called Vout => should be ok used for
+        # Vin calibration
+        self.vset_o = 0
+
     def only_write(self, cmd):
         if self.sim_inst == 1:
             # real mode
@@ -339,6 +343,10 @@ class Power_BK9141(GInst):
         pass
 
     def chg_out(self, vset1="NA", iset1="NA", act_ch1=1, state1="NA"):
+        '''
+        change the ouptut setting of power supply, current or voltage with setting channel
+        '''
+
         act_ch1 = int(act_ch1)
 
         if vset1 != "NA":
@@ -359,6 +367,9 @@ class Power_BK9141(GInst):
                 self.outputON("CH" + str(act_ch1))
             else:
                 self.outputOFF("CH" + str(act_ch1))
+
+        # update the last Vout after change the target value
+        self.vset_o = float(vset1)
 
         pass
 
@@ -428,11 +439,14 @@ class Power_BK9141(GInst):
             #     pass
 
             vin_diff = vin_target - v_res_temp_f
-            vin_new = vin_target + excel0.pre_inc_vin
+            # 230809: below line is no used line
+            # vin_new = vin_target + excel0.pre_inc_vin
             while vin_diff > excel0.vin_diff_set or vin_diff < (
                 -1 * excel0.vin_diff_set
             ):
-                vin_new = vin_new + 0.5 * (vin_target - v_res_temp_f)
+                # vin_new = vin_new + 0.5 * (vin_target - v_res_temp_f)
+                # 230809 change to vset_o to make less bouncing of Vin calibration
+                vin_new = self.vset_o + 0.5 * (vin_target - v_res_temp_f)
                 # clamp for the Vin maximum
                 if vin_new > excel0.pre_vin_max:
                     vin_new = excel0.pre_vin_max
