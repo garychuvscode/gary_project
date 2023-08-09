@@ -117,7 +117,7 @@ class report_arragement:
 
         sh_temp = self.sy_eff_0p19
         # load_reg SY-0-1.9A
-        ind1 = (4,3)
+        ind1 = (184,3)
         des = (142,4)
         row_c = 39
         col_c = 7
@@ -126,7 +126,7 @@ class report_arragement:
 
         sh_temp = self.sy_eff_2
         # load_reg SY-2-8A
-        ind1 = (4,3)
+        ind1 = (144,3)
         des = (181,4)
         row_c = 29
         col_c = 7
@@ -135,7 +135,7 @@ class report_arragement:
 
         sh_temp = self.nt_eff_0p19
         # load_reg NT-0-1.9A
-        ind1 = (4,3)
+        ind1 = (184,3)
         des = (142,16)
         row_c = 39
         col_c = 7
@@ -144,7 +144,7 @@ class report_arragement:
 
         sh_temp = self.nt_eff_2
         # load_reg NT-2-8A
-        ind1 = (4,3)
+        ind1 = (144,3)
         des = (181,16)
         row_c = 29
         col_c = 7
