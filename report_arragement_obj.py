@@ -74,9 +74,8 @@ class report_arragement:
         self.nt_eff_0p19 = self.sh_comp.range('C8').value
         self.nt_eff_2 = self.sh_comp.range('C9').value
 
+        # this is the index sheet for copy summary sheet to front of first sheet
         self.sh_sy_eff_0p19 = self.wb.sheets(self.sy_eff_0p19)
-
-
 
 
         sh_temp = self.sy_eff_0p19
@@ -162,6 +161,69 @@ class report_arragement:
         pass
 
     def LDO_load_regulation(self):
+
+        prog_fake = 0
+        if prog_fake == 1:
+            self.wb = xw.Book()
+            self.sh_comp = self.wb.sheets("temp")
+            self.sh_sy_eff_0p19 = self.wb.sheets("temp")
+
+        self.sh_comp = self.wb.sheets(self.LDO_reg_example)
+
+        # 0p19 => LOD load regulation
+        # 2 => Buck on load regulation
+        self.buck_sh_name = self.sh_comp.range('C4').value
+        self.sy_eff_0p19 = self.sh_comp.range('C5').value
+        self.sy_eff_2 = self.sh_comp.range('C6').value
+        self.nt_eff_0p19 = self.sh_comp.range('C8').value
+        self.nt_eff_2 = self.sh_comp.range('C9').value
+
+        # this is the index sheet for copy summary sheet to front of first sheet
+        self.sh_sy_eff_0p19 = self.wb.sheets(self.sy_eff_0p19)
+
+
+        sh_temp = self.sy_eff_0p19
+        # eff SY-LDO load regulation
+        ind1 = (224,3)
+        des = (43,4)
+        row_c = 49
+        col_c = 7
+        self.table_copy(ind_1=ind1, row_count=row_c, col_count=col_c, ind_dest0=des, sheet_sor0=sh_temp, sheet_des0=self.LDO_reg_example,all0=0)
+
+
+        sh_temp = self.sy_eff_2
+        # eff SY-Buck on
+        ind1 = (224,3)
+        des = (142,4)
+        row_c = 49
+        col_c = 7
+        self.table_copy(ind_1=ind1, row_count=row_c, col_count=col_c, ind_dest0=des, sheet_sor0=sh_temp, sheet_des0=self.LDO_reg_example,all0=0)
+
+
+        sh_temp = self.nt_eff_0p19
+        # eff NT-LDO load regulation
+        ind1 = (224,3)
+        des = (43,16)
+        row_c = 49
+        col_c = 7
+        self.table_copy(ind_1=ind1, row_count=row_c, col_count=col_c, ind_dest0=des, sheet_sor0=sh_temp, sheet_des0=self.LDO_reg_example,all0=0)
+
+
+        sh_temp = self.nt_eff_2
+        # eff NT-Buck on
+        ind1 = (224,3)
+        des = (142,16)
+        row_c = 49
+        col_c = 7
+        self.table_copy(ind_1=ind1, row_count=row_c, col_count=col_c, ind_dest0=des, sheet_sor0=sh_temp, sheet_des0=self.LDO_reg_example,all0=0)
+
+        # ===after finished the table, copy the sheet to related place and re-name
+
+        # copy the result in front of the first sheet (SY_0p19)
+        self.sh_comp = self.sh_comp.copy(self.sh_sy_eff_0p19)
+        temp_name = self.sh_comp.range('C4').value
+        self.sh_comp.name = str(temp_name) + '_LDO_reg_comp'
+
         pass
 
     def table_comparison(self,ind_1=(1, 1),ind_2=(3, 3),row_count=3,col_count=3,ind_dest0=(5, 5),sheet_sor0="",sheet_des0="",diff=1):
@@ -313,7 +375,7 @@ class report_arragement:
 if __name__ == "__main__":
     #  the testing code for this file object
 
-    operation_index = 1
+    operation_index = 2
     if operation_index == 0 :
         test_index = 2
         trace = 0
@@ -330,6 +392,9 @@ if __name__ == "__main__":
         rep.Buck_eff_load_regulation()
 
         pass
+    elif operation_index == 2 :
+
+        rep.LDO_load_regulation()
 
 
 
