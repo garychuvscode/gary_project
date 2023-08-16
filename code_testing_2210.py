@@ -283,6 +283,8 @@ class test_calass():
 
         self.sh_sor.range('L3', 'L10').value = '09876'
 
+        temp_range = self.sh_sor.range('L3', 'L10')
+
         pass
 
 
