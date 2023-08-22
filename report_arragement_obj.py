@@ -331,7 +331,11 @@ class report_arragement:
         res_range = self.sheet_des.range(ind_dest0)
 
         # copy table 1
+
+        # this will copy the format
         # sor_range.copy(res_range)
+
+        # this will only copy the value
         res_range.value = sor_range.value
 
 
