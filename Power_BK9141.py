@@ -342,7 +342,7 @@ class Power_BK9141(GInst):
         return str(curr)
         pass
 
-    def chg_out(self, vset1="NA", iset1="NA", act_ch1=1, state1="NA"):
+    def chg_out(self, vset1="NA", iset1="NA", act_ch1=1, state1="NA", flat_step=1):
         '''
         change the ouptut setting of power supply, current or voltage with setting channel
         '''
@@ -351,10 +351,44 @@ class Power_BK9141(GInst):
 
         if vset1 != "NA":
             vset1 = float(vset1)
-            if float(vset1) <= self.max_v:
-                self.setVoltage(vset1, "CH" + str(act_ch1))
+
+            if flat_step == 1 and vset1 < self.vset_o :
+                # when reduce output voltage, using flat step moving
+
+                diff = self.vset_o - vset1
+                while diff > 0.2 :
+                    # one step for 0.5
+
+                    v_temp = self.vset_o - 0.2
+
+                    if float(v_temp) <= self.max_v:
+                        self.setVoltage(v_temp, "CH" + str(act_ch1))
+                        pass
+
+                    self.vset_o = float(v_temp)
+                    diff = self.vset_o - vset1
+
+                    time.sleep(0.05)
+                    # wait little time for transition
+
+                    pass
+
+                if float(vset1) <= self.max_v:
+                        self.setVoltage(vset1, "CH" + str(act_ch1))
+                        pass
+
+                pass
             else:
-                self.setVoltage(self.max_v, "CH" + str(act_ch1))
+
+                if float(vset1) <= self.max_v:
+                    self.setVoltage(vset1, "CH" + str(act_ch1))
+                else:
+                    self.setVoltage(self.max_v, "CH" + str(act_ch1))
+                    pass
+
+                pass
+
+
         if iset1 != "NA":
             iset1 = float(iset1)
             if float(iset1) <= self.max_i:
@@ -656,7 +690,7 @@ class Power_BK9141(GInst):
 
 if __name__ == "__main__":
     # testing for the 9141
-    test_mode = 2
+    test_mode = 3
     sim_test_set = 1
 
     import mcu_obj as mcu
@@ -670,7 +704,7 @@ if __name__ == "__main__":
     met_v_t.sim_inst = sim_test_set
     met_v_t.open_inst()
 
-    mcu_t = mcu.MCU_control(1, 13)
+    mcu_t = mcu.MCU_control(0, 13)
     mcu_t.com_open()
 
     # bk_9141 = Power_BK9141(sim_inst0=sim_test_set, excel0=excel_t, addr=2)
@@ -745,3 +779,7 @@ if __name__ == "__main__":
     elif test_mode == 3:
         # this mode is used to test each function
         bk_9141.open_inst()
+
+        bk_9141.chg_out(24, 1, 1, "on")
+        input()
+        bk_9141.chg_out(7.4, 1, 1, "on")
