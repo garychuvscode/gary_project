@@ -726,6 +726,8 @@ class JIGM3:
             # self.i_o_change(port0=port_optional0, set_or_clr0=1, pin_num0=pin_SW0)
             pass
 
+        print(f'pmic moe set to {mode_index}\n')
+
         pass
 
     def com_open(self):

@@ -103,6 +103,10 @@ class Power_BK9141(GInst):
         # 221226 correct the query issue => no reutnr value
         self.res_q = 0
 
+        # 230809 add the memory for the last called Vout => should be ok used for
+        # Vin calibration
+        self.vset_o = 0
+
     def only_write(self, cmd):
         if self.sim_inst == 1:
             # real mode
@@ -289,10 +293,12 @@ class Power_BK9141(GInst):
                 self.only_write(f"INST {self.chConvert[ch_str]}")
                 print(f"INST {self.chConvert[ch_str]}")
             time.sleep(0.2)
-            valstr = self.query_write(f"MEAS:SCAL:CURR:DC?", 0.2)
+            # for the current reading, add error handling for simulation mode
+            # read current need to be string return, not the number for valstr
+            valstr = str(self.query_write(f"MEAS:SCAL:CURR:DC?", 0.2))
         except pyvisa.errors.VisaIOError:
             self.only_write(f"*CLS")
-            valstr = self.query_write(f"MEAS:SCAL:CURR:DC?", 0.2)
+            valstr = str(self.query_write(f"MEAS:SCAL:CURR:DC?", 0.2))
             # self.query_write(f'*CLS?')
 
         if self.sim_inst == 0:
@@ -306,7 +312,7 @@ class Power_BK9141(GInst):
         # 230405: add the error handling of result become none and don't have group(0) in the attribute
         if valstr == "Error queue overflow\n":
             # assign the fixed result and be able to show the error
-            valstr = "0.5203241314"
+            valstr = "5203241314"
             print("No match found!")
 
             pass
@@ -336,15 +342,53 @@ class Power_BK9141(GInst):
         return str(curr)
         pass
 
-    def chg_out(self, vset1="NA", iset1="NA", act_ch1=1, state1="NA"):
+    def chg_out(self, vset1="NA", iset1="NA", act_ch1=1, state1="NA", flat_step=1):
+        '''
+        change the ouptut setting of power supply, current or voltage with setting channel
+        '''
+
         act_ch1 = int(act_ch1)
 
         if vset1 != "NA":
             vset1 = float(vset1)
-            if float(vset1) <= self.max_v:
-                self.setVoltage(vset1, "CH" + str(act_ch1))
+
+            if flat_step == 1 and vset1 < self.vset_o :
+                # when reduce output voltage, using flat step moving
+
+                diff = self.vset_o - vset1
+                while diff > 0.2 :
+                    # one step for 0.5
+
+                    v_temp = self.vset_o - 0.2
+
+                    if float(v_temp) <= self.max_v:
+                        self.setVoltage(v_temp, "CH" + str(act_ch1))
+                        pass
+
+                    self.vset_o = float(v_temp)
+                    diff = self.vset_o - vset1
+
+                    time.sleep(0.05)
+                    # wait little time for transition
+
+                    pass
+
+                if float(vset1) <= self.max_v:
+                        self.setVoltage(vset1, "CH" + str(act_ch1))
+                        pass
+
+                pass
             else:
-                self.setVoltage(self.max_v, "CH" + str(act_ch1))
+
+                if float(vset1) <= self.max_v:
+                    self.setVoltage(vset1, "CH" + str(act_ch1))
+                else:
+                    self.setVoltage(self.max_v, "CH" + str(act_ch1))
+                    pass
+
+                pass
+
+
         if iset1 != "NA":
             iset1 = float(iset1)
             if float(iset1) <= self.max_i:
@@ -357,6 +401,9 @@ class Power_BK9141(GInst):
                 self.outputON("CH" + str(act_ch1))
             else:
                 self.outputOFF("CH" + str(act_ch1))
+
+        # update the last Vout after change the target value
+        self.vset_o = float(vset1)
 
         pass
 
@@ -426,11 +473,14 @@ class Power_BK9141(GInst):
             #     pass
 
             vin_diff = vin_target - v_res_temp_f
-            vin_new = vin_target + excel0.pre_inc_vin
+            # 230809: below line is no used line
+            # vin_new = vin_target + excel0.pre_inc_vin
             while vin_diff > excel0.vin_diff_set or vin_diff < (
                 -1 * excel0.vin_diff_set
             ):
-                vin_new = vin_new + 0.5 * (vin_target - v_res_temp_f)
+                # vin_new = vin_new + 0.5 * (vin_target - v_res_temp_f)
+                # 230809 change to vset_o to make less bouncing of Vin calibration
+                vin_new = self.vset_o + 0.5 * (vin_target - v_res_temp_f)
                 # clamp for the Vin maximum
                 if vin_new > excel0.pre_vin_max:
                     vin_new = excel0.pre_vin_max
@@ -640,7 +690,7 @@ class Power_BK9141(GInst):
 
 if __name__ == "__main__":
     # testing for the 9141
-    test_mode = 2
+    test_mode = 3
     sim_test_set = 1
 
     import mcu_obj as mcu
@@ -654,7 +704,7 @@ if __name__ == "__main__":
     met_v_t.sim_inst = sim_test_set
     met_v_t.open_inst()
 
-    mcu_t = mcu.MCU_control(1, 13)
+    mcu_t = mcu.MCU_control(0, 13)
     mcu_t.com_open()
 
     # bk_9141 = Power_BK9141(sim_inst0=sim_test_set, excel0=excel_t, addr=2)
@@ -729,3 +779,7 @@ if __name__ == "__main__":
     elif test_mode == 3:
         # this mode is used to test each function
         bk_9141.open_inst()
+
+        bk_9141.chg_out(24, 1, 1, "on")
+        input()
+        bk_9141.chg_out(7.4, 1, 1, "on")

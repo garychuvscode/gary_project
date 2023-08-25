@@ -307,9 +307,12 @@ class LPS_505N:
             #     pass
 
             vin_diff = vin_target - v_res_temp_f
-            vin_new = vin_target + excel0.pre_inc_vin
+            # 230809: below line is no used line
+            # vin_new = vin_target + excel0.pre_inc_vin
             while vin_diff > excel0.vin_diff_set or vin_diff < (-1 * excel0.vin_diff_set):
-                vin_new = vin_new + 0.5 * (vin_target - v_res_temp_f)
+                # vin_new = vin_new + 0.5 * (vin_target - v_res_temp_f)
+                # 230809 change to vset_o to make less bouncing of Vin calibration
+                vin_new = self.vset_o + 0.5 * (vin_target - v_res_temp_f)
                 # clamp for the Vin maximum
                 if vin_new > excel0.pre_vin_max:
                     vin_new = excel0.pre_vin_max

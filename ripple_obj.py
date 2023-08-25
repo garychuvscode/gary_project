@@ -78,7 +78,36 @@ class ripple_test:
         """
         self.pmic_buck = 0
 
+        # 230724 add power not toggle control parameter
+        '''
+        default power not toggle set ot 0, power toggle for transition
+        if using i2c mode, not to toggle or turn off power after each testing
+        '''
+        self.debug_target = ''
+        self.power_not_toggle = 0
+
         pass
+
+    def debug_check(self, x_iload0=0, info0=''):
+        '''
+        subprogram for checking debug status stop the program
+        change self.debug_target to meet specific i_load
+        '''
+
+        # 230723 add issue adjustment and check point for debug
+        # interrupt at the pass command to see status of program and settings before save the waveform
+        if x_iload0 == self.debug_target and self.debug_target != '' :
+            '''
+            set debug target to string to continuous operation
+            choose the index to stop when needed
+            interrupt first at anywhere for setting up the debug target of
+            x_iload setting
+            '''
+            self.excel_ini.message_box(content_str=f'debug call with {info0}', title_str='debug check request', auto_exception=1)
+            pass
+            pass
+
+        # thinking about if this function really needed or not
 
     def para_loaded(self):
         """
@@ -340,7 +369,8 @@ class ripple_test:
 
                 pass
 
-            elif self.en_i2c_mode == 0:
+            elif self.en_i2c_mode == 0 and pmic_buck0 == 0 :
+                # add new condition control for Buck and PMIC operation
                 pulse1 = excel_s.sh_format_gen.range((43 + x_sw_i2c, 5)).value
                 pulse2 = excel_s.sh_format_gen.range((43 + x_sw_i2c, 6)).value
 
@@ -389,7 +419,14 @@ class ripple_test:
                 if self.ripple_line_load == 1 or self.ripple_line_load == 0:
                     v_target = excel_s.sh_format_gen.range((43 + x_vin, 4)).value
 
-                    pwr_s.chg_out(v_target, excel_s.pre_imax, excel_s.relay0_ch, "on")
+                    # 230730 to prevent turn off of low Vin input
+                    if pmic_buck0 == 1 and float(v_target) < 12 :
+                        # to compensate the low V drop of Vin, only for HV buck
+                        v_target_pre = float(v_target) + 1.5
+                        pwr_s.chg_out(v_target_pre, excel_s.pre_imax, excel_s.relay0_ch, "on")
+
+                    else:
+                        pwr_s.chg_out(v_target, excel_s.pre_imax, excel_s.relay0_ch, "on")
 
                     pro_status_str = "Vin:" + str(v_target)
                     excel_s.vin_status = str(v_target)
@@ -404,13 +441,30 @@ class ripple_test:
                     if self.ripple_line_load == 2 or self.ripple_line_load == 2.5:
                         v_target = excel_s.sh_format_gen.range((43 + x_iload, 4)).value
 
-                        pwr_s.chg_out(
-                            v_target, excel_s.pre_imax, excel_s.relay0_ch, "on"
-                        )
+                        # 230730 to prevent turn off of low Vin input
+                        if pmic_buck0 == 1 and float(v_target) < 12 :
+                            # to compensate the low V drop of Vin, only for HV buck
+                            v_target_pre = float(v_target) + 1.5
+                            pwr_s.chg_out(v_target_pre, excel_s.pre_imax, excel_s.relay0_ch, "on")
+
+                        else:
+                            pwr_s.chg_out(v_target, excel_s.pre_imax, excel_s.relay0_ch, "on")
 
                         pro_status_str = "Vin:" + str(v_target)
                         excel_s.vin_status = str(v_target)
                         excel_s.program_status(pro_status_str)
+                        pass
+
+                    # 230809: add the up setting Vin function to prevent turn off of sample
+                    if self.ripple_line_load == 0 :
+                        if pmic_buck0 == 1 and float(v_target) < 12 :
+                            # to compensate the low V drop of Vin, only for HV buck
+                            v_target_pre = float(v_target) + 1.5
+                            pwr_s.chg_out(v_target_pre, excel_s.pre_imax, excel_s.relay0_ch, "on")
+                            pass
+                        pass
+
+
 
                     if self.scope_initial_en > 0:
                         if x_iload == 0:
@@ -448,17 +502,24 @@ class ripple_test:
                                 scope_s.set_general["time_scale"],
                                 scope_s.set_general["time_offset"],
                             )
+
+
                         elif x_iload < 3 and self.pmic_buck == 1 and x_sw_i2c > 0:
                             # single buck operation (Buck only)
                             # x_sw_i2c is only for the second sheet with smaller time scale
                             scope_s.Hor_scale_adj(0.00002)
 
-                        elif x_iload == 3 and self.pmic_buck == 1:
+                        elif x_iload == 1 and self.pmic_buck == 1:
                             # single buck operation
                             scope_s.Hor_scale_adj(
                                 scope_s.set_general["time_scale"],
                                 scope_s.set_general["time_offset"],
                             )
+
+                        elif x_iload == 3 and self.pmic_buck == 1 and x_sw_i2c > 0:
+                            # single buck operation (Buck only)
+                            # x_sw_i2c is only for the second sheet with smaller time scale
+                            scope_s.Hor_scale_adj(scope_s.set_general["time_scale"])
 
 
                     # assign i_load on related channel
@@ -534,6 +595,15 @@ class ripple_test:
                                 loader_ch=excel_s.loader_VCIch,
                             )
 
+                            if iload_L1 == 0 :
+                                # change the scale to 500mV/div if low current is set to 0
+                                # for special load transient in Buck testing
+                                scope_s.single_ch_change(ch=f'C{1}', ver_scale=0.5)
+
+                            else:
+                                # here is to return to original setting of the enviornment
+                                scope_s.single_ch_change(ch=f'C{1}', ver_scale=scope_s.ch_c1["volt_dev"])
+
                             load_s.dynamic_config(L1=iload_L1, L2=iload_L2)
                             load_s.dynamic_ctrl(
                                 act_ch1=excel_s.loader_VCIch,
@@ -604,6 +674,10 @@ class ripple_test:
 
                     # setup waveform name
                     excel_s.wave_info_update(typ="ripple", v=v_target, i=iload_target)
+
+                    # call debug check if needed, change index from the program
+                    self.debug_check(x_iload0=x_iload, info0=f"Vin={v_target}_i_load={iload_target}")
+
 
                     # measure and capture waveform
 
@@ -1116,10 +1190,15 @@ class ripple_test:
                 # turn the offset setting to normalizaiton setting
                 self.scope_ini.nor_v_off = 1
                 pass
-            # turn off pwr if original is on, prevent error position
-            self.pwr_ini.chg_out(
-                0, self.excel_ini.pre_imax, self.excel_ini.relay0_ch, "off"
-            )
+
+            if self.power_not_toggle == 0:
+                # 230724 => add function for not to turn off power supply
+
+                # turn off pwr if original is on, prevent error position
+                self.pwr_ini.chg_out(
+                    0, self.excel_ini.pre_imax, self.excel_ini.relay0_ch, "off"
+                )
+                pass
             self.scope_ini.scope_initial(self.scope_setting)
 
             pass
@@ -1313,7 +1392,9 @@ class ripple_test:
         pass
 
     def end_of_exp(self):
-        self.pwr_ini.inst_single_close(self.excel_ini.relay0_ch)
+
+        if self.power_not_toggle == 0:
+            self.pwr_ini.inst_single_close(self.excel_ini.relay0_ch)
 
         self.loader_ini.inst_single_close(self.excel_ini.loader_ELch)
         self.loader_ini.inst_single_close(self.excel_ini.loader_VCIch)

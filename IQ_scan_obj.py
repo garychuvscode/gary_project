@@ -217,7 +217,10 @@ class iq_scan:
 
                 # this part can not be in the simulation mode,
                 # because it need to access the meter object variable
-                if x_submode == 0:
+                range_temp = self.met_i_ini.max_mea_i_ini
+                if x_submode == 0 and pmic_buck == 0:
+                    # 230717, only change to uA if doing PMIC measurement
+
                     # for the mode of measure ISD, need to have more wait time for stable and
                     # need to prevend negative result of error result
 

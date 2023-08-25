@@ -42,7 +42,7 @@ import ripple_obj as rip
 import glitch_obj as gli
 
 # off line test, set to 1 set all the instrument to simulation mode
-main_off_line = 1
+main_off_line = 0
 single_mode = 0
 # this is the variable control file name, single or the multi item
 # adjust after the if selection of program_group
@@ -945,10 +945,20 @@ if __name__ == "__main__":
                 # this is only for HV buck
                 excel_m.relay0_ch = 1
                 excel_m.message_box(
-                    "high V buck setting, parallel output for BK9141\n control channel is set to CH1",
+                    "high V buck setting, parallel output for BK9141\n control channel is set to CH1 \n current probe set to 10x at scope and probe ",
                     "watch out",
                     auto_exception=1,
                 )
+
+            '''
+            reserve for interrupt if needed to turn off power supply
+            toggle function
+            '''
+            pass
+            # 1 is not to toggle and 0 is to toggle
+            ripple_t.power_not_toggle = 1
+
+
             # ripple
             format_g.set_sheet_name("CTRL_sh_ripple_SY")
             ripple_t.run_verification(pmic_buck0=1)

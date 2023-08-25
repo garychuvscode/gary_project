@@ -262,12 +262,12 @@ class excel_parameter ():
             (self.index_chroma_inst + 3, 3)).value
         self.loader_cal_offset_VCIch = self.sh_main.range(
             (self.index_chroma_inst + 4, 3)).value
-        self.loader_ELch = self.sh_main.range(
-            (self.index_chroma_inst + 5, 3)).value
+        self.loader_ELch = int(self.sh_main.range(
+            (self.index_chroma_inst + 5, 3)).value)
         self.loader_ini_state = self.sh_main.range(
             (self.index_chroma_inst + 6, 3)).value
-        self.loader_VCIch = self.sh_main.range(
-            (self.index_chroma_inst + 7, 3)).value
+        self.loader_VCIch = int(self.sh_main.range(
+            (self.index_chroma_inst + 7, 3)).value)
         self.loader_cal_mode = self.sh_main.range(
             (self.index_chroma_inst + 8, 3)).value
         self.loader_cal_leakage_ELch = self.sh_main.range(
