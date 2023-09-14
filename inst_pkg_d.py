@@ -2423,7 +2423,7 @@ class chamber_su242:
         print('temperature ok(first), go to the double check')
         print('How to find proper way to get along with Grace')
 
-        time.sleep(180)
+        time.sleep(self.temperature_wait)
         # rest 3 mins for waitting the temperature stable
 
         # 230411 add the error handling for temperature error

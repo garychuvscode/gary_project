@@ -62,7 +62,7 @@ class general_test ():
         self.excel_ini = excel0
         # 230714: both use address 0 or general_bk object are ok to use BK power
         # add selection function for power, if LPS505 is set to 100, use BK power as power
-        if self.excel_ini.pwr_supply_addr == 100 :
+        if self.excel_ini.pwr_supply_addr == 100 and self.excel_ini.pwr_select == 1:
             # if the LPS address is set to 100, use BK power instead
             self.pwr_ini = pwr_bk
             pass
