@@ -1108,8 +1108,10 @@ if __name__ == "__main__":
 
         # device0 = '9C'
         # register0 = 'A2'
+
+        # the datas input need to be list, see if able to change to hex input
         data0 = [255, 128, 0, 30]
-        data1 = '8A'
+        # data1 = '8A'
 
         device0 = 0x9C
         register0 = 0xA2

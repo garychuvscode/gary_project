@@ -1570,10 +1570,10 @@ if __name__ == "__main__":
                 "CH1": "EN1",
                 "CH2": "Vout",
                 "CH3": "LX",
-                "CH4": "Vin",
-                "CH5": "Iin",
+                "CH4": "PG",
+                "CH5": "L_Lx",
                 "CH6": "Buck",
-                "CH7": "EN1=EN2",
+                "CH7": "GSI",
                 "CH8": "LDO",
             }
         elif label_pos_sel == 1:
