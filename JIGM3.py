@@ -224,6 +224,11 @@ class JIGM3:
 
         """
         return datas doen's contain register address
+        230915: command example get from V4: UI-Link
+        mcu.i2c.read(0x9C, 0xA0, 48)
+        => read 48 byte from address 9C(8bit), start from register "A0"
+
+
         """
 
         cmd = f" return mcu.i2c.read(0x{device:02X}, 0x{regaddr:02X}, {len})"
@@ -935,7 +940,7 @@ if __name__ == "__main__":
     a = g_mcu.getversion()
     print(f"the MCU version is {a}")
 
-    test_index = 6
+    test_index = 7
     """
     testing index settings
     1 => IO control
@@ -944,6 +949,7 @@ if __name__ == "__main__":
     4 => pulse output for deglitch function or SWIRE
     5 => IO toggle for relay function of MSP(IO1-IO8)
     6 => PMIC mode
+    7 => I2C read and write testing
 
     """
 
@@ -1070,6 +1076,7 @@ if __name__ == "__main__":
         pass
 
     elif test_index == 6 :
+        #  PMIC mode toggling testing
         while 1 :
             g_mcu.pmic_mode(mode_index=1)
             time.sleep(1)
@@ -1079,3 +1086,56 @@ if __name__ == "__main__":
             time.sleep(1)
             g_mcu.pmic_mode(mode_index=2)
             time.sleep(1)
+            pass
+
+    elif test_index == 7 :
+        '''
+        this setcition is the testing function of the I2C
+        since there are verfication item need to use I2C change and scan
+        MSP430 don't have prover I2C function yet, JIGM3 is the best choice
+
+        use 374 as the testing circuit for I2C module
+
+        '''
+
+        # 0x9C in 8 bit address, means the 0x4E in the 7 bit general addressig of I2C
+        addr = 0x9C
+
+        # data_String = [ 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x10 ]
+        # data_string = [ '0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
+
+        # data should be loaded directly from the excel in string format
+
+        # device0 = '9C'
+        # register0 = 'A2'
+        data0 = [255, 128, 0, 30]
+        data1 = '8A'
+
+        device0 = 0x9C
+        register0 = 0xA2
+        # data0 = 0x0A
+        # data1 = 0x8A
+
+        while 1 :
+            data_f = g_mcu.i2c_read(device=device0, regaddr=register0, len=5)
+            print(f'the readed data is: {data_f}.')
+            time.sleep(3)
+
+            g_mcu.i2c_write(device=device0, regaddr=register0, datas=data0)
+            print(f'the wrote data is: {data0} in register {register0}.')
+            time.sleep(3)
+
+            g_mcu.i2c_read(device=device0, regaddr=register0, len=5)
+            print(f'the readed data is: {data_f}.')
+            time.sleep(3)
+
+            print(f'the wrote data is: {data0} in register {register0}.')
+            print(f'the readed data is: {data_f}.')
+            time.sleep(3)
+
+
+
+
+            pass
+
+        pass

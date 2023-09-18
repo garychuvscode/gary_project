@@ -379,7 +379,7 @@ class report_arragement:
 if __name__ == "__main__":
     #  the testing code for this file object
 
-    operation_index = 2
+    operation_index = 1
     if operation_index == 0 :
         test_index = 2
         trace = 0
