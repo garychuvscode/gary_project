@@ -275,6 +275,9 @@ class test_calass():
         return (a0, b0)
 
     def excel_open(self):
+        '''
+        open the excel and copy related range to destination
+        '''
         self.wb = xw.Book()
         self.wb2 = xw.Book()
         self.sh_sor = self.wb.sheets.add('test_source')
@@ -287,11 +290,56 @@ class test_calass():
 
         pass
 
+    def hex_check(self):
+
+        '''
+        239018 check for hex number input from excel and output to the JIGM3
+        '''
+
+        a = 231
+        b = 32
+        c = 'FF'
+        d = 'ff'
+
+        # transfer the string to hex number
+        '''
+        all the number is just int, the difference is only how to display
+        => so just transfer to the integer
+        '''
+        x = int(c,16)
+        x1 = int(d,16)
+
+        print(x)
+        print(x1)
+
+        print(hex(x))
+        print(hex(x1))
+
+        # format without 0x, this is the string
+        y=hex(x)[2:]
+        y1=hex(x1)[2:]
+
+        print(y)
+        print(y1)
+
+        '''
+        for MSP430, just take the data from excel, and output to
+        the I2C write and read
+
+        for JIGM3, get the string and transfer to the integer by using
+        x1 = int(d,16) and save into the list
+        '''
+
+        # transfer the data to list of reading
+
+
+        pass
+
 
 
 
 t_s = test_calass()
-testing_index = 8
+testing_index = 9
 
 if testing_index == 0:
     print('a')
@@ -395,5 +443,11 @@ elif testing_index == 8:
     t_s.excel_open()
     input()
     t_s.copy_range_test()
+
+    pass
+
+elif testing_index == 9:
+
+    t_s.hex_check()
 
     pass

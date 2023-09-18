@@ -235,18 +235,31 @@ class JIGM3:
 
         # self.CmdSentSignal.emit(cmd)
 
-        err, datas, *_ = self.assertResult(json.loads(luacmd(self.handle, cmd)))
+        # 230918: add the simulation mode setting for I2C related command
+        # since I2C related items using the luacmd, not the ezcommand
+        # need to add selection to prevent error in simulation mode
 
-        match err:
-            case 0:
-                return datas
+        if self.sim_mcu == 1 :
+            # real mode, send the lua command and check for error
 
-            case 0x03:
-                raise I2CNACKError(f"{device=:02X}")
-            case 0x11:
-                raise I2CBusError(f"{device=:02X}")
-            case _:
-                raise I2CError(f"{device=:02X}")
+            err, datas, *_ = self.assertResult(json.loads(luacmd(self.handle, cmd)))
+
+            match err:
+                case 0:
+                    return datas
+
+                case 0x03:
+                    raise I2CNACKError(f"{device=:02X}")
+                case 0x11:
+                    raise I2CBusError(f"{device=:02X}")
+                case _:
+                    raise I2CError(f"{device=:02X}")
+
+            pass
+        else :
+            # I2C related operation in simulation mode, just print the command
+            print(f'send I2C command: "{cmd}" in sim mode')
+            pass
 
     @retry_and_refresh
     def i2c_write(self, device, regaddr, datas):
@@ -268,18 +281,30 @@ class JIGM3:
 
         # self.CmdSentSignal.emit(cmd)
 
-        err, *_ = self.assertResult(json.loads(luacmd(self.handle, cmd)))
+        # 230918: add the simulation mode setting for I2C related command
+        # since I2C related items using the luacmd, not the ezcommand
+        # need to add selection to prevent error in simulation mode
 
-        match err:
-            case 0:
-                return
+        if self.sim_mcu == 1 :
+            # real mode, send the lua command and check for error
+            err, *_ = self.assertResult(json.loads(luacmd(self.handle, cmd)))
 
-            case 0x03:
-                raise I2CNACKError(f"{device=:02X}")
-            case 0x11:
-                raise I2CBusError(f"{device=:02X}")
-            case _:
-                raise I2CError(f"{device=:02X}")
+            match err:
+                case 0:
+                    return
+
+                case 0x03:
+                    raise I2CNACKError(f"{device=:02X}")
+                case 0x11:
+                    raise I2CBusError(f"{device=:02X}")
+                case _:
+                    raise I2CError(f"{device=:02X}")
+
+            pass
+        else :
+            # I2C related operation in simulation mode, just print the command
+            print(f'send I2C command: "{cmd}" in sim mode')
+            pass
 
     @retry_and_refresh
     def i2c_opread(self, device, len, contAck, lastAck):
