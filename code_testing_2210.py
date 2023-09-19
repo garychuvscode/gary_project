@@ -296,6 +296,8 @@ class test_calass():
         239018 check for hex number input from excel and output to the JIGM3
         '''
 
+        data_list_single = [0]
+
         a = 231
         b = 32
         c = 'FF'
@@ -311,6 +313,8 @@ class test_calass():
 
         print(x)
         print(x1)
+
+        x0 = hex(x)
 
         print(hex(x))
         print(hex(x1))
