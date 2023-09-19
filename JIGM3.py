@@ -273,6 +273,9 @@ class JIGM3:
 
         """
         device address use 8 bit address, regaddr (0x9C), datas (0xFF or 0x00)-list no need index
+
+        230919: for single byte operation, need to transfer string(from excel) to list
+        by using below:
         """
         hexstrs = ["0x{:02X}".format(data) for data in datas]
         cmddstr = ", ".join(hexstrs)
