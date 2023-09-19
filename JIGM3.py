@@ -276,6 +276,16 @@ class JIGM3:
 
         230919: for single byte operation, need to transfer string(from excel) to list
         by using below:
+
+        c = 'FF' # get from excel
+        x = int(c,16) # x become 256 in 'integer'
+        print(x)
+        print(hex(x)) # hex(x) will transfer 255 to x0ff
+        # all the hex output will be in lower character
+
+        # format without 0x, this is the string
+        y=hex(x)[2:] # transfer string '0xff' to 'ff'
+
         """
         hexstrs = ["0x{:02X}".format(data) for data in datas]
         cmddstr = ", ".join(hexstrs)
