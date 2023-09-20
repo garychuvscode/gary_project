@@ -988,6 +988,7 @@ if __name__ == "__main__":
     5 => IO toggle for relay function of MSP(IO1-IO8)
     6 => PMIC mode
     7 => I2C read and write testing
+    8 => I2C command read and write for DDR5
 
     """
 
@@ -1177,5 +1178,36 @@ if __name__ == "__main__":
 
 
             pass
+
+        pass
+
+    elif test_index == 8 :
+
+        addr = 0x9E
+
+        '''
+        program flow:
+        1. write register
+        (should include read origin, and bit operation,
+        then write the result, check the read again for final
+        comparison before next step)
+        2. read register
+        (read register and print from the terminal, read "read slave, register and datas;
+        integrated from the read function)
+        3. instrument operation
+        (should be able to operate in sub program)
+
+        => plan for another obj using only program to control?
+        but also need result saving format
+        > general result saving: print condition
+        > capture waveform
+        > record result value
+        > this item should be new general testing include waveform
+        > scope is set by user, only decided to trigger or not
+
+        '''
+
+
+
 
         pass
