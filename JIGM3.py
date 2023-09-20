@@ -287,7 +287,9 @@ class JIGM3:
         y=hex(x)[2:] # transfer string '0xff' to 'ff'
 
         """
+        # transfer the input list to become 0xXX string listt
         hexstrs = ["0x{:02X}".format(data) for data in datas]
+        #
         cmddstr = ", ".join(hexstrs)
 
         cmd = f" return mcu.i2c.write(0x{device:02X}, 0x{regaddr:02X}, {{{cmddstr}}})"
@@ -949,6 +951,10 @@ class JIGM3:
         self.pattern_gen(pattern0=cmd_str, unit_time_ns0=duration_ns)
 
         print("g_pulse_V2 finished, Grace doesn't return the tweezers")
+
+        pass
+
+    def I2C_byte_transfer(self):
 
         pass
 
