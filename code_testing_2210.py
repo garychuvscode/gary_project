@@ -199,19 +199,38 @@ class test_calass():
 
         x = 0x01
         y = 0x20
+        # 33
         print(x + y)
 
+        # and 0
         print(x & y)
+        # or 33
         print(x | y)
+        # xor 33
         print(x ^ y)
+        # not -2 (11111110 ; -1 -1 = -2)
         print(~x)
+        # not -33 (11011111 ; -1 - 32 = -33)
         print(~y)
+        # left shift (0x04)
+        print(x << 2)
+        # right shift (0x02)
+        print(0x08 >> 2)
+
+
 
         print(hex(x))
         print(hex(y))
 
         print(hex(~x))
         print(hex(~y))
+
+        print(hex(x)[2:])
+        print(hex(y)[2:])
+
+        # for the negative result, will display in X2 => -2
+        print(hex(~x)[2:])
+        print(hex(~y)[2:])
 
         print(hex(abs(~x)))
         print(hex(abs(~y)))
@@ -343,7 +362,7 @@ class test_calass():
 
 
 t_s = test_calass()
-testing_index = 9
+testing_index = 7
 
 if testing_index == 0:
     print('a')

@@ -81,6 +81,30 @@ class JIGM3:
         }
         # binary number: 0b10101010
 
+        # 230920 add I2C bit write function
+
+        self.bit_clr = {
+            "0": 0xFE,
+            "1": 0xFD,
+            "2": 0xFB,
+            "3": 0xF7,
+            "4": 0xEF,
+            "5": 0xDF,
+            "6": 0xBF,
+            "7": 0x7F,
+        }
+
+        self.bit_set = {
+            "0": 0x1,
+            "1": 0x2,
+            "2": 0x4,
+            "3": 0x8,
+            "4": 0x10,
+            "5": 0x20,
+            "6": 0x40,
+            "7": 0x80,
+        }
+
         # default state and state record of IO pin
         self.i_o_state = {"PG": 0x00, "IO": 0x00, "IOx": 0x00, "IOy": 0x00}
 
@@ -530,6 +554,7 @@ class JIGM3:
             # use or operator for the set
             i_o_cmd = i_o_state_tmp | i_o_cmd0
             print(f"final command0 is {i_o_cmd}")
+            pass
 
         else:
             # clear the related pin
@@ -538,6 +563,7 @@ class JIGM3:
             # use and operator for clear
             i_o_cmd = i_o_state_tmp & i_o_cmd0
             print(f"final command is {i_o_cmd}")
+            pass
 
         if port0 == "PG":
             # when use PG pin as IO, need to drive with pattern gen function
@@ -954,7 +980,114 @@ class JIGM3:
 
         pass
 
-    def I2C_byte_transfer(self):
+    def bit_write(self, device0=0, register0=0, bit_num0=0, bit_data0=0):
+        '''
+        this function is for bit write of I2C operation
+        bit_num is from 0 to 7
+        bit_data is 0 or 1
+        '''
+
+        '''
+        detail step:
+        1. read related slave and register
+        2. using logic operation to change bit setting in this data
+        3. I2C write to update data settings
+        '''
+
+        bit_num0 = str(bit_num0)
+        bit_data0 = int(bit_data0)
+
+        # read the byte going th change bit
+        byte_state_tmp = self.i2c_read(device=device0, regaddr=register0, len=1)
+        byte_state_tmp = byte_state_tmp[0]
+
+        # decide to set or write
+        if bit_data0 == 0 :
+            # bit clear process
+            bit_cmd0 = self.bit_clr[bit_num0]
+            print(f"clear bit_cmd0 is {bit_cmd0}")
+            new_byte_data = byte_state_tmp & bit_cmd0
+            print(f"final command0 is {new_byte_data}, g")
+
+            pass
+        elif bit_data0 == 1 :
+            # bit set process
+            bit_cmd0 = self.bit_set[bit_num0]
+            print(f"set bit_cmd0 is {bit_cmd0}")
+            new_byte_data = byte_state_tmp | bit_cmd0
+            print(f"final command0 is {new_byte_data}, g")
+
+            pass
+
+        # write the new byte to the register, change to JIGM3 format first
+        new_list = [new_byte_data]
+
+        self.i2c_write(device=device0, regaddr=register0, datas=new_list)
+
+        # double check process
+        check_data = self.i2c_read(device=device0, regaddr=register0, len=1)
+        print(f'Grace read back from reg {register0} have new data {check_data}')
+
+        pass
+
+    def bit_group_write(self, device0=0, register0=0, lsb0=0, len0=1, data0=0):
+        '''
+        group few bits together for register adjustment in program
+        lsb is define the LSB of this group (from 0-7)
+        len is length of this group (from 1-8)
+        limitation is all the bit must be in same register
+        data need to be integer
+        '''
+        lsb0 = int(lsb0)
+        len0 = int(len0)
+        data0 = int(data0)
+        '''
+        calculation method register update:
+        left shift for LSB: LSB0 => no need shift, LSB3 => give three 0 in right
+        '''
+        # x**y operator is means x^y, sinc the ^ means XOR in python
+        if data0 > 2**(len0) :
+            # data is too big, output the error message and bypass the command
+            # this check is used to prevent overflow of Grace XD
+            print(f'length "{len0}" and data "{data0}" have fconflict, please double check ')
+
+            pass
+        else:
+            # shift the data based on the length and using XOR to update result
+            # then write the new data to the register
+            group_command = data0 << len0
+            print(f'Gary want new data to be: {hex(group_command)}, {bin(group_command)}')
+
+            temp = 0
+            for x in range(len0):
+                temp = temp + 2**x
+            temp = temp << len0
+            print(f' what Grace said: {bin(temp)} ~')
+            temp = 255 - temp
+            print(f' what Grace do: {bin(temp)} XDD')
+
+            byte_state_tmp = self.i2c_read(device=device0, regaddr=register0, len=1)
+            byte_state_tmp = byte_state_tmp[0]
+            print(f'Grace get original data: {hex(byte_state_tmp)}, {bin(byte_state_tmp)}')
+            # clean the group bits before adding the new data
+            byte_state_tmp = byte_state_tmp & temp
+            print(f'Gary clean original data: {hex(byte_state_tmp)}, {bin(byte_state_tmp)}')
+            # using or is ok after clean the related group bits
+            new_byte_data = group_command | byte_state_tmp
+            x = hex(new_byte_data)
+            print(f"Grace's final command0 is {x}")
+
+            # write the new byte to the register, change to JIGM3 format first
+            new_list = [new_byte_data]
+
+            self.i2c_write(device=device0, regaddr=register0, datas=new_list)
+
+            # double check process
+            check_data = self.i2c_read(device=device0, regaddr=register0, len=1)
+            check_data = check_data[0]
+            print(f'Grace read back from reg {hex(register0)} have new data {hex(check_data)}')
+
+            pass
 
         pass
 
@@ -984,7 +1117,7 @@ if __name__ == "__main__":
     a = g_mcu.getversion()
     print(f"the MCU version is {a}")
 
-    test_index = 7
+    test_index = 9
     """
     testing index settings
     1 => IO control
@@ -994,7 +1127,8 @@ if __name__ == "__main__":
     5 => IO toggle for relay function of MSP(IO1-IO8)
     6 => PMIC mode
     7 => I2C read and write testing
-    8 => I2C command read and write for DDR5
+    8 => single bit write
+    9 => group bits write
 
     """
 
@@ -1188,8 +1322,64 @@ if __name__ == "__main__":
         pass
 
     elif test_index == 8 :
+        # testing for bit write, toggle related of the register of 374
 
-        addr = 0x9E
+        reg0 = 0xA2
+        bit_num = 7
+        device = 0x9C
+
+        # 0 is clear, 1 is set
+        set_or_clr = 0
+
+        while 1 :
+
+            if set_or_clr == 0 :
+                set_or_clr = 1
+                pass
+            else:
+                set_or_clr = 0
+                pass
+
+
+            g_mcu.bit_write(device0=device ,register0=reg0, bit_num0=bit_num, bit_data0=set_or_clr)
+            print(f'rest time to check with GPL UI')
+            time.sleep(5)
+
+            pass
+
+        pass
+
+    elif test_index == 9 :
+        # bit group operation when control is not only one bit
+        reg0 = 0xA3
+        group_len = 2
+        device = 0x9C
+        group_lsb = 2
+
+        data_group = 0
+
+        while 1 :
+
+
+
+            g_mcu.bit_group_write(device0=device ,register0=reg0, lsb0=group_lsb, len0=group_len, data0=data_group)
+
+            time.sleep(1)
+
+            if data_group < 15 :
+                data_group = data_group + 1
+            else:
+                data_group = 0
+
+            pass
+
+        pass
+
+    elif test_index == 10 :
+
+
+
+
 
         '''
         program flow:
