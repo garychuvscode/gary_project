@@ -616,6 +616,12 @@ class JIGM3:
         9$2e4 => 2e4 is 2*10^4 * unit_time_ns0 is the transition time point
         '' => is the beginning and end of the pattern element
         ` (~~) => is the separation of each transition of pattern
+
+        pattern gen extra pattern comments:
+        1 => repeat pattern
+        2 => IO become PG
+        other may not need yet, reserve and it's able to check from the GPL_V4 tool
+
         """
 
         if pattern0 == 0:
@@ -1004,18 +1010,12 @@ class JIGM3:
         # decide to set or write
         if bit_data0 == 0 :
             # bit clear process
-            bit_cmd0 = self.bit_clr[bit_num0]
-            print(f"clear bit_cmd0 is {bit_cmd0}")
-            new_byte_data = byte_state_tmp & bit_cmd0
-            print(f"final command0 is {new_byte_data}, g")
+            new_byte_data = self.bit_c(bit_num0=bit_num0, byte_state_tmp0=byte_state_tmp)
 
             pass
         elif bit_data0 == 1 :
             # bit set process
-            bit_cmd0 = self.bit_set[bit_num0]
-            print(f"set bit_cmd0 is {bit_cmd0}")
-            new_byte_data = byte_state_tmp | bit_cmd0
-            print(f"final command0 is {new_byte_data}, g")
+            new_byte_data = self.bit_s(bit_num0=bit_num0, byte_state_tmp0=byte_state_tmp)
 
             pass
 
@@ -1090,6 +1090,95 @@ class JIGM3:
             pass
 
         pass
+
+    def buck_write(self, input_byte0=0, period_4_100ns=25):
+        '''
+        HV buck NBA pattern testing
+        '''
+
+
+        input_data = input_byte0
+
+        # this is the period(T)/4 => for frequency control
+        period_4 = period_4_100ns
+        period = period_4 * 4
+
+        # this is initial pattern before transfer (0x00)
+        byte_state_tmp = 0
+
+        cmd_str = f"'7${5*period}`6${2*period}`0${2*period}"
+        cmd_str_end = "`'"
+
+        '''
+        to obtain bit data, need to use % operator to get data
+        and use right shift (/2) - ">>" and get data for the next bit
+        '''
+        x = 0
+        while x < 8 :
+
+            check_bit = input_data % 2
+
+            if check_bit == 1 :
+                '''
+                this bit have data 1 (SDI = 1), using bit set for the operation
+                call the bit set array and using related operation
+                since the SDI is bit[1] => call "self.bit_set[1]"
+                '''
+                # bit set process (SDI clear - bit 1)
+                byte_state_tmp = self.bit_s(bit_num0=1, byte_state_tmp0=byte_state_tmp)
+
+                single_cell = f"`{byte_state_tmp}${period_4}"
+                pass
+
+            elif check_bit == 0 :
+
+                # bit clear process
+                byte_state_tmp = self.bit_c(bit_num0=1, byte_state_tmp0=byte_state_tmp)
+
+                single_cell = f"`{byte_state_tmp}${period_4}"
+                pass
+
+            cmd_str = cmd_str + single_cell
+
+            # after finished change of data, SCK rising
+
+            # bit set process (SCK set - bit 2)
+            byte_state_tmp = self.bit_s(bit_num0=2, byte_state_tmp0=byte_state_tmp)
+            single_cell = f"`{byte_state_tmp}${period_4}"
+
+
+            cmd_str = cmd_str + single_cell
+
+            x = x + 1
+            pass
+
+        cmd_str = cmd_str +  cmd_str_end
+
+        self.pattern_gen(pattern0=cmd_str, unit_time_ns0=100)
+
+        pass
+
+    def bit_s(self, bit_num0=0, byte_state_tmp0=0):
+
+        # bit set process
+        bit_cmd0 = self.bit_set[bit_num0]
+        print(f"set bit_cmd0 is {bit_cmd0}")
+        new_byte_data = byte_state_tmp0 | bit_cmd0
+        print(f"final command0 is {new_byte_data}, g")
+
+        return new_byte_data
+
+    def bit_c(self, bit_num0=0, byte_state_tmp0=0):
+
+        # bit clear process
+        bit_cmd0 = self.bit_clr[bit_num0]
+        print(f"clear bit_cmd0 is {bit_cmd0}")
+        new_byte_data = byte_state_tmp0 & bit_cmd0
+        print(f"final command0 is {new_byte_data}, g")
+
+        return new_byte_data
+
+    pass
 
 
 if __name__ == "__main__":
@@ -1376,6 +1465,17 @@ if __name__ == "__main__":
         pass
 
     elif test_index == 10 :
+
+        # HV buck write testing
+
+        g_mcu.buck
+
+        pass
+
+
+    elif test_index == 11 :
+
+
 
 
 
