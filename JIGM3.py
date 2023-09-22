@@ -1098,6 +1098,7 @@ class JIGM3:
 
 
         input_data = input_byte0
+        print(f'input data is {hex(input_data)} or {bin(input_data)}')
 
         # this is the period(T)/4 => for frequency control
         period_4 = period_4_100ns
@@ -1107,7 +1108,7 @@ class JIGM3:
         byte_state_tmp = 0
 
         cmd_str = f"'7${5*period}`6${2*period}`0${2*period}"
-        cmd_str_end = "`'"
+        cmd_str_end = f"`0${2*period}`6${2*period}`7${5*period}`'"
 
         '''
         to obtain bit data, need to use % operator to get data
@@ -1116,7 +1117,11 @@ class JIGM3:
         x = 0
         while x < 8 :
 
-            check_bit = input_data % 2
+            # # LSB first case
+            # check_bit = input_data % 2
+
+            # MSB fisrt
+            check_bit = int(input_data / 128)
 
             if check_bit == 1 :
                 '''
@@ -1142,12 +1147,27 @@ class JIGM3:
 
             # after finished change of data, SCK rising
 
-            # bit set process (SCK set - bit 2)
+            # bit set process (SCK set - bit 2 - rising)
             byte_state_tmp = self.bit_s(bit_num0=2, byte_state_tmp0=byte_state_tmp)
-            single_cell = f"`{byte_state_tmp}${period_4}"
-
-
+            # clk rising time * 2 to keep the high duration 5us and also the data
+            single_cell = f"`{byte_state_tmp}${period_4*2}"
             cmd_str = cmd_str + single_cell
+
+            # bit clr process (SCK set - bit 2 - falling)
+            byte_state_tmp = self.bit_c(bit_num0=2, byte_state_tmp0=byte_state_tmp)
+            single_cell = f"`{byte_state_tmp}${period_4}"
+            cmd_str = cmd_str + single_cell
+
+            # shift the command for new checking
+
+            # # LSB first case
+            # input_data = input_data >> 1
+
+            # MSB fisrt
+            input_data = input_data << 1
+            if input_data > 255 :
+                input_data = input_data - 256
+
 
             x = x + 1
             pass
@@ -1159,6 +1179,7 @@ class JIGM3:
         pass
 
     def bit_s(self, bit_num0=0, byte_state_tmp0=0):
+        bit_num0 = str(bit_num0)
 
         # bit set process
         bit_cmd0 = self.bit_set[bit_num0]
@@ -1169,6 +1190,7 @@ class JIGM3:
         return new_byte_data
 
     def bit_c(self, bit_num0=0, byte_state_tmp0=0):
+        bit_num0 = str(bit_num0)
 
         # bit clear process
         bit_cmd0 = self.bit_clr[bit_num0]
@@ -1194,7 +1216,7 @@ if __name__ == "__main__":
     path = JIGM3.listdevices()
     g_mcu = JIGM3(devpath=path[0], sim_mcu0=1)
     # set simulation mode or normal mode
-    g_mcu.sim_mcu = 1
+    g_mcu.sim_mcu = 0
     g_mcu.com_open()
     # set all the IO to output
 
@@ -1206,7 +1228,7 @@ if __name__ == "__main__":
     a = g_mcu.getversion()
     print(f"the MCU version is {a}")
 
-    test_index = 9
+    test_index = 10
     """
     testing index settings
     1 => IO control
@@ -1218,6 +1240,7 @@ if __name__ == "__main__":
     7 => I2C read and write testing
     8 => single bit write
     9 => group bits write
+    10 => buck_write
 
     """
 
@@ -1468,7 +1491,7 @@ if __name__ == "__main__":
 
         # HV buck write testing
 
-        g_mcu.buck
+        g_mcu.buck_write(input_byte0=0xF3)
 
         pass
 
