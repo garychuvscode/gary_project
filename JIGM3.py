@@ -1094,11 +1094,12 @@ class JIGM3:
     def buck_write(self, input_byte0=0, period_4_100ns=25):
         '''
         HV buck NBA pattern testing
+        input_byte0 should be 3 byte list, default 3 byte for 50970
         '''
 
-
-        input_data = input_byte0
-        print(f'input data is {hex(input_data)} or {bin(input_data)}')
+        # # this is for single byte operation
+        # input_data = input_byte0
+        # print(f'input data is {hex(input_data)} or {bin(input_data)}')
 
         # this is the period(T)/4 => for frequency control
         period_4 = period_4_100ns
@@ -1114,62 +1115,73 @@ class JIGM3:
         to obtain bit data, need to use % operator to get data
         and use right shift (/2) - ">>" and get data for the next bit
         '''
-        x = 0
-        while x < 8 :
 
-            # # LSB first case
-            # check_bit = input_data % 2
+        x_byte = 0
+        # one or 3 byte operation
+        while x_byte < 3 :
 
-            # MSB fisrt
-            check_bit = int(input_data / 128)
+            input_data = input_byte0[x_byte]
+            print(f'input data is {hex(input_data)} or {bin(input_data)}')
 
-            if check_bit == 1 :
-                '''
-                this bit have data 1 (SDI = 1), using bit set for the operation
-                call the bit set array and using related operation
-                since the SDI is bit[1] => call "self.bit_set[1]"
-                '''
-                # bit set process (SDI clear - bit 1)
-                byte_state_tmp = self.bit_s(bit_num0=1, byte_state_tmp0=byte_state_tmp)
+            x = 0
+            while x < 8 :
 
+                # # LSB first case
+                # check_bit = input_data % 2
+
+                # MSB fisrt
+                check_bit = int(input_data / 128)
+
+                if check_bit == 1 :
+                    '''
+                    this bit have data 1 (SDI = 1), using bit set for the operation
+                    call the bit set array and using related operation
+                    since the SDI is bit[1] => call "self.bit_set[1]"
+                    '''
+                    # bit set process (SDI clear - bit 1)
+                    byte_state_tmp = self.bit_s(bit_num0=1, byte_state_tmp0=byte_state_tmp)
+
+                    single_cell = f"`{byte_state_tmp}${period_4}"
+                    pass
+
+                elif check_bit == 0 :
+
+                    # bit clear process
+                    byte_state_tmp = self.bit_c(bit_num0=1, byte_state_tmp0=byte_state_tmp)
+
+                    single_cell = f"`{byte_state_tmp}${period_4}"
+                    pass
+
+                cmd_str = cmd_str + single_cell
+
+                # after finished change of data, SCK rising
+
+                # bit set process (SCK set - bit 2 - rising)
+                byte_state_tmp = self.bit_s(bit_num0=2, byte_state_tmp0=byte_state_tmp)
+                # clk rising time * 2 to keep the high duration 5us and also the data
+                single_cell = f"`{byte_state_tmp}${period_4*2}"
+                cmd_str = cmd_str + single_cell
+
+                # bit clr process (SCK set - bit 2 - falling)
+                byte_state_tmp = self.bit_c(bit_num0=2, byte_state_tmp0=byte_state_tmp)
                 single_cell = f"`{byte_state_tmp}${period_4}"
+                cmd_str = cmd_str + single_cell
+
+                # shift the command for new checking
+
+                # # LSB first case
+                # input_data = input_data >> 1
+
+                # MSB fisrt
+                input_data = input_data << 1
+                if input_data > 255 :
+                    input_data = input_data - 256
+
+
+                x = x + 1
                 pass
 
-            elif check_bit == 0 :
-
-                # bit clear process
-                byte_state_tmp = self.bit_c(bit_num0=1, byte_state_tmp0=byte_state_tmp)
-
-                single_cell = f"`{byte_state_tmp}${period_4}"
-                pass
-
-            cmd_str = cmd_str + single_cell
-
-            # after finished change of data, SCK rising
-
-            # bit set process (SCK set - bit 2 - rising)
-            byte_state_tmp = self.bit_s(bit_num0=2, byte_state_tmp0=byte_state_tmp)
-            # clk rising time * 2 to keep the high duration 5us and also the data
-            single_cell = f"`{byte_state_tmp}${period_4*2}"
-            cmd_str = cmd_str + single_cell
-
-            # bit clr process (SCK set - bit 2 - falling)
-            byte_state_tmp = self.bit_c(bit_num0=2, byte_state_tmp0=byte_state_tmp)
-            single_cell = f"`{byte_state_tmp}${period_4}"
-            cmd_str = cmd_str + single_cell
-
-            # shift the command for new checking
-
-            # # LSB first case
-            # input_data = input_data >> 1
-
-            # MSB fisrt
-            input_data = input_data << 1
-            if input_data > 255 :
-                input_data = input_data - 256
-
-
-            x = x + 1
+            x_byte = x_byte + 1
             pass
 
         cmd_str = cmd_str +  cmd_str_end
@@ -1216,7 +1228,7 @@ if __name__ == "__main__":
     path = JIGM3.listdevices()
     g_mcu = JIGM3(devpath=path[0], sim_mcu0=1)
     # set simulation mode or normal mode
-    g_mcu.sim_mcu = 0
+    g_mcu.sim_mcu = 1
     g_mcu.com_open()
     # set all the IO to output
 
@@ -1491,7 +1503,9 @@ if __name__ == "__main__":
 
         # HV buck write testing
 
-        g_mcu.buck_write(input_byte0=0xF3)
+        input_3_byte = [ 0xAA, 0xFF, 0x55]
+
+        g_mcu.buck_write(input_byte0=input_3_byte)
 
         pass
 
