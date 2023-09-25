@@ -1505,7 +1505,7 @@ if __name__ == "__main__":
 
         input_3_byte = [ 0xAA, 0xFF, 0x55]
 
-        g_mcu.buck_write(input_byte0=input_3_byte)
+        g_mcu.buck_write(input_byte0=input_3_byte, period_4_100ns=10)
 
         pass
 
