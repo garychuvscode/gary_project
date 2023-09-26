@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 from ctypes import *
 import ctypes
-import logging,os, re
+import logging, os, re
 import time
 from pathlib import Path
 
-from .GInst import *
+# from .GInst import *
+from GInst import *
 
+# fmt: off
 
 #AqLAVISA constants
 #Error code
@@ -28,15 +30,15 @@ AcuteLinkType = {
     'MSO.exe'               : 3,
 }
 
-class Acute(GInst):    
+class Acute(GInst):
 
     def __init__(self, link, ch) :
-        super().__init__()    
+        super().__init__()
 
         self.DllDirectory = AqLAVISA_DLL_Directory
         self.LaDll = ctypes.WinDLL(AqLAVISA_DLL_Directory)
         self.LaDll.viWrite.argtypes = [ctypes.c_char_p]
-        self.LaDll.viRead.argtypes = [ctypes.c_char_p, ctypes.c_int]           
+        self.LaDll.viRead.argtypes = [ctypes.c_char_p, ctypes.c_int]
 
         apptype = AcuteLinkType[link]
 
@@ -46,7 +48,7 @@ class Acute(GInst):
 
         if (self.viOpenRM() == 0):
             raise Exception("viOpenRM")
-      
+
 
     def __del__(self):
         self.viCloseRM()
@@ -54,7 +56,7 @@ class Acute(GInst):
 
     #Select Target Application Type
     def viSelectAppType(self, AppType):
-        RetryCount = 10 
+        RetryCount = 10
         while (self.LaDll.viSelectAppType(AppType) == 0):
             if (self.LaDll.viErrCode() != AQVI_DLL_NOT_READY): #Error code = 9999, DLL still initializing
                 logging.warning ("viSelectAppType Error... ", self.LaDll.viErrCode())
@@ -63,13 +65,13 @@ class Acute(GInst):
                 logging.warning ("viSelectAppType Timeout... ", self.LaDll.viErrCode())
                 return False
             RetryCount -= 1
-            time.sleep(0.1) #Wait 100ms for each loop	
+            time.sleep(0.1) #Wait 100ms for each loop
         return True
-        
-                
+
+
     #Establish S/W connection
     def viOpenRM(self):
-        RetryCount = 10 
+        RetryCount = 10
         while (self.LaDll.viOpenRM() == 0):
             if (self.LaDll.viErrCode() != AQVI_DLL_NOT_READY): #Error code = 9999, DLL still initializing
                 logging.warning ("viOpenRM Error... ", self.LaDll.viErrCode())
@@ -78,7 +80,7 @@ class Acute(GInst):
                 logging.warning ("viOpenRM Timeout... ", self.LaDll.viErrCode())
                 return False
             RetryCount -= 1
-            time.sleep(0.1) #Wait 100ms for each loop	
+            time.sleep(0.1) #Wait 100ms for each loop
         return True
 
     #Read Error Code
@@ -92,15 +94,15 @@ class Acute(GInst):
 
 
     #Send Command to S/W
-    def viWrite(self, cmd, timeout = 10):     
+    def viWrite(self, cmd, timeout = 10):
         """
         logic.viWrite(cmd, timeout = 10) -> None
         ================================================================
-        [Acute LA viWrite] 
+        [Acute LA viWrite]
         :param cmd: command
-        :timeout = 
+        :timeout =
         :return: None
-        """            
+        """
         cmd = cmd.encode('utf-8')
         if (self.LaDll.viWrite(ctypes.c_char_p(cmd)) == 0):
             return False
@@ -111,7 +113,7 @@ class Acute(GInst):
             time.sleep(TimerInterval) #Wait 100ms for command processing
             CmdResult = self.LaDll.viGetCommandResult()
             RetryCount -= 1
-            
+
         if (CmdResult == PROC_FAIL):
             logging.warning("viWrite Error...", self.LaDll.viErrCode(), cmd)
             return False
@@ -127,18 +129,18 @@ class Acute(GInst):
         if (self.LaDll.viRead(ReadBuf, BufSize) == 0):
             logging.warning ("viRead Error... ", self.LaDll.viErrCode())
             return ""
-        else: 
+        else:
             return ReadBuf.value.decode("utf-8")
 
     def viQuery(self, command, timeout = 10):
         """
         logic.viQuery(command) -> ReadBuf.value
         ================================================================
-        [Acute LA viQuery] 
+        [Acute LA viQuery]
         :param cmd: command
-        :timeout =         
+        :timeout =
         :return: ReadBuf.value
-        """           
+        """
 
         self.viWrite(command)
         return self.viRead()
@@ -148,26 +150,27 @@ class Acute(GInst):
         """
         logic.printScreenToPC(path) -> None
         ================================================================
-        [print Acute LA Screen and save to path] 
-        :param path: file path or None for default_path 
+        [print Acute LA Screen and save to path]
+        :param path: file path or None for default_path
         :return: None
-        """   
+        """
         from pathlib import Path
-        from NAGlib.Gsys.Gsys       import Gsys
+        # from NAGlib.Gsys.Gsys       import Gsys
 
         while self.viQuery("*LA:CAPTURE:STATUS?") != "Analysis Finished" :
-            Gsys.msleep(100)        
+            # Gsys.msleep(100)
+            time.sleep(0.1)
 
         if path is None :
-            from datetime import datetime     
+            from datetime import datetime
             try :
                 wavepath = f'D:\\@AutoVerify\\{datetime.now().strftime("%Y%m%d")}\\Waveforms'
                 Path(wavepath).mkdir(parents=True, exist_ok=True)
             except :
                 wavepath = wavepath.replace("D:\\@AutoVerify", "C:\\@AutoVerify")
-                Path(wavepath).mkdir(parents=True, exist_ok=True)     
+                Path(wavepath).mkdir(parents=True, exist_ok=True)
 
-            pure_path = f"{wavepath}\\{datetime.now().strftime('%Y%m%d_%H%M%S%f')[:-5]}.png"   
+            pure_path = f"{wavepath}\\{datetime.now().strftime('%Y%m%d_%H%M%S%f')[:-5]}.png"
         else :
             pure_path = os.path.splitext(path)[0] + ".png"
 
@@ -179,19 +182,20 @@ class Acute(GInst):
         """
         logic.triggerSingle(sync = True) -> None
         ================================================================
-        [logic trigger Single] 
+        [logic trigger Single]
         :param sync(option): True > wait for Pre-Trigger done
         :return: None
 
         example:
-            logic.triggerSingle()      
-        """      
-        from NAGlib.Gsys.Gsys       import Gsys
-        try :     
+            logic.triggerSingle()
+        """
+        # from NAGlib.Gsys.Gsys       import Gsys
+        try :
             self.viWrite("*LA:CAPTURE:START")
 
             while sync and self.viQuery("*LA:CAPTURE:STATUS?") in ['Capturing', 'Pre-Trigger'] :
-                Gsys.msleep(100)
+                # Gsys.msleep(100)
+                time.sleep(0.1)
 
         except Exception as e :
             print('triggerSingle > ', type(e), str(e))
@@ -204,10 +208,10 @@ class Acute(GInst):
         """
         logic.waitTriggered(timeout = 5) -> bool
         ================================================================
-        [wait until scope is triggered] 
+        [wait until scope is triggered]
         :param timeout(option): timeout second
         :return: None
-        """   
+        """
 
         import time
         interval_ms = 330
@@ -220,7 +224,7 @@ class Acute(GInst):
         return False
 
 
-        
+
 
 
 
@@ -228,48 +232,48 @@ class Acute(GInst):
     #     """
     #     scope.triggerSingle() -> None
     #     ================================================================
-    #     [scope trigger Single] 
+    #     [scope trigger Single]
     #     :return: None
-    #     """           
+    #     """
     #     self.writeVBS('app.Acquisition.TriggerMode = "Single"')
-    #     self.writeVBS('app.ClearSweeps')  
+    #     self.writeVBS('app.ClearSweeps')
 
 
 
-# test 
+# test
 
 
-def CaptureAndSaveReport():    
+def CaptureAndSaveReport():
 
-    LaVisaDll = Acute(1, '')    
+    LaVisaDll = Acute(1, '')
 
     if (LaVisaDll.viSelectAppType(0) == 0):
         return
 
     print ("Initial software connection...")
     if (LaVisaDll.viOpenRM() == 0):
-        return;    
-        
+        return;
+
     print ("Begin software capture...")
     if (LaVisaDll.viWrite(b"*LA:CAPTURE:START") == 0): #Begin Capture
         return
-    
+
     print ("Wait for waveform capture...")
-    time.sleep(10) #Wait 10s for waveform capture    
+    time.sleep(10) #Wait 10s for waveform capture
 
     print ("Stop software capture, and wait until software ready")
     if (LaVisaDll.viWrite(b"*LA:CAPTURE:STOP") == 0): #Stop Capture
         return
-        
+
     while (1): #wait until capture finished
-        if (LaVisaDll.viWrite(b"*STB?") == 0): #Status check            
-            return 
+        if (LaVisaDll.viWrite(b"*STB?") == 0): #Status check
+            return
         ReadString = LaVisaDll.viRead();
         if (ReadString == ""):
             return
         if (ReadString == b'1'):
             break
-        
+
     print ("Begin save captured data as report...")
     SaveCSVWaitTime = 30 #wait 30s for file saving
     # if (LaVisaDll.viWrite(b"*PA:REPORT:SAVE " + ReportCsvSaveDirectory, SaveCSVWaitTime) == 0): #Save Report
@@ -278,15 +282,14 @@ def CaptureAndSaveReport():
     #     if (LaVisaDll.viWrite(b"*STB?") == 0): #Status check
     #         return
     #     ReadString = LaVisaDll.viRead();
-    #     if (ReadString == ""):            
+    #     if (ReadString == ""):
     #         return
     #     if (ReadString == b'1'):
     #         break
 
     print ("Disconnect from software...")
-    LaVisaDll.viCloseRM() 
+    LaVisaDll.viCloseRM()
     print ("All Finished!")
-    
+
 def main():
     CaptureAndSaveReport()
-   
