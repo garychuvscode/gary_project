@@ -293,3 +293,29 @@ def CaptureAndSaveReport():
 
 def main():
     CaptureAndSaveReport()
+
+
+
+if __name__ == "__main__":
+    # add the testing program for acute LA object
+
+
+    testing_index = 0
+
+    if testing_index == 0 :
+        # testing for the default way of object difinition
+
+        link_address = 0
+        la_obj = Acute(link=link_address)
+
+
+        pass
+
+    elif testing_index == 1 :
+        # adjust the method of object definition and add simulation mode
+
+        pass
+
+
+
+    pass
