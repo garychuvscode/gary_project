@@ -385,6 +385,7 @@ if __name__ == "__main__":
         trace = 0
         file_name0="test.xlsx"
     else:
+        # testing index to 100, no need testing
         test_index = 100
         trace = 1
         file_name = 'c:\\py_gary\\test_excel\\NT50970NAB_verification.xlsm'
