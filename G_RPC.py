@@ -93,6 +93,28 @@ Efficiency.Run()
 
         result = NAGui.run(code, timeout=1800)
 
+        '''
+        the comments for using run function in RPC (will Grace know? who knows~ XD)
+        first to check on the trace from main.py of GPL_V5
+        here is the tarce of main.py: (also check from the git trace)
+        D:\GPL_tool\GPL_NAGui v5\NAGui py310\NAGui
+
+        second is to import the obj from related folder (import the py file)
+        "from GAutoVerify.PMU.Efficiency import Efficiency"
+        GAutoVerify => the folder with main.py
+        Efficiency.py is the related object, refer to the definition of object in file:
+        Efficiency = Auto_PmuEfficiency() => "Efficiency" is the operation object
+
+        "Efficiency.showForm()" => show the operation form of this item
+        "Efficiency.restoreByTag('virtual')" => choolse the setting file
+        "Efficiency.Run()" => start the verification
+
+        note that the "restoreByTag" function is from previous object:
+        "class Auto_PmuEfficiency(GTagForm, Ui_Form_CommonAV):"
+        GTagForm => is where "restoreByTag" function from
+
+        '''
+
         pass
 
     elif test_index == 1:
@@ -127,6 +149,20 @@ Efficiency.Run()
         mcu_m.pmic_mode(4)
         NAGui.eff_run(tag_name0=tag_name2)
 
+
+
+        pass
+
+    elif test_index == 3 :
+        '''
+        call GPattern for pattern gen application
+        refer to the pattern gen example:
+
+        example:
+        GPattern.run(0)             #run first pattern(index = 0)
+        GPattern.run('Pattern1')    #run pattern or PGCB named 'Pattern1'
+
+        '''
 
 
         pass
