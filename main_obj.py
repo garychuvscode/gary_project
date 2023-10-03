@@ -349,6 +349,18 @@ if excel_m.pwr_select == 0:
     ripple_t = rip.ripple_test(
         excel_m, pwr_m, met_v_m, loader_chr_m, mcu_m, src_m, met_i_m, chamber_m, scope_m
     )
+
+    gli_test = gli.glitch_mea(
+            excel_m,
+            pwr_m,
+            met_v_m,
+            loader_chr_m,
+            mcu_m,
+            src_m,
+            met_i_m,
+            chamber_m,
+            scope_m,
+        )
 elif excel_m.pwr_select == 1:
     # set to 1 is to use BK9141
     ripple_t = rip.ripple_test(
@@ -363,17 +375,17 @@ elif excel_m.pwr_select == 1:
         scope_m,
     )
 
-gli_test = gli.glitch_mea(
-        excel_m,
-        pwr_bk_m,
-        met_v_m,
-        loader_chr_m,
-        mcu_m,
-        src_m,
-        met_i_m,
-        chamber_m,
-        scope_m,
-    )
+    gli_test = gli.glitch_mea(
+            excel_m,
+            pwr_bk_m,
+            met_v_m,
+            loader_chr_m,
+            mcu_m,
+            src_m,
+            met_i_m,
+            chamber_m,
+            scope_m,
+        )
 
 # scope cpature setting for waveform related testing item
 if main_off_line == 1:
@@ -1515,6 +1527,9 @@ if __name__ == "__main__":
             ripple_t.pwr_seq()
 
             # since EN is mapped to EN2, mainly testing EN2 pin which connect to EN at
+
+            excel_m.message_box(content_str='need to add the loader onto the setup for glitch measurement', title_str='setup change request', auto_exception=1)
+
             # A version
             format_g.set_sheet_name('glitch_BK_EN2_L')
             gli_test.run_verification()

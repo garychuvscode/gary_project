@@ -242,7 +242,7 @@ class glitch_mea:
         '''
 
         # set the trigger to normal mode
-        self.scope_ini.trigger_adj(mode="Normal")
+        self.scope_ini.trigger_adj(mode="Auto")
 
 
         if pin_num0 == 1:
