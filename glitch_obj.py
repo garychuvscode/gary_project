@@ -112,6 +112,7 @@ class glitch_mea:
         used to change the setting of loader current for each channel
         EL_LDO = CH1
         VCI_BUCK = CH2
+        default setting of glitch testing is set to LDO_0.1, B_0.5
         '''
         self.load_curr_EL_LDO = i_EL_LDO
         self.load_curr_VCI_BUCK = i_VCI_BUCK
