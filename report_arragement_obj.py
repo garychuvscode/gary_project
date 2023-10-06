@@ -51,6 +51,17 @@ class report_arragement:
         # spece between each table (column + space)
         self.space = 4
 
+        try :
+            self.ref_sh = self.wb.sheets('ref_sh')
+            print(f'reference sheet already exist, start the arragement')
+            pass
+
+        except :
+            print(f'reference sheet not exist, add a new one and assigned')
+            self.ref_sh = self.wb.sheets.add(name='ref_sh')
+
+            pass
+
         pass
 
     def Buck_eff_load_regulation(self):
@@ -367,6 +378,46 @@ class report_arragement:
             # if no des input, use the same sheet
             self.sheet_des = self.sheet_sor
 
+
+        pass
+
+    def report_temp_ini(self, ext_trace0=0):
+        '''
+        delete all other sheet and just make sh_ref left for next operation
+        trace must be full trace:
+        'c:\\py_gary\\test_excel\\GPL_V5_RPC_temp.xlsx'
+        '''
+        if ext_trace0 == 0:
+            # deleter the GPL_V5_temp
+            file_path = 'c:\\py_gary\\test_excel\\GPL_V5_RPC_temp.xlsx'
+        else:
+            # delete input trace
+            file_path = ext_trace0
+
+
+        # 连接到 Excel 应用程序
+        app = xw.App(visible=False)  # 如果不需要可见 Excel，请设置 visible=False
+
+        try:
+            # 打开指定的 Excel 文件
+            wb = xw.Book(file_path)
+
+            # 遍历所有工作表，除了名为 "sh_ref" 的工作表之外，都删除
+            for sheet in wb.sheets:
+                if sheet.name != "sh_ref":
+                    sheet.delete()
+
+            # 保存对文件的更改
+            wb.save()
+
+            # # 关闭文件和 Excel 应用程序
+            # wb.close()
+            # app.quit()
+
+            print(f"已删除所有工作表，只保留 'sh_ref' 工作表。")
+
+        except Exception as e:
+            print(f"发生错误：{str(e)}")
 
         pass
 

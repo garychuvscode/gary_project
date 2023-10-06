@@ -1,10 +1,20 @@
 from multiprocessing.connection import Client, wait
 
-import JIGM3 as mcu_g
 
 # excel parameter and settings
 import parameter_load_obj as par
 import time
+import xlwings as xw
+
+# === other support object
+# add the report_arragement for building the result in the report sheet
+import report_arragement_obj as rep_obj
+import JIGM3 as mcu_g
+
+
+# === initialization for the support object
+file_name = "c:\\py_gary\\test_excel\\GPL_V5_RPC_temp.xlsx"
+rep_a = rep_obj.report_arragement(file_name0=file_name, full_trace0=1)
 
 mcu_m = mcu_g.JIGM3(sim_mcu0=0)
 print("JIGM3 MCU selected for Grace")
@@ -100,7 +110,7 @@ class NAGuiRPC:
 
             return result
 
-    def run(self, codes, timeout=3.0):
+    def run(self, codes, timeout=3):
         self.Connection.send((NAGSIGN_RPC, codes, (), {}))
 
         for r in wait(self.Readers, timeout=timeout):
@@ -202,14 +212,65 @@ Efficiency.Run()
                     self.pwr_ch,
                     "on",
                 )
+
                 self.eff_run(tag_name0=tag_set)
+
+                # find the sheet and copy to the result temp
+                sh_anme = f'<{tag_set}> #1'
+                self.find_sh_all_books(sheet_name=sh_anme)
 
                 print(f'all in one, the testing of {tag_set} is done')
                 x_mode = x_mode + 1
 
             pass
 
+        # get the second round of efficiency and regulstion
+
+        # process the repo manager for merge the result together
+
         pass
+
+    def find_sh_all_books(self, sheet_name=''):
+        # 连接到 Excel 应用程序
+        # app = xw.App(visible=False)  # 如果不需要可见 Excel，请设置 visible=False
+        app2 = xw.apps
+
+        # 获取所有已打开的工作簿
+        workbooks = xw.books
+        print(workbooks)
+        print(app2)
+        for app in app2:
+            workbooks = app.books
+            # 遍历所有已打开的工作簿
+            for workbook in workbooks:
+                # 遍历当前工作簿中的所有工作表
+                for sheet in workbook.sheets:
+                    if sheet.name == sheet_name:
+                        # 找到匹配的工作表
+                        print(f"在工作簿 '{workbook.name}' 中找到匹配的工作表：{sheet_name}")
+                        # 在这里可以执行其他操作，如读取或修改工作表内容
+                        '''
+                        copy this sheet to the result book, it should be able to find the
+                        result book and reference sheet for copying index during the program operation
+                        '''
+                        print(app.name)
+                        # try to find the sheet, get the full trace,
+                        # open books in same app
+                        # and you can copy the sheet without pain
+                        #
+
+
+                        break
+                    pass
+                pass
+            pass
+
+        # 关闭 Excel 应用程序
+        # app.quit()
+
+        # return  new_sh
+
+
 
 
 if __name__ == "__main__":
@@ -300,6 +361,13 @@ Efficiency.Run()
         Efficiency.Run()
         """
 
+        '''
+        231006 new add comments
+        double return can get variable from G_RPC, from GPL_V5
+        __return__
+        return format check with George
+        '''
+
         result = NAGui.run(code, timeout=1800)
 
         pass
@@ -329,6 +397,10 @@ Efficiency.Run()
     elif test_index == 2.5 :
 
         NAGui.part_num = 'SY8388C3'
+        report_trace = ''
+        target_sheet = ''
+
+
         NAGui.buck_regulation_mix(mode0=0, setting_sel0='virtual')
 
         pass
@@ -343,6 +415,14 @@ Efficiency.Run()
         GPattern.run('Pattern1')    #run pattern or PGCB named 'Pattern1'
 
         '''
+
+
+        pass
+
+    elif test_index == 4 :
+        # pyhton testing for xlwings
+
+
 
 
         pass

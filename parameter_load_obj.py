@@ -60,6 +60,14 @@ class excel_parameter ():
 
             pass
 
+        # 231006 include the app_name of what parameter load is using
+        self.app_org = self.wb.app
+        self.app_name = self.wb.app._pid
+        print(self.wb.app.books)
+
+        app = xw.apps[self.app_name]
+        print(app.books)
+
         # 220907 add the sheet array for eff measurement
         self.sheet_arry = np.full([200], None)
 
@@ -2664,10 +2672,11 @@ if __name__ == '__main__':
     #  the testing code for this file object
 
     import datetime
+    import sheet_ctrl_main_obj as sh
 
-    test_mode = 2.5
+    test_mode = 3
 
-    excel = excel_parameter('obj_main')
+    excel = excel_parameter(str(sh.file_setting))
     if test_mode == 0:
         input()
 
@@ -2699,6 +2708,9 @@ if __name__ == '__main__':
     elif test_mode == 1.5:
         # testing for the input parameter of the sub program
         def test(a1=0, *args, **kwargs):
+            '''
+            this program can support different parameter input for the function
+            '''
 
             print(a1)
 
@@ -2796,4 +2808,110 @@ if __name__ == '__main__':
         return_value = get_nth_value(colors, 2)
         print(return_value)
 
+        pass
+
+    elif test_mode == 3 :
+        '''
+        testing for the trace an file record
+        '''
+
+        def g_file_info_record(side0=0, name0=0, trace0=0, gary_name=0, gary_section=0):
+            '''
+            spin form parameter_load_obj function
+            side: 0-GPL_V5; 1-gary_auto (G_RPC)
+            231005 from parameter_obj
+            '''
+            grace_wb = xw.Book("c:\\py_gary\\test_excel\\grace_trace.xlsx")
+            sh_check = grace_wb.sheets('file_trace_ref')
+            # start from the row, start from (3, 1)
+            default_row = 3
+            update = 0
+            x_index = 0
+
+            # start to check in the index
+            while update == 0:
+
+                if side0 == 0 :
+                    # GPL_V5 side
+                    ind = sh_check.range((default_row + x_index, 1)).value
+
+                    if ind != 'x' :
+                        # this is available row
+                        update = 1
+                        # update the index information to related block
+                        # == index x means occupied
+                        sh_check.range((default_row + x_index, 1)).value = 'x'
+                        # == file trace (full path)
+                        sh_check.range((default_row + x_index, 2)).value = str(trace0)
+                        # == file name (sheet name)
+                        sh_check.range((default_row + x_index, 3)).value = str(name0)
+
+                        pass
+                    pass
+                else:
+                    # g_auto_side
+                    ind = sh_check.range((default_row + x_index, 6)).value
+
+                    if ind != 'x' :
+                        # this is available row
+                        update = 1
+                        # update the index information to related block
+                        # == index x means occupied
+                        sh_check.range((default_row + x_index, 6)).value = 'x'
+                        # == file name
+                        sh_check.range((default_row + x_index, 4)).value = str(gary_name)
+                        # == file section
+                        sh_check.range((default_row + x_index, 5)).value = str(gary_section)
+
+                        pass
+                    pass
+
+                x_index = x_index + 1
+                pass
+
+            # need to save and close, since it's different excel for GPL_V5 and gary's
+            grace_wb.save()
+            # grace_wb.close()
+            print(f'done for update, side={side0}, name={name0}, g_name={gary_name}')
+            pass
+
+        def g_file_info_ini():
+            '''
+            set grace trace back to initial
+            copy from the sh_ref and re-name
+            '''
+
+            '''
+            231006 update: try to use George's new method to implement copy method
+            here is only reserve for backup ~ check the searching method put in G_RPC
+            '''
+
+            wb_grace = xw.Book("c:\\py_gary\\test_excel\\grace_trace.xlsx")
+            sh_check = wb_grace.sheets('file_trace_ref')
+            sh_ref = wb_grace.sheets('sh_ref')
+            tmp_name = sh_check.name
+            sh_check.delete()
+            sh_check = sh_ref.copy(sh_ref)
+            sh_check.name = tmp_name
+            print('grace_trace file is back to initial')
+
+            pass
+
+
+        g_file_info_record(name0='grace',trace0='grace_trace')
+
+        g_file_info_record(name0='grace1',trace0='grace_trace1')
+
+        g_file_info_record(name0='grace2',trace0='grace_trace2')
+
+        g_file_info_record(side0=1, gary_name='g_n',gary_section='g_s')
+        g_file_info_record(side0=1, gary_name='g_n2',gary_section='g_s2')
+        g_file_info_record(side0=1, gary_name='g_n1',gary_section='g_s1')
+
+        g_file_info_ini()
+
+
+        '''
+        check if the default read
+        '''
         pass
