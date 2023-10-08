@@ -529,6 +529,8 @@ class excel_parameter ():
         self.test_counter_en = 0
         self.test_counter = 2
 
+        # 231009: G_RPC related control parameter
+
         # =============
         # instrument control related
 
