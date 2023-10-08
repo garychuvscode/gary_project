@@ -14,24 +14,60 @@ import logging as log
 # fmt: off
 
 class report_arragement:
-    def __init__(self, file_name0="", full_trace0=0):
+    def __init__(self, file_name0="", full_trace0=0, excel0=0):
         """
         this class used to process some regular copy, paste and plot of report \n
         file input need to be .xlsm
         """
+
+        prog_only = 1
+        if prog_only == 0:
+            # ======== only for object programming
+            # testing used temp instrument
+            # need to become comment when the OBJ is finished
+            import mcu_obj as mcu
+            import inst_pkg_d as inst
+            import parameter_load_obj as par
+
+            # add the libirary from Geroge
+            import Scope_LE6100A as sco
+
+            # initial the object and set to simulation mode
+            pwr0 = inst.LPS_505N(3.7, 0.5, 3, 1, "off")
+            pwr0.sim_inst = 0
+            # initial the object and set to simulation mode
+            met_v0 = inst.Met_34460(0.0001, 30, 0.000001, 2.5, 21)
+            met_v0.sim_inst = 0
+            loader_0 = inst.chroma_63600(1, 7, "CCL")
+            loader_0.sim_inst = 0
+            # mcu is also config as simulation mode
+            mcu0 = mcu.MCU_control(0, 3)
+            # using the main control book as default
+            excel0 = par.excel_parameter("obj_main")
+            src0 = inst.Keth_2440(0, 0, 24, "off", "CURR", 15)
+            src0.sim_inst = 0
+            met_i0 = inst.Met_34460(0.0001, 7, 0.000001, 2.5, 20)
+            met_i0.sim_inst = 0
+            chamber0 = inst.chamber_su242(25, 10, "off", -45, 180, 0)
+            chamber0.sim_inst = 0
+            scope0 = sco.Scope_LE6100A("GPIB: 15", 0, 0)
+            # ======== only for object programming
+
         self.full_trace = ''
+        self.excel_m = excel0
 
         if full_trace0 == 0 :
 
-            # input file name of report
+            # input file name of report, which already opened
             self.file_name = str(file_name0)
-
-            self.wb = xw.books(self.file_name)
+            self.wb = self.excel_m.app_org.books(self.file_name)
+            # self.wb = xw.books(self.file_name)
             print(f"select {self.file_name} as report file")
             self.full_trace = ''
         else:
             # file saving is based on the trace content
-            self.wb = xw.Book(file_name0)
+            self.wb = self.excel_m.app_org.books.open(file_name0)
+            # self.wb = xw.Book(file_name0)
             self.full_trace = file_name0
 
 
