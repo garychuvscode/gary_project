@@ -14,7 +14,7 @@ import logging as log
 # fmt: off
 
 class report_arragement:
-    def __init__(self, file_name0="", full_trace0=0, excel0=0):
+    def __init__(self,excel0=0):
         """
         this class used to process some regular copy, paste and plot of report \n
         file input need to be .xlsm
@@ -54,21 +54,12 @@ class report_arragement:
             # ======== only for object programming
 
         self.full_trace = ''
-        self.excel_m = excel0
+        self.excel_ini = excel0
+        self.file_name = ''
+        self.wb = 0
+        self.default_path = 'c:\\py_gary\\test_excel\\'
 
-        if full_trace0 == 0 :
 
-            # input file name of report, which already opened
-            self.file_name = str(file_name0)
-            self.wb = self.excel_m.app_org.books(self.file_name)
-            # self.wb = xw.books(self.file_name)
-            print(f"select {self.file_name} as report file")
-            self.full_trace = ''
-        else:
-            # file saving is based on the trace content
-            self.wb = self.excel_m.app_org.books.open(file_name0)
-            # self.wb = xw.Book(file_name0)
-            self.full_trace = file_name0
 
 
         # name of sheet for example operation
@@ -87,18 +78,39 @@ class report_arragement:
         # spece between each table (column + space)
         self.space = 4
 
-        try :
-            self.ref_sh = self.wb.sheets('ref_sh')
-            print(f'reference sheet already exist, start the arragement')
-            pass
 
-        except :
-            print(f'reference sheet not exist, add a new one and assigned')
-            self.ref_sh = self.wb.sheets.add(name='ref_sh')
-
-            pass
 
         pass
+    def open_book(self, full_trace0=0, file_name0=0, check_ref_sh0=1):
+
+        if full_trace0 == 0 :
+
+            # input file name of report, which already opened
+            self.file_name = str(file_name0)
+            self.wb = self.excel_ini.app_org.books(self.file_name)
+            # self.wb = xw.books(self.file_name)
+            print(f"select {self.file_name} as report file")
+            self.full_trace = ''
+            pass
+        else:
+            # file saving is based on the trace content
+            self.wb = self.excel_ini.app_org.books.open(file_name0)
+            # self.wb = xw.Book(file_name0)
+            self.full_trace = file_name0
+            pass
+
+        # check the opened book have ref_sh or not
+        if check_ref_sh0 == 1 :
+            try :
+                self.ref_sh = self.wb.sheets('ref_sh')
+                print(f'reference sheet already exist, start the arragement')
+                pass
+
+            except :
+                print(f'reference sheet not exist, add a new one and assigned')
+                self.ref_sh = self.wb.sheets.add(name='ref_sh')
+
+                pass
 
     def Buck_eff_load_regulation(self):
         """
@@ -417,34 +429,51 @@ class report_arragement:
 
         pass
 
-    def report_temp_ini(self, ext_trace0=0):
+    def report_temp_ini(self, file_name0=0):
         '''
-        delete all other sheet and just make sh_ref left for next operation
-        trace must be full trace:
-        'c:\\py_gary\\test_excel\\GPL_V5_RPC_temp.xlsx'
+        maek the temp file status back to intial
+
+        GPL_V5_RPC_temp.xlsx => only leave the ref_sh, delete other sheet
+        grace_trace.xlsx => delete other sheet and copy ref_sh to replace the sheet
+
+        fixed trace:
+        'c:\\py_gary\\test_excel\\file_name0'
         '''
-        if ext_trace0 == 0:
-            # deleter the GPL_V5_temp
-            file_path = 'c:\\py_gary\\test_excel\\GPL_V5_RPC_temp.xlsx'
-        else:
-            # delete input trace
-            file_path = ext_trace0
+
+        self.clr_to_ref_sh(file_name0)
+
+        if file_name0 == "grace_trace.xlsx" :
+            # also need to copy ref_sh and create new sheet beofre close
+            sh_ref = self.ini_wb.sheets('ref_sh')
+            sh_temp = sh_ref.copy(sh_ref)
+            sh_temp.name = 'file_trace_ref'
+            pass
+
+        self.ini_wb.save()
+        self.ini_wb.close()
 
 
-        # 连接到 Excel 应用程序
-        app = xw.App(visible=False)  # 如果不需要可见 Excel，请设置 visible=False
+
+
+    pass
+
+    def clr_to_ref_sh(self, file_name0=0):
+        '''
+        file_name0 need to be full file name: test.xlsx or test.xlsm
+        '''
+        full_trace = self.default_path + file_name0
 
         try:
             # 打开指定的 Excel 文件
-            wb = xw.Book(file_path)
+            self.ini_wb = self.excel_ini.app_org.books.open(full_trace)
 
             # 遍历所有工作表，除了名为 "sh_ref" 的工作表之外，都删除
-            for sheet in wb.sheets:
+            for sheet in self.ini_wb.sheets:
                 if sheet.name != "sh_ref":
                     sheet.delete()
 
             # 保存对文件的更改
-            wb.save()
+            self.ini_wb.save()
 
             # # 关闭文件和 Excel 应用程序
             # wb.close()
@@ -458,39 +487,45 @@ class report_arragement:
         pass
 
 
-    pass
-
-
 
 
 if __name__ == "__main__":
     #  the testing code for this file object
 
-    operation_index = 1
+    import sheet_ctrl_main_obj as sh
+    import parameter_load_obj as para
+
+    excel_m = para.excel_parameter(str(sh.file_setting))
+
+    operation_index = 0
     if operation_index == 0 :
-        test_index = 2
+        test_index = 3
         trace = 0
-        file_name0="test.xlsx"
+        file_name="test.xlsx"
     else:
         # testing index to 100, no need testing
         test_index = 100
         trace = 1
         file_name = 'c:\\py_gary\\test_excel\\NT50970NAB_verification.xlsm'
 
-    rep = report_arragement(file_name0=file_name,full_trace0=trace)
+    rep = report_arragement(excel0=excel_m)
+
 
     if operation_index == 1:
+        rep.open_book(file_name0=file_name,full_trace0=trace, check_ref_sh0=0)
 
         rep.Buck_eff_load_regulation()
 
         pass
     elif operation_index == 2 :
+        rep.open_book(file_name0=file_name,full_trace0=trace, check_ref_sh0=0)
 
         rep.LDO_load_regulation()
 
 
 
     if test_index == 0 :
+        rep.open_book(file_name0=file_name,full_trace0=trace, check_ref_sh0=0)
 
         rep.table_comparison(
             ind_1=(5, 2),
@@ -506,6 +541,7 @@ if __name__ == "__main__":
         pass
 
     elif test_index == 1 :
+        rep.open_book(file_name0=file_name,full_trace0=trace, check_ref_sh0=0)
         rep.table_comparison(
             ind_1=(5, 2),
             ind_2=(5, 9),
@@ -519,6 +555,7 @@ if __name__ == "__main__":
         pass
 
     elif test_index == 2 :
+        rep.open_book(file_name0=file_name,full_trace0=trace, check_ref_sh0=0)
 
         rep.table_comparison(
             ind_1=(5, 2),
@@ -532,6 +569,15 @@ if __name__ == "__main__":
         )
 
         pass
+
+    elif test_index == 3:
+        # testing for clr temp file:
+
+        # GPL_V5_RPC_temp.xlsx => only leave the ref_sh, delete other sheet
+        # grace_trace.xlsx => delete other sheet and copy ref_sh to replace the sheet
+
+        rep.report_temp_ini(file_name0='GPL_V5_RPC_temp.xlsx')
+        rep.report_temp_ini(file_name0='grace_trace.xlsx')
 
 
 
