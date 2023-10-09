@@ -469,7 +469,7 @@ class report_arragement:
 
             # 遍历所有工作表，除了名为 "sh_ref" 的工作表之外，都删除
             for sheet in self.ini_wb.sheets:
-                if sheet.name != "sh_ref":
+                if sheet.name != "ref_sh":
                     sheet.delete()
 
             # 保存对文件的更改
@@ -479,7 +479,7 @@ class report_arragement:
             # wb.close()
             # app.quit()
 
-            print(f"已删除所有工作表，只保留 'sh_ref' 工作表。")
+            print(f"已删除{file_name0}所有工作表，只保留 'ref_sh' 工作表。")
 
         except Exception as e:
             print(f"发生错误：{str(e)}")
