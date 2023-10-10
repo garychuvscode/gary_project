@@ -530,6 +530,9 @@ class excel_parameter ():
         self.test_counter = 2
 
         # 231009: G_RPC related control parameter
+        self.part_number = self.sh_main.range('E8').value
+        self.extra_comments = self.sh_main.range('F8').value
+        self.eff_sh_brief = self.sh_main.range('G8').value
 
         # =============
         # instrument control related

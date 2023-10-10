@@ -40,6 +40,12 @@ import format_gen_obj as form_g
 import general_test_obj as gene_t
 import ripple_obj as rip
 import glitch_obj as gli
+import G_RPC as gpl
+
+
+# import other support tool
+
+import report_arragement_obj as rep_arr
 
 # off line test, set to 1 set all the instrument to simulation mode
 main_off_line = 0
@@ -343,6 +349,13 @@ general_t_bk = gene_t.general_test(
 eff_test_bk = eff.eff_mea(
     excel_m, pwr_bk_m, met_v_m, loader_chr_m, mcu_m, src_m, met_i_m, chamber_m
 )
+
+# 231009 add G_RPC as the connection with GPL_V5 related items
+g_rpc = gpl.NAGuiRPC(timeout=3, excel0=excel_m, pwr0=pwr_m, met_v0=met_v_m, loader_0=loader_chr_m, mcu0=mcu_m, src0=src_m, met_i0=met_i_m, chamber0=chamber_m, scope0=scope_m)
+'''
+instrument added in G_RPC, can also be control by both g_auto and GPL_V5
+simulation mode of G_RPC will be operate form setting all the insturment to virtual in different items => virtual tag in GPL_V5
+'''
 
 if excel_m.pwr_select == 0:
     # set to 0 is to use LPS505
@@ -1882,6 +1895,57 @@ if __name__ == "__main__":
         # ===========
 
         excel_m.summary_file_gen('summary_file_ctrl')
+
+
+        # ===========
+        # changeable area
+
+        # remember that this is only call by main, not by object
+        excel_m.end_of_file(multi_item)
+        # end of file can also be call between each item
+        print("end of the program")
+
+        pass
+
+    # G_RPC-buck efficiency with summary report generation
+    elif program_group >= 20 and program_group < 21:
+        # fixed part, open one result book and save the book
+        """
+        explanation of different number settings
+        20 => new file
+        20.1 => old file
+        """
+        # in temp name
+        if program_group == 20.1 :
+            # track previous report and save at the end
+            excel_m.open_result_book(keep_last=1)
+        else:
+            excel_m.open_result_book(keep_last=0)
+        # auto save after the book is generate
+        excel_m.excel_save()
+        # single setting of the object need to be 1 => no needed single
+        multi_item = 0
+        # setup instruement for test mode, only for debug, no need to change)
+        sim_mode_independent(
+            pwr=1,
+            met_v=1,
+            met_i=1,
+            loader=1,
+            src=1,
+            chamber=1,
+            scope=1,
+            bk_pwr=1,
+            main_off_line0=main_off_line,
+            single_mode0=single_mode,
+        )
+        # open instrument and add the name to result book
+        open_inst_and_name()
+        print("open instrument with real or simulation mode")
+
+        # changeable area
+        # ===========
+
+        g_rpc.buck_regulation_mix(mode0=0, setting_sel0='virtual', L_H0=1)
 
 
         # ===========

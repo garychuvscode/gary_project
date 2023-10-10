@@ -126,6 +126,13 @@ class NAGuiRPC:
         # for closing all the workbooks in the app
         self.GPL_app = 0
 
+        self.v_nor = 3.3
+        self.v_usm = 1.5
+        self.v_off = 0
+        self.i_o_curr = 0.2
+        self.mode_index = [ '_L', '_LBO', '_BN', '_BU', '_BN_H', '_BU_H' ]
+        self.vio_index = [ self.v_off, self.v_nor, self.v_nor, self.v_usm, self.v_nor, self.v_usm ]
+
         pass
 
 
@@ -194,15 +201,10 @@ Efficiency.Run()
 
         '''
         setting_sel0 = str(setting_sel0)
-        v_nor = 3.3
-        v_usm = 1.5
-        v_off = 0
-        i_o_curr = 0.2
-        mode_index = [ '_L', '_LBO', '_BN', '_BU', '_BN_H', '_BU_H' ]
-        vio_index = [ v_off, v_nor, v_nor, v_usm, v_nor, v_usm ]
+
 
         # device initialization for this item
-        self.pwr_ini.chg_out(v_off, i_o_curr, self.pwr_ch, 'off')
+        self.pwr_ini.chg_out(self.v_off, self.i_o_curr, self.pwr_ch, 'off')
 
 
         # finished initialization
@@ -212,12 +214,12 @@ Efficiency.Run()
             # single operation
 
             # mode x_mode
-            tag_set = setting_sel0 + mode_index[mode0]
+            tag_set = setting_sel0 + self.mode_index[mode0]
             # finished EN1=L for LDO regulation
 
             self.pwr_ini.chg_out(
-                vio_index[mode0],
-                i_o_curr,
+                self.vio_index[mode0],
+                self.i_o_curr,
                 self.pwr_ch,
                 "on",
             )
@@ -240,13 +242,13 @@ Efficiency.Run()
             while x_mode < c_mode :
 
                 # mode x_mode
-                tag_set = setting_sel0 + mode_index[x_mode]
+                tag_set = setting_sel0 + self.mode_index[x_mode]
                 # finished EN1=L for LDO regulation
 
                 # assign the EN voltage for different operation
                 self.pwr_ini.chg_out(
-                    vio_index[x_mode],
-                    i_o_curr,
+                    self.vio_index[x_mode],
+                    self.i_o_curr,
                     self.pwr_ch,
                     "on",
                 )

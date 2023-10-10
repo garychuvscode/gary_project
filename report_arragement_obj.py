@@ -78,6 +78,8 @@ class report_arragement:
         # spece between each table (column + space)
         self.space = 4
 
+        self.default_tag_name = f'<virtual> #1'
+
 
 
         pass
@@ -484,6 +486,32 @@ class report_arragement:
         except Exception as e:
             print(f"发生错误：{str(e)}")
 
+        pass
+
+    def buck_eff_sum_gen_full(self, mode0=0, setting_sel0='virtual', L_H0=1):
+        '''
+        auto generation for full report of buck eff and regulation
+        default tag name : f'<{tag_set}> #1'
+        '''
+        self.default_tag_name = f'<{setting_sel0}> #1'
+        self.mode_index = [ '_L', '_LBO', '_BN', '_BU', '_BN_H', '_BU_H' ]
+
+        # LDO regulation
+
+        # Buck-normal regulation
+
+        # Buck-USM regulation
+
+
+        pass
+
+    def buck_eff_sum_gen_single(self, setting_sel0='virtual', L_H0=1):
+        '''
+        choose by using message box:
+        1. C or B version selection
+        2. high and low sheet assigned (choose active and press enter)
+
+        '''
         pass
 
 
