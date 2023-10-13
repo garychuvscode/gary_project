@@ -26,6 +26,7 @@ pwr_m = inst.LPS_505N(
 )
 
 pwr_m.sim_inst = 0
+pwr_m.open_inst()
 
 # === other support object
 # add the report_arragement for building the result in the report sheet
@@ -38,6 +39,7 @@ file_name = "c:\\py_gary\\test_excel\\GPL_V5_RPC_temp.xlsx"
 rep_a = rep_obj.report_arragement(excel0=excel_m)
 
 mcu_m = mcu_g.JIGM3(sim_mcu0=0)
+mcu_m.com_open()
 print("JIGM3 MCU selected for Grace")
 
 NAGSIGN_RPC = "##NAGRPC##"
@@ -253,6 +255,13 @@ Efficiency.Run()
                     "on",
                 )
 
+                # add the change of relay channel to Vout
+                # mode < 2, sense LDO; mode >= 2 sense Buck
+                if x_mode < 2 :
+                    self.mcu_ini.relay_ctrl(channel_index=0)
+                else :
+                    self.mcu_ini.relay_ctrl(channel_index=1)
+
                 if x_mode == 0 :
                     self.excel_ini.message_box('now is for "low" current mode, configure Iin and Iout to correct place', 'measurement current setting', auto_exception=1)
                 elif L_H0 == 1 and x_mode == 4:
@@ -435,7 +444,7 @@ if __name__ == "__main__":
     # original version of definition => without instrument object input
     # NAGui = NAGuiRPC()
 
-    NAGui = NAGuiRPC(pwr0=pwr_m, excel0=excel_m)
+    NAGui = NAGuiRPC(pwr0=pwr_m, excel0=excel_m, mcu0=mcu_m)
 
     # # 1-line function - method 1
     # result = NAGui.call('GI2C.read(0x9E, 0x00, 1)')
@@ -518,6 +527,8 @@ Efficiency.Run()
         # define the tag file for V5
         tag_name ='virtual'
         tag_name2 = 'virtual1'
+        # tag_name ='hv_buck_c'
+        # tag_name2 = 'hv_buck_c'
 
         # adjust MCU mode before efficiency operation
         # LDO only or AOD mode
@@ -537,9 +548,11 @@ Efficiency.Run()
         NAGui.part_num = 'SY8388C3'
         report_trace = ''
         target_sheet = ''
+        tag_name = 'hv_buck_c'
+        # tag_name = 'virtual'
 
 
-        NAGui.buck_regulation_mix(mode0=0, setting_sel0='virtual', L_H0=1)
+        NAGui.buck_regulation_mix(mode0=0, setting_sel0=tag_name, L_H0=1)
 
 
 
