@@ -44,7 +44,7 @@ NAGSIGN_RPC = "##NAGRPC##"
 # fmt: off
 
 class NAGuiRPC:
-    def __init__(self, timeout=3.0, excel0=0, pwr0=0, met_v0=0, loader_0=0, mcu0=0, src0=0, met_i0=0, chamber0=0, scope0=0):
+    def __init__(self, timeout=3.0, excel0=0, pwr0=0, met_v0=0, loader_0=0, mcu0=0, src0=0, met_i0=0, chamber0=0, scope0=0, rep0=0):
         '''
         input all the instrument may need in RPC application
         231002: add Gary's testing object initial items
@@ -94,6 +94,7 @@ class NAGuiRPC:
             chamber0 = inst.chamber_su242(25, 10, "off", -45, 180, 0)
             chamber0.sim_inst = 0
             scope0 = sco.Scope_LE6100A("GPIB: 15", 0, 0)
+            rep0 = rep_obj.report_arragement(excel0=excel_m)
             # ======== only for object programming
 
         # assign the input information to object variable
@@ -106,6 +107,7 @@ class NAGuiRPC:
         self.met_i_ini = met_i0
         self.chamber_ini = chamber0
         self.scope_ini = scope0
+        self.rep_ini = rep0
         # self.single_ini = single0
 
 
@@ -132,6 +134,8 @@ class NAGuiRPC:
         self.i_o_curr = 0.2
         self.mode_index = [ '_L', '_LBO', '_BN', '_BU', '_BN_H', '_BU_H' ]
         self.vio_index = [ self.v_off, self.v_nor, self.v_nor, self.v_usm, self.v_nor, self.v_usm ]
+
+        self.setting_tag = ''
 
         pass
 
@@ -201,7 +205,7 @@ Efficiency.Run()
 
         '''
         setting_sel0 = str(setting_sel0)
-
+        self.setting_tag = setting_sel0
 
         # device initialization for this item
         self.pwr_ini.chg_out(self.v_off, self.i_o_curr, self.pwr_ch, 'off')
@@ -262,7 +266,7 @@ Efficiency.Run()
 
                 # find the sheet and copy to the result temp
                 sh_anme = f'<{tag_set}> #1'
-                self.find_sh_all_books(sheet_name=sh_anme)
+                self.find_sh_all_books(sheet_name=sh_anme, mode0=x_mode)
                 self.close_window_of_raw(x_mode)
 
                 print(f'all in one, the testing of {tag_set} is done')
@@ -276,8 +280,11 @@ Efficiency.Run()
 
         pass
 
-    def find_sh_all_books(self, sheet_name=''):
-
+    def find_sh_all_books(self, sheet_name='', mode0=7):
+        '''
+        mode0 is set to 7 in default, it will send 'other settings in tag'
+        otherwise, it will be the tage support summary sheet
+        '''
         # 连接到 Excel 应用程序
         # app = xw.App(visible=False)  # 如果不需要可见 Excel，请设置 visible=False
         app2 = xw.apps
@@ -317,7 +324,19 @@ Efficiency.Run()
                         sh_ref= temp_wb.sheets('ref_sh')
                         # sh_ref = temp_wb.sheets(1)
                         # sh_ref.name = 'ref_sh'
-                        sheet.copy(sh_ref)
+                        temp_sh = sheet.copy(sh_ref)
+                        temp_sh.name = self.excel_ini.eff_sh_name + self.mode_index[mode0]
+                        if mode0 < 7 :
+                            # it's normal tag
+                            temp_sh.range('A2').value = self.mode_index[mode0]
+                            temp_sh.range('B2').value = self.excel_ini.part_number
+                            temp_sh.range('C2').value = self.excel_ini.extra_comments
+                            print(f'mode info update to res_sh')
+                            pass
+                        else :
+                            temp_sh.range('A2').value = 'other'
+                            print(f'mode info update to res_sh')
+                            pass
                         temp_wb.save()
                         temp_wb.close()
 

@@ -68,6 +68,12 @@ class excel_parameter ():
         app = xw.apps[self.app_name]
         print(app.books)
 
+        # 20231011 Gary update portion
+        self.res_window = ""
+        self.trace_full = ""
+        self.temp_str = ""
+        self.sheet_name = ""
+
         # 220907 add the sheet array for eff measurement
         self.sheet_arry = np.full([200], None)
 
@@ -532,7 +538,7 @@ class excel_parameter ():
         # 231009: G_RPC related control parameter
         self.part_number = self.sh_main.range('E8').value
         self.extra_comments = self.sh_main.range('F8').value
-        self.eff_sh_brief = self.sh_main.range('G8').value
+        self.eff_sh_name = self.sh_main.range('G8').value
 
         # =============
         # instrument control related
@@ -2670,6 +2676,73 @@ class excel_parameter ():
 
 
 
+        pass
+
+    def g_file_info_record(self, side0=0, gary_name=0, gary_section=0):
+        """
+        spin form parameter_load_obj function
+        side: 0-GPL_V5; 1-gary_auto (G_RPC)
+        """
+        grace_wb = xw.Book("c:\\py_gary\\test_excel\\grace_trace.xlsx")
+        sh_check = grace_wb.sheets("file_trace_ref")
+        # start from the row, start from (3, 1)
+        default_row = 3
+        update = 0
+        x_index = 0
+        print(f"side0 is {side0}")
+
+        # start to check in the index
+        while update == 0:
+            if side0 == 0:
+                # GPL_V5 side
+                ind = sh_check.range((default_row + x_index, 1)).value
+
+                if ind != "x":
+                    # this is available row
+                    update = 1
+                    # update the index information to related block
+                    # == index x means occupied
+                    sh_check.range((default_row + x_index, 1)).value = "x"
+                    # == file trace
+                    sh_check.range((default_row + x_index, 2)).value = str(
+                        self.trace_full
+                    )
+                    # == file name
+                    sh_check.range((default_row + x_index, 3)).value = str(
+                        self.sheet_name
+                    )
+                    # == window name (sheet name)
+                    sh_check.range((default_row + x_index, 7)).value = str(
+                        self.res_window
+                    )
+
+                    pass
+                pass
+            else:
+                # g_auto_side
+                ind = sh_check.range((default_row + x_index, 6)).value
+
+                if ind != "x":
+                    # this is available row
+                    update = 1
+                    # update the index information to related block
+                    # == index x means occupied
+                    sh_check.range((default_row + x_index, 6)).value = "x"
+                    # == file name
+                    sh_check.range((default_row + x_index, 4)).value = str(gary_name)
+                    # == file section
+                    sh_check.range((default_row + x_index, 5)).value = str(gary_section)
+
+                    pass
+                pass
+            print(f"x_index is {x_index}")
+            x_index = x_index + 1
+            pass
+
+        # need to save and close, since it's different excel for GPL_V5 and gary's
+        grace_wb.save()
+        # grace_wb.close()
+        print(f"done for update, side={side0}, name={self.sheet_name}, g_name={gary_name}")
         pass
 
 
