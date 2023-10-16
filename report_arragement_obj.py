@@ -63,8 +63,10 @@ class report_arragement:
 
 
         # name of sheet for example operation
-        self.Buck_eff_example = "Eff_comp_ex"
-        self.LDO_reg_example = "regulation_comp_LDO_ex"
+        self.Buck_eff_example = "Eff_comp_ex_C"
+        self.LDO_reg_example = "regulation_comp_LDO_ex_C"
+        self.Buck_eff_example_B = "Eff_comp_ex_AB"
+        self.LDO_reg_example_B = "regulation_comp_LDO_ex_AB"
         self.raw_sheet = "C_raw_NAB"
 
         # this is not sheet name, already sheet object
@@ -79,6 +81,12 @@ class report_arragement:
         self.space = 4
 
         self.default_tag_name = f'<virtual> #1'
+
+        # 231011 fixed temp result trace
+        # buffer between report manager and GPL_V5
+        self.temp_res_bufffer = 'c:\\py_gary\\test_excel\\GPL_V5_RPC_temp.xlsx'
+        # window and other reference buffer:
+        self.grace_trace = 'c:\\py_gary\\test_excel\\grace_trace.xlsx'
 
 
 
@@ -135,8 +143,9 @@ class report_arragement:
         self.nt_eff_0p19 = self.sh_comp.range('C8').value
         self.nt_eff_2 = self.sh_comp.range('C9').value
 
-        # this is the index sheet for copy summary sheet to front of first sheet
-        self.sh_sy_eff_0p19 = self.wb.sheets(self.sy_eff_0p19)
+        # # this one only need for the old solutions before 231012
+        # # this is the index sheet for copy summary sheet to front of first sheet
+        # self.sh_sy_eff_0p19 = self.wb.sheets(self.sy_eff_0p19)
 
 
         sh_temp = self.sy_eff_0p19
@@ -381,7 +390,6 @@ class report_arragement:
             col_count = col_count - 1
 
 
-
         ind_1_end = (ind_1[0] + row_count, ind_1[1] + col_count)
 
         self.sor_des_sheet_sel(sheet_sor1=sheet_sor0,sheet_des1=sheet_des0)
@@ -417,12 +425,18 @@ class report_arragement:
         '''
 
         if sheet_sor1 != '':
-            self.sheet_sor = self.wb.sheets(str(sheet_sor1))
+            # new version: search the sheet from global, and copy to result book (self.wb)
+            self.sheet_sor = self.find_sh_all_books_copy_res(sheet_name=str(sheet_sor1))
+            # # version before 231012
+            # self.sheet_sor = self.wb.sheets(str(sheet_sor1))
             # if no sor0 input, set to default, may be error
             pass
 
         if sheet_des1 != '':
-            self.sheet_des = self.wb.sheets(str(sheet_des1))
+            # new version: search the sheet from global, and copy to result book (self.wb)
+            self.sheet_des = self.find_sh_all_books_copy_res(sheet_name=str(sheet_des1))
+            # # version before 231012
+            # self.sheet_des = self.wb.sheets(str(sheet_des1))
             pass
         else:
             # if no des input, use the same sheet
@@ -433,7 +447,7 @@ class report_arragement:
 
     def report_temp_ini(self, file_name0=0):
         '''
-        maek the temp file status back to intial
+        make the temp file status back to intial
 
         GPL_V5_RPC_temp.xlsx => only leave the ref_sh, delete other sheet
         grace_trace.xlsx => delete other sheet and copy ref_sh to replace the sheet
@@ -453,9 +467,6 @@ class report_arragement:
 
         self.ini_wb.save()
         self.ini_wb.close()
-
-
-
 
     pass
 
@@ -488,13 +499,107 @@ class report_arragement:
 
         pass
 
+    def find_sh_all_books_copy_res(self, sheet_name=''):
+        '''
+        mode0 is set to 7 in default, it will send 'other settings in tag'
+        otherwise, it will be the tage support summary sheet
+        '''
+        # 连接到 Excel 应用程序
+        # app = xw.App(visible=False)  # 如果不需要可见 Excel，请设置 visible=False
+        app2 = xw.apps
+
+        # 获取所有已打开的工作簿
+        workbooks = xw.books
+        print(workbooks)
+        print(app2)
+        for app in app2:
+            print(f'now is app{app}')
+            workbooks = app.books
+            # 遍历所有已打开的工作簿
+            for workbook in workbooks:
+                print(f'now is wb{workbook}')
+                # 遍历当前工作簿中的所有工作表
+                for sheet in workbook.sheets:
+                    print(f'now is wb{sheet}')
+                    if sheet.name == sheet_name:
+                        # 找到匹配的工作表
+                        print(f"在app{app}工作簿 '{workbook.name}' 中找到匹配的工作表：{sheet_name}")
+                        # 在这里可以执行其他操作，如读取或修改工作表内容
+                        '''
+                        copy this sheet to the result book, it should be able to find the
+                        result book and reference sheet for copying index during the program operation
+                        '''
+                        sheet = sheet.copy(self.sh_comp)
+
+                        break
+                    pass
+                pass
+            pass
+
+        # 关闭 Excel 应用程序
+        # app.quit()
+        pass
+
     def buck_eff_sum_gen_full(self, mode0=0, setting_sel0='virtual', L_H0=1):
         '''
         auto generation for full report of buck eff and regulation
         default tag name : f'<{tag_set}> #1'
+        mode 0 => all, 1-LDO(L), 2-LDO_BK_on(LBO), 3-Buck_normal(BN), 4-Buck_usm(BU), 5-Buck_normal_H, 6-Buck_usm_H
+        231012 => since there are comparison neede for summary sheet, no need this function now
         '''
         self.default_tag_name = f'<{setting_sel0}> #1'
-        self.mode_index = [ '_L', '_LBO', '_BN', '_BU', '_BN_H', '_BU_H' ]
+        # watch out the index change due to process of exp and report is different
+        # self.mode_index = [ '_L', '_LBO', '_BN', '_BU', '_BN_H', '_BU_H' ]
+        self.mode_index = [ '_L', '_LBO', '_BN', '_BN_H', '_BU', '_BU_H' ]
+
+        app = self.excel_ini.app_org
+        temp_wb = app.books.open(self.temp_res_bufffer)
+
+        if mode0 != 0 :
+            # run a full result
+            x_mode = 0
+
+            if L_H0 == 0 :
+                c_mode = 4
+            else:
+                c_mode = 6
+
+            while x_mode < c_mode :
+
+                # mode x_mode
+                tag_set = setting_sel0 + self.mode_index[x_mode]
+                temp_sh = temp_wb.sheets(tag_set)
+
+                # copy to result sheet
+                temp_sh = temp_sh.copy(self.excel_ini.sh_ref)
+
+                if x_mode < 2 :
+                    # itmes for LDO regulation
+                    pass
+                elif x_mode < 4 :
+                    # buck normal mode operation report summary
+                    pass
+                else :
+                    # buck USM mode operation report summary
+                    pass
+
+
+
+
+
+
+                print(f'all in one result generationmpde = {mode0}')
+                x_mode = x_mode + 1
+                pass
+            print(f'all in one result generation done')
+
+
+            # LDO regulation
+
+            # Buck-normal regulation
+
+            # Buck-USM regulation
+
 
         # LDO regulation
 
@@ -525,7 +630,7 @@ if __name__ == "__main__":
 
     excel_m = para.excel_parameter(str(sh.file_setting))
 
-    operation_index = 0
+    operation_index = 1
     if operation_index == 0 :
         test_index = 3
         trace = 0
