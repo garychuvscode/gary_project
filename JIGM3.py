@@ -1095,6 +1095,7 @@ class JIGM3:
         '''
         HV buck NBA pattern testing
         input_byte0 should be 3 byte list, default 3 byte for 50970
+        CS_B = 0, SDI = 1, SCK = 2
         '''
 
         # # this is for single byte operation
