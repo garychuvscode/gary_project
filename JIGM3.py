@@ -1096,6 +1096,10 @@ class JIGM3:
         HV buck NBA pattern testing
         input_byte0 should be 3 byte list, default 3 byte for 50970
         CS_B = 0, SDI = 1, SCK = 2
+
+        when call the the buck_write, watch out the initialization of MCU will reset the PG3 to low
+        since the PG1 and PG2 is default to EN1 and
+
         '''
 
         # # this is for single byte operation
@@ -1504,12 +1508,36 @@ if __name__ == "__main__":
 
         # HV buck write testing
 
-        input_3_byte = [ 0xAA, 0xFF, 0x55]
+        while 1 :
+            # keep running in the infinite loop, or link the device without initializtion
 
-        g_mcu.buck_write(input_byte0=input_3_byte, period_4_100ns=10)
+            input_3_byte0 = [0xAA, 0xFF, 0x55]
+            g_mcu.buck_write(input_byte0=input_3_byte0, period_4_100ns=10)
+
+            pass
 
         pass
 
+    elif test_index == 10.5:
+
+        # HV buck write testing
+
+        while 1 :
+
+            input_3_byte0 = [0x00, 0x00, 0x00]
+            g_mcu.buck_write(input_byte0=input_3_byte0, period_4_100ns=10)
+            # when call the the buck_write, watch out the initialization of MCU will reset the PG3 to low
+            # since the PG1 and PG2 is default to EN1 and
+
+            input_3_byte1 = [0xAA, 0xAA, 0xAA]
+            g_mcu.buck_write(input_byte0=input_3_byte1, period_4_100ns=10)
+
+            input_3_byte2 = [0xFF, 0xFF, 0xFF]
+            g_mcu.buck_write(input_byte0=input_3_byte2, period_4_100ns=10)
+
+            pass
+
+        pass
 
     elif test_index == 11 :
 
