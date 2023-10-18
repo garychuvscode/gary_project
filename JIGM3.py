@@ -803,7 +803,7 @@ class JIGM3:
             # self.i_o_change(port0=port_optional0, set_or_clr0=1, pin_num0=pin_SW0)
             pass
 
-        print(f'pmic moe set to {mode_index}\n')
+        print(f'pmic mode set to {mode_index}\n')
 
         pass
 
@@ -1631,12 +1631,12 @@ if __name__ == "__main__":
             # keep running in the infinite loop, or link the device without initializtion
 
             # assign the new command here
-            b3 = b3i
-            b2 = b2i
-            b1 = b1i
             b0 = b0i
+            b1 = b1i
+            b2 = b2i
+            b3 = b3i
 
-            input_4_byte0 = [b3, b2, b1, b0]
+            input_4_byte0 = [b0, b1, b2, b3]
 
             if burn_sel == 1 :
                 # run bun process
@@ -1678,13 +1678,13 @@ if __name__ == "__main__":
                 # finished oscillator setting, open burn OE (b3[7])
                 b3 = g_mcu.pure_group_write(lsb0=7, len0=1, data0=1, byte_state_tmp0=b3)
                 print(f'set OE and command is {hex(b3)}')
-                input_4_byte0 = [b3, b2, b1, b0]
+                input_4_byte0 = [b0, b1, b2, b3]
                 g_mcu.buck_write(input_byte0=input_4_byte0)
 
                 # send the write comand and finished efuse write
                 b3 = g_mcu.pure_group_write(lsb0=0, len0=1, data0=1, byte_state_tmp0=b3)
                 print(f'set Burn and command is {hex(b3)}')
-                input_4_byte0 = [b3, b2, b1, b0]
+                input_4_byte0 = [b0, b1, b2, b3]
                 g_mcu.buck_write(input_byte0=input_4_byte0)
 
                 # finished write, check the result after re-toggle power up but not efuse_RSTB
@@ -1693,12 +1693,12 @@ if __name__ == "__main__":
             else :
                 # assign the new command here
                 # if not in burn mode, set the byte 4 always 0
-                b3 = '0x00'
-                b2 = b2i
-                b1 = b1i
                 b0 = b0i
+                b1 = b1i
+                b2 = b2i
+                b3 = '0x00'
 
-                input_4_byte0 = [b3, b2, b1, b0]
+                input_4_byte0 = [b0, b1, b2, b3]
 
                 # normal write
                 g_mcu.buck_write(input_byte0=input_4_byte0, period_4_100ns=25)
@@ -1724,12 +1724,12 @@ if __name__ == "__main__":
             # keep running in the infinite loop, or link the device without initializtion
 
             # assign the new command here
-            b3 = int(b3i, 16)
-            b2 = int(b2i, 16)
-            b1 = int(b1i, 16)
-            b0 = int(b0i, 16)
+            b0 = b0i
+            b1 = b1i
+            b2 = b2i
+            b3 = b3i
 
-            input_4_byte0 = [b3, b2, b1, b0]
+            input_4_byte0 = [b0, b1, b2, b3]
 
             g_mcu.buck_write(input_byte0=input_4_byte0, period_4_100ns=25)
 
