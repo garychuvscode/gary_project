@@ -1055,13 +1055,13 @@ class JIGM3:
         else:
             # shift the data based on the length and using XOR to update result
             # then write the new data to the register
-            group_command = data0 << len0
+            group_command = data0 << lsb0
             print(f'Gary want new data to be: {hex(group_command)}, {bin(group_command)}')
 
             temp = 0
             for x in range(len0):
                 temp = temp + 2**x
-            temp = temp << len0
+            temp = temp << lsb0
             print(f' what Grace said: {bin(temp)} ~')
             temp = 255 - temp
             print(f' what Grace do: {bin(temp)} XDD')
@@ -1088,6 +1088,79 @@ class JIGM3:
             print(f'Grace read back from reg {hex(register0)} have new data {hex(check_data)}')
 
             pass
+
+        pass
+
+    def pure_group_write(self, lsb0=0, len0=1, data0=0, byte_state_tmp0=0):
+
+        '''
+        group few bits together for register adjustment in program
+        lsb is define the LSB of this group (from 0-7)
+        len is length of this group (from 1-8)
+        limitation is all the bit must be in same register
+        data need to be integer
+
+        byte_state_tmp0 is original data, and data0 is the new data
+        '''
+        lsb0 = int(lsb0)
+        len0 = int(len0)
+        data0 = int(data0)
+        '''
+        calculation method register update:
+        left shift for LSB: LSB0 => no need shift, LSB3 => give three 0 in right
+        '''
+        # x**y operator is means x^y, sinc the ^ means XOR in python
+        if data0 > 2**(len0) :
+            # data is too big, output the error message and bypass the command
+            # this check is used to prevent overflow of Grace XD
+            print(f'length "{len0}" and data "{data0}" have fconflict, please double check ')
+
+            pass
+        else:
+            # shift the data based on the length and using XOR to update result
+            # then write the new data to the register
+            group_command = data0 << lsb0
+            print(f'Gary want new data to be: {hex(group_command)}, {bin(group_command)}')
+
+            temp = 0
+            for x in range(len0):
+                temp = temp + 2**x
+            temp = temp << lsb0
+            print(f' what Grace said: {bin(temp)} ~')
+            temp = 255 - temp
+            print(f' what Grace do: {bin(temp)} XDD')
+
+            # byte_state_tmp = self.i2c_read(device=device0, regaddr=register0, len=1)
+            # byte_state_tmp = byte_state_tmp[0]
+            # old one is used for I2C mode, update new method, the old datais
+            # this data is from function input
+            byte_state_tmp = byte_state_tmp0
+
+            print(f'Grace get original data: {hex(byte_state_tmp)}, {bin(byte_state_tmp)}')
+            # clean the group bits before adding the new data
+            byte_state_tmp = byte_state_tmp & temp
+            print(f'Gary clean original data: {hex(byte_state_tmp)}, {bin(byte_state_tmp)}')
+            # using or is ok after clean the related group bits
+            new_byte_data = group_command | byte_state_tmp
+            x = hex(new_byte_data)
+            print(f"Grace's final command0 is {x}")
+
+
+            # 231018: take off the i2C write from the i2c, this function is only for byte operation
+
+            # # write the new byte to the register, change to JIGM3 format first
+            # new_list = [new_byte_data]
+
+            # self.i2c_write(device=device0, regaddr=register0, datas=new_list)
+
+            # # double check process
+            # check_data = self.i2c_read(device=device0, regaddr=register0, len=1)
+            # check_data = check_data[0]
+            # print(f'Grace read back from reg {hex(register0)} have new data {hex(check_data)}')
+
+            # return the calculation result
+            return new_byte_data
+
 
         pass
 
@@ -1126,6 +1199,7 @@ class JIGM3:
         while x_byte < 4 :
 
             input_data = input_byte0[x_byte]
+            input_data = self.hex_to_num(input_data)
             print(f'input data is {hex(input_data)} or {bin(input_data)}')
 
             x = 0
@@ -1217,6 +1291,19 @@ class JIGM3:
 
         return new_byte_data
 
+    def hex_to_num(self, data_in0=0):
+        '''
+        try to transfer the input to number for register write
+        skip if already number (but watch out this is dec number input, not hex)
+        '''
+        try:
+            data_in0 = int(data_in0, 16)
+            print(f'input is string and transfer number: {data_in0}')
+        except:
+            print(f'input is already number: {data_in0}, return origin')
+
+        return data_in0
+
     pass
 
 
@@ -1241,6 +1328,13 @@ if __name__ == "__main__":
     # g_mcu.i_o_config()
 
     # ====
+
+    # import excel for the message box operation
+    import sheet_ctrl_main_obj as sh
+    # excel parameter and settings
+    import parameter_load_obj as para
+    # define the excel object
+    excel_m = para.excel_parameter(str(sh.file_setting))
 
     a = g_mcu.getversion()
     print(f"the MCU version is {a}")
@@ -1480,10 +1574,10 @@ if __name__ == "__main__":
 
     elif test_index == 9 :
         # bit group operation when control is not only one bit
-        reg0 = 0xA3
+        reg0 = 0xA2
         group_len = 2
         device = 0x9C
-        group_lsb = 2
+        group_lsb = 1
 
         data_group = 0
 
@@ -1493,9 +1587,9 @@ if __name__ == "__main__":
 
             g_mcu.bit_group_write(device0=device ,register0=reg0, lsb0=group_lsb, len0=group_len, data0=data_group)
 
-            time.sleep(1)
+            time.sleep(3)
 
-            if data_group < 15 :
+            if data_group < 4 :
                 data_group = data_group + 1
             else:
                 data_group = 0
@@ -1508,23 +1602,136 @@ if __name__ == "__main__":
 
         # HV buck write testing
 
-        b3 = '0xAA'
-        b2 = '0xAA'
-        b1 = '0xFF'
-        b0 = '0x55'
+        # b3i control for burn, drfault 0
+        b3i = '00'
+        # b2i is the register setting, based on the requirement
+        b2i = 'AA'
+        # b1i and b0i is the efuse data input
+        b1i = 'FF'
+        b0i = '55'
 
-        # assign the new command here
-        b3 = int(b3, 16)
-        b2 = int(b2, 16)
-        b1 = int(b1, 16)
-        b0 = int(b0, 16)
+        # function select for write
+        fun_sel = 0
+        data_sel = 0
+        burn_sel = 1
+        # osc: 0-3 => 2 bits
+        osc_code = 0
+
+        # write 3 byte
+        byte_3_R = [b2i, b1i, b0i]
+        # write 4 byte; burn use the same
+        byte_4_R = [b3i, b2i, b1i, b0i]
+        # burn write -> OE first then fuse write
+        byte_brun = [b3i, b2i, b1i, b0i]
+
+        data_arry = [byte_3_R, byte_4_R, ]
+
 
         while 1 :
             # keep running in the infinite loop, or link the device without initializtion
 
+            # assign the new command here
+            b3 = b3i
+            b2 = b2i
+            b1 = b1i
+            b0 = b0i
+
             input_4_byte0 = [b3, b2, b1, b0]
 
-            g_mcu.buck_write(input_byte0=input_4_byte0, period_4_100ns=10)
+            if burn_sel == 1 :
+                # run bun process
+                # origin data start from 0 (or assin below)
+                data = 0
+                x_osc = 0
+                while x_osc < 4 :
+                    # from 0 to 3
+                    data = g_mcu.pure_group_write(lsb0=5, len0=2, data0=x_osc)
+                    print(f'new data become{data}, Grace good job')
+
+                    # update current osc setting and able to check frequency
+                    b3 = data
+                    g_mcu.buck_write(input_byte0=input_4_byte0)
+                    # may need to add TM mode here~ check internal clock
+
+                    ans = excel_m.message_box(content_str=f'use this clk freq for burn?, code "{x_osc}"\n cancel use default {osc_code} ',title_str='osc clk scan', auto_exception=1, box_type=3)
+                    if ans == 6 :
+                        # found the correct freq
+                        osc_code = x_osc
+                        # update the osc_code
+                        b3 = g_mcu.pure_group_write(lsb0=5, len0=2, data0=osc_code)
+                        break
+                    elif ans == 2 :
+                        # skip and used default
+                        break
+                    elif ans == 7 :
+                        # this is not right, use next
+                        if x_osc == 3:
+                            # because will +1 before end of loop
+                            x_osc = -1
+                        pass
+
+
+                    x_osc = x_osc + 1
+                    # en of for osc_sel
+                    pass
+
+                # finished oscillator setting, open burn OE (b3[7])
+                b3 = g_mcu.pure_group_write(lsb0=7, len0=1, data0=1, byte_state_tmp0=b3)
+                print(f'set OE and command is {hex(b3)}')
+                input_4_byte0 = [b3, b2, b1, b0]
+                g_mcu.buck_write(input_byte0=input_4_byte0)
+
+                # send the write comand and finished efuse write
+                b3 = g_mcu.pure_group_write(lsb0=0, len0=1, data0=1, byte_state_tmp0=b3)
+                print(f'set Burn and command is {hex(b3)}')
+                input_4_byte0 = [b3, b2, b1, b0]
+                g_mcu.buck_write(input_byte0=input_4_byte0)
+
+                # finished write, check the result after re-toggle power up but not efuse_RSTB
+
+                pass
+            else :
+                # assign the new command here
+                # if not in burn mode, set the byte 4 always 0
+                b3 = '0x00'
+                b2 = b2i
+                b1 = b1i
+                b0 = b0i
+
+                input_4_byte0 = [b3, b2, b1, b0]
+
+                # normal write
+                g_mcu.buck_write(input_byte0=input_4_byte0, period_4_100ns=25)
+
+            pass
+
+        pass
+
+    elif test_index == 10.5:
+        # general method for single 4-byte write
+
+        # HV buck write testing
+
+        # b3i control for burn, drfault 0
+        b3i = '00'
+        # b2i is the register setting, based on the requirement
+        b2i = 'AA'
+        # b1i and b0i is the efuse data input
+        b1i = 'FF'
+        b0i = '55'
+
+        while 1 :
+            # keep running in the infinite loop, or link the device without initializtion
+
+            # assign the new command here
+            b3 = int(b3i, 16)
+            b2 = int(b2i, 16)
+            b1 = int(b1i, 16)
+            b0 = int(b0i, 16)
+
+            input_4_byte0 = [b3, b2, b1, b0]
+
+            g_mcu.buck_write(input_byte0=input_4_byte0, period_4_100ns=25)
 
             pass
 
@@ -1532,12 +1739,6 @@ if __name__ == "__main__":
 
 
     elif test_index == 11 :
-
-
-
-
-
-
 
         '''
         program flow:
