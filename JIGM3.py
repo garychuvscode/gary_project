@@ -1530,26 +1530,6 @@ if __name__ == "__main__":
 
         pass
 
-    elif test_index == 10.5:
-
-        # HV buck write testing
-
-        while 1 :
-
-            input_3_byte0 = [0x00, 0x00, 0x00]
-            g_mcu.buck_write(input_byte0=input_3_byte0, period_4_100ns=10)
-            # when call the the buck_write, watch out the initialization of MCU will reset the PG3 to low
-            # since the PG1 and PG2 is default to EN1 and
-
-            input_3_byte1 = [0xAA, 0xAA, 0xAA]
-            g_mcu.buck_write(input_byte0=input_3_byte1, period_4_100ns=10)
-
-            input_3_byte2 = [0xFF, 0xFF, 0xFF]
-            g_mcu.buck_write(input_byte0=input_3_byte2, period_4_100ns=10)
-
-            pass
-
-        pass
 
     elif test_index == 11 :
 
