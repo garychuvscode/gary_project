@@ -1122,8 +1122,8 @@ class JIGM3:
         '''
 
         x_byte = 0
-        # one or 3 byte operation
-        while x_byte < 3 :
+        # 4 byte operation
+        while x_byte < 4 :
 
             input_data = input_byte0[x_byte]
             print(f'input data is {hex(input_data)} or {bin(input_data)}')
@@ -1508,11 +1508,23 @@ if __name__ == "__main__":
 
         # HV buck write testing
 
+        b3 = '0xAA'
+        b2 = '0xAA'
+        b1 = '0xFF'
+        b0 = '0x55'
+
+        # assign the new command here
+        b3 = int(b3, 16)
+        b2 = int(b2, 16)
+        b1 = int(b1, 16)
+        b0 = int(b0, 16)
+
         while 1 :
             # keep running in the infinite loop, or link the device without initializtion
 
-            input_3_byte0 = [0xAA, 0xFF, 0x55]
-            g_mcu.buck_write(input_byte0=input_3_byte0, period_4_100ns=10)
+            input_4_byte0 = [b3, b2, b1, b0]
+
+            g_mcu.buck_write(input_byte0=input_4_byte0, period_4_100ns=10)
 
             pass
 
