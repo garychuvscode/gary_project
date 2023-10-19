@@ -1105,6 +1105,7 @@ class JIGM3:
         lsb0 = int(lsb0)
         len0 = int(len0)
         data0 = int(data0)
+        byte_state_tmp0 = self.hex_to_num(byte_state_tmp0)
         '''
         calculation method register update:
         left shift for LSB: LSB0 => no need shift, LSB3 => give three 0 in right
@@ -1606,28 +1607,33 @@ if __name__ == "__main__":
         b0i = '37'
         b1i = 'FF'
         # b2i is the register setting, based on the requirement
-        b2i = 'D7'
+        b2i = '57'
         # b3i control for burn, drfault 0
         b3i = '6A'
 
+        b0 = b0i
+        b1 = b1i
+        b2 = b2i
+        b3 = b3i
 
 
         # function select for write
         fun_sel = 0
         data_sel = 0
-        burn_sel = 1
-        tm_mode = 0
+        burn_sel = 0
+        # set to 2 for TM code scan function
+        tm_mode = 1
         # osc: 0-3 => 2 bits
         osc_code = 0
 
-        # write 3 byte
-        byte_3_R = [b2i, b1i, b0i]
-        # write 4 byte; burn use the same
-        byte_4_R = [b3i, b2i, b1i, b0i]
-        # burn write -> OE first then fuse write
-        byte_brun = [b3i, b2i, b1i, b0i]
-
-        data_arry = [byte_3_R, byte_4_R, ]
+        # define the tm sequence for different TM number needed from IC
+        tm_seq = [0, 5, 10, 31, 63]
+        # length of the register
+        tm_reg_length = [2, 3, 3, 2, 2]
+        # where the lsb is
+        tm_reg_lsb = [3, 2, 5, 0, 0]
+        # which register is it? 970 is only 0 and 1
+        tm_reg_ind = [0, 1, 0, 0, 1]
 
 
         while 1 :
@@ -1706,16 +1712,116 @@ if __name__ == "__main__":
 
                 # normal write
                 g_mcu.buck_write(input_byte0=input_4_byte0, period_4_100ns=25)
+                pass
+
+            if tm_mode >= 1 :
+                # enter test mode for selection
+
+                # first to turn on TM mode
+                b2 = g_mcu.pure_group_write(lsb0=7, len0=1, data0=1, byte_state_tmp0=0)
+                print(f'set TM command is {hex(b2)}')
+                input_4_byte0 = [b0, b1, b2, b3]
+                g_mcu.buck_write(input_byte0=input_4_byte0)
+
+
+                if tm_mode == 2 :
+                    # TM mode scan testing
+                    # auto scan TM code 6 bit from 0 to 5 => 0 to 63
+                    # tsw[5:0] => len=6 lsb=0
+
+                    c_tm = 64
+                    x_tm = 0
+
+                    while x_tm < c_tm :
+                        # TM is at ntrim2, use b2 as the operation register
+
+                        b2 = g_mcu.pure_group_write(lsb0=0, len0=6, data0=x_tm, byte_state_tmp0=b2)
+                        print(f'set TM command is {hex(b2)} and TM_num DEC is {x_tm}')
+                        input_4_byte0 = [b0, b1, b2, b3]
+                        g_mcu.buck_write(input_byte0=input_4_byte0)
+
+                        x_tm = x_tm + 1
+                        pass
+
+                    pass
+
+                # select the related test mode based on the setting array
+                c_tm_item = len(tm_seq)
+                x_tm_item = 0
+                # write default code of b0 and b1 re-load here (before trim process)
+                b0 = 0
+                b1 = 0
+                # b2 = 0 , take this off since it's initial by the EN_TM
+                b3 = 0 # this should fixed at 0, only when burn
+                # interrupt below to update the default code
+
+                while x_tm_item < c_tm_item :
+
+                    tm_ind = tm_seq[x_tm_item]
+
+                    b2 = g_mcu.pure_group_write(lsb0=0, len0=6, data0=tm_ind, byte_state_tmp0=b2)
+                    print(f'set TM command is {hex(b2)} and TM_num DEC is {x_tm_item}')
+                    input_4_byte0 = [b0, b1, b2, b3]
+                    g_mcu.buck_write(input_byte0=input_4_byte0)
+
+                    # below is the code scan
+                    c_term_scan = 2**(tm_reg_length[x_tm_item])
+                    x_term_scan = 0
+                    while x_term_scan < c_term_scan :
+                        # scan each code in the register in this loop
+
+                        # first enter data selection: which register?
+                        if tm_reg_ind[x_tm_item] == 0:
+                            data_trim = b0
+                        elif tm_reg_ind[x_tm_item] == 1:
+                            data_trim = b1
+
+                        data_trim = g_mcu.pure_group_write(lsb0=tm_reg_lsb[x_tm_item], len0=tm_reg_length[x_tm_item], data0=x_term_scan,byte_state_tmp0=data_trim)
+                        print(f'new data in b{tm_reg_ind[x_tm_item]} become {hex(data_trim)} or {bin(data_trim)}, Grace good job')
+                        input_4_byte0 = [b0, b1, b2, b3]
+                        g_mcu.buck_write(input_byte0=input_4_byte0)
+
+                        # === measurement code add here if needed in future
+
+                        print(f''' parameter update before message box
+TM item: {x_tm_item}, with index {tm_seq[x_tm_item]}
+in register b{tm_reg_ind[x_tm_item]}, using {bin(x_term_scan)}, will be {hex(data_trim)} or {bin(data_trim)}in register
+which with length {tm_reg_length[x_tm_item]} and lsb {tm_reg_lsb[x_tm_item]}
+                        ''')
+                        ans = excel_m.message_box(content_str=f'use code {x_term_scan} for trim? {hex(data_trim)} or {bin(data_trim)} in register b{tm_reg_ind[x_tm_item]}',title_str='trim code selection for g', auto_exception=1, box_type=4)
+                        if ans == 6 :
+                            # found the correct setting
+                            break
+                        elif ans == 7 :
+                            # this is not right, use next
+                            if x_term_scan == c_term_scan:
+                                # because will +1 before end of loop
+                                x_term_scan = -1
+                            pass
+
+                        x_term_scan = x_term_scan +1
+                        pass
+
+                    # after confirm each item, update the result to each register parameter
+                    if tm_reg_ind[x_tm_item] == 0:
+                        b0 = data_trim
+                    elif tm_reg_ind[x_tm_item] == 1:
+                        b1 = data_trim
+
+                    x_tm_item = x_tm_item + 1
+                    pass
+
+                # end of TM mode >=1
+                print(f'b0 final is {bin(b0)}, and b1 final is {bin(b1)}')
+                print(f'trim process finished')
+                pass
+
+
+
 
             pass
 
-        if tm_mode == 1 :
-            # enter test mode for selection
 
-
-
-
-            pass
 
         pass
 
