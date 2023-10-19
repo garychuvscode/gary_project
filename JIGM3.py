@@ -1602,18 +1602,21 @@ if __name__ == "__main__":
 
         # HV buck write testing
 
-        # b3i control for burn, drfault 0
-        b3i = '00'
-        # b2i is the register setting, based on the requirement
-        b2i = 'AA'
         # b1i and b0i is the efuse data input
+        b0i = '37'
         b1i = 'FF'
-        b0i = '55'
+        # b2i is the register setting, based on the requirement
+        b2i = 'D7'
+        # b3i control for burn, drfault 0
+        b3i = '6A'
+
+
 
         # function select for write
         fun_sel = 0
         data_sel = 0
         burn_sel = 1
+        tm_mode = 0
         # osc: 0-3 => 2 bits
         osc_code = 0
 
@@ -1646,10 +1649,11 @@ if __name__ == "__main__":
                 while x_osc < 4 :
                     # from 0 to 3
                     data = g_mcu.pure_group_write(lsb0=5, len0=2, data0=x_osc)
-                    print(f'new data become{data}, Grace good job')
+                    print(f'new data become {hex(data)}, Grace good job')
 
                     # update current osc setting and able to check frequency
                     b3 = data
+                    input_4_byte0 = [b0, b1, b2, b3]
                     g_mcu.buck_write(input_byte0=input_4_byte0)
                     # may need to add TM mode here~ check internal clock
 
@@ -1702,6 +1706,14 @@ if __name__ == "__main__":
 
                 # normal write
                 g_mcu.buck_write(input_byte0=input_4_byte0, period_4_100ns=25)
+
+            pass
+
+        if tm_mode == 1 :
+            # enter test mode for selection
+
+
+
 
             pass
 
