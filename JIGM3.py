@@ -1782,7 +1782,7 @@ if __name__ == "__main__":
                     tm_ind = tm_seq[x_tm_item]
 
                     b2 = g_mcu.pure_group_write(lsb0=0, len0=6, data0=tm_ind, byte_state_tmp0=b2)
-                    print(f'set TM command is {hex(b2)} and TM_num DEC is {x_tm_item}')
+                    print(f'set TM command is {hex(b2)} and TM_num DEC is {x_tm_item} with index {tm_seq[x_tm_item]}')
                     input_4_byte0 = [b0, b1, b2, b3]
                     g_mcu.buck_write(input_byte0=input_4_byte0)
 
@@ -1800,6 +1800,13 @@ if __name__ == "__main__":
 
                         data_trim = g_mcu.pure_group_write(lsb0=tm_reg_lsb[x_tm_item], len0=tm_reg_length[x_tm_item], data0=x_term_scan,byte_state_tmp0=data_trim)
                         print(f'new data in b{tm_reg_ind[x_tm_item]} become {hex(data_trim)} or {bin(data_trim)}, Grace good job')
+
+                        # assign to related result
+                        if tm_reg_ind[x_tm_item] == 0:
+                            b0 = data_trim
+                        elif tm_reg_ind[x_tm_item] == 1:
+                            b1 = data_trim
+
                         input_4_byte0 = [b0, b1, b2, b3]
                         g_mcu.buck_write(input_byte0=input_4_byte0)
 
@@ -1842,6 +1849,10 @@ which length is {tm_reg_length[x_tm_item]} and lsb is {tm_reg_lsb[x_tm_item]}
                 t1 = g_mcu.num_to_hex(b1)
                 t2 = g_mcu.num_to_hex(b2)
                 t3 = g_mcu.num_to_hex(b3)
+
+                # the final result after trim is
+                input_4_byte0 = [b0, b1, b2, b3]
+                g_mcu.buck_write(input_byte0=input_4_byte0)
 
                 print(f'confirm the output is: {t0}, {t1}, {t2}, {t3}')
                 pass
