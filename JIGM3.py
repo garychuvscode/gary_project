@@ -1305,6 +1305,20 @@ class JIGM3:
 
         return data_in0
 
+    def num_to_hex (self, data_in0=0):
+        '''
+        transfer the number to hex
+        '''
+        try:
+            data_in0 = hex(data_in0)
+            return data_in0
+        except:
+            print(f'input data "{data_in0}" transfer error, double check input data')
+            return 'data_error'
+
+        pass
+
+
     pass
 
 
@@ -1620,12 +1634,19 @@ if __name__ == "__main__":
         # function select for write
         fun_sel = 0
         data_sel = 0
+        # set to 1 for burn process
         burn_sel = 0
-        # set to 2 for TM code scan function
+        # set to 2 for TM code scan function, 1 is enable tset mode and trim
         tm_mode = 1
-        # osc: 0-3 => 2 bits
+        # osc: 0-3 => 2 bits change default here
         osc_code = 0
 
+        '''
+        amount of these array need to be same
+        each TM condition need to have mapping condition
+        tm_reg_ind is the mapping register need to config before and after
+        the code scan loop
+        '''
         # define the tm sequence for different TM number needed from IC
         tm_seq = [0, 5, 10, 31, 63]
         # length of the register
@@ -1639,11 +1660,12 @@ if __name__ == "__main__":
         while 1 :
             # keep running in the infinite loop, or link the device without initializtion
 
-            # assign the new command here
-            b0 = b0i
-            b1 = b1i
-            b2 = b2i
-            b3 = b3i
+            # # only testing need to use here, real mode program will update b0-b3
+            # # assign the new command here
+            # b0 = b0i
+            # b1 = b1i
+            # b2 = b2i
+            # b3 = b3i
 
             input_4_byte0 = [b0, b1, b2, b3]
 
@@ -1784,11 +1806,11 @@ if __name__ == "__main__":
                         # === measurement code add here if needed in future
 
                         print(f''' parameter update before message box
-TM item: {x_tm_item}, with index {tm_seq[x_tm_item]}
-in register b{tm_reg_ind[x_tm_item]}, using {bin(x_term_scan)}, will be {hex(data_trim)} or {bin(data_trim)}in register
-which with length {tm_reg_length[x_tm_item]} and lsb {tm_reg_lsb[x_tm_item]}
+TM item: {x_tm_item+1}, with index {tm_seq[x_tm_item]}
+in register b{tm_reg_ind[x_tm_item]}, using {(x_term_scan)}, will be {hex(data_trim)} or {bin(data_trim)}in register
+which length is {tm_reg_length[x_tm_item]} and lsb is {tm_reg_lsb[x_tm_item]}
                         ''')
-                        ans = excel_m.message_box(content_str=f'use code {x_term_scan} for trim? {hex(data_trim)} or {bin(data_trim)} in register b{tm_reg_ind[x_tm_item]}',title_str='trim code selection for g', auto_exception=1, box_type=4)
+                        ans = excel_m.message_box(content_str=f'{x_tm_item+1}. TM {tm_seq[x_tm_item]} use code {x_term_scan} for trim? {hex(data_trim)} or {bin(data_trim)} in register b{tm_reg_ind[x_tm_item]}',title_str='trim code selection for g', auto_exception=1, box_type=4)
                         if ans == 6 :
                             # found the correct setting
                             break
@@ -1808,12 +1830,20 @@ which with length {tm_reg_length[x_tm_item]} and lsb {tm_reg_lsb[x_tm_item]}
                     elif tm_reg_ind[x_tm_item] == 1:
                         b1 = data_trim
 
+                    print(f'Grace done TM item: {tm_seq[x_tm_item]} testing in {x_tm_item+1}/{c_tm_item}, and the b2 now is: {g_mcu.num_to_hex(b2)}')
+                    print(f'TM related setting=> code {x_term_scan} is selected and now b{tm_reg_ind[x_tm_item]} is  {hex(data_trim)}')
                     x_tm_item = x_tm_item + 1
                     pass
 
                 # end of TM mode >=1
                 print(f'b0 final is {bin(b0)}, and b1 final is {bin(b1)}')
                 print(f'trim process finished')
+                t0 = g_mcu.num_to_hex(b0)
+                t1 = g_mcu.num_to_hex(b1)
+                t2 = g_mcu.num_to_hex(b2)
+                t3 = g_mcu.num_to_hex(b3)
+
+                print(f'confirm the output is: {t0}, {t1}, {t2}, {t3}')
                 pass
 
 
