@@ -11,9 +11,14 @@ from Except import *
 
 from PyUSBManagerv4 import opendev, closedev, luacmd, listdevs
 
+# 231020 add the excel initial at JIGM3
+# excel parameter and settings
+import parameter_load_obj as para
+# define the excel object
+excel_i = para.excel_parameter('obj_main')
 
 class JIGM3:
-    def __init__(self, sim_mcu0=0, com_addr0=0, devpath=0, CmdSentSignal=0):
+    def __init__(self, sim_mcu0=0, com_addr0=0, devpath=0, CmdSentSignal=0, excel0=excel_i):
         self.DevPath = devpath
         try:
             self.handle = opendev(devpath)
@@ -121,6 +126,55 @@ class JIGM3:
         self.relay0 = 0
         # define for temp relay channel in Vin calibration function
         self.meter_ch_ctrl = 0
+
+        # 231020 add the function of excel available in JIGM3 operation
+        self.excel_ini = excel0
+
+        '''
+        below will be NT50970 reserve variable
+        new interface need to be used for 970, but this should also able to use
+        in other applicaiton
+        refere to the variable and function for more detau
+        '''
+
+        # register configuration
+        self.b0 = '37'
+        self.b1 = 'FF'
+        self.b2 = '57'
+        self.b3 = '6A'
+
+        # function select for write
+        self.fun_sel = 0
+        self.data_sel = 0
+        # set to 1 for burn process
+        self.burn_sel = 0
+        # set to 2 for TM code scan function, 1 is enable tset mode and trim
+        self.tm_mode = 1
+        # osc: 0-3 => 2 bits change default here
+        self.osc_code = 0
+
+        '''
+        amount of these array need to be same
+        each TM condition need to have mapping condition
+        tm_reg_ind is the mapping register need to config before and after
+        the code scan loop
+        '''
+        # define the tm sequence for different TM number needed from IC
+        self.tm_seq = [0, 5, 10, 31, 63]
+        # length of the register
+        self.tm_reg_length = [2, 3, 3, 2, 2]
+        # where the lsb is
+        self.tm_reg_lsb = [3, 2, 5, 0, 0]
+        # which register is it? 970 is only 0 and 1
+        self.tm_reg_ind = [0, 1, 0, 0, 1]
+
+        # register array
+        self.reg_arry = [self.b0, self.b1, self.b2, self.b3]
+
+        self.data_temp = 0
+
+
+
 
     @staticmethod
     def listdevices():
@@ -1187,6 +1241,10 @@ class JIGM3:
         # this is initial pattern before transfer (0x00)
         byte_state_tmp = 0
 
+        if input_byte0 == 0 :
+            # if there are no specific data input, use the internal data as output
+            input_byte0 = self.reg_arry
+
         cmd_str = f"'7${5*period}`6${2*period}`0${2*period}"
         cmd_str_end = f"`0${2*period}`6${2*period}`7${5*period}`'"
 
@@ -1318,6 +1376,222 @@ class JIGM3:
 
         pass
 
+    def buck_tm(self):
+        '''
+        buck TM mode scan and test function
+        watch out the setting of initial array, need to enter the buck and TM config
+        before operating
+        run the TM mode and set up the register done from this function
+        '''
+
+        # enter test mode for selection
+
+        # first to turn on TM mode
+        self.b2 = self.pure_group_write(lsb0=7, len0=1, data0=1, byte_state_tmp0=0)
+        print(f'set TM command is {hex(self.b2)}')
+        self.reg_arry = [self.b0, self.b1, self.b2, self.b3]
+        self.buck_write(period_4_100ns=25)
+
+
+        if self.tm_mode == 2 :
+            # TM mode scan testing
+            # auto scan TM code 6 bit from 0 to 5 => 0 to 63
+            # tsw[5:0] => len=6 lsb=0
+
+            c_tm = 64
+            x_tm = 0
+
+            while x_tm < c_tm :
+                # TM is at ntrim2, use b2 as the operation register
+
+                b2 = g_mcu.pure_group_write(lsb0=0, len0=6, data0=x_tm, byte_state_tmp0=b2)
+                print(f'set TM command is {hex(b2)} and TM_num DEC is {x_tm}')
+                self.reg_arry = [self.b0, self.b1, self.b2, self.b3]
+                self.buck_write(period_4_100ns=25)
+
+                x_tm = x_tm + 1
+                pass
+
+            pass
+
+        # select the related test mode based on the setting array
+        c_tm_item = len(self.tm_seq)
+        x_tm_item = 0
+        # write default code of b0 and b1 re-load here (before trim process)
+        self.b0 = 0
+        self.b1 = 0
+        # b2 = 0 , take this off since it's initial by the EN_TM
+        self.b3 = 0 # this should fixed at 0, only when burn
+        # interrupt below to update the default code
+
+        while x_tm_item < c_tm_item :
+
+            tm_ind = self.tm_seq[x_tm_item]
+
+            self.b2 = self.pure_group_write(lsb0=0, len0=6, data0=tm_ind, byte_state_tmp0=self.b2)
+            print(f'set TM command is {hex(self.b2)} and TM_num DEC is {x_tm_item} with index {self.tm_seq[x_tm_item]}')
+            self.reg_arry = [self.b0, self.b1, self.b2, self.b3]
+            self.buck_write(period_4_100ns=25)
+
+            # below is the code scan
+            c_term_scan = 2**(self.tm_reg_length[x_tm_item])
+            x_term_scan = 0
+            while x_term_scan < c_term_scan :
+                # scan each code in the register in this loop
+
+                # first enter data selection: which register?
+                if self.tm_reg_ind[x_tm_item] == 0:
+                    data_trim = self.b0
+                elif self.tm_reg_ind[x_tm_item] == 1:
+                    data_trim = self.b1
+
+                data_trim = self.pure_group_write(lsb0=self.tm_reg_lsb[x_tm_item], len0=self.tm_reg_length[x_tm_item], data0=x_term_scan,byte_state_tmp0=data_trim)
+                print(f'new data in b{self.tm_reg_ind[x_tm_item]} become {hex(data_trim)} or {bin(data_trim)}, Grace good job')
+
+                # assign to related result
+                if self.tm_reg_ind[x_tm_item] == 0:
+                    self.b0 = data_trim
+                elif self.tm_reg_ind[x_tm_item] == 1:
+                    self.b1 = data_trim
+
+                self.reg_arry = [self.b0, self.b1, self.b2, self.b3]
+                self.buck_write(period_4_100ns=25)
+
+                # === measurement code add here if needed in future
+
+                print(f''' parameter update before message box
+TM item: {x_tm_item+1}, with index {self.tm_seq[x_tm_item]}
+in register b{self.tm_reg_ind[x_tm_item]}, using {(x_term_scan)}, will be {hex(data_trim)} or {bin(data_trim)}in register
+which length is {self.tm_reg_length[x_tm_item]} and lsb is {self.tm_reg_lsb[x_tm_item]}
+                ''')
+                ans = self.excel_ini.message_box(content_str=f'''
+{x_tm_item+1}. TM {self.tm_seq[x_tm_item]}; {self.tm_reg_length[x_tm_item]}bits of data, use code {x_term_scan} for trim? {hex(data_trim)} or {bin(data_trim)} in register b{self.tm_reg_ind[x_tm_item]}
+
+'yes' to + 1; 'no' to -1 and 'cancel' to skip scan and confirm
+''',title_str='trim code selection for g', auto_exception=1, box_type=3)
+                if ans == 2 :
+                    # found the correct setting
+                    break
+                elif ans == 6 :
+                    # this is not right, use next
+                    if x_term_scan == (c_term_scan-1):
+                        # because will +1 before end of loop
+                        x_term_scan = -1
+                    pass
+
+                if ans != 7 :
+                    x_term_scan = x_term_scan + 1
+                else :
+                    x_term_scan = x_term_scan - 1
+                    if x_term_scan < 0 :
+                        x_term_scan = 0
+                pass
+
+            # after confirm each item, update the result to each register parameter
+            if self.tm_reg_ind[x_tm_item] == 0:
+                self.b0 = data_trim
+            elif self.tm_reg_ind[x_tm_item] == 1:
+                self.b1 = data_trim
+
+            print(f'Grace done TM item: {self.tm_seq[x_tm_item]} testing in {x_tm_item+1}/{c_tm_item}, and the b2 now is: {self.num_to_hex(self.b2)}')
+            print(f'TM related setting=> code {x_term_scan} is selected and now b{self.tm_reg_ind[x_tm_item]} is  {hex(data_trim)}')
+            x_tm_item = x_tm_item + 1
+            pass
+
+        # end of TM mode >=1
+        print(f'b0 final is {bin(self.b0)}, and b1 final is {bin(self.b1)}')
+        print(f'trim process finished')
+        t0 = self.num_to_hex(self.b0)
+        t1 = self.num_to_hex(self.b1)
+        t2 = self.num_to_hex(self.b2)
+        t3 = self.num_to_hex(self.b3)
+
+        # the final result after trim is
+        self.reg_arry = [self.b0, self.b1, self.b2, self.b3]
+        self.buck_write(period_4_100ns=25)
+
+        print(f'confirm the output is: {t0}, {t1}, {t2}, {t3}')
+
+        ans = self.excel_ini.message_box(content_str=f'yes to burn with {t0}, {t1}, {t2}, {t3}, no to skip burn',title_str='g~ do you need to write to efuse directly?', auto_exception=1, box_type=4)
+
+        if ans == 6 :
+            # found the correct setting
+            self.buck_burn()
+            self.excel_ini.message_box(content_str=f'burn finished', title_str=f'g~ now you have a 970 with code inside', auto_exception=1, box_type=0 )
+        elif ans == 7 :
+            pass
+
+        pass
+
+    def reg_print(self):
+
+        t0 = self.num_to_hex(self.b0)
+        t1 = self.num_to_hex(self.b1)
+        t2 = self.num_to_hex(self.b2)
+        t3 = self.num_to_hex(self.b3)
+
+        print(f'The current register setting: {t0}, {t1}, {t2}, {t3}')
+
+        pass
+
+    def buck_burn(self, osc_code0=0):
+        '''
+        burn oe and burn is done by this function, which include the oscillator scan
+
+        '''
+        # run bun process
+        # origin data start from 0 (or assin below)
+        data = 0
+        x_osc = 0
+        while x_osc < 4 :
+            # from 0 to 3
+            data = self.pure_group_write(lsb0=5, len0=2, data0=x_osc)
+            print(f'new data become {hex(data)}, Grace good job')
+
+            # update current osc setting and able to check frequency
+            self.b3 = data
+            self.reg_arry = [self.b0, self.b1, self.b2, self.b3]
+            self.buck_write(period_4_100ns=25)
+            # may need to add TM mode here~ check internal clock
+
+            ans = self.excel_ini.message_box(content_str=f'use this clk freq for burn?, code "{x_osc}"\n cancel use default {osc_code0} ',title_str='osc clk scan', auto_exception=1, box_type=3)
+            if ans == 6 :
+                # found the correct freq
+                osc_code0 = x_osc
+                # update the osc_code
+                self.b3 = self.pure_group_write(lsb0=5, len0=2, data0=osc_code0)
+                break
+            elif ans == 2 :
+                # skip and used default
+                break
+            elif ans == 7 :
+                # this is not right, use next
+                if x_osc == 3:
+                    # because will +1 before end of loop
+                    x_osc = -1
+                pass
+
+
+            x_osc = x_osc + 1
+            # en of for osc_sel
+            pass
+
+        # finished oscillator setting, open burn OE (b3[7])
+        self.b3 = self.pure_group_write(lsb0=7, len0=1, data0=1, byte_state_tmp0=self.b3)
+        print(f'set OE and command is {hex(self.b3)}')
+        self.reg_arry = [self.b0, self.b1, self.b2, self.b3]
+        self.buck_write(period_4_100ns=25)
+        self.excel_ini.message_box(content_str=f'Burn OE is set to 1, enter to burn', title_str=f'Burn process', auto_exception=1,box_type=0)
+
+        # send the write comand and finished efuse write
+        self.b3 = self.pure_group_write(lsb0=0, len0=1, data0=1, byte_state_tmp0=self.b3)
+        print(f'set Burn and command is {hex(self.b3)}')
+        self.reg_print()
+        self.reg_arry = [self.b0, self.b1, self.b2, self.b3]
+        self.buck_write(period_4_100ns=25)
+
+        # finished write, check the result after re-toggle power up but not efuse_RSTB
+
 
     pass
 
@@ -1354,7 +1628,7 @@ if __name__ == "__main__":
     a = g_mcu.getversion()
     print(f"the MCU version is {a}")
 
-    test_index = 10
+    test_index = 10.5201314
     """
     testing index settings
     1 => IO control
@@ -1823,7 +2097,7 @@ which length is {tm_reg_length[x_tm_item]} and lsb is {tm_reg_lsb[x_tm_item]}
                             break
                         elif ans == 7 :
                             # this is not right, use next
-                            if x_term_scan == c_term_scan:
+                            if x_term_scan == (c_term_scan-1):
                                 # because will +1 before end of loop
                                 x_term_scan = -1
                             pass
@@ -1895,6 +2169,10 @@ which length is {tm_reg_length[x_tm_item]} and lsb is {tm_reg_lsb[x_tm_item]}
             pass
 
         pass
+
+    elif test_index == 10.5201314 :
+        # testing for buck operation V2 => inside JIGM3, can be call anywhere import JIGM3
+        g_mcu.buck_tm()
 
 
     elif test_index == 11 :
