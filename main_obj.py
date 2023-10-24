@@ -924,7 +924,7 @@ if __name__ == "__main__":
             """
             total sequence
             1. Buck ripple and load transient (full auto)
-            2. LDO ripple and load transitne (full auto)
+            2. LDO ripple and load transient (full auto)
             """
             program_group = 7.2
             # change program group after each item to make
