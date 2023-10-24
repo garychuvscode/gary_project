@@ -145,7 +145,15 @@ class report_arragement:
 
         # # this one only need for the old solutions before 231012
         # # this is the index sheet for copy summary sheet to front of first sheet
-        # self.sh_sy_eff_0p19 = self.wb.sheets(self.sy_eff_0p19)
+
+
+        # copy the sheet to result book first
+        self.find_sh_all_books_copy_res(sheet_name=self.sy_eff_0p19)
+        self.find_sh_all_books_copy_res(sheet_name=self.sy_eff_2)
+        self.find_sh_all_books_copy_res(sheet_name=self.nt_eff_0p19)
+        self.find_sh_all_books_copy_res(sheet_name=self.nt_eff_2)
+
+        self.sh_sy_eff_0p19 = self.wb.sheets(self.sy_eff_0p19)
 
 
         sh_temp = self.sy_eff_0p19
@@ -425,18 +433,18 @@ class report_arragement:
         '''
 
         if sheet_sor1 != '':
-            # new version: search the sheet from global, and copy to result book (self.wb)
-            self.sheet_sor = self.find_sh_all_books_copy_res(sheet_name=str(sheet_sor1))
-            # # version before 231012
-            # self.sheet_sor = self.wb.sheets(str(sheet_sor1))
+            # # new version: search the sheet from global, and copy to result book (self.wb)
+            # self.sheet_sor = self.find_sh_all_books_copy_res(sheet_name=str(sheet_sor1))
+            # version before 231012
+            self.sheet_sor = self.wb.sheets(str(sheet_sor1))
             # if no sor0 input, set to default, may be error
             pass
 
         if sheet_des1 != '':
-            # new version: search the sheet from global, and copy to result book (self.wb)
-            self.sheet_des = self.find_sh_all_books_copy_res(sheet_name=str(sheet_des1))
-            # # version before 231012
-            # self.sheet_des = self.wb.sheets(str(sheet_des1))
+            # # new version: search the sheet from global, and copy to result book (self.wb)
+            # self.sheet_des = self.find_sh_all_books_copy_res(sheet_name=str(sheet_des1), copy0=0)
+            # version before 231012
+            self.sheet_des = self.wb.sheets(str(sheet_des1))
             pass
         else:
             # if no des input, use the same sheet
@@ -499,18 +507,17 @@ class report_arragement:
 
         pass
 
-    def find_sh_all_books_copy_res(self, sheet_name=''):
+    def find_sh_all_books_copy_res(self, sheet_name='', copy0=1):
         '''
         mode0 is set to 7 in default, it will send 'other settings in tag'
         otherwise, it will be the tage support summary sheet
+        decide to copy the sheet or not
         '''
         # 连接到 Excel 应用程序
         # app = xw.App(visible=False)  # 如果不需要可见 Excel，请设置 visible=False
         app2 = xw.apps
+        finded = 0
 
-        # 获取所有已打开的工作簿
-        workbooks = xw.books
-        print(workbooks)
         print(app2)
         for app in app2:
             print(f'now is app{app}')
@@ -529,16 +536,21 @@ class report_arragement:
                         copy this sheet to the result book, it should be able to find the
                         result book and reference sheet for copying index during the program operation
                         '''
-                        sheet = sheet.copy(self.sh_comp)
-
+                        if copy0 == 1 :
+                            sheet = sheet.copy(self.sh_comp)
+                        finded = 1
+                        break
+                    if finded == 1 :
                         break
                     pass
+                if finded == 1 :
+                    break
                 pass
+            if finded == 1 :
+                break
             pass
-
-        # 关闭 Excel 应用程序
-        # app.quit()
-        pass
+        # return the finded sheet
+        return sheet
 
     def buck_eff_sum_gen_full(self, mode0=0, setting_sel0='virtual', L_H0=1):
         '''
