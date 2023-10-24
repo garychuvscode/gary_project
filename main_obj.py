@@ -1000,7 +1000,9 @@ if __name__ == "__main__":
 
         if program_group == 7.3:
             excel_m.message_box(
-                "high V buck setting, change EN1 to L and also the current probe to start LDO testing",
+                """high V buck setting, change EN1 to L and also the current probe to start LDO testing
+the current probe need to Degauss at the 20mA prevent error
+                """,
                 "watch out",
                 auto_exception=1,
             )

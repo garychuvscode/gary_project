@@ -56,7 +56,12 @@ class NAGuiRPC:
 
         address = ("localhost", 9956)
 
-        self.Connection = Client(address, authkey=b"02812975")
+        try :
+            self.Connection = Client(address, authkey=b"02812975")
+        except:
+            self.excel0.message_box(content_str='''RPC_initial_fail, recheck RPC switch of GPL_V5 and open again
+program will crash if fail one more time''', title_str='fail to start RPC', auto_exception=1, box_type=0)
+            self.Connection = Client(address, authkey=b"02812975")
 
         self.Readers = [self.Connection]
 
