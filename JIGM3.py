@@ -520,6 +520,7 @@ class JIGM3:
     """
     the mainly function will be I/O control and pattern gen
     PWM and SPI will be placed in low priority
+    will Grace keep learning python?~
     """
 
     def g_ezcommand(self, command0):
@@ -533,7 +534,7 @@ class JIGM3:
             print(f"simulation mode for MCU, command is \n {command0}")
             pass
         else:
-            print(f"real mode with command \n {command0}")
+            print(f"real mode with command \n {command0}, thanks g")
             result = self.ezCommand(command0)
             # time.sleep(0.2)
             pass
@@ -571,12 +572,12 @@ class JIGM3:
                 self.i_o_change(port0="PG", set_or_clr0=1, pin_num0=1)
                 self.i_o_change(port0="PG", set_or_clr0=1, pin_num0=2)
                 for i in range(3, 16, 1):
-                    self.i_o_change(port0="PG", set_or_clr0=1, pin_num0=i)
+                    self.i_o_change(port0="PG", set_or_clr0=0, pin_num0=i)
 
                 pass
             else:
                 for i in range(1, 16, 1):
-                    self.i_o_change(port0="PG", set_or_clr0=1, pin_num0=i)
+                    self.i_o_change(port0="PG", set_or_clr0=0, pin_num0=i)
 
                 # self.g_ezcommand(f"mcu.gpio.setout(0x0, 0)")
             self.g_ezcommand(f"mcu.gpio.setout(0x0, 1)")
@@ -604,10 +605,10 @@ class JIGM3:
         if set_or_clr0 == 1:
             # set the related pin
             i_o_cmd0 = self.i_o_pin_num_set[pin_num0]
-            print(f"command0 is {i_o_cmd0}")
+            print(f"command0 is {i_o_cmd0}, it will be great if Grace can learn together")
             # use or operator for the set
             i_o_cmd = i_o_state_tmp | i_o_cmd0
-            print(f"final command0 is {i_o_cmd}")
+            print(f"final command0 is {i_o_cmd}, sad thiing is she's not interesting")
             pass
 
         else:
@@ -651,6 +652,7 @@ class JIGM3:
             # disable the PWM output
             cmd_str = f"mcu.pwm.off()"
             self.g_ezcommand(cmd_str)
+            print(f'Grace get action done fast')
 
             pass
 
@@ -794,7 +796,7 @@ class JIGM3:
         cmd_str = cmd_str + cmd_str_end
         self.pattern_gen(pattern0=cmd_str, unit_time_ns0=duration_ns)
 
-        print("pulse1 finished")
+        print("pulse1 finished, Grace ask: if she's cute?")
 
         # delay 50ms between two pulse
         time.sleep(0.05)
@@ -809,7 +811,7 @@ class JIGM3:
         cmd_str = cmd_str + cmd_str_end
         self.pattern_gen(pattern0=cmd_str, unit_time_ns0=duration_ns)
 
-        print("pulse2 finished")
+        print("pulse2 finished, Grace is not cute when cute to everyone XD")
 
         pass
 
@@ -857,7 +859,7 @@ class JIGM3:
             # self.i_o_change(port0=port_optional0, set_or_clr0=1, pin_num0=pin_SW0)
             pass
 
-        print(f'pmic mode set to {mode_index}\n')
+        print(f'pmic mode set to {mode_index}\n, MSP430 mode')
 
         pass
 
@@ -1103,7 +1105,7 @@ class JIGM3:
         if data0 > 2**(len0) :
             # data is too big, output the error message and bypass the command
             # this check is used to prevent overflow of Grace XD
-            print(f'length "{len0}" and data "{data0}" have fconflict, please double check ')
+            print(f'length "{len0}" and data "{data0}" have fconflict, please double check \n Grace, do you really want to bake the probe in chamber? XDD')
 
             pass
         else:
