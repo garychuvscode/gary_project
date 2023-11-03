@@ -46,11 +46,14 @@ NAGSIGN_RPC = "##NAGRPC##"
 # fmt: off
 
 class NAGuiRPC:
-    def __init__(self, timeout=3.0, excel0=0, pwr0=0, met_v0=0, loader_0=0, mcu0=0, src0=0, met_i0=0, chamber0=0, scope0=0, rep0=0):
+    def __init__(self, timeout=3.0, excel0=excel_m, pwr0=0, met_v0=0, loader_0=0, mcu0=0, src0=0, met_i0=0, chamber0=0, scope0=0, rep0=0):
         '''
         input all the instrument may need in RPC application
         231002: add Gary's testing object initial items
         '''
+
+        # because it may be used, assign beofre used
+        self.excel_ini = excel0
 
         self.Timeout = timeout
 
@@ -59,8 +62,9 @@ class NAGuiRPC:
         try :
             self.Connection = Client(address, authkey=b"02812975")
         except:
-            self.excel0.message_box(content_str='''RPC_initial_fail, recheck RPC switch of GPL_V5 and open again
-program will crash if fail one more time''', title_str='fail to start RPC', auto_exception=1, box_type=0)
+            self.excel_ini.message_box(content_str='''RPC_initial_fail, decide ro run the program with or without G_RPC operation
+confirm => run without G_RPC
+cancel => re-try and crash if G_RPC still fail''', title_str='fail to start RPC', auto_exception=1, box_type=1)
             self.Connection = Client(address, authkey=b"02812975")
 
         self.Readers = [self.Connection]
