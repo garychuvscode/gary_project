@@ -79,13 +79,18 @@ class PICO_obj ():
 
         pass
 
+    def write(self, command=0):
+        self.mcu_com.query(command)
+
+        pass
+
 if __name__ == '__main__':
 
     # testing for the PICO MCU
 
     # define the new PICO MCU and open the device
 
-    sim_pcio = 0
+    sim_pcio = 1
     com_addr = 6
     baud_rate = 115200
 
@@ -93,13 +98,13 @@ if __name__ == '__main__':
 
     g_pico.com_open()
 
-    testing_index = 0
+    testing_index = 1
 
     if testing_index == 0 :
         '''
         using testing MCU(TI) to send COM command and check from the LA bus
         '''
-        ti_mcu_com = 5
+        ti_mcu_com = 6
         # virtual_com = rm.open_resource(resource_name=f'COM{ti_mcu_com}')
 
         # # pyvisa don't have change function, use COM default 9600
@@ -116,10 +121,27 @@ if __name__ == '__main__':
         virtual_com_s.baudrate = 9600
         temp = virtual_com_s.baudrate
         print(f'virtual_com_s: update baudrate: {temp}')
-        data_to_send = 'ABCDE12345'
-        encoded_data = data_to_send.encode('utf-8')
-        print(encoded_data)
-        virtual_com_s.write(encoded_data)
+        # data_to_send = 'ABCDE12345'
+        # encoded_data = data_to_send.encode('utf-8')
+        # print(encoded_data)
+        # virtual_com_s.write(encoded_data)
+
+        while 1 :
+
+            data_to_send = 'a'
+            encoded_data = data_to_send.encode('utf-8')
+            print(encoded_data)
+            virtual_com_s.write(encoded_data)
+
+            data_to_send = 'b'
+            encoded_data = data_to_send.encode('utf-8')
+            print(encoded_data)
+            virtual_com_s.write(encoded_data)
+
+            data_to_send = 'c'
+            encoded_data = data_to_send.encode('utf-8')
+            print(encoded_data)
+            virtual_com_s.write(encoded_data)
 
 
 
@@ -129,6 +151,23 @@ if __name__ == '__main__':
         pass
 
     elif testing_index == 1 :
+
+        while 1 :
+
+            data_to_send = 'a'
+            encoded_data = data_to_send.encode('utf-8')
+            print(data_to_send)
+            g_pico.write(data_to_send)
+
+            data_to_send = 'b'
+            encoded_data = data_to_send.encode('utf-8')
+            print(data_to_send)
+            g_pico.write(data_to_send)
+
+            data_to_send = 'c'
+            encoded_data = data_to_send.encode('utf-8')
+            print(data_to_send)
+            g_pico.write(data_to_send)
 
 
         pass

@@ -14,6 +14,11 @@ import xlwings as xw
 # this import is for the VBA function
 import win32com.client
 
+# for the excel sheet control
+# only the main program use this method to separate the excel and program
+# since here will include the loop structure and overall control of report generation
+import sheet_ctrl_main_obj as sh
+import parameter_load_obj as para
 
 # === other support py import
 # for the instrument objects
@@ -21,11 +26,7 @@ import inst_pkg_d as inst
 import mcu_obj as mcu
 import JIGM3 as mcu_g
 
-# for the excel sheet control
-# only the main program use this method to separate the excel and program
-# since here will include the loop structure and overall control of report generation
-import sheet_ctrl_main_obj as sh
-import parameter_load_obj as para
+
 
 # extra library
 import Scope_LE6100A as sco
@@ -48,7 +49,7 @@ import G_RPC as gpl
 import report_arragement_obj as rep_arr
 
 # off line test, set to 1 set all the instrument to simulation mode
-main_off_line = 0
+main_off_line = 1
 single_mode = 0
 # this is the variable control file name, single or the multi item
 # adjust after the if selection of program_group
