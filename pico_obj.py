@@ -58,14 +58,14 @@ class PICO_obj ():
 
         pass
 
-    def com_open(self, baud_rate0=115200):
+    def com_open(self):
         '''
-        231102: baudrate default setting is usually 9600 in general USB port,
-        but the PICO default is using 115200 (default here)
+        231112: no need to change the baud rate, default should be enough
+        PICO use just like genetal communication method like input() of python
         '''
         # this function is used to open the com port of the MCU
         # this will be set independentlly in each object
-        print('now the COM port is on')
+        print('now the COM port of PICO is on')
         uart_cmd_str = f'COM{self.com_addr}'
         print(uart_cmd_str)
         if self.sim_mcu == 1:
@@ -82,6 +82,42 @@ class PICO_obj ():
     def write(self, command=0):
         self.mcu_com.query(command)
 
+        pass
+
+    def com_close(self):
+        # after the verification is finished, reset all the condition
+        # to initial and turn off the communication port
+        self.back_to_initial()
+        print('the MCU will turn off')
+        if self.sim_mcu == 1:
+            self.mcu_com.close()
+        else:
+            print('the com port is turn off now')
+
+        pass
+
+    def back_to_initial(self):
+        # this sub program used to set all the MCU condition to initial
+        # to change the initial setting, just modify the items from here
+
+        # MCU will be in normal mode (EN, SW) = (1, 1) => 4
+        self.pmic_mode(4)
+        # the relay channel also reset to the default
+
+        print('command accept to reset the MCU_PICO_grace')
+        pass
+
+    def pmic_mode(self, mode_index):
+        '''
+        (EN,SW) or (EN2, EN1) \n
+        1:(0,0); 2:(0,1); 3:(1,0); 4:(1,1)
+        '''
+        # mode index should be in 1-4
+        if mode_index < 1 or mode_index > 4:
+            mode_index = 1
+            # turn off if error occur
+        self.mode_set = mode_index
+        # not done yet.. decide after knowing what is the final decision of PICO side
         pass
 
 if __name__ == '__main__':
