@@ -13,6 +13,7 @@ from PyUSBManagerv4 import opendev, closedev, luacmd, listdevs
 
 # 231020 add the excel initial at JIGM3
 # excel parameter and settings
+import sheet_ctrl_main_obj as sh
 import parameter_load_obj as para
 # define the excel object
 excel_i = para.excel_parameter('obj_main')
@@ -43,6 +44,8 @@ class JIGM3:
         self.com_addr = com_addr0
         # default config for PG1 and PG2 is EN and SW setting (default high)
         self.en_sw_pin = 1
+        # 231116 this is the default relay setting in ms
+        self.relay_dly = 0.05
 
         # port number assignment
         self.i_o_port_num = {"PG": "0", "IO": "1", "IOx": "2", "IOy": "3"}
@@ -924,7 +927,7 @@ class JIGM3:
 
         pass
 
-    def relay_ctrl(self, channel_index=0, relay_mode0=1, t_dly_s=0.05):
+    def relay_ctrl(self, channel_index=0, relay_mode0=1, t_dly_s=0):
         """
         MSP relay control \n
         use IO1(index0)-IO8(index7) as the related \n
@@ -950,6 +953,13 @@ class JIGM3:
             pass
 
         if self.relay0 == 1:
+            # 231116 add delay assignment
+            if t_dly_s == 0:
+                # no special delay requirement, use default
+                t_dly_s = self.relay_dly
+            else:
+                # use input delay time in ms
+                pass
             # re-load other GPIO status setting from IO9-IO16
             # clear the PG1-PG8
             self.relay_state = self.i_o_state["IO"] & 0xFF00
@@ -1101,7 +1111,7 @@ class JIGM3:
         calculation method register update:
         left shift for LSB: LSB0 => no need shift, LSB3 => give three 0 in right
         '''
-        # x**y operator is means x^y, sinc the ^ means XOR in python
+        # x**y operator is means x^y, since the ^ means XOR in python
         if data0 > 2**(len0) :
             # data is too big, output the error message and bypass the command
             # this check is used to prevent overflow of Grace XD

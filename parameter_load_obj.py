@@ -2752,7 +2752,7 @@ if __name__ == '__main__':
     import datetime
     import sheet_ctrl_main_obj as sh
 
-    test_mode = 3
+    test_mode = 1.5
 
     excel = excel_parameter(str(sh.file_setting))
     if test_mode == 0:
@@ -2795,8 +2795,8 @@ if __name__ == '__main__':
             print(args)
             k0 = len(args)
             if k0 > 0:
-                print('this is args 1' + str(args[0]))
-                print('this is args 2' + str(args[1]))
+                print('this is args 1 ' + str(args[0]))
+                print('this is args 2 ' + str(args[1]))
 
             print(kwargs)
             k1 = len(kwargs)
