@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"path": "py_code"
+		}
+	],
+	"settings": {
+		"[python]": {
+			"editor.defaultFormatter": "ms-python.black-formatter"
+		},
+		"python.formatting.provider": "none"
+	}
+}
