@@ -55,8 +55,35 @@ class PICO_obj ():
         #  usb command string
         self.usb_cmd_str = ''
 
+        # 230920 add I2C bit write function
+        # 231128 copy from JIGM3 for the configuration of bit process
+
+        self.bit_clr = {
+            "0": 0xFE,
+            "1": 0xFD,
+            "2": 0xFB,
+            "3": 0xF7,
+            "4": 0xEF,
+            "5": 0xDF,
+            "6": 0xBF,
+            "7": 0x7F,
+        }
+
+        self.bit_set = {
+            "0": 0x1,
+            "1": 0x2,
+            "2": 0x4,
+            "3": 0x8,
+            "4": 0x10,
+            "5": 0x20,
+            "6": 0x40,
+            "7": 0x80,
+        }
+
 
         pass
+
+
 
     def com_open(self):
         '''
@@ -83,6 +110,9 @@ class PICO_obj ():
         self.mcu_com.query(command)
 
         pass
+
+
+
 
     def com_close(self):
         # after the verification is finished, reset all the condition
@@ -119,6 +149,15 @@ class PICO_obj ():
         self.mode_set = mode_index
         # not done yet.. decide after knowing what is the final decision of PICO side
         pass
+
+    def i2c_read(self):
+        '''
+        define for I2C read, need more modify
+        '''
+
+        # int_list = struct.unpack("<BBBB", byte_data)
+        # 231128 this is used for i2c read byte to number transfer
+        # refer to byte_list to int_list in chatGTP
 
 if __name__ == '__main__':
 

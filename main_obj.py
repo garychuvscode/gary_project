@@ -25,6 +25,7 @@ import parameter_load_obj as para
 import inst_pkg_d as inst
 import mcu_obj as mcu
 import JIGM3 as mcu_g
+import pico_obj as mcu_p
 
 
 
@@ -55,7 +56,7 @@ single_mode = 0
 # adjust after the if selection of program_group
 multi_item = 0
 # choose which MCU is using for the verification
-# 'MSP' is MSP430 , and 'g' is JIGM3(GPL_tool)
+# 'MSP' is MSP430 , and 'g' is JIGM3(GPL_tool), 'p' is pico
 mcu_sel = 'g'
 # 230712 counter lock for real testing (1 to lock V I counter to 2)
 # for format gen related testing
@@ -135,7 +136,17 @@ elif mcu_sel == 'g' :
     # add JIGM3 into the system
     mcu_m = mcu_g.JIGM3(sim_mcu0=1)
     print('JIGM3 MCU selected for Grace')
-
+    pass
+elif mcu_sel == 'p' :
+    # choose to use pico
+    # pico also communicate through USB vitrual COM port
+    # which is control by pyvisa, resource manager
+    mcu_m = mcu_p.PICO_obj(sim_mcu0=1, com_addr0=excel_m.mcu_com_addr)
+    pass
+else:
+    excel_m.message_box(content_str=f'mcu choose: invalid- {mcu_sel}, Grace need a valid MCU to run the test'
+        ,title_str=f"opps!~ do you know what's the meaning of life?",auto_exception=1)
+    pass
 
 if counter_lock == 1 :
     # use this to lock counter for fast real testing
