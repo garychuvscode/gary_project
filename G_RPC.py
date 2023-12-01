@@ -13,7 +13,7 @@ import pyautogui
 # fmt: off
 
 import inst_pkg_d as inst
-
+sim_setting = 1
 # define the excel object
 excel_m = para.excel_parameter(str(sh.file_setting))
 
@@ -25,7 +25,7 @@ pwr_m = inst.LPS_505N(
     excel_m.pwr_ini_state,
 )
 
-pwr_m.sim_inst = 0
+pwr_m.sim_inst = sim_setting
 pwr_m.open_inst()
 
 # === other support object
@@ -38,7 +38,7 @@ import JIGM3 as mcu_g
 file_name = "c:\\py_gary\\test_excel\\GPL_V5_RPC_temp.xlsx"
 rep_a = rep_obj.report_arragement(excel0=excel_m)
 
-mcu_m = mcu_g.JIGM3(sim_mcu0=0)
+mcu_m = mcu_g.JIGM3(sim_mcu0=sim_setting)
 mcu_m.com_open()
 print("JIGM3 MCU selected for Grace")
 
@@ -232,6 +232,7 @@ Efficiency.Run()
         'setting_sel' + '_L'
 
         EN_pwr_ch = 3 of LPS505 => this pin used to control EN1 of buck
+        relay channel => 1-LDO, 2-Buck
 
         L_H0 = 1 => add the operation of efficiency H part (high current)
 
