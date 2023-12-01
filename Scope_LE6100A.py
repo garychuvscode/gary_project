@@ -9,6 +9,10 @@ import pyvisa
 
 import scope_set_index as sc_set
 
+# prevent the issue with no control sheet
+import sheet_ctrl_main_obj as sh
+import parameter_load_obj as para
+
 # fmt: off
 
 # maybe the instrument need the delay time
@@ -1482,7 +1486,7 @@ if __name__ == "__main__":
     excel_t.wave_path = default_path
     scope.open_inst()
 
-    test_index = 5
+    test_index = 4
     """
     set 3 to update the channel and others
     set 4 to change the label name
@@ -1569,12 +1573,12 @@ if __name__ == "__main__":
             ch_name = {
                 "CH1": "EN1",
                 "CH2": "3p3V_LDO",
-                "CH3": "BAT +",
-                "CH4": "3p3_PG",
+                "CH3": "HSA",
+                "CH4": "VDD_IO",
                 "CH5": "L_Lx",
-                "CH6": "3p3_BK",
-                "CH7": "5V_LDO",
-                "CH8": "5V_BK",
+                "CH6": "LSCL",
+                "CH7": "LSDA",
+                "CH8": "VDD_SPD",
             }
         elif label_pos_sel == 1:
             ch_name = {
