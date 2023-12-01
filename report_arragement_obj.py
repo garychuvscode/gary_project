@@ -67,6 +67,7 @@ class report_arragement:
         self.LDO_reg_example = "regulation_comp_LDO_ex_C"
         self.Buck_eff_example_B = "Eff_comp_ex_AB"
         self.LDO_reg_example_B = "regulation_comp_LDO_ex_AB"
+        # this sheet is used to grab data from the verification report raw data
         self.raw_sheet = "C_raw_NAB"
 
         # this is not sheet name, already sheet object
