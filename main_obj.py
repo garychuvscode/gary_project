@@ -98,6 +98,20 @@ met_i_m = inst.Met_34460(
     excel_m.met_i_max,
     excel_m.meter2_i_addr,
 )
+met_v2_m = inst.Met_34460(
+    excel_m.met_v_res,
+    excel_m.met_v_max,
+    excel_m.met_i_res,
+    excel_m.met_i_max,
+    excel_m.meter3_v_addr,
+)
+met_i2_m = inst.Met_34460(
+    excel_m.met_v_res,
+    excel_m.met_v_max,
+    excel_m.met_i_res,
+    excel_m.met_i_max,
+    excel_m.meter4_i_addr,
+)
 loader_chr_m = inst.chroma_63600(
     excel_m.loader_act_ch, excel_m.loader_addr, excel_m.loader_ini_mode
 )
