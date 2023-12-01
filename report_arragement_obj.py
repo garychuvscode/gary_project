@@ -432,7 +432,7 @@ class report_arragement:
         both input will be name, not sheet_obj
         '''
 
-        if sheet_sor1 != '':
+        if sheet_sor1 != '' :
             # # new version: search the sheet from global, and copy to result book (self.wb)
             # self.sheet_sor = self.find_sh_all_books_copy_res(sheet_name=str(sheet_sor1))
             # version before 231012
@@ -537,7 +537,12 @@ class report_arragement:
                         result book and reference sheet for copying index during the program operation
                         '''
                         if copy0 == 1 :
-                            sheet = sheet.copy(self.sh_comp)
+                            # 231103: add comparison, if in same book, no need to copy
+                            book_check = self.sh_comp.book
+                            if book_check != workbook :
+                                sheet = sheet.copy(self.sh_comp)
+                                pass
+                            pass
                         finded = 1
                         break
                     if finded == 1 :
@@ -594,11 +599,6 @@ class report_arragement:
                 else :
                     # buck USM mode operation report summary
                     pass
-
-
-
-
-
 
                 print(f'all in one result generationmpde = {mode0}')
                 x_mode = x_mode + 1

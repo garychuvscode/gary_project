@@ -54,20 +54,30 @@ class NAGuiRPC:
 
         # because it may be used, assign beofre used
         self.excel_ini = excel0
+        # object sumulation mode, defaut active (sim mode change to 0), default enable object
+        self.obj_sim_mode = 1
 
         self.Timeout = timeout
 
         address = ("localhost", 9956)
 
-        try :
-            self.Connection = Client(address, authkey=b"02812975")
-        except:
-            self.excel_ini.message_box(content_str='''RPC_initial_fail, decide ro run the program with or without G_RPC operation
-confirm => run without G_RPC
-cancel => re-try and crash if G_RPC still fail''', title_str='fail to start RPC', auto_exception=1, box_type=1)
-            self.Connection = Client(address, authkey=b"02812975")
+        while 1 :
+            # prevent crash of program, must open the RPC or select the sim_mode
+            try :
+                self.Connection = Client(address, authkey=b"02812975")
+                break
+            except:
+                m_response = self.excel_ini.message_box(content_str='''RPC_initial_fail, decide ro run the program with or without G_RPC operation
+confirm => run Gary without George(G_RPC)
+cancel => re-try and ask Grace again if still can't find George''', title_str='fail to start RPC', auto_exception=1, box_type=1)
+                if m_response == 1 :
+                    # run with RPC simulation mode
+                    self.obj_sim_mode = 0
+                    break
+                    pass
 
-        self.Readers = [self.Connection]
+        if self.obj_sim_mode == 1 :
+            self.Readers = [self.Connection]
 
 
         '''
@@ -153,26 +163,36 @@ cancel => re-try and crash if G_RPC still fail''', title_str='fail to start RPC'
 
     # ** put return value into "__return__"
     def call(self, func, *args, **kwargs):
-        self.Connection.send((NAGSIGN_RPC, "__return__ = " + func, args, kwargs))
+        if self.obj_sim_mode == 1 :
+            self.Connection.send((NAGSIGN_RPC, "__return__ = " + func, args, kwargs))
 
-        for r in wait(self.Readers, timeout=self.Timeout):
-            result = r.recv()
+            for r in wait(self.Readers, timeout=self.Timeout):
+                result = r.recv()
 
-            if isinstance(result, dict) and "Error" in result:
-                raise Exception(result["Error"])
+                if isinstance(result, dict) and "Error" in result:
+                    raise Exception(result["Error"])
 
-            return result
+                return result
+            pass
+        else:
+            # in simulation mode
+            print(f'George is not here, G_RPC.call is in simulation mode with below command\n {func}')
 
     def run(self, codes, timeout=3):
-        self.Connection.send((NAGSIGN_RPC, codes, (), {}))
+        if self.obj_sim_mode == 1 :
+            self.Connection.send((NAGSIGN_RPC, codes, (), {}))
 
-        for r in wait(self.Readers, timeout=timeout):
-            result = r.recv()
+            for r in wait(self.Readers, timeout=timeout):
+                result = r.recv()
 
-            if isinstance(result, dict) and "Error" in result:
-                raise Exception(result["Error"])
+                if isinstance(result, dict) and "Error" in result:
+                    raise Exception(result["Error"])
 
-            return result
+                return result
+            pass
+        else:
+            # in simulation mode
+            print(f'George is not here, G_RPC.run is in simulation mode with below command\n {codes}')
 
         pass
 
@@ -191,6 +211,15 @@ Efficiency.Run()
 """
 
         result = self.run(cmd_str_V5, timeout=1800)
+        '''
+        definition of command string (line by line):
+        1. need to find the related object from the source code of GPL_V5
+        2. showForm is to make the interface of UI appear(not a must but better to have)
+        3. restoreByTag is to select the mapped setting in GPL_V5 (build before run)
+        4. run is to start the testing
+        note: string can used to call mapped function to the V5,
+        refer to the source code of each block
+        '''
 
         return result
 
@@ -201,6 +230,8 @@ Efficiency.Run()
         setting_sel0 => choose related settings:
         need to have below setting files before operation
         'setting_sel' + '_L'
+
+        EN_pwr_ch = 3 of LPS505 => this pin used to control EN1 of buck
 
         L_H0 = 1 => add the operation of efficiency H part (high current)
 
@@ -215,6 +246,11 @@ Efficiency.Run()
         it's easier to operate with different part number
 
         '''
+        # 231201 add the initialize of report transfer file in buck_regulation mix
+        # by call trort_temp_ini in rep_obj
+        self.rep_ini.report_temp_ini(file_name0='GPL_V5_RPC_temp.xlsx')
+        self.rep_ini.report_temp_ini(file_name0='grace_trace.xlsx')
+
         setting_sel0 = str(setting_sel0)
         self.setting_tag = setting_sel0
 
@@ -357,7 +393,7 @@ Efficiency.Run()
                             pass
                         temp_wb.save()
                         temp_wb.close()
-
+                        print(f'like Grace is not to fawn on her, but try to treat her well')
                         # don't close workbook or you will turn off the connnection, just copy the sheet to GPL_temp
 
                         # # first to get the full trace
@@ -472,7 +508,7 @@ if __name__ == "__main__":
     # original version of definition => without instrument object input
     # NAGui = NAGuiRPC()
 
-    NAGui = NAGuiRPC(pwr0=pwr_m, excel0=excel_m, mcu0=mcu_m)
+    NAGui = NAGuiRPC(pwr0=pwr_m, excel0=excel_m, mcu0=mcu_m, rep0=rep_a)
 
     # # 1-line function - method 1
     # result = NAGui.call('GI2C.read(0x9E, 0x00, 1)')
@@ -578,6 +614,9 @@ Efficiency.Run()
         target_sheet = ''
         tag_name = 'hv_buck_c'
         # tag_name = 'virtual'
+
+        # 231201 add the initialize of report transfer file in buck_regulation mix
+        # by call trort_temp_ini in rep_obj
 
 
         NAGui.buck_regulation_mix(mode0=0, setting_sel0=tag_name, L_H0=1)
