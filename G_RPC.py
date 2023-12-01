@@ -231,6 +231,8 @@ Efficiency.Run()
         need to have below setting files before operation
         'setting_sel' + '_L'
 
+        EN_pwr_ch = 3 of LPS505 => this pin used to control EN1 of buck
+
         L_H0 = 1 => add the operation of efficiency H part (high current)
 
         this item pack all the HV buck eff and regulation testing together
@@ -244,6 +246,11 @@ Efficiency.Run()
         it's easier to operate with different part number
 
         '''
+        # 231201 add the initialize of report transfer file in buck_regulation mix
+        # by call trort_temp_ini in rep_obj
+        self.rep_ini.report_temp_ini(file_name0='GPL_V5_RPC_temp.xlsx')
+        self.rep_ini.report_temp_ini(file_name0='grace_trace.xlsx')
+
         setting_sel0 = str(setting_sel0)
         self.setting_tag = setting_sel0
 
@@ -501,7 +508,7 @@ if __name__ == "__main__":
     # original version of definition => without instrument object input
     # NAGui = NAGuiRPC()
 
-    NAGui = NAGuiRPC(pwr0=pwr_m, excel0=excel_m, mcu0=mcu_m)
+    NAGui = NAGuiRPC(pwr0=pwr_m, excel0=excel_m, mcu0=mcu_m, rep0=rep_a)
 
     # # 1-line function - method 1
     # result = NAGui.call('GI2C.read(0x9E, 0x00, 1)')
@@ -607,6 +614,9 @@ Efficiency.Run()
         target_sheet = ''
         tag_name = 'hv_buck_c'
         # tag_name = 'virtual'
+
+        # 231201 add the initialize of report transfer file in buck_regulation mix
+        # by call trort_temp_ini in rep_obj
 
 
         NAGui.buck_regulation_mix(mode0=0, setting_sel0=tag_name, L_H0=1)

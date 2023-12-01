@@ -246,6 +246,12 @@ class excel_parameter ():
             (self.index_GPIB_inst + 7, 3)).value
         self.pwr_bk_addr = self.sh_main.range(
             (self.index_GPIB_inst + 8, 3)).value
+        # met3v usually for voltage
+        self.meter3_v_addr = self.sh_main.range(
+            (self.index_GPIB_inst + 9, 3)).value
+        # met4 usually for current
+        self.meter4_i_addr = self.sh_main.range(
+            (self.index_GPIB_inst + 10, 3)).value
         # self.main_off_line = int(self.sh_main.range('A32').value)
 
         # initialization for all the object, based on the input parameter of the index
@@ -2548,6 +2554,8 @@ class excel_parameter ():
         comparison
         230624: this function is same with run_verification
         need open result book before
+        231201: this function is used to get previous file data and summary,
+        it's not finished yet and need to check operating result
         '''
         prog_fake = 0
         if prog_fake == 1:
