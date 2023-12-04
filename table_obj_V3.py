@@ -23,5 +23,40 @@ import win32api as win_ap
 
 
 class table_gen():
-    def __init__(self, sim_mcu0, com_addr0):
+    def __init__(self, table_type0=0, **kwargs):
+        '''
+        table object:
+        for table index cell input: 'ind_row', 'ind_column'
+        => this is single cell and auto scan for table
+
+        '''
+        self.table_type = table_type0
+        self.ctrl_para_dict = {'ind_row':0, 'ind_col':0, }
+
+        prog_fake = 0
+        if prog_fake == 1:
+            self.wb = xw.Book()
+            self.sh_comp = self.wb.sheets("temp")
+            ind_range0 = self.sh_comp.range((1, 1))
+
+        '''
+        table object should contain the
+        '''
+        # record the range for this table
+        self.ind_range = ind_range0
+        # knowing the dimenstion and starting index
+        self.sheet_name = ind_range0.shape
+        self.book_name = ind_range0.sheet
+        self.file_trace = ind_range0.sheet.book
+
+
+        # dimension of the range
+        self.ind_row = self.ran_shape[0]
+        self.ind_col = self.ran_shape[1]
+
+        # starting index (normalize)
+        self.nor_Row = ind_range0.row
+        self.nor_Col = ind_range0.column
+
+
         pass
