@@ -46,7 +46,7 @@ NAGSIGN_RPC = "##NAGRPC##"
 # fmt: off
 
 class NAGuiRPC:
-    def __init__(self, timeout=3.0, excel0=excel_m, pwr0=0, met_v0=0, loader_0=0, mcu0=0, src0=0, met_i0=0, chamber0=0, scope0=0, rep0=0):
+    def __init__(self, timeout=3.0, excel0=excel_m, pwr0=0, met_v0=0, loader_0=0, mcu0=0, src0=0, met_i0=0, chamber0=0, scope0=0, rep0=0, sim_mode0=1, msg_expection0=1):
         '''
         input all the instrument may need in RPC application
         231002: add Gary's testing object initial items
@@ -130,6 +130,11 @@ cancel => re-try and ask Grace again if still can't find George''', title_str='f
         self.scope_ini = scope0
         self.rep_ini = rep0
         # self.single_ini = single0
+
+        # obj_sim_mode in G_RPC is to skip all the testing with RPC
+        # to test G_RPC part, use test mode, and sim_mode set to 1
+        # test mode is used to skip window jump out
+        self.msg_exp = msg_expection0
 
 
         # ====add few variable saving control setting
@@ -313,9 +318,9 @@ Efficiency.Run()
                     self.mcu_ini.relay_ctrl(channel_index=1)
 
                 if x_mode == 0 :
-                    self.excel_ini.message_box('now is for "low" current mode, configure Iin and Iout to correct place', 'measurement current setting', auto_exception=1)
+                    self.excel_ini.message_box('now is for "low" current mode, configure Iin and Iout to correct place', 'measurement current setting', auto_exception=self.msg_exp)
                 elif L_H0 == 1 and x_mode == 4:
-                    self.excel_ini.message_box('now is for "high" current mode, configure Iin and Iout to correct place', 'measurement current setting', auto_exception=1)
+                    self.excel_ini.message_box('now is for "high" current mode, configure Iin and Iout to correct place', 'measurement current setting', auto_exception=self.msg_exp)
 
                 self.eff_run(tag_name0=tag_set)
 
@@ -329,9 +334,11 @@ Efficiency.Run()
 
             pass
 
+        # process the repo manager for merge the result together
         # get the second round of efficiency and regulstion
 
-        # process the repo manager for merge the result together
+        # open and create new file name for the final result
+        self.rep_ini.new_file_from_temp()
 
         pass
 
@@ -509,7 +516,7 @@ if __name__ == "__main__":
     # original version of definition => without instrument object input
     # NAGui = NAGuiRPC()
 
-    NAGui = NAGuiRPC(pwr0=pwr_m, excel0=excel_m, mcu0=mcu_m, rep0=rep_a)
+    NAGui = NAGuiRPC(pwr0=pwr_m, excel0=excel_m, mcu0=mcu_m, rep0=rep_a, msg_expection0=sim_setting)
 
     # # 1-line function - method 1
     # result = NAGui.call('GI2C.read(0x9E, 0x00, 1)')
@@ -613,14 +620,19 @@ Efficiency.Run()
         NAGui.part_num = 'SY8388C3'
         report_trace = ''
         target_sheet = ''
-        tag_name = 'hv_buck_c'
-        # tag_name = 'virtual'
+        if sim_setting == 1 :
+            tag_name = 'hv_buck_c'
+            mode_in = 0
+        elif sim_setting == 0 :
+            tag_name = 'virtual'
+            mode_in = 0
+        # 0- L, 1- LBO, 2- BN, 3- BU, 4- BN_H, 5-BU_H
 
         # 231201 add the initialize of report transfer file in buck_regulation mix
         # by call trort_temp_ini in rep_obj
 
 
-        NAGui.buck_regulation_mix(mode0=0, setting_sel0=tag_name, L_H0=1)
+        NAGui.buck_regulation_mix(mode0=mode_in, setting_sel0=tag_name, L_H0=1)
 
 
 

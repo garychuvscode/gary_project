@@ -563,7 +563,7 @@ class report_arragement:
         auto generation for full report of buck eff and regulation
         default tag name : f'<{tag_set}> #1'
         mode 0 => all, 1-LDO(L), 2-LDO_BK_on(LBO), 3-Buck_normal(BN), 4-Buck_usm(BU), 5-Buck_normal_H, 6-Buck_usm_H
-        231012 => since there are comparison neede for summary sheet, no need this function now
+        231012 => since there are comparison needed for summary sheet, no need this function now
         '''
         self.default_tag_name = f'<{setting_sel0}> #1'
         # watch out the index change due to process of exp and report is different
@@ -632,7 +632,21 @@ class report_arragement:
         '''
         pass
 
+    def new_file_from_temp(self, file_name_org0='GPL_V5_RPC_temp', file_name_dest0='', file_name_extra0='_buck_reg_mix'):
+        '''
+        this function create books with new name, all in testexcel
+        default file name: 'GPL_V5_RPC_temp'
+        '''
 
+        if file_name_dest0 == '' :
+            file_name_dest0 = self.excel_ini.eff_sh_name
+        # open and create new file name for the final result
+        book_res_n = self.excel_ini.app_org.books.open(self.temp_res_bufffer)
+        # for change book's name, need to use save
+        new_name = file_name_dest0 + file_name_extra0 +'.xlsx'
+        book_res_n.save(path=self.default_path+str(new_name))
+        print(f'finished test and create the final file at {new_name}')
+        book_res_n.close()
 
 
 if __name__ == "__main__":
@@ -724,7 +738,6 @@ if __name__ == "__main__":
 
         rep.report_temp_ini(file_name0='GPL_V5_RPC_temp.xlsx')
         rep.report_temp_ini(file_name0='grace_trace.xlsx')
-
 
 
     pass
