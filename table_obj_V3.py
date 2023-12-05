@@ -127,38 +127,169 @@ class table_gen():
         print(f"New range without y-axis: {new_range_without_y.address}")
 
 
-        
+
 
         pass
 
-    def table_output(self, to_range0=0):
+    def table_output(self, to_cell0=0):
         '''
         output this object to a range (index cell)
         '''
-        if to_range0 != 0 :
+        if to_cell0 != 0 :
 
             pass
 
-    def get_row(self):
-
+    def get_row(self, row_ind=0):
+        '''
+        return the row range based on this table object
+        use to mix the row data from different table
+        row 0 may be the x axis
+        '''
+        # think about to add the y-axis to prevent issue of merge data
 
         return 0
 
-    def get_col(self):
-
+    def get_col(self, ind_cell0=0, len0=0, axis0=0):
+        '''
+        return the column range based on this table object
+        use to mix the column data from different table
+        row 0 may be the x axis
+        len0=0 => expand to the end
+        axis0=0 => don't contain y-axis information
+        '''
+        # think about to add the y-axis to prevent issue of merge data
 
         return 0
-    
-    def index_shift(self, sh_row0=0, sh_col0=0): 
+
+    def index_shift(self, sh_row0=0, sh_col0=0):
         '''
         shift the index cell and also the dimension of table
-        return table object 
+        return table object
         '''
         new_cell = self.ind_cell.offset(sh_row0, sh_col0)
 
         table_new = table_gen(ind_cell=new_cell)
 
         return table_new
+
+    def find_col_row(self, find_ind0='', row_col0='col'):
+        '''
+        input the axis index to look for, default set to find col
+        '''
+        if row_col0 == 'col':
+            # search for the x-axis to get column
+
+
+
+        return
+
+    def search(self, source_list0=0, re_type0='ind', search_content0=''):
+        '''
+        ** this function only return the dirst item, need to change code for muti return
+        source_list0 => the list needto search
+        re_type0 => 'ind' is return index ; 'item' is return content
+        search_content0 => the string need to search
+        '''
+        # my_string_list = ["abc12xyz", "def", "123", "gh12ij", "klm"]
+        my_string_list = source_list0
+
+        # 搜索的子字符串
+        search_substring = str(search_content0)
+
+        # 用于存储包含子字符串 '12' 的元素的列表
+        result_elements = []
+
+        # 用于存储包含子字符串 '12' 的元素的索引的列表
+        result_indices = []
+
+        # 遍历列表，记录包含子字符串 '12' 的元素和它们的索引
+        for index, element in enumerate(my_string_list):
+            '''
+            在这个例子中,enumerate 函数用于同时获取元素和它们的索引。然后，
+            使用列表推导式检查每个元素是否包含子字符串
+            '12'，并返回包含该子字符串的元素的索引列表。
+            '''
+            if search_substring in element:
+                result_elements.append(element)
+                result_indices.append(index)
+
+        # 输出结果
+        print(f"The elements containing '{search_substring}' are: {result_elements}")
+        print(f"The indices of elements containing '{search_substring}' are: {result_indices}")
+
+        if re_type0 == 'ind':
+            # return the index (only return the first one here)
+            return result_indices[0]
+        if re_type0 == 'item':
+            # return the item contain searching content (also the first one)
+            return result_elements[0]
+
+class data_obj():
+
+    def __init__(self, **kwargs):
+        '''
+        ind_cell: index cell, in type 'range'
+        row_col: row or column data, 'row' or 'col'
+        axis: contain axis info or not, 'y', 'n'
+        '''
+        # 定义要匹配的关键字
+        # watchout this dict can only have keys, don't causing error
+        self.ctrl_para_dict = {'ind_cell', 'row_col', 'axis'}
+        # 初始化变量
+        self.ind_cell = self.row_col = self.axis = None
+
+        # 遍历 kwargs 中的键值对
+        for key, value in kwargs.items():
+            # 如果键在 valid_keys 中，将对应的值存入相应的变量中
+            if key in self.ctrl_para_dict:
+                # setattr(self, f"ind_{key}", value)
+                setattr(self, key, value)
+
+                # tabletype should update automatically if input
+                pass
+            pass
+
+        # 打印结果
+        print(f'table create finished')
+        print(f"ind_cell: {self.ind_cell}")
+        print(f"row_col: {self.row_col}")
+        print(f"axis: {self.axis}")
+
+        #== after random initializtion parameter:
+
+        self.data_obj_name ='Grace'
+        # this is the list for the data saving in data_obj
+        self.data_content = []
+        # this is the list for the axis index saving in data_obj
+        self.axis_content = []
+
+        pass
+
+    def status_chk(self):
+        '''
+        used to check object status, output the content in terminal
+        '''
+
+        print(f'''now the name is {self.data_obj_name}, cell {self.ind_cell},
+type: {self.row_col}, axis index: {self.axis} ;
+the content: {self.data_content}
+the axis index: {self.axis_content}
+              ''')
+
+        pass
+
+    def name_ini(self, name0=0):
+        '''
+        update the object name after data input, use item 0 in content
+        if there are no name input
+        '''
+        if name0 == 0 :
+            self.data_obj_name = str(self.data_content[0])
+            print(f'the name assigned: {self.data_obj_name}')
+            pass
+        pass
+
+
 
 
 if __name__ == "__main__":
@@ -172,9 +303,11 @@ if __name__ == "__main__":
 
     table_test = table_gen(ind_cell=input_ind_cell)
 
-    test_index = 0
+    test_index = 1
 
     if test_index == 0:
+        # teting for column copy and retrn column object
+
 
         # 获取要粘贴数据的起始单元格
         paste_start_cell = wb_test.sheets['Sheet4'].range('D1')
@@ -212,5 +345,14 @@ if __name__ == "__main__":
 
 
         pass
+
+    if test_index == 1:
+        # testing for getting x, y axis from the index cell
+
+        y_axis = table_test.ind_cell.expand("down")
+        y_value = y_axis.value
+
+        x_axis = table_test.ind_cell.expand("right")
+        x_value = x_axis.value
 
     pass
