@@ -99,8 +99,8 @@ class table_gen():
         # y_axis = [row[0] for row in table_values]  # 假设第一列是 y 轴
 
         # 使用 expand 方法展开范围，指定 direction='right' 表示水平方向展开
+        # 231206: ind_cell.expand("right") can also be use here, and may no need for rows[0]
         expanded_range = self.ind_range.expand("right")
-
         # 获取 x 轴的参数
         self.x_axis = expanded_range.rows[0].value
 
@@ -109,6 +109,7 @@ class table_gen():
 
         # 获取 y 轴的参数
         self.y_axis = expanded_range.columns[0].value
+        # 231206: it's easy to get the value from column, but not easy to put it back 
 
 
         # 输出原始表格范围的地址
@@ -172,26 +173,50 @@ class table_gen():
 
         return table_new
 
-    def find_col_row(self, find_ind0='', row_col0='col'):
+    def find_col_row(self, find_content0='', row_col0='col',obj_name0='grace'):
         '''
         input the axis index to look for, default set to find col
         '''
         if row_col0 == 'col':
             # search for the x-axis to get column
+            res_ind = self.search_element(source_list0=self.x_axis, search_content0=find_content0)
+            ind_cell_new = self.ind_cell.offset(0, res_ind)
+            temp_data = data_obj(ind_cell=ind_cell_new, row_col=row_col0, axis='y')
+            # put the data and axis index to the data self.x_axis.valueobject
+            temp_data.axis_content = self.x_axis
+            temp_data.data_content = self.ind_range.columns[res_ind].value
 
+        if row_col0 == 'row':
+            # search for the x-axis to get column
+            res_ind = self.search_element(source_list0=self.y_axis, search_content0=find_content0)
+            ind_cell_new = self.ind_cell.offset(res_ind, 0)
+            temp_data = data_obj(ind_cell=ind_cell_new, row_col=row_col0, axis='y')
+            # put the data and axis index to the data self.x_axis.valueobject
+            temp_data.axis_content = self.y_axis
+            temp_data.data_content = self.ind_range.rows[res_ind].value
 
+        print(f'finished finding the row or col, item {find_content0}, with index {res_ind}')
+        print(f'the axis: {temp_data.axis_content}, and data: {temp_data.data_content}')
+        temp_data.data_obj_name = str(obj_name0)
 
-        return
+        return temp_data
 
-    def search(self, source_list0=0, re_type0='ind', search_content0=''):
+    def search_element(self, source_list0=0, re_type0='ind', search_content0=''):
         '''
         ** this function only return the dirst item, need to change code for muti return
         source_list0 => the list needto search
         re_type0 => 'ind' is return index ; 'item' is return content
         search_content0 => the string need to search
         '''
-        # my_string_list = ["abc12xyz", "def", "123", "gh12ij", "klm"]
-        my_string_list = source_list0
+
+        # transfer to str list before comparison 
+        # 使用列表推导式将列表中的所有元素转换为字符串
+        my_string_list = [str(element) for element in source_list0]
+
+        # 输出结果
+        print(f"Original List: {source_list0}")
+        print(f"String List: {my_string_list}")
+
 
         # 搜索的子字符串
         search_substring = str(search_content0)
@@ -209,9 +234,16 @@ class table_gen():
             使用列表推导式检查每个元素是否包含子字符串
             '12'，并返回包含该子字符串的元素的索引列表。
             '''
-            if search_substring in element:
-                result_elements.append(element)
-                result_indices.append(index)
+            try: 
+                if search_substring in element:
+                    result_elements.append(element)
+                    result_indices.append(index)
+                    pass 
+                pass 
+            except Exception as e:
+                # show the exception but not stop the program
+                # e is the exception message from program
+                print(f"there are error {str(e)}, with element: {element}")
 
         # 输出结果
         print(f"The elements containing '{search_substring}' are: {result_elements}")
@@ -219,7 +251,7 @@ class table_gen():
 
         if re_type0 == 'ind':
             # return the index (only return the first one here)
-            return result_indices[0]
+            return int(result_indices[0])
         if re_type0 == 'item':
             # return the item contain searching content (also the first one)
             return result_elements[0]
@@ -303,7 +335,7 @@ if __name__ == "__main__":
 
     table_test = table_gen(ind_cell=input_ind_cell)
 
-    test_index = 1
+    test_index = 2
 
     if test_index == 0:
         # teting for column copy and retrn column object
@@ -355,4 +387,19 @@ if __name__ == "__main__":
         x_axis = table_test.ind_cell.expand("right")
         x_value = x_axis.value
 
-    pass
+        pass
+
+    if test_index == 2:
+        # check 
+
+        col_obj = table_test.find_col_row(find_content0='12', row_col0='col')
+        print(f'the axis: {col_obj.axis_content} with data: {col_obj.data_content}')
+
+        row_obj = table_test.find_col_row(find_content0='3.4', row_col0='row')
+        print(f'the axis: {row_obj.axis_content} with data: {row_obj.data_content}')
+
+        pass 
+
+
+    # end of test mode 
+    pass 
