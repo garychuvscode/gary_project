@@ -28,7 +28,8 @@ class table_gen():
         table object:
         for table index cell input: 'ind_row', 'ind_column'
         => this is single cell and auto scan for table
-
+        default assume there are x and y axis, number process will exclude axis range
+        set table_type 1 for the case of pure vaule table
         '''
 
         prog_fake = 0
@@ -39,6 +40,7 @@ class table_gen():
             self.ind_range = ind_range0
 
         # default table type is 0, using index cell input and get table by expand
+        # table type = 1 is the input table don't contain axis
         self.table_type = 0
 
         # 定义要匹配的关键字
@@ -68,9 +70,15 @@ class table_gen():
         print(f"table_type: {self.table_type}")
 
         # 231204 other type of table will be added after there are request
+        # 231206 these information can used to let people know where does the table from
+        # knowing the condition
 
         # record the range for this table
         self.ind_range = self.ind_cell.expand("table")
+        # create the pure value index and pure value range to make process easier
+        # 231206 added fro the copy and number process of the table result
+        self.ind_cell_no_axis = self.ind_cell.offset(1,1)
+        self.ind_range_no_axis = self.ind_cell_no_axis.expand("table")
         # knowing the dimenstion and starting index
         self.t_shape = self.ind_range.shape
         self.t_sheet = self.ind_range.sheet
@@ -109,7 +117,7 @@ class table_gen():
 
         # 获取 y 轴的参数
         self.y_axis = expanded_range.columns[0].value
-        # 231206: it's easy to get the value from column, but not easy to put it back 
+        # 231206: it's easy to get the value from column, but not easy to put it back
 
 
         # 输出原始表格范围的地址
@@ -132,35 +140,43 @@ class table_gen():
 
         pass
 
-    def table_output(self, to_cell0=0):
+    def table_output(self, to_cell0=0, only_value0=1, format0='0.00'):
         '''
         output this object to a range (index cell)
+        should contain table information at left of table
+        input the index_cell contain x and y axis
         '''
         if to_cell0 != 0 :
+            if only_value0 == 0 :
+                # all property
+                self.ind_range.copy(destination=to_cell0, expand='table')
+            else:
+                # 遍历源范围中的每个单元格，尝试将其转换为数字，否则将其设置为0
+                for src_cell, dest_cell in zip(self.ind_range_no_axis, to_cell0.expand('table')):
+                    try:
+                        # 检查源单元格的值是否为数字
+                        if isinstance(src_cell.value, (int, float)):
+                            # 设置小数位数为2位
+                            src_cell.number_format = '0.00'
+                            # 复制源单元格的值到目标单元格
+                            dest_cell.value = src_cell.value
+                            dest_cell.number_format = '0.00'
+                        else:
+                            # 尝试将源单元格的值转换为数字
+                            value_as_number = float(src_cell.value)
+                            # 将转换后的值复制到目标单元格
+                            dest_cell.value = value_as_number
+                            dest_cell.number_format = '0.00'
+                    except (ValueError, TypeError) as e:
+                        # 打印错误类型和具体错误信息
+                        dest_cell.value = 0
+                        print(f'ERROR ELEMENT: {src_cell}')
+                        print(f'transfer_err: {e}')
+
 
             pass
 
-    def get_row(self, row_ind=0):
-        '''
-        return the row range based on this table object
-        use to mix the row data from different table
-        row 0 may be the x axis
-        '''
-        # think about to add the y-axis to prevent issue of merge data
-
-        return 0
-
-    def get_col(self, ind_cell0=0, len0=0, axis0=0):
-        '''
-        return the column range based on this table object
-        use to mix the column data from different table
-        row 0 may be the x axis
-        len0=0 => expand to the end
-        axis0=0 => don't contain y-axis information
-        '''
-        # think about to add the y-axis to prevent issue of merge data
-
-        return 0
+    # 231206: get_col and get_row merge to find_col_row
 
     def index_shift(self, sh_row0=0, sh_col0=0):
         '''
@@ -173,9 +189,11 @@ class table_gen():
 
         return table_new
 
-    def find_col_row(self, find_content0='', row_col0='col',obj_name0='grace'):
+    def find_col_row(self, find_content0='', row_col0='col', obj_name0='grace', extra_fun0=0):
         '''
         input the axis index to look for, default set to find col
+        extra_fun0=0 (default) => george's PMU eff index correction
+        extra_fun0=1 => gary's eff index correction
         '''
         if row_col0 == 'col':
             # search for the x-axis to get column
@@ -183,8 +201,20 @@ class table_gen():
             ind_cell_new = self.ind_cell.offset(0, res_ind)
             temp_data = data_obj(ind_cell=ind_cell_new, row_col=row_col0, axis='y')
             # put the data and axis index to the data self.x_axis.valueobject
-            temp_data.axis_content = self.x_axis
+            temp_data.axis_content = self.y_axis
             temp_data.data_content = self.ind_range.columns[res_ind].value
+            temp_data.data_len = len(temp_data.data_content)
+
+            # value index correction
+            if extra_fun0 == 0:
+                # GPL_PMU efficiency
+                t_cell = self.ind_cell.offset(1, -1)
+                temp_data.axis_content[0] = t_cell.value
+            elif extra_fun0 == 1:
+                # gary_eff
+                t_cell = self.ind_cell.offset(0, 0)
+                temp_data.axis_content[0] = t_cell.value
+
 
         if row_col0 == 'row':
             # search for the x-axis to get column
@@ -192,8 +222,18 @@ class table_gen():
             ind_cell_new = self.ind_cell.offset(res_ind, 0)
             temp_data = data_obj(ind_cell=ind_cell_new, row_col=row_col0, axis='y')
             # put the data and axis index to the data self.x_axis.valueobject
-            temp_data.axis_content = self.y_axis
+            temp_data.axis_content = self.x_axis
             temp_data.data_content = self.ind_range.rows[res_ind].value
+            temp_data.data_len = len(temp_data.data_content)
+
+            if extra_fun0 == 0:
+                # GPL_PMU efficiency
+                t_cell = self.ind_cell.offset(-1, 1)
+                temp_data.axis_content[0] = t_cell.value
+            elif extra_fun0 == 1:
+                # gary_eff
+                t_cell = self.ind_cell.offset(-1, 1)
+                temp_data.axis_content[0] = t_cell.value
 
         print(f'finished finding the row or col, item {find_content0}, with index {res_ind}')
         print(f'the axis: {temp_data.axis_content}, and data: {temp_data.data_content}')
@@ -209,7 +249,7 @@ class table_gen():
         search_content0 => the string need to search
         '''
 
-        # transfer to str list before comparison 
+        # transfer to str list before comparison
         # 使用列表推导式将列表中的所有元素转换为字符串
         my_string_list = [str(element) for element in source_list0]
 
@@ -234,12 +274,12 @@ class table_gen():
             使用列表推导式检查每个元素是否包含子字符串
             '12'，并返回包含该子字符串的元素的索引列表。
             '''
-            try: 
+            try:
                 if search_substring in element:
                     result_elements.append(element)
                     result_indices.append(index)
-                    pass 
-                pass 
+                    pass
+                pass
             except Exception as e:
                 # show the exception but not stop the program
                 # e is the exception message from program
@@ -294,6 +334,7 @@ class data_obj():
         self.data_content = []
         # this is the list for the axis index saving in data_obj
         self.axis_content = []
+        self.data_len = 0
 
         pass
 
@@ -302,7 +343,8 @@ class data_obj():
         used to check object status, output the content in terminal
         '''
 
-        print(f'''now the name is {self.data_obj_name}, cell {self.ind_cell},
+        print(f'''now the name is {self.data_obj_name},
+index cell {self.ind_cell}, len = {self.data_len}
 type: {self.row_col}, axis index: {self.axis} ;
 the content: {self.data_content}
 the axis index: {self.axis_content}
@@ -317,8 +359,11 @@ the axis index: {self.axis_content}
         '''
         if name0 == 0 :
             self.data_obj_name = str(self.data_content[0])
-            print(f'the name assigned: {self.data_obj_name}')
+            print(f'the name assigned to default: {self.data_obj_name}')
             pass
+        else:
+            self.data_obj_name = str(name0)
+            print(f'the name assigned by external : {self.data_obj_name}')
         pass
 
 
@@ -390,16 +435,19 @@ if __name__ == "__main__":
         pass
 
     if test_index == 2:
-        # check 
+        # check
 
-        col_obj = table_test.find_col_row(find_content0='12', row_col0='col')
+        col_obj = table_test.find_col_row(find_content0='12', row_col0='col', obj_name0='col_1')
         print(f'the axis: {col_obj.axis_content} with data: {col_obj.data_content}')
 
-        row_obj = table_test.find_col_row(find_content0='3.4', row_col0='row')
+        row_obj = table_test.find_col_row(find_content0='3.4', row_col0='row', obj_name0='row_1')
         print(f'the axis: {row_obj.axis_content} with data: {row_obj.data_content}')
 
-        pass 
+        col_obj.name_ini()
+        row_obj.status_chk()
+
+        pass
 
 
-    # end of test mode 
-    pass 
+    # end of test mode
+    pass
