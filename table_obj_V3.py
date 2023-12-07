@@ -109,74 +109,120 @@ class table_gen():
         # 使用 expand 方法展开范围，指定 direction='right' 表示水平方向展开
         # 231206: ind_cell.expand("right") can also be use here, and may no need for rows[0]
         expanded_range = self.ind_range.expand("right")
-        # 获取 x 轴的参数
+        # 获取 x 轴的参数 (this it a list, not a range)
         self.x_axis = expanded_range.rows[0].value
+        self.x_axis_range = expanded_range.rows[0]
+        self.x_axis_len = len(self.x_axis)
 
         # 使用 expand 方法展开范围，指定 direction='down' 表示垂直方向展开
         expanded_range = self.ind_range.expand("down")
 
-        # 获取 y 轴的参数
+        # 获取 y 轴的参数 (this it a list, not a range)
+        self.y_axis_range = expanded_range.columns[0]
         self.y_axis = expanded_range.columns[0].value
         # 231206: it's easy to get the value from column, but not easy to put it back
-
+        self.y_axis_len = len(self.y_axis)
 
         # 输出原始表格范围的地址
         print(f"Original range: {self.ind_range.address}")
 
-        # 获取去除 x 轴后的新范围
-        new_range_without_x = self.ind_range.resize(self.ind_range.rows.count, self.ind_range.columns.count - 1)
-
-        # 输出新范围的地址
-        print(f"New range without x-axis: {new_range_without_x.address}")
-
-        # 获取去除 y 轴后的新范围
-        new_range_without_y = self.ind_range.resize(self.ind_range.rows.count - 1, self.ind_range.columns.count)
-
-        # 输出新范围的地址
-        print(f"New range without y-axis: {new_range_without_y.address}")
-
-
-
 
         pass
 
-    def table_output(self, to_cell0=0, only_value0=1, format0='0.00'):
+    def table_output(self, to_cell0=0, only_value0=1, format0='0.00%'):
         '''
         output this object to a range (index cell)
         should contain table information at left of table
         input the index_cell contain x and y axis
+        format0: 2-dig => 0.00 ; 2-dig% => 0.00% ; 4-dig => 0.0000
         '''
         if to_cell0 != 0 :
             if only_value0 == 0 :
                 # all property
                 self.ind_range.copy(destination=to_cell0, expand='table')
             else:
+                # build up the axis to cell index reference
+
+                # 231207 try a new method
+                # tmp_range = to_cell0.expand('down').resize(self.y_axis_len,1)
+                # tmp_range.value = self.y_axis_range.value
+                self.paste_col(src_col=self.y_axis_range, dest_col=to_cell0)
+
+                # x-axis can opy directly
+                tmp_range = to_cell0.expand('right').resize(1,self.x_axis_len)
+                tmp_range.value = self.x_axis_range.value
                 # 遍历源范围中的每个单元格，尝试将其转换为数字，否则将其设置为0
-                for src_cell, dest_cell in zip(self.ind_range_no_axis, to_cell0.expand('table')):
+                to_cell0_no_axis = to_cell0.offset(1,1)
+                # below line have issue of expand => no element beside for the destination range, change the expand to resize
+                for src_cell, dest_cell in zip(self.ind_range_no_axis, to_cell0_no_axis.resize(self.y_axis_len-1, self.x_axis_len-1)):
+                # for src_cell, dest_cell in zip(self.ind_range_no_axis, to_cell0_no_axis.expand('table')):
                     try:
                         # 检查源单元格的值是否为数字
                         if isinstance(src_cell.value, (int, float)):
                             # 设置小数位数为2位
-                            src_cell.number_format = '0.00'
+                            # src_cell.number_format = format0
                             # 复制源单元格的值到目标单元格
                             dest_cell.value = src_cell.value
-                            dest_cell.number_format = '0.00'
+                            dest_cell.number_format = format0
+                            pass
                         else:
                             # 尝试将源单元格的值转换为数字
                             value_as_number = float(src_cell.value)
                             # 将转换后的值复制到目标单元格
                             dest_cell.value = value_as_number
-                            dest_cell.number_format = '0.00'
+                            dest_cell.number_format = format0
+                            pass
+
+                        pass
+
                     except (ValueError, TypeError) as e:
                         # 打印错误类型和具体错误信息
                         dest_cell.value = 0
                         print(f'ERROR ELEMENT: {src_cell}')
                         print(f'transfer_err: {e}')
+                        pass
 
+                    pass
 
             pass
 
     # 231206: get_col and get_row merge to find_col_row
+
+    def paste_col(self, src_col=0, dest_col=0):
+        '''
+        since there are unknow error for the paste column range at the xlwings
+        process by this function using stupid method
+        '''
+        # cover by try, except to prevent crash by wrong input of function
+        try:
+            c_element = len(src_col)
+            # auto adjustment the input dest range to match the source column size
+            dest_col = dest_col.resize(c_element,1)
+            x_element = 0
+            while x_element < c_element :
+                dest_col.rows[x_element].value = src_col.rows[x_element].value
+                print(f'tansfer from {src_col} to {dest_col}, with element {x_element} and content {src_col.rows[x_element].value}')
+                x_element = x_element + 1
+                pass
+
+            # return the dest_col range variable
+
+            '''
+            # also can try this code if needed (from chat GPT)
+            for x_element, src_value in enumerate(src_col.rows):
+                dest_col.rows[x_element].value = src_value
+                print(f'transfer from {src_col} to {dest_col}, with element {x_element} and content {src_value}')
+            '''
+
+            return dest_col
+            pass
+
+        except Exception as e:
+            print(f'there are error {e} cause by the paste column during operation')
+
+            pass
+
+        pass
 
     def index_shift(self, sh_row0=0, sh_col0=0):
         '''
@@ -380,7 +426,7 @@ if __name__ == "__main__":
 
     table_test = table_gen(ind_cell=input_ind_cell)
 
-    test_index = 2
+    test_index = 3
 
     if test_index == 0:
         # teting for column copy and retrn column object
@@ -447,6 +493,13 @@ if __name__ == "__main__":
         row_obj.status_chk()
 
         pass
+
+    if test_index == 3:
+        # testing for table copy
+
+        new_ind = wb_test.sheets('Sheet3').range((34,15))
+
+        table_test.table_output(to_cell0=new_ind, only_value0=1, format0='0.00%')
 
 
     # end of test mode
