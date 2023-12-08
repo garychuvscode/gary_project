@@ -72,7 +72,7 @@ create_chart(
     ind_cell="A1",
     x_axis=2,
     y_axis=3,
-    plot_type=xw.constants.chartTypeLineMarkers,
+    plot_type="xy_scatter_smooth_no_markers",
     x_window=1,
     y_window=1,
     x_name="X Axis",

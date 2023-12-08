@@ -426,7 +426,7 @@ if __name__ == "__main__":
 
     table_test = table_gen(ind_cell=input_ind_cell)
 
-    test_index = 3
+    test_index = 4
 
     if test_index == 0:
         # teting for column copy and retrn column object
@@ -500,6 +500,22 @@ if __name__ == "__main__":
         new_ind = wb_test.sheets('Sheet3').range((34,15))
 
         table_test.table_output(to_cell0=new_ind, only_value0=1, format0='0.00%')
+        pass
+
+    if test_index == 4 :
+
+        tmp_sh = wb_test.sheets('Sheet3')
+        a = tmp_sh.charts[0]
+        b = tmp_sh.charts[1]
+        print(tmp_sh.charts[0])
+        print(tmp_sh.charts[1])
+        row_count = 23
+        col_count =10
+        row_u = 48
+        col_u = 16.4
+        row = row_u * row_count-1
+        col = col_u * col_count-1
+        tmp_sh.charts.add(left=row, top=col)
 
 
     # end of test mode
