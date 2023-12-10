@@ -263,7 +263,7 @@ class table_gen():
 
 
         if row_col0 == 'row':
-            # search for the x-axis to get column
+            # search for the x-axis to get row
             res_ind = self.search_element(source_list0=self.y_axis, search_content0=find_content0)
             ind_cell_new = self.ind_cell.offset(res_ind, 0)
             temp_data = data_obj(ind_cell=ind_cell_new, row_col=row_col0, axis='y')
@@ -289,7 +289,7 @@ class table_gen():
 
     def search_element(self, source_list0=0, re_type0='ind', search_content0=''):
         '''
-        ** this function only return the dirst item, need to change code for muti return
+        ** this function only return the first item, need to change code for muti return
         source_list0 => the list needto search
         re_type0 => 'ind' is return index ; 'item' is return content
         search_content0 => the string need to search
@@ -341,6 +341,8 @@ class table_gen():
         if re_type0 == 'item':
             # return the item contain searching content (also the first one)
             return result_elements[0]
+        
+        pass 
 
 class data_obj():
 
@@ -413,9 +415,103 @@ the axis index: {self.axis_content}
         pass
 
 
+class chart_obj():
+
+    def __init__(self, ind_cell0=0, ind_cell_d0=0, dimx0=0, dimy0=0, c_name0='Grace', x_name0='weekday', y_name0='cute%'):
+        '''
+        ind_cell0: index cell, in type 'range' for chart
+        ind_cell_d0: index cell for data table from cell to range 
+        dimx0, dimy0: the dimensiont of chart, can use default (row_count, column count)
+        axis: contain axis info or not, 'y', 'n'
+        '''
+
+        # import the initialization parameter from the definition
+        self.ind_cell = ind_cell0
+        self.ind_sheet = ind_cell0.sheet
+
+        # 231209 can use the range.top; rnage.left to get settings 
+        # # chart location: left=row, top=col
+        # row_count = self.ind_cell.row
+        # col_count =self.ind_cell.column
+        # # this is the fixed constant, won't change
+        # row_u = 48
+        # col_u = 17.5
+        # # finall setting for left and top
+        # self.c_row = row_u * row_count-1
+        # self.c_col = col_u * col_count-1
+
+
+        self.ind_cell_d = ind_cell_d0
+        self.ind_cell_d_n_axis = self.ind_cell_d.offset(1,1)
+        self.ind_cell_d_col = self.ind_cell_d.offset(0,1)
+        # for width and heigh, use default if no input
+        if dimy0 == 0: 
+            self.dimx = 355
+        else: 
+            self.dimx = dimx0
+        if dimy0 == 0:
+            self.dimy = 211
+        else: 
+            self.dimy = dimy0
+        
+        # x is all means x-axis here, inthe data table is down, 
+        # so use down for x 
+        self.x_len = len(self.ind_cell_d_n_axis.expand('down'))
+        self.y_len = len(self.ind_cell_d_n_axis.expand('right'))
+
+        self.c_name = c_name0
+        self.x_name = x_name0
+        self.y_name = y_name0
+
+        # self.x_range = ind_cell0
+        # self.y_range = ind_cell0
+
+        tmp_cell = self.ind_cell_d.offset(1,0)
+        self.x_axis = tmp_cell.expand("down")
+
+        # this chart type is set to default 
+        self.chart_type = "xy_scatter_smooth_no_markers"
+
+        # refer more chart setting for 
+        # https://docs.xlwings.org/en/stable/api/chart.html 
+
+        pass
+
+    def g_chart_add(self): 
+        '''
+        add the chart based on object information
+        '''
+        # insert the chart
+        self.ch_obj = self.ind_sheet.charts.add(left=self.ind_cell.left,top=self.ind_cell.top,width=self.dimx,height=self.dimy)
+        self.ch_obj.set_source_data(self.ind_cell_d_col.expand('table'))
+        self.ch_obj.chart_type = self.chart_type
+        self.ch_obj.name = self.c_name
+        self.ch_obj.api[1].HasTitle=True        #圖表有標題
+        self.ch_obj.api[1].ChartTitle.Text=self.c_name  #標題文字
+        self.ch_obj.api[1].Axes(1).HasTitle = True # This line creates the X axis label.
+        self.ch_obj.api[1].Axes(2).HasTitle = True # This line creates the Y axis label.
+        self.ch_obj.api[1].Axes(1).AxisTitle.Text = self.x_name 
+        self.ch_obj.api[1].Axes(2).AxisTitle.Text = self.y_name
+        
+        for i in range (self.y_len) : 
+            self.ch_obj.api[1].SeriesCollection(i+1).XValues = self.x_axis.api
+            print(f'change x-axis setting for curve {i}')
+
+        # for the max and min of chart, default use 105% of max and 90% of min  
+
+        # self.x_min = x_min0
+        # self.x_max = x_max0
+        # self.y_min = y_min0
+        # self.y_max = y_max0
+
+
+
+
+
 
 
 if __name__ == "__main__":
+
     #  the testing code for this file object
 
     book_name = "test"
@@ -426,8 +522,7 @@ if __name__ == "__main__":
 
     table_test = table_gen(ind_cell=input_ind_cell)
 
-    test_index = 4
-
+    test_index = 5
     if test_index == 0:
         # teting for column copy and retrn column object
 
@@ -505,6 +600,7 @@ if __name__ == "__main__":
     if test_index == 4 :
 
         tmp_sh = wb_test.sheets('Sheet3')
+        tmp_sh.charts.api
         a = tmp_sh.charts[0]
         b = tmp_sh.charts[1]
         print(tmp_sh.charts[0])
@@ -512,10 +608,24 @@ if __name__ == "__main__":
         row_count = 23
         col_count =10
         row_u = 48
-        col_u = 16.4
+        col_u = 17.5
         row = row_u * row_count-1
         col = col_u * col_count-1
         tmp_sh.charts.add(left=row, top=col)
+        t_range = tmp_sh.range((30,20))
+        print(f'top: {t_range.top}, left: {t_range.left}')
+        # 设置 x 轴标题
+        # a.api[1].Axes(2).HasTitle = True # This line creates the Y axis label.
+        a.api[1].Axes(1).AxisTitle.Text = "x axis text" 
+        a.api[1].Axes(2).AxisTitle.Text = "y axis text"
+
+    if test_index == 5 :
+
+        tmp_sh = wb_test.sheets('Sheet3')
+        ind_cell_in = tmp_sh.range((30, 10))
+        ind_cell_d_in = tmp_sh.range((3, 3))
+        ch_obj1 = chart_obj(ind_cell0=ind_cell_in, ind_cell_d0=ind_cell_d_in)
+        ch_obj1.g_chart_add()
 
 
     # end of test mode
