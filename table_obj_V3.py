@@ -475,6 +475,12 @@ class chart_obj():
         # refer more chart setting for 
         # https://docs.xlwings.org/en/stable/api/chart.html 
 
+        self.x_maj = 0
+        self.x_min = 0
+
+        self.y_maj = 0
+        self.y_min = 0
+
         pass
 
     def g_chart_add(self): 
@@ -493,24 +499,119 @@ class chart_obj():
         self.ch_obj.api[1].Axes(1).AxisTitle.Text = self.x_name 
         self.ch_obj.api[1].Axes(2).AxisTitle.Text = self.y_name
         
+        '''
+        Axes(2) setting is in constant in xlwings: 
+
+        class AxisType:
+        xlCategory = 1  # from enum XlAxisType
+        xlSeriesAxis = 3  # from enum XlAxisType
+        xlValue = 2  # from enum XlAxisType
+
+        usually call by: 
+
+        Axes(xw.constants.AxisType.xlSeriesAxis) 是用來訪問
+        Excel 圖表的系列軸(Series Axis)的方法。系列軸通常用於
+        顯示圖表中的不同數據系列。在某些類型的圖表中，你可能會
+        看到一條線或軸，該線或軸用來標記或切換數據系列。這與 Axes
+        (xw.constants.AxisType.xlCategory)（類別軸，通常是 x 軸）
+        和 Axes(xw.constants.AxisType.xlValue)（數值軸，通常是 
+        y 軸）不同。系列軸通常出現在堆疊的圖表或其他需要區分不同
+        系列的情況下。
+
+        C:\\py_gary\\py_virtual_3p10\\Lib\\site-packages\\xlwings
+
+        '''
+
+        # config the x-axis of each line 
         for i in range (self.y_len) : 
             self.ch_obj.api[1].SeriesCollection(i+1).XValues = self.x_axis.api
             print(f'change x-axis setting for curve {i}')
 
         # for the max and min of chart, default use 105% of max and 90% of min  
 
-        # self.x_min = x_min0
-        # self.x_max = x_max0
-        # self.y_min = y_min0
-        # self.y_max = y_max0
+        self.x_axis_maj_u(x_maj0=3)
+        self.x_axis_min_u(x_min0=1)
+        self.y_axis_maj_u(y_maj0=0.2)
+        self.y_axis_min_u(y_min0=0.01)
+
+        
 
 
+    def x_axis_maj_u(self, x_maj0=0): 
+        '''
+        change the x_axis major unit
+        '''
+        read_res = 0 
 
+        if x_maj0 != 0 : 
+            self.ch_obj.api[1].Axes(xw.constants.AxisType.xlCategory).MajorUnit = x_maj0
+            self.x_maj = x_maj0
+            print(f'x_maj_u set to {x_maj0}')
+
+        else: 
+            read_res = self.ch_obj.api[1].Axes(xw.constants.AxisType.xlCategory).MajorUnit
+            print(f'x_maj_u is {read_res}')
+
+        return read_res 
+    
+    def x_axis_min_u(self, x_min0=0): 
+        '''
+        change the x_axis major or minor unit
+        '''
+        read_res = 0 
+
+        if x_min0 != 0 : 
+            self.ch_obj.api[1].Axes(xw.constants.AxisType.xlCategory).MinorUnit = x_min0
+            self.x_min = x_min0
+            print(f'x_min_u set to {x_min0}')
+
+        else: 
+            read_res = self.ch_obj.api[1].Axes(xw.constants.AxisType.xlCategory).MinorUnit
+            print(f'x_min_u is {read_res}')
+
+        return read_res 
+    
+    def y_axis_maj_u(self, y_maj0=0): 
+        '''
+        change the x_axis major unit
+        '''
+        read_res = 0 
+
+        if y_maj0 != 0 : 
+            self.ch_obj.api[1].Axes(xw.constants.AxisType.xlValue).MajorUnit = y_maj0
+            self.y_maj = y_maj0
+            print(f'y_maj_u set to {y_maj0}')
+
+        else: 
+            read_res = self.ch_obj.api[1].Axes(xw.constants.AxisType.xlValue).MajorUnit
+            print(f'y_maj_u is {read_res}')
+
+        return read_res 
+    
+    def y_axis_min_u(self, y_min0=0): 
+        '''
+        change the x_axis major or minor unit
+        '''
+        read_res = 0 
+
+        if y_min0 != 0 : 
+            self.ch_obj.api[1].Axes(xw.constants.AxisType.xlValue).MinorUnit = y_min0
+            self.y_min = y_min0
+            print(f'y_min_u set to {y_min0}')
+
+        else: 
+            read_res = self.ch_obj.api[1].Axes(xw.constants.AxisType.xlValue).MinorUnit
+            print(f'y_min_u is {read_res}')
+
+        return read_res 
+
+    
 
 
 
 
 if __name__ == "__main__":
+    
 
     #  the testing code for this file object
 
