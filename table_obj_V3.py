@@ -100,8 +100,7 @@ class table_gen():
         self.nor_Col = self.ind_range.column
 
 
-        table_values = self.ind_range.value
-
+        # table_values = self.ind_range.value
         # # 获取 x 轴和 y 轴
         # x_axis = table_values[0]  # 假设第一行是 x 轴
         # y_axis = [row[0] for row in table_values]  # 假设第一列是 y 轴
@@ -341,8 +340,8 @@ class table_gen():
         if re_type0 == 'item':
             # return the item contain searching content (also the first one)
             return result_elements[0]
-        
-        pass 
+
+        pass
 
 class data_obj():
 
@@ -420,7 +419,7 @@ class chart_obj():
     def __init__(self, ind_cell0=0, ind_cell_d0=0, dimx0=0, dimy0=0, c_name0='Grace', x_name0='weekday', y_name0='cute%'):
         '''
         ind_cell0: index cell, in type 'range' for chart
-        ind_cell_d0: index cell for data table from cell to range 
+        ind_cell_d0: index cell for data table from cell to range
         dimx0, dimy0: the dimensiont of chart, can use default (row_count, column count)
         axis: contain axis info or not, 'y', 'n'
         '''
@@ -429,7 +428,7 @@ class chart_obj():
         self.ind_cell = ind_cell0
         self.ind_sheet = ind_cell0.sheet
 
-        # 231209 can use the range.top; rnage.left to get settings 
+        # 231209 can use the range.top; rnage.left to get settings
         # # chart location: left=row, top=col
         # row_count = self.ind_cell.row
         # col_count =self.ind_cell.column
@@ -445,17 +444,17 @@ class chart_obj():
         self.ind_cell_d_n_axis = self.ind_cell_d.offset(1,1)
         self.ind_cell_d_col = self.ind_cell_d.offset(0,1)
         # for width and heigh, use default if no input
-        if dimy0 == 0: 
+        if dimy0 == 0:
             self.dimx = 355
-        else: 
+        else:
             self.dimx = dimx0
         if dimy0 == 0:
             self.dimy = 211
-        else: 
+        else:
             self.dimy = dimy0
-        
-        # x is all means x-axis here, inthe data table is down, 
-        # so use down for x 
+
+        # x is all means x-axis here, inthe data table is down,
+        # so use down for x
         self.x_len = len(self.ind_cell_d_n_axis.expand('down'))
         self.y_len = len(self.ind_cell_d_n_axis.expand('right'))
 
@@ -469,21 +468,21 @@ class chart_obj():
         tmp_cell = self.ind_cell_d.offset(1,0)
         self.x_axis = tmp_cell.expand("down")
 
-        # this chart type is set to default 
+        # this chart type is set to default
         self.chart_type = "xy_scatter_smooth_no_markers"
 
-        # refer more chart setting for 
-        # https://docs.xlwings.org/en/stable/api/chart.html 
+        # refer more chart setting for
+        # https://docs.xlwings.org/en/stable/api/chart.html
 
-        self.x_maj = 0
-        self.x_min = 0
+        # setting of the en/dis of the minjor axis in chart
+        # change this item befor chart add, and this can be enable
+        self.en_minjor_axis = False
+        self.en_max_min_auto_change = False
 
-        self.y_maj = 0
-        self.y_min = 0
 
         pass
 
-    def g_chart_add(self): 
+    def g_chart_add(self):
         '''
         add the chart based on object information
         '''
@@ -496,25 +495,25 @@ class chart_obj():
         self.ch_obj.api[1].ChartTitle.Text=self.c_name  #標題文字
         self.ch_obj.api[1].Axes(1).HasTitle = True # This line creates the X axis label.
         self.ch_obj.api[1].Axes(2).HasTitle = True # This line creates the Y axis label.
-        self.ch_obj.api[1].Axes(1).AxisTitle.Text = self.x_name 
+        self.ch_obj.api[1].Axes(1).AxisTitle.Text = self.x_name
         self.ch_obj.api[1].Axes(2).AxisTitle.Text = self.y_name
-        
+
         '''
-        Axes(2) setting is in constant in xlwings: 
+        Axes(2) setting is in constant in xlwings:
 
         class AxisType:
         xlCategory = 1  # from enum XlAxisType
         xlSeriesAxis = 3  # from enum XlAxisType
         xlValue = 2  # from enum XlAxisType
 
-        usually call by: 
+        usually call by:
 
         Axes(xw.constants.AxisType.xlSeriesAxis) 是用來訪問
         Excel 圖表的系列軸(Series Axis)的方法。系列軸通常用於
         顯示圖表中的不同數據系列。在某些類型的圖表中，你可能會
         看到一條線或軸，該線或軸用來標記或切換數據系列。這與 Axes
         (xw.constants.AxisType.xlCategory)（類別軸，通常是 x 軸）
-        和 Axes(xw.constants.AxisType.xlValue)（數值軸，通常是 
+        和 Axes(xw.constants.AxisType.xlValue)（數值軸，通常是
         y 軸）不同。系列軸通常出現在堆疊的圖表或其他需要區分不同
         系列的情況下。
 
@@ -522,96 +521,202 @@ class chart_obj():
 
         '''
 
-        # config the x-axis of each line 
-        for i in range (self.y_len) : 
+        # config the x-axis of each line
+        for i in range (self.y_len) :
             self.ch_obj.api[1].SeriesCollection(i+1).XValues = self.x_axis.api
             print(f'change x-axis setting for curve {i}')
 
-        # for the max and min of chart, default use 105% of max and 90% of min  
-
-        self.x_axis_maj_u(x_maj0=3)
-        self.x_axis_min_u(x_min0=1)
-        self.y_axis_maj_u(y_maj0=0.2)
-        self.y_axis_min_u(y_min0=0.01)
-
-        
+        # for the max and min of chart, default use 105% of max and 90% of min
 
 
-    def x_axis_maj_u(self, x_maj0=0): 
+        # after the auto generation of the chart, disable the auto adjustment
+
+        # 231211: no need to disable, just just follow the sequence => major_uint, min, max should be ok
+        # # == this decide the en/dis of the minor axis
+        # self.ch_obj.api[1].Axes(xw.constants.AxisType.xlCategory).HasMinorGridlines = self.en_minjor_axis
+        # self.ch_obj.api[1].Axes(xw.constants.AxisType.xlValue).HasMinorGridlines = self.en_minjor_axis
+        # == this disable auto change of maximum and minimum
+        # self.ch_obj.api[1].Axes(xw.constants.AxisType.xlCategory).AutomaticMaximumScale = self.en_max_min_auto_change
+        # self.ch_obj.api[1].Axes(xw.constants.AxisType.xlValue).AutomaticMinimumScale = self.en_max_min_auto_change
+
+        # 231211 testing code
+        self.x_axis_major_u(x_major0=0.01)
+        # self.x_axis_minor_u(x_minor0=1)
+        self.y_axis_major_u(y_major0=0.02)
+        # self.y_axis_minor_u(y_minor0=0.01)
+
+
+        # control the amount of line within 10, otherwise there are display error
+        self.x_axis_min(x_min0=0.00)
+        self.x_axis_max(x_max0=0.05)
+        self.y_axis_min(y_min0=0.85)
+        self.y_axis_max(y_max0=0.95)
+
+
+
+    def chart_display(self, x_y0='x', max0=0, min0=0, transfer=5):
+        '''
+        generate of chart will be auto axis, and it's able to change
+        after the chart finished
+        x_y0 => x, y selection
+        the major unit will be define as (max0 - min0)/transfer
+        '''
+        major_u = ( max0 - min0 ) / transfer
+        if x_y0 == 'x':
+            # change x axis
+            self.x_axis_major_u(x_major0=major_u)
+            self.x_axis_min(x_min0=min0)
+            self.x_axis_max(x_max0=max0)
+        if x_y0 == 'y':
+            # change y axis
+            self.y_axis_major_u(y_major0=major_u)
+            self.y_axis_min(y_min0=min0)
+            self.y_axis_max(y_max0=max0)
+
+        pass
+
+
+
+
+
+    def x_axis_major_u(self, x_major0=0):
         '''
         change the x_axis major unit
         '''
-        read_res = 0 
+        read_res = 0
 
-        if x_maj0 != 0 : 
-            self.ch_obj.api[1].Axes(xw.constants.AxisType.xlCategory).MajorUnit = x_maj0
-            self.x_maj = x_maj0
-            print(f'x_maj_u set to {x_maj0}')
+        if x_major0 != 0 :
+            self.ch_obj.api[1].Axes(xw.constants.AxisType.xlCategory).MajorUnit = x_major0
+            print(f'x_maj_u set to {x_major0}')
 
-        else: 
+        else:
             read_res = self.ch_obj.api[1].Axes(xw.constants.AxisType.xlCategory).MajorUnit
             print(f'x_maj_u is {read_res}')
 
-        return read_res 
-    
-    def x_axis_min_u(self, x_min0=0): 
-        '''
-        change the x_axis major or minor unit
-        '''
-        read_res = 0 
+        return read_res
 
-        if x_min0 != 0 : 
-            self.ch_obj.api[1].Axes(xw.constants.AxisType.xlCategory).MinorUnit = x_min0
-            self.x_min = x_min0
-            print(f'x_min_u set to {x_min0}')
+    def x_axis_minor_u(self, x_minor0=0):
+        '''
+        change the x_axis minor unit
+        the minor is default in disable
+        '''
+        read_res = 0
 
-        else: 
+        if x_minor0 != 0 :
+            self.ch_obj.api[1].Axes(xw.constants.AxisType.xlCategory).MinorUnit = x_minor0
+            print(f'x_min_u set to {x_minor0}')
+
+        else:
             read_res = self.ch_obj.api[1].Axes(xw.constants.AxisType.xlCategory).MinorUnit
             print(f'x_min_u is {read_res}')
 
-        return read_res 
-    
-    def y_axis_maj_u(self, y_maj0=0): 
-        '''
-        change the x_axis major unit
-        '''
-        read_res = 0 
+        return read_res
 
-        if y_maj0 != 0 : 
-            self.ch_obj.api[1].Axes(xw.constants.AxisType.xlValue).MajorUnit = y_maj0
-            self.y_maj = y_maj0
-            print(f'y_maj_u set to {y_maj0}')
+    def y_axis_major_u(self, y_major0=0):
+        '''
+        change the y_axis major unit
+        '''
+        read_res = 0
 
-        else: 
+        if y_major0 != 0 :
+            self.ch_obj.api[1].Axes(xw.constants.AxisType.xlValue).MajorUnit = y_major0
+            print(f'y_maj_u set to {y_major0}')
+
+        else:
             read_res = self.ch_obj.api[1].Axes(xw.constants.AxisType.xlValue).MajorUnit
             print(f'y_maj_u is {read_res}')
 
-        return read_res 
-    
-    def y_axis_min_u(self, y_min0=0): 
-        '''
-        change the x_axis major or minor unit
-        '''
-        read_res = 0 
+        return read_res
 
-        if y_min0 != 0 : 
-            self.ch_obj.api[1].Axes(xw.constants.AxisType.xlValue).MinorUnit = y_min0
-            self.y_min = y_min0
-            print(f'y_min_u set to {y_min0}')
+    def y_axis_minor_u(self, y_minor0=0):
+        '''
+        change the y_axis minor unit
+        the minor is default in disable
+        '''
+        read_res = 0
 
-        else: 
+        if y_minor0 != 0 :
+            self.ch_obj.api[1].Axes(xw.constants.AxisType.xlValue).MinorUnit = y_minor0
+            print(f'y_min_u set to {y_minor0}')
+
+        else:
             read_res = self.ch_obj.api[1].Axes(xw.constants.AxisType.xlValue).MinorUnit
             print(f'y_min_u is {read_res}')
 
-        return read_res 
+        return read_res
 
-    
+    def x_axis_max(self, x_max0=0):
+        '''
+        change the x_axis maximum diplay
+        '''
+        read_res = 0
+
+        if x_max0 != 0 :
+            self.ch_obj.api[1].Axes(xw.constants.AxisType.xlCategory).MaximumScale  = x_max0
+            print(f'x_max set to {x_max0}')
+
+        else:
+            read_res = self.ch_obj.api[1].Axes(xw.constants.AxisType.xlCategory).MaximumScale
+            print(f'x_max is {read_res}')
+
+        return read_res
+
+    def x_axis_min(self, x_min0=0):
+        '''
+        change the x_axis minimum diplay
+        '''
+        read_res = 0
+
+        if x_min0 != 0 :
+            self.ch_obj.api[1].Axes(xw.constants.AxisType.xlCategory).MinimumScale  = x_min0
+            print(f'x_min set to {x_min0}')
+
+        else:
+            read_res = self.ch_obj.api[1].Axes(xw.constants.AxisType.xlCategory).MinimumScale
+            print(f'x_min is {read_res}')
+
+        return read_res
+
+    def y_axis_max(self, y_max0=0):
+        '''
+        change the y_axis maximum diplay
+        '''
+        read_res = 0
+
+        if y_max0 != 0 :
+            self.ch_obj.api[1].Axes(xw.constants.AxisType.xlValue).MaximumScale  = y_max0
+            print(f'y_max set to {y_max0}')
+
+        else:
+            read_res = self.ch_obj.api[1].Axes(xw.constants.AxisType.xlValue).MaximumScale
+            print(f'y_max is {read_res}')
+
+        return read_res
+
+    def y_axis_min(self, y_min0=0):
+        '''
+        change the y_axis minimum diplay
+        '''
+        read_res = 0
+
+        if y_min0 != 0 :
+            self.ch_obj.api[1].Axes(xw.constants.AxisType.xlValue).MinimumScale  = y_min0
+            print(f'y_min set to {y_min0}')
+
+        else:
+            read_res = self.ch_obj.api[1].Axes(xw.constants.AxisType.xlValue).MinimumScale
+            print(f'y_min is {read_res}')
+
+        return read_res
+
+
+
 
 
 
 
 if __name__ == "__main__":
-    
+
 
     #  the testing code for this file object
 
@@ -717,7 +822,7 @@ if __name__ == "__main__":
         print(f'top: {t_range.top}, left: {t_range.left}')
         # 设置 x 轴标题
         # a.api[1].Axes(2).HasTitle = True # This line creates the Y axis label.
-        a.api[1].Axes(1).AxisTitle.Text = "x axis text" 
+        a.api[1].Axes(1).AxisTitle.Text = "x axis text"
         a.api[1].Axes(2).AxisTitle.Text = "y axis text"
 
     if test_index == 5 :
@@ -727,6 +832,9 @@ if __name__ == "__main__":
         ind_cell_d_in = tmp_sh.range((3, 3))
         ch_obj1 = chart_obj(ind_cell0=ind_cell_in, ind_cell_d0=ind_cell_d_in)
         ch_obj1.g_chart_add()
+
+        ch_obj1.chart_display(x_y0='x', max0=3, min0=2.5)
+        ch_obj1.chart_display(x_y0='y', max0=0.9, min0=0.7)
 
 
     # end of test mode
