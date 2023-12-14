@@ -232,6 +232,10 @@ class JIGM3:
 
     # -----------------------------------------------------------------------------------------------------------------
     def retry_and_refresh(func):
+        '''
+        Gary:
+        decorator =>
+        '''
         def wrapper(*args, **kwargs):
             # if (time.time() - args[0].LastTimeRefresh) > 1.0 :
             #     args[0].reopen()
@@ -257,6 +261,10 @@ class JIGM3:
         return wrapper
 
     def assertResult(self, result):
+        '''
+        Gary:
+        return things should be list from V4, check if error from JIG return (must be list if correct)
+        '''
         if not isinstance(result, list):
             raise Exception("[Result Error] Result is not list")
 
@@ -437,7 +445,7 @@ class JIGM3:
     @retry_and_refresh
     def i2c_opwrite(self, device, datas):
         """
-        option write i2c
+        option write i2c (usually for single byte, I2C didn' define register)
         :param device: I2C slave address.
         :param datas: list for bytes to write.
         :return: error id, datas or error string.
@@ -465,7 +473,7 @@ class JIGM3:
     @retry_and_refresh
     def i2c_read16(self, device, regaddr, len):
         """
-        read i2c
+        read i2c (16 bit address)
         :param device: I2C slave address.
         :param regaddr: register address, command table address.
         :param len: length for read.
@@ -492,7 +500,7 @@ class JIGM3:
     @retry_and_refresh
     def i2c_write16(self, device, regaddr, datas):
         """
-        write i2c
+        write i2c (16 bit resigeter)
         :param device: I2C slave address.
         :param regaddr: register address, command table address.
         :param datas: list for bytes to write.

@@ -1246,6 +1246,7 @@ class general_test ():
         '''
         test_mode_b is the main_off_line used for debug\n
         other_sheet will change the latch to other sheet
+        (if need see the return result in datalatch, set the test_mode_b to 1)
         '''
         if other_sheet != 0:
             # change the latch result to other sheet

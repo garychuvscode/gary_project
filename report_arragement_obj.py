@@ -9,6 +9,9 @@ try to make good summary to make report easier for others to understand
 import xlwings as xw
 import logging as log
 
+# table and chart function
+import table_obj_V3 as g_tb
+
 # mainly for only process the report
 
 # fmt: off
@@ -93,10 +96,16 @@ class report_arragement:
 
         pass
     def open_book(self, full_trace0=0, file_name0=0, check_ref_sh0=1):
+        '''
+        open the book for report arragement
+        use trace or file name
+
+        it will add the refernce sheet 'ref_sh' at the end for further operation
+        '''
 
         if full_trace0 == 0 :
 
-            # input file name of report, which already opened
+            # input file name of report, which already opened for modify
             self.file_name = str(file_name0)
             self.wb = self.excel_ini.app_org.books(self.file_name)
             # self.wb = xw.books(self.file_name)
@@ -158,7 +167,7 @@ class report_arragement:
 
 
         sh_temp = self.sy_eff_0p19
-        # eff SY-0-1.9A
+        # eff SY-0-1.9A (competitor)
         ind1 = (4,3)
         des = (43,4)
         row_c = 39
@@ -167,7 +176,7 @@ class report_arragement:
 
 
         sh_temp = self.sy_eff_2
-        # eff SY-2-8A
+        # eff SY-2-8A (competitor)
         ind1 = (4,3)
         des = (82,4)
         row_c = 29
@@ -176,7 +185,7 @@ class report_arragement:
 
 
         sh_temp = self.nt_eff_0p19
-        # eff NT-0-1.9A
+        # eff NT-0-1.9A (self)
         ind1 = (4,3)
         des = (43,16)
         row_c = 39
@@ -185,7 +194,7 @@ class report_arragement:
 
 
         sh_temp = self.nt_eff_2
-        # eff NT-2-8A
+        # eff NT-2-8A (self)
         ind1 = (4,3)
         des = (82,16)
         row_c = 29
@@ -194,7 +203,7 @@ class report_arragement:
 
 
         sh_temp = self.sy_eff_0p19
-        # load_reg SY-0-1.9A
+        # load_reg SY-0-1.9A (competitor)
         ind1 = (184,3)
         des = (142,4)
         row_c = 39
@@ -203,7 +212,7 @@ class report_arragement:
 
 
         sh_temp = self.sy_eff_2
-        # load_reg SY-2-8A
+        # load_reg SY-2-8A (competitor)
         ind1 = (144,3)
         des = (181,4)
         row_c = 29
@@ -212,7 +221,7 @@ class report_arragement:
 
 
         sh_temp = self.nt_eff_0p19
-        # load_reg NT-0-1.9A
+        # load_reg NT-0-1.9A (self)
         ind1 = (184,3)
         des = (142,16)
         row_c = 39
@@ -221,7 +230,7 @@ class report_arragement:
 
 
         sh_temp = self.nt_eff_2
-        # load_reg NT-2-8A
+        # load_reg NT-2-8A (self)
         ind1 = (144,3)
         des = (181,16)
         row_c = 29
@@ -316,6 +325,7 @@ class report_arragement:
             self.sheet_sor = self.wb.sheets("temp")
             self.sheet_des = self.wb.sheets("temp")
 
+        # find the last cell
         ind_1_end = (ind_1[0] + row_count, ind_1[1] + col_count)
         ind_2_end = (ind_2[0] + row_count, ind_2[1] + col_count)
 
@@ -460,8 +470,9 @@ class report_arragement:
 
         GPL_V5_RPC_temp.xlsx => only leave the ref_sh, delete other sheet
         grace_trace.xlsx => delete other sheet and copy ref_sh to replace the sheet
+        other file will update if there are more~
 
-        fixed trace:
+        fixed trace: need to change source code if needed to change
         'c:\\py_gary\\test_excel\\file_name0'
         '''
 
@@ -469,6 +480,11 @@ class report_arragement:
 
         if file_name0 == "grace_trace.xlsx" :
             # also need to copy ref_sh and create new sheet beofre close
+            '''
+            231212: because this grace trace is not raw data file, need to
+            create new sheet for file GPL_V5 to put information in
+            must create new sheet of 'file_trace_ref' for grace
+            '''
             sh_ref = self.ini_wb.sheets('ref_sh')
             sh_temp = sh_ref.copy(sh_ref)
             sh_temp.name = 'file_trace_ref'
@@ -482,6 +498,8 @@ class report_arragement:
     def clr_to_ref_sh(self, file_name0=0):
         '''
         file_name0 need to be full file name: test.xlsx or test.xlsm
+        231212: this is current used for GPL_RPC to clear communicatio sheet
+        not for other use
         '''
         full_trace = self.default_path + file_name0
 
@@ -510,9 +528,8 @@ class report_arragement:
 
     def find_sh_all_books_copy_res(self, sheet_name='', copy0=1):
         '''
-        mode0 is set to 7 in default, it will send 'other settings in tag'
-        otherwise, it will be the tage support summary sheet
-        decide to copy the sheet or not
+        otherwise, it will be the tag support summary sheet
+        copy0 => decide to copy the sheet or not
         '''
         # 连接到 Excel 应用程序
         # app = xw.App(visible=False)  # 如果不需要可见 Excel，请设置 visible=False
@@ -657,9 +674,9 @@ if __name__ == "__main__":
 
     excel_m = para.excel_parameter(str(sh.file_setting))
 
-    operation_index = 1
+    operation_index = 0
     if operation_index == 0 :
-        test_index = 3
+        test_index = 1
         trace = 0
         file_name="test.xlsx"
     else:
