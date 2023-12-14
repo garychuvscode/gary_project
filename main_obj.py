@@ -51,6 +51,8 @@ import report_arragement_obj as rep_arr
 
 # off line test, set to 1 set all the instrument to simulation mode
 main_off_line = 1
+# single instrument simulation mode enable control, set to 0 for normal case,
+# only set to 1 when single testing instrument or debug mode is needed
 single_mode = 0
 # this is the variable control file name, single or the multi item
 # adjust after the if selection of program_group
@@ -226,7 +228,7 @@ def sim_mode_independent(
     """
     if the test mode = 0, default disable all the single simulation mode function\n
     only based on the setting of GPIB address to decide the setting of simulation mode
-    for the
+    for the each instrument, only set single_mode0 to 1 when need to test instrument in single item
     """
     if main_off_line0 == 0 and single_mode0 == 1:
         if pwr == 1:
@@ -336,6 +338,11 @@ def change_file_name(new_file_name_str):
 
 
 def loader_cal_excel():
+    '''
+    ths function enable the loader calaibration mode and load the target current from the excel file
+    offset is the error during measurement
+    leakage is the no load current sink to the loader
+    '''
     loader_chr_m.current_cal_setup(
         excel_m.loader_cal_offset_ELch,
         excel_m.loader_cal_offset_VCIch,
@@ -1144,7 +1151,7 @@ the current probe need to Degauss at the 20mA prevent error
 
         pass
 
-    # pre_short testing of suff
+    # pre_short testing of stuff
     elif program_group == 8:
         """
         pre-short testing, watch out the pwr supply channel
