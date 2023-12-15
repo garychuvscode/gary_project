@@ -63,13 +63,12 @@ class report_arragement:
         self.default_path = 'c:\\py_gary\\test_excel\\'
 
 
-
-
         # name of sheet for example operation
         self.Buck_eff_example = "Eff_comp_ex_C"
-        self.LDO_reg_example = "regulation_comp_LDO_ex_C"
+        self.LDO_reg_example = "LDO_reg_comp_ex_C"
+        # 231215: only finished the version of C, others not ready
         self.Buck_eff_example_B = "Eff_comp_ex_AB"
-        self.LDO_reg_example_B = "regulation_comp_LDO_ex_AB"
+        self.LDO_reg_example_B = "LDO_reg_comp_ex_AB"
         # this sheet is used to grab data from the verification report raw data
         self.raw_sheet = "C_raw_NAB"
 
@@ -239,10 +238,34 @@ class report_arragement:
 
         # ===after finished the table, copy the sheet to related place and re-name
 
-        # copy the result in front of the first sheet (SY_0p19)
-        self.sh_comp = self.sh_comp.copy(self.sh_sy_eff_0p19)
-        temp_name = self.sh_comp.range('C4').value
-        self.sh_comp.name = str(temp_name) + '_EFF_comp'
+        # 231215 use this function to replace below operation
+        self.res_sh_go(type0='_EFF_comp')
+
+        # # copy the result in front of the first sheet (SY_0p19)
+        # self.sh_comp = self.sh_comp.copy(self.sh_sy_eff_0p19)
+        # temp_name = self.sh_comp.range('C4').value
+
+        # try:
+        #     # check if already have same name
+        #     self.sh_comp.name = str(temp_name) + '_EFF_comp'
+        #     pass
+
+        # except:
+        #     x_sh = 0
+        #     while x_sh < 100 :
+        #         # loop for maximum 100 sheet of same name
+
+        #         try:
+        #             self.sh_comp.name = str(temp_name) + '_EFF_comp' + f'_{x_sh+1}'
+        #             # set the name properly, break
+        #             break
+        #         except:
+        #             print(f'sheet number {x_sh} still not match, move to next')
+        #             pass
+        #         x_sh = x_sh + 1
+        #         pass
+        #     # pass the exception
+        #     pass
 
 
 
@@ -307,12 +330,49 @@ class report_arragement:
 
         # ===after finished the table, copy the sheet to related place and re-name
 
+
+        self.res_sh_go(type0='_LDO_reg_comp')
+        # 231215: use new function to replace below operation
+        # # copy the result in front of the first sheet (SY_0p19)
+        # self.sh_comp = self.sh_comp.copy(self.sh_sy_eff_0p19)
+        # temp_name = self.sh_comp.range('C4').value
+        # self.sh_comp.name = str(temp_name) + '_LDO_reg_comp'
+
+        pass
+
+    def res_sh_go(self, type0='type'):
+        '''
+        copy the sheet and re-name for buck or LDO efficiency
+        '''
+
         # copy the result in front of the first sheet (SY_0p19)
         self.sh_comp = self.sh_comp.copy(self.sh_sy_eff_0p19)
         temp_name = self.sh_comp.range('C4').value
-        self.sh_comp.name = str(temp_name) + '_LDO_reg_comp'
 
-        pass
+        try:
+            # check if already have same name
+            self.sh_comp.name = str(temp_name) + type0
+            pass
+
+        except:
+            x_sh = 0
+            while x_sh < 100 :
+                # loop for maximum 100 sheet of same name
+
+                try:
+                    self.sh_comp.name = str(temp_name) + type0 + f'_{x_sh+1}'
+                    # set the name properly, break
+                    break
+                except:
+                    print(f'sheet number {x_sh} still not match, move to next')
+                    pass
+
+                x_sh = x_sh + 1
+                pass
+
+
+            # pass the exception
+            pass
 
     def table_comparison(self,ind_1=(1, 1),ind_2=(3, 3),row_count=3,col_count=3,ind_dest0=(5, 5),sheet_sor0="",sheet_des0="",diff=1):
         """
@@ -674,11 +734,11 @@ if __name__ == "__main__":
 
     excel_m = para.excel_parameter(str(sh.file_setting))
 
-    operation_index = 0
+    operation_index = 2
     if operation_index == 0 :
-        test_index = 1
+        test_index = 0
         trace = 0
-        file_name="test.xlsx"
+        file_name="test.xlsm"
     else:
         # testing index to 100, no need testing
         test_index = 100
