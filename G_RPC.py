@@ -45,6 +45,14 @@ print("JIGM3 MCU selected for Grace")
 NAGSIGN_RPC = "##NAGRPC##"
 # fmt: off
 
+'''
+interrupt issue cause by QT => QT thread will cause VScode debugger
+interrupt error, program don't stop at interrupt point and just pass
+through, need to check interrupt, QT thread,
+=> you cna't interrrupt inside the QT thread, maybe also issue
+for interrupt during multi-thread?, this may need to check
+'''
+
 class NAGuiRPC:
     def __init__(self, timeout=3.0, excel0=excel_m, pwr0=0, met_v0=0, loader_0=0, mcu0=0, src0=0, met_i0=0, chamber0=0, scope0=0, rep0=0, sim_mode0=1, msg_expection0=1):
         '''
