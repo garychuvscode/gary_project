@@ -73,57 +73,7 @@ class table_gen():
         # 231206 these information can used to let people know where does the table from
         # knowing the condition
 
-        # record the range for this table
-        self.ind_range = self.ind_cell.expand("table")
-        # create the pure value index and pure value range to make process easier
-        # 231206 added fro the copy and number process of the table result
-        self.ind_cell_no_axis = self.ind_cell.offset(1,1)
-        self.ind_range_no_axis = self.ind_cell_no_axis.expand("table")
-        # knowing the dimenstion and starting index
-        self.t_shape = self.ind_range.shape
-        self.t_sheet = self.ind_range.sheet
-        self.t_book = self.t_sheet.book
-        self.t_file_trace = self.t_book.fullname
-
-        # 231006 include the app_name of what parameter load is using
-        self.app_org = self.t_book.app
-        self.app_name = self.t_book.app._pid
-        print(self.app_org.books)
-
-
-        # dimension of the range
-        self.row_dim = self.t_shape[0]
-        self.col_dim = self.t_shape[1]
-
-        # starting index (normalize)
-        self.nor_Row = self.ind_range.row
-        self.nor_Col = self.ind_range.column
-
-
-        # table_values = self.ind_range.value
-        # # 获取 x 轴和 y 轴
-        # x_axis = table_values[0]  # 假设第一行是 x 轴
-        # y_axis = [row[0] for row in table_values]  # 假设第一列是 y 轴
-
-        # 使用 expand 方法展开范围，指定 direction='right' 表示水平方向展开
-        # 231206: ind_cell.expand("right") can also be use here, and may no need for rows[0]
-        expanded_range = self.ind_range.expand("right")
-        # 获取 x 轴的参数 (this it a list, not a range)
-        self.x_axis = expanded_range.rows[0].value
-        self.x_axis_range = expanded_range.rows[0]
-        self.x_axis_len = len(self.x_axis)
-
-        # 使用 expand 方法展开范围，指定 direction='down' 表示垂直方向展开
-        expanded_range = self.ind_range.expand("down")
-
-        # 获取 y 轴的参数 (this it a list, not a range)
-        self.y_axis_range = expanded_range.columns[0]
-        self.y_axis = expanded_range.columns[0].value
-        # 231206: it's easy to get the value from column, but not easy to put it back
-        self.y_axis_len = len(self.y_axis)
-
-        # 输出原始表格范围的地址
-        print(f"Original range: {self.ind_range.address}")
+        self.reload_ind_and_range()
 
 
         pass
@@ -187,20 +137,35 @@ class table_gen():
 
     # 231206: get_col and get_row merge to find_col_row
 
-    def paste_col(self, src_col=0, dest_col=0):
+    def paste_col(self, src_col=0, dest_col=0, list0=0):
         '''
         since there are unknow error for the paste column range at the xlwings
         process by this function using stupid method
+        231215: there are no axis checking method, because there are only paste the array to column
         '''
         # cover by try, except to prevent crash by wrong input of function
         try:
-            c_element = len(src_col)
+            if src_col != 0 :
+                c_element = len(src_col)
+            else:
+                c_element = len(list0)
             # auto adjustment the input dest range to match the source column size
             dest_col = dest_col.resize(c_element,1)
             x_element = 0
             while x_element < c_element :
-                dest_col.rows[x_element].value = src_col.rows[x_element].value
-                print(f'tansfer from {src_col} to {dest_col}, with element {x_element} and content {src_col.rows[x_element].value}')
+                if src_col != 0 :
+                    # cancel the rows[x] => make the input can also be list, not only range
+                    # dest_col.rows[x_element].value = src_col.rows[x_element].value
+                    dest_col.rows[x_element].value = src_col[x_element].value
+                    pass
+                else:
+                    # 231215 open the function for pure number list input to column
+                    dest_col.rows[x_element].value = list0[x_element]
+                    pass
+                if src_col != 0 :
+                    print(f'tansfer from {src_col} to {dest_col}, with element {x_element} and content {src_col.rows[x_element].value}')
+                else:
+                    print(f'tansfer from {src_col} to {dest_col}, with element {x_element} and content {list0[x_element]}')
                 x_element = x_element + 1
                 pass
 
@@ -340,6 +305,67 @@ class table_gen():
         if re_type0 == 'item':
             # return the item contain searching content (also the first one)
             return result_elements[0]
+
+
+    def reload_ind_and_range(self, new_ind=0):
+        '''
+        use this function to re-load the index and range of the table
+        need to use after add the column for the table
+        '''
+        if new_ind != 0 :
+            self.ind_cell = new_ind
+        # record the range for this table
+        self.ind_range = self.ind_cell.expand("table")
+        # create the pure value index and pure value range to make process easier
+        # 231206 added fro the copy and number process of the table result
+        self.ind_cell_no_axis = self.ind_cell.offset(1,1)
+        self.ind_range_no_axis = self.ind_cell_no_axis.expand("table")
+        # knowing the dimenstion and starting index
+        self.t_shape = self.ind_range.shape
+        self.t_sheet = self.ind_range.sheet
+        self.t_book = self.t_sheet.book
+        self.t_file_trace = self.t_book.fullname
+
+        # 231006 include the app_name of what parameter load is using
+        self.app_org = self.t_book.app
+        self.app_name = self.t_book.app._pid
+        print(self.app_org.books)
+
+
+        # dimension of the range
+        self.row_dim = self.t_shape[0]
+        self.col_dim = self.t_shape[1]
+
+        # starting index (normalize)
+        self.nor_Row = self.ind_range.row
+        self.nor_Col = self.ind_range.column
+
+
+        # table_values = self.ind_range.value
+        # # 获取 x 轴和 y 轴
+        # x_axis = table_values[0]  # 假设第一行是 x 轴
+        # y_axis = [row[0] for row in table_values]  # 假设第一列是 y 轴
+
+        # 使用 expand 方法展开范围，指定 direction='right' 表示水平方向展开
+        # 231206: ind_cell.expand("right") can also be use here, and may no need for rows[0]
+        expanded_range = self.ind_range.expand("right")
+        # 获取 x 轴的参数 (this it a list, not a range)
+        self.x_axis = expanded_range.rows[0].value
+        self.x_axis_range = expanded_range.rows[0]
+        self.x_axis_len = len(self.x_axis)
+
+        # 使用 expand 方法展开范围，指定 direction='down' 表示垂直方向展开
+        expanded_range = self.ind_range.expand("down")
+
+        # 获取 y 轴的参数 (this it a list, not a range)
+        self.y_axis_range = expanded_range.columns[0]
+        self.y_axis = expanded_range.columns[0].value
+        # 231206: it's easy to get the value from column, but not easy to put it back
+        self.y_axis_len = len(self.y_axis)
+
+        # 输出原始表格范围的地址
+        print(f"Original range: {self.ind_range.address}")
+
 
         pass
 
@@ -728,7 +754,7 @@ if __name__ == "__main__":
 
     table_test = table_gen(ind_cell=input_ind_cell)
 
-    test_index = 5
+    test_index = 3
     if test_index == 0:
         # teting for column copy and retrn column object
 
@@ -800,7 +826,10 @@ if __name__ == "__main__":
 
         new_ind = wb_test.sheets('Sheet3').range((34,15))
 
-        table_test.table_output(to_cell0=new_ind, only_value0=1, format0='0.00%')
+        # table_test.table_output(to_cell0=new_ind, only_value0=1, format0='0.00%')
+        list_in=[1,2,3,4,5,6,7,8,9,0]
+        dest_range = wb_test.sheets('Sheet3').range((70,15))
+        table_test.paste_col(dest_col=dest_range, list0=list_in)
         pass
 
     if test_index == 4 :
