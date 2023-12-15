@@ -137,7 +137,7 @@ class table_gen():
 
     # 231206: get_col and get_row merge to find_col_row
 
-    def paste_col(self, src_col=0, dest_col=0, list0=0):
+    def paste_col(self, src_col=0, dest_col=0):
         '''
         since there are unknow error for the paste column range at the xlwings
         process by this function using stupid method
@@ -145,45 +145,47 @@ class table_gen():
         '''
         # cover by try, except to prevent crash by wrong input of function
         try:
-            if src_col != 0 :
-                c_element = len(src_col)
-            else:
-                c_element = len(list0)
+            c_element = len(src_col)
             # auto adjustment the input dest range to match the source column size
             dest_col = dest_col.resize(c_element,1)
             x_element = 0
             while x_element < c_element :
-                if src_col != 0 :
-                    # cancel the rows[x] => make the input can also be list, not only range
-                    # dest_col.rows[x_element].value = src_col.rows[x_element].value
-                    dest_col.rows[x_element].value = src_col[x_element].value
-                    pass
-                else:
-                    # 231215 open the function for pure number list input to column
-                    dest_col.rows[x_element].value = list0[x_element]
-                    pass
-                if src_col != 0 :
-                    print(f'tansfer from {src_col} to {dest_col}, with element {x_element} and content {src_col.rows[x_element].value}')
-                else:
-                    print(f'tansfer from {src_col} to {dest_col}, with element {x_element} and content {list0[x_element]}')
+                # cancel the rows[x] => make the input can also be list, not only range
+                # dest_col.rows[x_element].value = src_col.rows[x_element].value
+                dest_col.rows[x_element].value = src_col[x_element].value
+                print(f'tansfer from {src_col} to {dest_col}, with element {x_element} and content {src_col.rows[x_element].value}')
                 x_element = x_element + 1
                 pass
-
             # return the dest_col range variable
-
             '''
             # also can try this code if needed (from chat GPT)
             for x_element, src_value in enumerate(src_col.rows):
                 dest_col.rows[x_element].value = src_value
                 print(f'transfer from {src_col} to {dest_col}, with element {x_element} and content {src_value}')
             '''
-
             return dest_col
             pass
 
-        except Exception as e:
-            print(f'there are error {e} cause by the paste column during operation')
-
+        except Exception as e1:
+            try:
+                # for the failure of using colunm range as input, use list to replace
+                c_element = len(src_col)
+                # auto adjustment the input dest range to match the source column size
+                dest_col = dest_col.resize(c_element,1)
+                x_element = 0
+                while x_element < c_element :
+                    # 231215 open the function for pure number list input to column
+                    dest_col.rows[x_element].value = src_col[x_element]
+                    print(f'tansfer from {src_col} to {dest_col}, with element {x_element} and content {src_col[x_element]}')
+                    x_element = x_element + 1
+                    pass
+                print(f'there are error {e1} cause by the paste column during col operation because using list as input')
+                return dest_col
+                pass
+            except Exception as e2:
+                # both method fail, return error message without feedback
+                print(f'there are error {e1} cause by the paste column during col operation')
+                print(f'there are error {e2} cause by the paste column during list operation')
             pass
 
         pass
@@ -827,9 +829,9 @@ if __name__ == "__main__":
         new_ind = wb_test.sheets('Sheet3').range((34,15))
 
         # table_test.table_output(to_cell0=new_ind, only_value0=1, format0='0.00%')
-        list_in=[1,2,3,4,5,6,7,8,9,0]
+        list_in=['Vin=5',2,3,4,5,6,7,8,9,0]
         dest_range = wb_test.sheets('Sheet3').range((70,15))
-        table_test.paste_col(dest_col=dest_range, list0=list_in)
+        table_test.paste_col(dest_col=dest_range, src_col=list_in)
         pass
 
     if test_index == 4 :
