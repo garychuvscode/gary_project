@@ -33,11 +33,11 @@ add_hyperlink(address, text_to_display=None, screen_tip=None)
 Adds a hyperlink to the specified Range (single Cell)
 
 PARAMETERS
-address (str) – The address of the hyperlink.
+address (str) - The address of the hyperlink.
 
-text_to_display (str, default None) – The text to be displayed for the hyperlink. Defaults to the hyperlink address.
+text_to_display (str, default None) - The text to be displayed for the hyperlink. Defaults to the hyperlink address.
 
-screen_tip (str, default None) – The screen tip to be displayed when the mouse pointer is paused over the hyperlink. Default is set to ‘<address> - Click once to follow. Click and hold to select this cell.’
+screen_tip (str, default None) - The screen tip to be displayed when the mouse pointer is paused over the hyperlink. Default is set to ‘<address> - Click once to follow. Click and hold to select this cell.’
 
 New in version 0.3.0.
 
