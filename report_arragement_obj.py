@@ -649,7 +649,21 @@ class report_arragement:
         '''
         pass
 
+    def new_file_from_temp(self, file_name_org0='GPL_V5_RPC_temp', file_name_dest0='', file_name_extra0='_buck_reg_mix'):
+        '''
+        this function create books with new name, all in testexcel
+        default file name: 'GPL_V5_RPC_temp'
+        '''
 
+        if file_name_dest0 == '' :
+            file_name_dest0 = self.excel_ini.eff_sh_name
+        # open and create new file name for the final result
+        book_res_n = self.excel_ini.app_org.books.open(self.temp_res_bufffer)
+        # for change book's name, need to use save
+        new_name = file_name_dest0 + file_name_extra0 +'.xlsx'
+        book_res_n.save(path=self.default_path+str(new_name))
+        print(f'finished test and create the final file at {new_name}')
+        book_res_n.close()
 
 
 if __name__ == "__main__":
@@ -741,7 +755,6 @@ if __name__ == "__main__":
 
         rep.report_temp_ini(file_name0='GPL_V5_RPC_temp.xlsx')
         rep.report_temp_ini(file_name0='grace_trace.xlsx')
-
 
 
     pass
