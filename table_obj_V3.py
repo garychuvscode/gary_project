@@ -30,6 +30,8 @@ class table_gen():
         => this is single cell and auto scan for table
         default assume there are x and y axis, number process will exclude axis range
         set table_type 1 for the case of pure vaule table
+        x and y axis is based on the value table
+        (EX: eff=> x is Vin and y is current)
         '''
 
         prog_fake = 0
@@ -144,6 +146,7 @@ class table_gen():
         231215: there are no axis checking method, because there are only paste the array to column
         '''
         # cover by try, except to prevent crash by wrong input of function
+        # 231218: both column object and list can be transfer to the column
         try:
             c_element = len(src_col)
             # auto adjustment the input dest range to match the source column size
@@ -211,7 +214,7 @@ class table_gen():
             # search for the x-axis to get column
             res_ind = self.search_element(source_list0=self.x_axis, search_content0=find_content0)
             ind_cell_new = self.ind_cell.offset(0, res_ind)
-            temp_data = data_obj(ind_cell=ind_cell_new, row_col=row_col0, axis='y')
+            temp_data = data_obj(ind_cell=ind_cell_new, row_col=row_col0)
             # put the data and axis index to the data self.x_axis.valueobject
             temp_data.axis_content = self.y_axis
             temp_data.data_content = self.ind_range.columns[res_ind].value
@@ -221,6 +224,11 @@ class table_gen():
             if extra_fun0 == 0:
                 # GPL_PMU efficiency
                 t_cell = self.ind_cell.offset(1, -1)
+
+                self.t_sheet.range("A1").add_hyperlink(address=self.t_book.sheets[0].name + "!A1", text_to_display="Go to Start", screen_tip="")
+
+                self.address_look_up(t_cell)
+
                 temp_data.axis_content[0] = t_cell.value
             elif extra_fun0 == 1:
                 # gary_eff
@@ -232,7 +240,7 @@ class table_gen():
             # search for the x-axis to get row
             res_ind = self.search_element(source_list0=self.y_axis, search_content0=find_content0)
             ind_cell_new = self.ind_cell.offset(res_ind, 0)
-            temp_data = data_obj(ind_cell=ind_cell_new, row_col=row_col0, axis='y')
+            temp_data = data_obj(ind_cell=ind_cell_new, row_col=row_col0)
             # put the data and axis index to the data self.x_axis.valueobject
             temp_data.axis_content = self.x_axis
             temp_data.data_content = self.ind_range.rows[res_ind].value
@@ -257,7 +265,9 @@ class table_gen():
         '''
         ** this function only return the first item, need to change code for muti return
         source_list0 => the list needto search
-        re_type0 => 'ind' is return index ; 'item' is return content
+        re_type0 => 'ind' is return index ; 'item' is return content; 'cell' is return the cell
+        index for the column finded in srarch => this will be the list of cell_ind with
+        all the cell with proper index, not onlt one
         search_content0 => the string need to search
         '''
 
@@ -279,7 +289,15 @@ class table_gen():
         # 用于存储包含子字符串 '12' 的元素的索引的列表
         result_indices = []
 
+        # 231218 this will save all the ind_cell find in the searhching
+        # can save all the list and decide if need to return all or the first one
+        ind_cell_list = []
+
         # 遍历列表，记录包含子字符串 '12' 的元素和它们的索引
+
+        # 231218 add the shift counter to know how much offset needed
+        # for the index cell shift~
+        shift_counter = 0
         for index, element in enumerate(my_string_list):
             '''
             在这个例子中,enumerate 函数用于同时获取元素和它们的索引。然后，
@@ -290,12 +308,19 @@ class table_gen():
                 if search_substring in element:
                     result_elements.append(element)
                     result_indices.append(index)
+                    # 231218 add the list to save cell index
+                    # = first to shift the index cell
+                    # watch out, this is default for finding column only)
+                    tmp_cell = self.ind_cell.offset(0, shift_counter)
+                    ind_cell_list.append(tmp_cell)
                     pass
                 pass
             except Exception as e:
                 # show the exception but not stop the program
                 # e is the exception message from program
                 print(f"there are error {str(e)}, with element: {element}")
+
+            shift_counter = shift_counter + 1
 
         # 输出结果
         print(f"The elements containing '{search_substring}' are: {result_elements}")
@@ -307,6 +332,9 @@ class table_gen():
         if re_type0 == 'item':
             # return the item contain searching content (also the first one)
             return result_elements[0]
+        if re_type0 == 'cell':
+            # return the first finded index cell
+            return ind_cell_list[0]
 
 
     def reload_ind_and_range(self, new_ind=0):
@@ -315,8 +343,9 @@ class table_gen():
         need to use after add the column for the table
         '''
         if new_ind != 0 :
+            # reload the same index if input is default or 0
             self.ind_cell = new_ind
-        # record the range for this table
+            # record the range for this table
         self.ind_range = self.ind_cell.expand("table")
         # create the pure value index and pure value range to make process easier
         # 231206 added fro the copy and number process of the table result
@@ -371,6 +400,30 @@ class table_gen():
 
         pass
 
+    def address_look_up(self, range_ind0=0, address_typ0=0):
+        '''
+        looking for the address of elated cell
+        '''
+
+        # 231225 add the testing for address of range
+        # 假設你要取得 t_cell 儲存格的地址
+        cell_address_absolute = range_ind0.address
+        cell_address_relative = cell_address_absolute.replace('$', '')
+
+        print(f'Absolute Address: {cell_address_absolute}')
+        print(f'Relative Address: {cell_address_relative}')
+        # this item is used for the hyper link of the excel table
+
+        if address_typ0 == 0 :
+            # return the related address
+            return cell_address_relative
+        else:
+            return cell_address_absolute
+
+    def add_link(self, ind_cell0=0, back_sheet0=0):
+
+        pass
+
 class data_obj():
 
     def __init__(self, **kwargs):
@@ -381,9 +434,9 @@ class data_obj():
         '''
         # 定义要匹配的关键字
         # watchout this dict can only have keys, don't causing error
-        self.ctrl_para_dict = {'ind_cell', 'row_col', 'axis'}
+        self.ctrl_para_dict = {'ind_cell', 'row_col'}
         # 初始化变量
-        self.ind_cell = self.row_col = self.axis = None
+        self.ind_cell = self.row_col = None
 
         # 遍历 kwargs 中的键值对
         for key, value in kwargs.items():
@@ -400,7 +453,7 @@ class data_obj():
         print(f'table create finished')
         print(f"ind_cell: {self.ind_cell}")
         print(f"row_col: {self.row_col}")
-        print(f"axis: {self.axis}")
+        # print(f"axis: {self.axis}")
 
         #== after random initializtion parameter:
 
@@ -420,7 +473,7 @@ class data_obj():
 
         print(f'''now the name is {self.data_obj_name},
 index cell {self.ind_cell}, len = {self.data_len}
-type: {self.row_col}, axis index: {self.axis} ;
+type: {self.row_col} ;
 the content: {self.data_content}
 the axis index: {self.axis_content}
               ''')
@@ -450,6 +503,28 @@ class chart_obj():
         ind_cell_d0: index cell for data table from cell to range
         dimx0, dimy0: the dimensiont of chart, can use default (row_count, column count)
         axis: contain axis info or not, 'y', 'n'
+        '''
+
+        '''
+        231213: reference to the way of George process the picture or chrt
+
+        sheet.pictures.add(
+            file,
+            left=image_range.left,
+            top=image_range.top,
+            width=image_range.width,
+            height=image_range.height,
+        )
+
+        chart = sheet.charts.add()
+        chart.chart_type = 'xy_scatter_lines_no_markers'
+        r = sheet.range(pos)
+        chart.top, chart.left, chart.width, chart.height = r.top, r.left, r.width, r.height
+
+        chart.set_source_data(sheet.range( (xtb.XvalY0, xtb.YvalX0), (xtb.YvalY0+xtb.NumY-1, xtb.XvalX0+xtb.NumX-1) ))
+
+
+        => top, left, width and height can be get from the range parameter
         '''
 
         # import the initialization parameter from the definition
@@ -527,6 +602,24 @@ class chart_obj():
         self.ch_obj.api[1].Axes(2).AxisTitle.Text = self.y_name
 
         '''
+        231225 what is the code api[1] mean?
+
+        在 xlwings 中，.api 屬性用於訪問底層的 Excel COM 物件，這使得你可以使用底層的
+        Excel VBA 對象模型的功能，而不僅僅是 xlwings 提供的高階功能。
+        .api[1] 是使用 xlwings 提供的方法之一，用於獲取 COM 對象的第一個元素。
+        在 Excel VBA 中，物件的集合索引通常從 1 開始。例如,Worksheets
+        集合中的第一個工作表可以使用 Worksheets(1) 或簡單地使用 Worksheets(1) 存取。
+        在 xlwings 中，當你使用 .api[1] 時，它將返回 COM 物件的第一個元素，
+        這是一種使用 xlwings 提供的底層功能來處理 COM 對象的方式。
+        這通常用於使用 COM 物件模型的特定功能，而這些功能在 xlwings 中可能沒有直接的高階對應。
+        簡而言之，.api[1] 可以視為 xlwings 中的一種橋樑，使你能夠使用 COM 對象模型的功能。
+
+        Gary's comment: api[1] is used to call the first chart object?
+        maybe need to check if this still work for the muti-chart operation
+
+        '''
+
+        '''
         Axes(2) setting is in constant in xlwings:
 
         class AxisType:
@@ -602,6 +695,26 @@ class chart_obj():
             self.y_axis_max(y_max0=max0)
 
         pass
+
+    def address_look_up(self, range_ind0=0, address_typ0=0):
+        '''
+        looking for the address of elated cell
+        '''
+
+        # 231225 add the testing for address of range
+        # 假設你要取得 t_cell 儲存格的地址
+        cell_address_absolute = range_ind0.address
+        cell_address_relative = cell_address_absolute.replace('$', '')
+
+        print(f'Absolute Address: {cell_address_absolute}')
+        print(f'Relative Address: {cell_address_relative}')
+        # this item is used for the hyper link of the excel table
+
+        if address_typ0 == 0 :
+            # return the related address
+            return cell_address_relative
+        else:
+            return cell_address_absolute
 
 
 
@@ -756,7 +869,7 @@ if __name__ == "__main__":
 
     table_test = table_gen(ind_cell=input_ind_cell)
 
-    test_index = 3
+    test_index = 2
     if test_index == 0:
         # teting for column copy and retrn column object
 

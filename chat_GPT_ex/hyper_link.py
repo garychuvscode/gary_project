@@ -3,6 +3,12 @@ import xlwings as xw
 # turn off the formatter
 # fmt: off
 
+'''
+231225 this file is not showing how to configure the link
+to other range cell in the workbook, it's for open other file
+maybe can save for future
+'''
+
 # 開啟 Excel 應用程式
 app = xw.App(visible=True)
 
