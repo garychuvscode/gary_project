@@ -225,7 +225,19 @@ class table_gen():
                 # GPL_PMU efficiency
                 t_cell = self.ind_cell.offset(1, -1)
 
-                self.t_sheet.range("A1").add_hyperlink(address=self.t_book.sheets[0].name + "!A1", text_to_display="Go to Start", screen_tip="")
+                # this link is only for the web link
+                # detail reference to file: hyper_link.py
+                # self.t_sheet.range("A1").add_hyperlink(address=self.t_book.sheets[0].name + "!A1", text_to_display="Go to Start", screen_tip="")
+
+                # set the link to related range
+                link_address = self.t_book.sheets[0].range("B2").address
+                self.t_sheet.range("A1").api.Hyperlinks.Add(
+                    Anchor=self.t_sheet.range("A1").api,
+                    Address="",  # 留空，表示連結到同一個工作簿
+                    SubAddress=f"{self.t_book.sheets[0].name}!{link_address}",
+                    TextToDisplay=f"go to {self.t_book.sheets[0].name} and B2",
+                )
+
 
                 self.address_look_up(t_cell)
 
@@ -421,6 +433,44 @@ class table_gen():
             return cell_address_absolute
 
     def add_link(self, ind_cell0=0, back_sheet0=0):
+        '''
+        used to add the link to both side of the workbook,
+        '''
+        if ind_cell0 == 0 :
+            # use the index cell or tble
+            ind_cell0 = self.ind_cell
+
+        #  assign the sheet name to eport_link_reference
+        sheet_name = 'report_link_reference'
+
+        # step 1 search the result sheet in this workbook
+        finded = 0
+        for sheet in self.t_book.sheets:
+            print(f'now is wb{sheet}')
+            if sheet.name == sheet_name:
+                # 找到匹配的工作表
+                print(f"找到匹配的工作表：{sheet_name}")
+                # 在这里可以执行其他操作，如读取或修改工作表内容
+                '''
+                copy this sheet to the result book, it should be able to find the
+                result book and reference sheet for copying index during the program operation
+                '''
+                finded = 1
+                break
+            if finded == 1 :
+                break
+            pass
+
+        # copy new link sheet or not?
+        if finded == 0 :
+            # copy from the parameter_load object
+
+            pass
+
+
+        # after copy check where is the space item
+
+
 
         pass
 
