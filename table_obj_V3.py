@@ -225,21 +225,13 @@ class table_gen():
                 # GPL_PMU efficiency
                 t_cell = self.ind_cell.offset(1, -1)
 
+                self.add_link()
+                self.add_link()
+                self.add_link()
+                self.add_link()
                 # this link is only for the web link
                 # detail reference to file: hyper_link.py
                 # self.t_sheet.range("A1").add_hyperlink(address=self.t_book.sheets[0].name + "!A1", text_to_display="Go to Start", screen_tip="")
-
-                # set the link to related range
-                link_address = self.t_book.sheets[0].range("B2").address
-                self.t_sheet.range("A1").api.Hyperlinks.Add(
-                    Anchor=self.t_sheet.range("A1").api,
-                    Address="",  # 留空，表示連結到同一個工作簿
-                    SubAddress=f"{self.t_book.sheets[0].name}!{link_address}",
-                    TextToDisplay=f"go to {self.t_book.sheets[0].name} and B2",
-                )
-
-
-                self.address_look_up(t_cell)
 
                 temp_data.axis_content[0] = t_cell.value
             elif extra_fun0 == 1:
@@ -409,6 +401,11 @@ class table_gen():
         # 输出原始表格范围的地址
         print(f"Original range: {self.ind_range.address}")
 
+        # here is the definition of the link reference sheet
+        self.link_ref_ind_cell = ''
+        self.link_ref_sheet = ''
+        #  assign the sheet name to eport_link_reference
+        self.link_sh_name = 'report_link_reference'
 
         pass
 
@@ -432,16 +429,21 @@ class table_gen():
         else:
             return cell_address_absolute
 
-    def add_link(self, ind_cell0=0, back_sheet0=0):
+    def add_link(self):
         '''
         used to add the link to both side of the workbook,
+        1. from raw to reference sheet
+        2. from reference sheet to raw
         '''
-        if ind_cell0 == 0 :
-            # use the index cell or tble
-            ind_cell0 = self.ind_cell
 
         #  assign the sheet name to eport_link_reference
-        sheet_name = 'report_link_reference'
+        sheet_name = self.link_sh_name
+
+        # # 231228 => cancel first, focus on link reference for table
+        # if ind_cell0 == 0 :
+        #     # use the index cell or tble
+        #     ind_cell0 = self.ind_cell
+        #     # this can also be use with other reference link added
 
         # step 1 search the result sheet in this workbook
         finded = 0
@@ -455,6 +457,7 @@ class table_gen():
                 copy this sheet to the result book, it should be able to find the
                 result book and reference sheet for copying index during the program operation
                 '''
+
                 finded = 1
                 break
             if finded == 1 :
@@ -469,6 +472,42 @@ class table_gen():
 
 
         # after copy check where is the space item
+        # 231228 by using expand function
+        self.ref_link_ind = self.t_book.sheets(self.link_sh_name).range("F17")
+        tmp_check = self.ref_link_ind.expand("down")
+        tmp_check = len(tmp_check)
+        cell_of_link = self.ref_link_ind.offset(tmp_check, 0)
+
+
+        # config the link from link sheet to raw
+        from_range = cell_of_link
+        to_range = self.ind_cell
+        to_sheet = to_range.sheet
+        # set the link to related range
+        # target_range = self.t_book.sheets[0].range("B2")
+        # link_address = target_range.address
+        link_address_2 = self.address_look_up(to_range)
+        from_range.api.Hyperlinks.Add(
+            Anchor=from_range.api,
+            Address="",  # 留空，表示連結到同一個工作簿
+            SubAddress=f"{to_sheet.name}!{link_address_2}",
+            TextToDisplay=f"go to {to_sheet.name} and {link_address_2}",
+        )
+
+        # config the link from raw to back to link sheet
+        from_range = self.ind_cell
+        to_range = cell_of_link
+        to_sheet = to_range.sheet
+        # set the link to related range
+        # target_range = self.t_book.sheets[0].range("B2")
+        # link_address = target_range.address
+        link_address_2 = self.address_look_up(to_range)
+        from_range.api.Hyperlinks.Add(
+            Anchor=from_range.api,
+            Address="",  # 留空，表示連結到同一個工作簿
+            SubAddress=f"{to_sheet.name}!{link_address_2}",
+            TextToDisplay=f"back to link sheet",
+        )
 
 
 
