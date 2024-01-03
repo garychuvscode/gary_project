@@ -618,6 +618,8 @@ class report_arragement:
                             # 231103: add comparison, if in same book, no need to copy
                             book_check = self.sh_comp.book
                             if book_check != workbook :
+                                # 240102 this can't be use because reference before assignd
+                                # sheet = sheet.copy(self.sh_sy_eff_0p19)
                                 sheet = sheet.copy(self.sh_comp)
                                 pass
                             pass
@@ -734,7 +736,7 @@ if __name__ == "__main__":
 
     excel_m = para.excel_parameter(str(sh.file_setting))
 
-    operation_index = 2
+    operation_index = 1
     if operation_index == 0 :
         test_index = 0
         trace = 0
