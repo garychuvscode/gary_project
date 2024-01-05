@@ -13,7 +13,7 @@ import pyautogui
 # fmt: off
 
 import inst_pkg_d as inst
-sim_setting = 1
+sim_setting = 0
 # define the excel object
 excel_m = para.excel_parameter(str(sh.file_setting))
 
