@@ -21,9 +21,16 @@ import win32api as win_ap
 # pandas and matplot is data science's good friend~
 # import pandas as pd
 
+import sheet_ctrl_main_obj as sh
+
+# excel parameter and settings
+import parameter_load_obj as para
+
+excel_m = para.excel_parameter(str(sh.file_setting))
+
 
 class table_gen():
-    def __init__(self, **kwargs):
+    def __init__(self, excel0=0, **kwargs):
         '''
         table object:
         for table index cell input: 'ind_row', 'ind_column'
@@ -40,6 +47,7 @@ class table_gen():
             self.sh_comp = self.wb.sheets("temp")
             ind_range0 = self.sh_comp.range((1, 1))
             self.ind_range = ind_range0
+            excel_0 = para.excel_parameter(str(sh.file_setting))
 
         # default table type is 0, using index cell input and get table by expand
         # table type = 1 is the input table don't contain axis
@@ -47,7 +55,7 @@ class table_gen():
 
         # 定义要匹配的关键字
         # watchout this dict can only have keys, don't causing error
-        self.ctrl_para_dict = {'ind_cell', 'all_range', 'x_length', 'y_length', 'table_type' }
+        self.ctrl_para_dict = {'ind_cell', 'all_range', 'x_length', 'y_length', 'table_type'}
         # 初始化变量
         self.ind_cell = self.all_range = self.x_length = self.y_length = None
 
@@ -75,8 +83,10 @@ class table_gen():
         # 231206 these information can used to let people know where does the table from
         # knowing the condition
 
-        self.reload_ind_and_range()
+        # 240105 add old type of the parameter input for the object
+        self.excel_ini = excel0
 
+        self.reload_ind_and_range()
 
         pass
 
@@ -404,8 +414,11 @@ class table_gen():
         # here is the definition of the link reference sheet
         self.link_ref_ind_cell = ''
         self.link_ref_sheet = ''
-        #  assign the sheet name to eport_link_reference
-        self.link_sh_name = 'report_link_reference'
+        #  assign the sheet name to eport_link_reference (refer to parameter_load)
+        # self.link_sh_name = 'report_link_reference'
+        # self.ref_link_ind = self.t_book.sheets(self.link_sh_name).range("F17")
+        self.link_sh_name = self.excel_ini.link_sh_name
+        self.ref_link_ind = self.t_book.sheets(self.link_sh_name).range(self.excel_ini.link_ind_cell)
 
         pass
 
@@ -429,7 +442,7 @@ class table_gen():
         else:
             return cell_address_absolute
 
-    def add_link(self):
+    def add_link(self, comment_list_1=[]):
         '''
         used to add the link to both side of the workbook,
         1. from raw to reference sheet
@@ -473,7 +486,8 @@ class table_gen():
 
         # after copy check where is the space item
         # 231228 by using expand function
-        self.ref_link_ind = self.t_book.sheets(self.link_sh_name).range("F17")
+        # 240105 change this line to the initialize of table
+        # self.ref_link_ind = self.t_book.sheets(self.link_sh_name).range("F17")
         tmp_check = self.ref_link_ind.expand("down")
         tmp_check = len(tmp_check)
         cell_of_link = self.ref_link_ind.offset(tmp_check, 0)
@@ -509,6 +523,41 @@ class table_gen():
             TextToDisplay=f"back to link sheet",
         )
 
+        # add the comments to the link from the cell behind
+        # test_list = ['com1', 'com2']
+        self.link_comment(ref_cell0=cell_of_link, comment_list0=comment_list_1)
+
+        # 240105 test len() function
+        # tmp = []
+        # x = len(tmp)
+
+        pass
+
+    def link_comment(self, ref_cell0=0, comment_list0=[], title0=0):
+        '''
+        this function used to add comments to every link after the item built
+        input the list and fill the items to each blank at the right side of the
+        link
+        title0 => set to 1 to config title setting for the comments
+        '''
+        target_range = ref_cell0
+        if title0 == 1 :
+            # put the content to the title
+            target_range = self.ref_link_ind
+
+        # if the input list is space, then the length will be 0
+        c_comment = len(comment_list0)
+        if c_comment == 0 :
+            print(f"Grace doesn't have any comments for this link, ha XD")
+        x_comment = 0
+        while x_comment < c_comment :
+
+            # offset the cell 1 col (usually row, cloumn)
+            target_range = target_range.offset(0,1)
+            target_range.value = comment_list0[x_comment]
+
+            x_comment = x_comment + 1
+            pass
 
 
         pass
@@ -956,7 +1005,7 @@ if __name__ == "__main__":
     wb_test = xw.Book(control_book_trace)
     input_ind_cell = wb_test.sheets('Sheet3').range((3,3))
 
-    table_test = table_gen(ind_cell=input_ind_cell)
+    table_test = table_gen(excel0=excel_m, ind_cell=input_ind_cell)
 
     test_index = 2
     if test_index == 0:
