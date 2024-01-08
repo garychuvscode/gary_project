@@ -21,9 +21,16 @@ import win32api as win_ap
 # pandas and matplot is data science's good friend~
 # import pandas as pd
 
+import sheet_ctrl_main_obj as sh
+
+# excel parameter and settings
+import parameter_load_obj as para
+
+excel_m = para.excel_parameter(str(sh.file_setting))
+
 
 class table_gen():
-    def __init__(self, **kwargs):
+    def __init__(self, excel0=0, **kwargs):
         '''
         table object:
         for table index cell input: 'ind_row', 'ind_column'
@@ -40,6 +47,7 @@ class table_gen():
             self.sh_comp = self.wb.sheets("temp")
             ind_range0 = self.sh_comp.range((1, 1))
             self.ind_range = ind_range0
+            excel_0 = para.excel_parameter(str(sh.file_setting))
 
         # default table type is 0, using index cell input and get table by expand
         # table type = 1 is the input table don't contain axis
@@ -47,7 +55,7 @@ class table_gen():
 
         # 定义要匹配的关键字
         # watchout this dict can only have keys, don't causing error
-        self.ctrl_para_dict = {'ind_cell', 'all_range', 'x_length', 'y_length', 'table_type' }
+        self.ctrl_para_dict = {'ind_cell', 'all_range', 'x_length', 'y_length', 'table_type'}
         # 初始化变量
         self.ind_cell = self.all_range = self.x_length = self.y_length = None
 
@@ -75,8 +83,10 @@ class table_gen():
         # 231206 these information can used to let people know where does the table from
         # knowing the condition
 
-        self.reload_ind_and_range()
+        # 240105 add old type of the parameter input for the object
+        self.excel_ini = excel0
 
+        self.reload_ind_and_range()
 
         pass
 
@@ -225,9 +235,13 @@ class table_gen():
                 # GPL_PMU efficiency
                 t_cell = self.ind_cell.offset(1, -1)
 
-                self.t_sheet.range("A1").add_hyperlink(address=self.t_book.sheets[0].name + "!A1", text_to_display="Go to Start", screen_tip="")
-
-                self.address_look_up(t_cell)
+                self.add_link()
+                self.add_link()
+                self.add_link()
+                self.add_link()
+                # this link is only for the web link
+                # detail reference to file: hyper_link.py
+                # self.t_sheet.range("A1").add_hyperlink(address=self.t_book.sheets[0].name + "!A1", text_to_display="Go to Start", screen_tip="")
 
                 temp_data.axis_content[0] = t_cell.value
             elif extra_fun0 == 1:
@@ -397,6 +411,14 @@ class table_gen():
         # 输出原始表格范围的地址
         print(f"Original range: {self.ind_range.address}")
 
+        # here is the definition of the link reference sheet
+        self.link_ref_ind_cell = ''
+        self.link_ref_sheet = ''
+        #  assign the sheet name to eport_link_reference (refer to parameter_load)
+        # self.link_sh_name = 'report_link_reference'
+        # self.ref_link_ind = self.t_book.sheets(self.link_sh_name).range("F17")
+        self.link_sh_name = self.excel_ini.link_sh_name
+        self.ref_link_ind = self.t_book.sheets(self.link_sh_name).range(self.excel_ini.link_ind_cell)
 
         pass
 
@@ -420,7 +442,123 @@ class table_gen():
         else:
             return cell_address_absolute
 
-    def add_link(self, ind_cell0=0, back_sheet0=0):
+    def add_link(self, comment_list_1=[]):
+        '''
+        used to add the link to both side of the workbook,
+        1. from raw to reference sheet
+        2. from reference sheet to raw
+        '''
+
+        #  assign the sheet name to eport_link_reference
+        sheet_name = self.link_sh_name
+
+        # # 231228 => cancel first, focus on link reference for table
+        # if ind_cell0 == 0 :
+        #     # use the index cell or tble
+        #     ind_cell0 = self.ind_cell
+        #     # this can also be use with other reference link added
+
+        # step 1 search the result sheet in this workbook
+        finded = 0
+        for sheet in self.t_book.sheets:
+            print(f'now is wb{sheet}')
+            if sheet.name == sheet_name:
+                # 找到匹配的工作表
+                print(f"找到匹配的工作表：{sheet_name}")
+                # 在这里可以执行其他操作，如读取或修改工作表内容
+                '''
+                copy this sheet to the result book, it should be able to find the
+                result book and reference sheet for copying index during the program operation
+                '''
+
+                finded = 1
+                break
+            if finded == 1 :
+                break
+            pass
+
+        # copy new link sheet or not?
+        if finded == 0 :
+            # copy from the parameter_load object
+
+            pass
+
+
+        # after copy check where is the space item
+        # 231228 by using expand function
+        # 240105 change this line to the initialize of table
+        # self.ref_link_ind = self.t_book.sheets(self.link_sh_name).range("F17")
+        tmp_check = self.ref_link_ind.expand("down")
+        tmp_check = len(tmp_check)
+        cell_of_link = self.ref_link_ind.offset(tmp_check, 0)
+
+
+        # config the link from link sheet to raw
+        from_range = cell_of_link
+        to_range = self.ind_cell
+        to_sheet = to_range.sheet
+        # set the link to related range
+        # target_range = self.t_book.sheets[0].range("B2")
+        # link_address = target_range.address
+        link_address_2 = self.address_look_up(to_range)
+        from_range.api.Hyperlinks.Add(
+            Anchor=from_range.api,
+            Address="",  # 留空，表示連結到同一個工作簿
+            SubAddress=f"{to_sheet.name}!{link_address_2}",
+            TextToDisplay=f"go to {to_sheet.name} and {link_address_2}",
+        )
+
+        # config the link from raw to back to link sheet
+        from_range = self.ind_cell
+        to_range = cell_of_link
+        to_sheet = to_range.sheet
+        # set the link to related range
+        # target_range = self.t_book.sheets[0].range("B2")
+        # link_address = target_range.address
+        link_address_2 = self.address_look_up(to_range)
+        from_range.api.Hyperlinks.Add(
+            Anchor=from_range.api,
+            Address="",  # 留空，表示連結到同一個工作簿
+            SubAddress=f"{to_sheet.name}!{link_address_2}",
+            TextToDisplay=f"back to link sheet",
+        )
+
+        # add the comments to the link from the cell behind
+        # test_list = ['com1', 'com2']
+        self.link_comment(ref_cell0=cell_of_link, comment_list0=comment_list_1)
+
+        # 240105 test len() function
+        # tmp = []
+        # x = len(tmp)
+
+        pass
+
+    def link_comment(self, ref_cell0=0, comment_list0=[], title0=0):
+        '''
+        this function used to add comments to every link after the item built
+        input the list and fill the items to each blank at the right side of the
+        link
+        title0 => set to 1 to config title setting for the comments
+        '''
+        target_range = ref_cell0
+        if title0 == 1 :
+            # put the content to the title
+            target_range = self.ref_link_ind
+
+        # if the input list is space, then the length will be 0
+        c_comment = len(comment_list0)
+        if c_comment == 0 :
+            print(f"Grace doesn't have any comments for this link, ha XD")
+        x_comment = 0
+        while x_comment < c_comment :
+
+            # offset the cell 1 col (usually row, cloumn)
+            target_range = target_range.offset(0,1)
+            target_range.value = comment_list0[x_comment]
+
+            x_comment = x_comment + 1
+            pass
+
 
         pass
 
@@ -867,7 +1005,7 @@ if __name__ == "__main__":
     wb_test = xw.Book(control_book_trace)
     input_ind_cell = wb_test.sheets('Sheet3').range((3,3))
 
-    table_test = table_gen(ind_cell=input_ind_cell)
+    table_test = table_gen(excel0=excel_m, ind_cell=input_ind_cell)
 
     test_index = 2
     if test_index == 0:

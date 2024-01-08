@@ -546,6 +546,13 @@ class excel_parameter ():
         self.extra_comments = self.sh_main.range('F8').value
         self.eff_sh_name = self.sh_main.range('G8').value
 
+        # 240105: table_obj_V3 related control variable
+
+        #  assign the sheet name to eport_link_reference
+        self.link_sh_name = 'report_link_reference'
+        self.link_ind_cell = "F17"
+
+
         # =============
         # instrument control related
 
