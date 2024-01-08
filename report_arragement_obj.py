@@ -14,6 +14,9 @@ import table_obj_V3 as g_tb
 
 # mainly for only process the report
 
+# 2401013 add the time stamp for file
+from datetime import datetime
+
 # fmt: off
 
 class report_arragement:
@@ -720,7 +723,12 @@ class report_arragement:
         # open and create new file name for the final result
         book_res_n = self.excel_ini.app_org.books.open(self.temp_res_bufffer)
         # for change book's name, need to use save
-        new_name = file_name_dest0 + file_name_extra0 +'.xlsx'
+        # 獲取當前日期和時間
+        current_time = datetime.now()
+
+        # 將日期和時間格式化為字串，包含年、月、日、小時和分鐘
+        formatted_time = str(current_time.strftime("_%Y_%m_%d_%H_%M"))
+        new_name = file_name_dest0 + file_name_extra0+ formatted_time +'.xlsx'
         book_res_n.save(path=self.default_path+str(new_name))
         print(f'finished test and create the final file at {new_name}')
         book_res_n.close()
@@ -734,7 +742,7 @@ if __name__ == "__main__":
 
     excel_m = para.excel_parameter(str(sh.file_setting))
 
-    operation_index = 2
+    operation_index = 1
     if operation_index == 0 :
         test_index = 0
         trace = 0

@@ -1570,15 +1570,27 @@ if __name__ == "__main__":
 
         if label_pos_sel == 0:
             # list of channel name
+            # 231226 here is for MV buck
+            # ch_name = {
+            #     "CH1": "EN1",
+            #     "CH2": "3p3V_LDO",
+            #     "CH3": "HSA",
+            #     "CH4": "VDD_IO",
+            #     "CH5": "L_Lx",
+            #     "CH6": "LSCL",
+            #     "CH7": "LSDA",
+            #     "CH8": "VDD_SPD",
+            # }
+            # 231226 here is for SPD hub
             ch_name = {
                 "CH1": "EN1",
-                "CH2": "3p3V_LDO",
+                "CH2": "3p3V_LDO",~
                 "CH3": "HSA",
-                "CH4": "VDD_IO",
+                "CH4": "LSDA",
                 "CH5": "L_Lx",
-                "CH6": "LSCL",
-                "CH7": "LSDA",
-                "CH8": "VDD_SPD",
+                "CH6": "HSCL",
+                "CH7": "HSDA",
+                "CH8": "LSCL",
             }
         elif label_pos_sel == 1:
             ch_name = {
