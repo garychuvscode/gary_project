@@ -2449,6 +2449,27 @@ class excel_parameter ():
 
             pass
 
+
+        '''
+        240108 added, for checking the scope capture of picture porpoerty
+        default checking is: xlMove, xlMoveAndSize, xlFreeFloating, in VBA,
+        check the commit of 970_full and obj_main for further detail,
+        need to use below code if needed to change the setting:
+        import the below =>
+        import win32com.client as win32
+
+
+        # assign the picture variable:
+
+        pic_temp = target_sheet.pictures.add(str(default_trace), left=range_index.left,
+        top=range_index.top, width=range_index.width, height=range_index.height)
+
+        # change from the picture variable:
+        pic_temp = win32com.client.constants.xlMove
+        # you can also select other items for different settings
+
+        '''
+
         pass
 
     def get_nth_key(self, dictionary, n=0):
