@@ -514,6 +514,18 @@ Efficiency.Run()
 
         pass
 
+    def g_pattern_insert(self, pattern_name, ch_name, start_s=0.0, value='H', end_s=None):
+        '''
+
+        '''
+        cmd_str_V5=f"""
+from NAGlib.GPattern.GPattern import GPattern
+GPattern.insert(pattern_name='{pattern_name}', ch_name='{ch_name}', start_s={start_s}, value='{value}', end_s={end_s})
+"""
+
+        self.run(cmd_str_V5, timeout=1800)
+
+        pass
 
 
 
@@ -534,7 +546,7 @@ if __name__ == "__main__":
     # result = NAGui.call('GI2C.read', 0x9E, 0x00, 1)
     # print('GI2C.read(0x9E, 0x00, 1) > ', result)
 
-    test_index = 2.5
+    test_index = 2.8
 
     # codes
     code = """
@@ -648,8 +660,11 @@ Efficiency.Run()
 
     elif test_index == 2.8 :
         '''
-        mutiple run and check average value
+        240112 use to setup the pattern gen
         '''
+
+        result = NAGui.g_pattern_insert(pattern_name='grace', ch_name='hand')
+
 
 
     elif test_index == 3 :
