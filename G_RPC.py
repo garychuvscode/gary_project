@@ -661,6 +661,20 @@ Efficiency.Run()
     elif test_index == 2.8 :
         '''
         240112 use to setup the pattern gen
+        240115 GPattern can't support new tag or pattern, signal generate
+        directly, need to check from the object
+        (1) create the tag and pattern at first
+        (2) generate the pattern from pattern insert
+        (3) save for further testing
+        (4) George: function should be able to de refer to the source code
+        in GPattern
+
+        > other things need to know for operation:
+        1. DG2020 LSB is 5ns, can't use lower than 5ns
+        2. George's JIGM3 LSB is 50ns, can't be less
+        3. new DG should be better, but not built yet
+        4. all the operation is based on GPattern
+        => generate the testing waveform from GPattern
         '''
 
         result = NAGui.g_pattern_insert(pattern_name='grace', ch_name='hand')

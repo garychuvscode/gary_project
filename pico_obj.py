@@ -96,18 +96,41 @@ class PICO_obj ():
         uart_cmd_str = f'COM{self.com_addr}'
         print(uart_cmd_str)
         if self.sim_mcu == 1:
+            # 240117 add new operation: clear the resource for reset
+            print(f'the related resource we have \n {rm.list_resources()}')
             self.mcu_com = rm.open_resource(uart_cmd_str)
+            self.mcu_com.clear()
         else:
             print('open COM port but bypass the real operation')
 
         pass
 
-    def com_query(self, cmd_str0=''):
+    def com_query(self, cmd_str0='t;usb;2'):
+        '''
+        command send and looking for feedback => used for
+        data return of checking the feedback of command
+        send to PICO(double check)
+        test_LED 2 => GP9
+        '''
 
         pass
 
-    def write(self, command=0):
-        self.mcu_com.query(command)
+    def write(self, command='t;usb;5'):
+        '''
+        run the command and without return
+        only try to print the result
+        test_LED 5 => GP22
+        '''
+        try:
+            ret_from_pico = self.mcu_com.query(command)
+            print(f'Grace is about 30y, and she say: {ret_from_pico}')
+        except Exception as e :
+            if self.sim_mcu == 1:
+                self.mcu_com.close()
+            else:
+                print('the com port is turn off now')
+
+            print(f're-open and try again due to error {e} at COM{com_addr}')
 
         pass
 
@@ -166,6 +189,8 @@ if __name__ == '__main__':
     # define the new PICO MCU and open the device
 
     sim_pcio = 1
+    # 230117: for the COM port selection => based on the
+    # hardware manager, or the NI_MAX
     com_addr = 6
     baud_rate = 115200
 
@@ -173,7 +198,7 @@ if __name__ == '__main__':
 
     g_pico.com_open()
 
-    testing_index = 1
+    testing_index = 2
 
     if testing_index == 0 :
         '''
@@ -244,5 +269,17 @@ if __name__ == '__main__':
             print(data_to_send)
             g_pico.write(data_to_send)
 
+
+        pass
+
+    elif testing_index == 2 :
+        '''
+        240117 checking the connection of USB to PICO
+        through USB directly, and blink LED for command check
+        '''
+
+        while 1 :
+            g_pico.write()
+            time.sleep(10)
 
         pass
