@@ -1246,7 +1246,7 @@ class JIGM3:
         CS_B = 0, SDI = 1, SCK = 2
 
         when call the the buck_write, watch out the initialization of MCU will reset the PG3 to low
-        since the PG1 and PG2 is default to EN1 and
+        since the PG1 and PG2 is default to EN1 and EN2
 
         '''
 
@@ -1648,7 +1648,16 @@ if __name__ == "__main__":
     a = g_mcu.getversion()
     print(f"the MCU version is {a}")
 
-    test_index = 10.5201314
+    # 10.5201314 => buck trim flow or TM function scan
+    # 10.5200324 => random testing of write command
+    # CS_B = 0, SDI = 1, SCK = 2
+    test_index = 10.5200324
+
+    input_data_random = ['ff', 'ff', 'ff', 'fe']
+
+    # set to 1=> general trim, 2 => TM code scan function
+    g_mcu.tm_mode = 1
+
     """
     testing index settings
     1 => IO control
@@ -2194,6 +2203,9 @@ which length is {tm_reg_length[x_tm_item]} and lsb is {tm_reg_lsb[x_tm_item]}
         # testing for buck operation V2 => inside JIGM3, can be call anywhere import JIGM3
         g_mcu.buck_tm()
 
+    elif test_index == 10.5200324 :
+        print(f'buck random write for: {input_data_random}')
+        g_mcu.buck_write(input_byte0=input_data_random)
 
     elif test_index == 11 :
 
