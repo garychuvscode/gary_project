@@ -9,7 +9,15 @@ import sheet_ctrl_main_obj as sh
 import parameter_load_obj as para
 import time
 import xlwings as xw
+
+# for windows close function
 import pyautogui
+
+# 2024 new for window close function
+import win32gui
+import win32con
+
+
 # fmt: off
 
 import inst_pkg_d as inst
@@ -489,9 +497,25 @@ Efficiency.Run()
             # 遍历窗口标题，查找匹配的窗口
             for title in window_titles:
                 if window_name in title:
+
+                    # 240124 new method try ok
+                    # but need to open at least one folder window, otherwise fail
+                    # # 获取窗口句柄
+                    # hwnd = win32gui.FindWindow(None, title)
+
+                    # if hwnd != 0:
+                    #     # 將窗口帶到最前面
+                    #     win32gui.ShowWindow(hwnd, win32con.SW_RESTORE)
+                    #     win32gui.SetForegroundWindow(hwnd)
+                    #     time.sleep(2)  # 等待窗口切换
+
+                    # 240124 become don't work, need to modify mothod
                     # 激活匹配的窗口
                     pyautogui.getWindowsWithTitle(title)[0].activate()
-                    time.sleep(1)  # 等待窗口切换
+                    time.sleep(10)  # 等待窗口切换
+                    # final for 20240124: need to wait for the program to open
+                    # new window and switch to the window, need more time
+                    # it's different from computer
 
                     # 关闭当前激活的窗口
                     pyautogui.hotkey("alt", "f4")
@@ -546,7 +570,7 @@ if __name__ == "__main__":
     # result = NAGui.call('GI2C.read', 0x9E, 0x00, 1)
     # print('GI2C.read(0x9E, 0x00, 1) > ', result)
 
-    test_index = 2.8
+    test_index = 2.5
 
     # codes
     code = """

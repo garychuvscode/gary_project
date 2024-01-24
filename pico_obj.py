@@ -100,37 +100,60 @@ class PICO_obj ():
             print(f'the related resource we have \n {rm.list_resources()}')
             self.mcu_com = rm.open_resource(uart_cmd_str)
             self.mcu_com.clear()
+            # for the connection speed, at least use 115200, there
+            # are time out issue if the frequency is too slow
         else:
             print('open COM port but bypass the real operation')
 
         pass
 
-    def com_query(self, cmd_str0='t;usb;2'):
+    def p_query(self, cmd_str0='t;usb;2'):
         '''
         command send and looking for feedback => used for
         data return of checking the feedback of command
         send to PICO(double check)
         test_LED 2 => GP9
+        240124: better to clear the COM port RX FIFO before query
+        to get the latet information => using read or clear
         '''
+        try:
+            # try to read out alll the stuff first
+            tmp_r = self.mcu_com.read()
+            print(f'FIFO: {tmp_r}')
 
-        pass
+        except Exception as e :
+            print(f'FIFO is empty or other error: {e}')
 
-    def write(self, command='t;usb;5'):
+        try:
+
+            pass
+        except Exception as e :
+            pass
+
+
+        result = 1
+
+        return 0
+
+    def p_write(self, command='t;usb;5'):
         '''
         run the command and without return
         only try to print the result
         test_LED 5 => GP22
+        240124 watch out that the old commend send to PICO will be
+        save in the FIFO buffer if sending command faster than
+        excuting
         '''
+        ret_from_pico = 0
         try:
-            ret_from_pico = self.mcu_com.query(command)
+            if self.sim_mcu == 1:
+                ret_from_pico = self.mcu_com.write(command)
+                # ret_from_pico = self.mcu_com.query(command)
+            else:
+                ret_from_pico = f'sim_mode_{command}'
             print(f'Grace is about 30y, and she say: {ret_from_pico}')
         except Exception as e :
-            if self.sim_mcu == 1:
-                self.mcu_com.close()
-            else:
-                print('the com port is turn off now')
-
-            print(f're-open and try again due to error {e} at COM{com_addr}')
+            print(f'write error "{e}" at COM{com_addr}')
 
         pass
 
@@ -156,6 +179,7 @@ class PICO_obj ():
         # MCU will be in normal mode (EN, SW) = (1, 1) => 4
         self.pmic_mode(4)
         # the relay channel also reset to the default
+        self.p_write('grace;io_rst')
 
         print('command accept to reset the MCU_PICO_grace')
         pass
@@ -180,7 +204,7 @@ class PICO_obj ():
 
         # int_list = struct.unpack("<BBBB", byte_data)
         # 231128 this is used for i2c read byte to number transfer
-        # refer to byte_list to int_list in chatGTP
+        # refer to byte_list to int_list in chat GTP
 
 if __name__ == '__main__':
 
@@ -203,6 +227,8 @@ if __name__ == '__main__':
     if testing_index == 0 :
         '''
         using testing MCU(TI) to send COM command and check from the LA bus
+        240124 add comments, this is just testing the com port communication
+        USB can be use directly the communication
         '''
         ti_mcu_com = 6
         # virtual_com = rm.open_resource(resource_name=f'COM{ti_mcu_com}')
@@ -243,31 +269,29 @@ if __name__ == '__main__':
             print(encoded_data)
             virtual_com_s.write(encoded_data)
 
-
-
-
-
-
         pass
 
     elif testing_index == 1 :
-
+        '''
+        this is also old code may not be use
+        just leave for record
+        '''
         while 1 :
 
             data_to_send = 'a'
             encoded_data = data_to_send.encode('utf-8')
             print(data_to_send)
-            g_pico.write(data_to_send)
+            g_pico.p_write(data_to_send)
 
             data_to_send = 'b'
             encoded_data = data_to_send.encode('utf-8')
             print(data_to_send)
-            g_pico.write(data_to_send)
+            g_pico.p_write(data_to_send)
 
             data_to_send = 'c'
             encoded_data = data_to_send.encode('utf-8')
             print(data_to_send)
-            g_pico.write(data_to_send)
+            g_pico.p_write(data_to_send)
 
 
         pass
@@ -277,9 +301,9 @@ if __name__ == '__main__':
         240117 checking the connection of USB to PICO
         through USB directly, and blink LED for command check
         '''
-
-        while 1 :
-            g_pico.write()
-            time.sleep(10)
-
+        x = 0
+        while x < 5 :
+            g_pico.p_write()
+            time.sleep(3)
+            x = x + 1
         pass

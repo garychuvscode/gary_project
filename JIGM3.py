@@ -2235,3 +2235,22 @@ which length is {tm_reg_length[x_tm_item]} and lsb is {tm_reg_lsb[x_tm_item]}
 
 
         pass
+
+
+    '''
+    240122 record for the operation of 2's complement
+    for the detail, refer to the SPD temperature sensor calculation
+    need to know way to calculate for positive and negative
+
+    just for record for MCU related operation
+    since there may have demand for the register configuration
+
+    temp0 = -10
+
+    t_lim_set_H = int((2**13 - abs(temp0) * 16) / 256)
+    t_lim_set_L = int((2**13 - abs(temp0) * 16) % 256)
+
+    print(f"bin is: {bin(t_lim_set_H)}, {bin(t_lim_set_L)}, set to {temp0} ")
+    # result from 2's complement is
+    print(f"transfer back: {(32-t_lim_set_H-1)/16*256+ (256 - t_lim_set_L) / 16}")
+    '''
