@@ -107,7 +107,7 @@ class PICO_obj ():
 
         pass
 
-    def p_query(self, cmd_str0='t;usb;2'):
+    def p_query(self, cmd_str0='t;usb;2', time_out_s0 =3):
         '''
         command send and looking for feedback => used for
         data return of checking the feedback of command
@@ -116,24 +116,33 @@ class PICO_obj ():
         240124: better to clear the COM port RX FIFO before query
         to get the latet information => using read or clear
         '''
-        try:
-            # try to read out alll the stuff first
-            tmp_r = self.mcu_com.read()
-            print(f'FIFO: {tmp_r}')
 
-        except Exception as e :
-            print(f'FIFO is empty or other error: {e}')
+        if self.sim_mcu == 1 :
+            try:
+                # try to read out alll the stuff first
+                tmp_r = self.mcu_com.read()
+                print(f'first to clear FIFO: {tmp_r}')
 
-        try:
+            except Exception as e :
+                print(f'FIFO is empty or other error: {e}')
+
+            try:
+                # then start query
+                tmp_r = self.mcu_com.query(cmd_str0, time_out_s0)
+                return tmp_r
+                pass
+            except Exception as e :
+                print(f'query error, need to check command with error: {e}')
+                pass
 
             pass
-        except Exception as e :
-            pass
+        else:
+            print(f'PICO sim_mode query {cmd_str0}')
+
+        # end of query
+        pass
 
 
-        result = 1
-
-        return 0
 
     def p_write(self, command='t;usb;5'):
         '''
@@ -156,9 +165,6 @@ class PICO_obj ():
             print(f'write error "{e}" at COM{com_addr}')
 
         pass
-
-
-
 
     def com_close(self):
         # after the verification is finished, reset all the condition
@@ -205,6 +211,164 @@ class PICO_obj ():
         # int_list = struct.unpack("<BBBB", byte_data)
         # 231128 this is used for i2c read byte to number transfer
         # refer to byte_list to int_list in chat GTP
+        pass
+
+    def i2c_write(self, num0=0, status0=0):
+
+        pass
+
+    def relay_ctrl(self, channel_index=0, relay_mode0=1, t_dly_s=0):
+
+        pass
+
+    def pico_gio(self, num0=0, status0=0):
+        '''
+        240125 the IO function now is different from different MCU
+        But it should be ok if going to have same function call by main
+        it can be implement in another function, this should be ok
+        now just use the own function
+        '''
+
+
+
+        pass
+
+    def pulse_out(self, pulse_1=1, pulse_2=1):
+        """
+        PICO mapped with MSP430
+        pulse need to be less then 255
+        can choose pulse at GP6(EN), default is at GP7(SW)
+
+        PICO duration is 10 us fixed
+        """
+        """
+        first to use pulse gen, for the PIO, will be in
+        future plan
+        """
+
+        pass
+
+    def hex_to_num(self, data_in0=0):
+        '''
+        try to transfer the input to number for register write
+        skip if already number (but watch out this is dec number input, not hex)
+        '''
+        try:
+            data_in0 = int(data_in0, 16)
+            print(f'input is string and transfer number: {data_in0}')
+        except:
+            print(f'input is already number: {data_in0}, return origin')
+
+        return data_in0
+
+    def num_to_hex (self, data_in0=0):
+        '''
+        transfer the number to hex
+        '''
+        try:
+            data_in0 = hex(data_in0)
+            return data_in0
+        except:
+            print(f'input data "{data_in0}" transfer error, double check input data')
+            return 'data_error'
+
+        pass
+
+    def bit_s(self, bit_num0=0, byte_state_tmp0=0):
+        bit_num0 = str(bit_num0)
+
+        # bit set process
+        bit_cmd0 = self.bit_set[bit_num0]
+        print(f"set bit_cmd0 is {bit_cmd0}")
+        new_byte_data = byte_state_tmp0 | bit_cmd0
+        print(f"final command0 is {new_byte_data}, g")
+
+        return new_byte_data
+
+    def bit_c(self, bit_num0=0, byte_state_tmp0=0):
+        bit_num0 = str(bit_num0)
+
+        # bit clear process
+        bit_cmd0 = self.bit_clr[bit_num0]
+        print(f"clear bit_cmd0 is {bit_cmd0}")
+        new_byte_data = byte_state_tmp0 & bit_cmd0
+        print(f"final command0 is {new_byte_data}, g")
+
+        return new_byte_data
+
+    def pure_group_write(self, lsb0=0, len0=1, data0=0, byte_state_tmp0=0):
+
+        '''
+        group few bits together for register adjustment in program
+        lsb is define the LSB of this group (from 0-7)
+        len is length of this group (from 1-8)
+        limitation is all the bit must be in same register
+        data need to be integer
+
+        byte_state_tmp0 is original data, and data0 is the new data
+        '''
+        lsb0 = int(lsb0)
+        len0 = int(len0)
+        data0 = int(data0)
+        byte_state_tmp0 = self.hex_to_num(byte_state_tmp0)
+        '''
+        calculation method register update:
+        left shift for LSB: LSB0 => no need shift, LSB3 => give three 0 in right
+        '''
+        # x**y operator is means x^y, sinc the ^ means XOR in python
+        if data0 > 2**(len0) :
+            # data is too big, output the error message and bypass the command
+            # this check is used to prevent overflow of Grace XD
+            print(f'length "{len0}" and data "{data0}" have fconflict, please double check ')
+
+            pass
+        else:
+            # shift the data based on the length and using XOR to update result
+            # then write the new data to the register
+            group_command = data0 << lsb0
+            print(f'Gary want new data to be: {hex(group_command)}, {bin(group_command)}')
+
+            temp = 0
+            for x in range(len0):
+                temp = temp + 2**x
+            temp = temp << lsb0
+            print(f' what Grace said: {bin(temp)} ~')
+            temp = 255 - temp
+            print(f' what Grace do: {bin(temp)} XDD')
+
+            # byte_state_tmp = self.i2c_read(device=device0, regaddr=register0, len=1)
+            # byte_state_tmp = byte_state_tmp[0]
+            # old one is used for I2C mode, update new method, the old datais
+            # this data is from function input
+            byte_state_tmp = byte_state_tmp0
+
+            print(f'Grace get original data: {hex(byte_state_tmp)}, {bin(byte_state_tmp)}')
+            # clean the group bits before adding the new data
+            byte_state_tmp = byte_state_tmp & temp
+            print(f'Gary clean original data: {hex(byte_state_tmp)}, {bin(byte_state_tmp)}')
+            # using or is ok after clean the related group bits
+            new_byte_data = group_command | byte_state_tmp
+            x = hex(new_byte_data)
+            print(f"Grace's final command0 is {x}")
+
+
+            # 231018: take off the i2C write from the i2c, this function is only for byte operation
+
+            # # write the new byte to the register, change to JIGM3 format first
+            # new_list = [new_byte_data]
+
+            # self.i2c_write(device=device0, regaddr=register0, datas=new_list)
+
+            # # double check process
+            # check_data = self.i2c_read(device=device0, regaddr=register0, len=1)
+            # check_data = check_data[0]
+            # print(f'Grace read back from reg {hex(register0)} have new data {hex(check_data)}')
+
+            # return the calculation result
+            return new_byte_data
+
+
+        pass
 
 if __name__ == '__main__':
 
