@@ -96,18 +96,104 @@ class PICO_obj ():
         uart_cmd_str = f'COM{self.com_addr}'
         print(uart_cmd_str)
         if self.sim_mcu == 1:
-            # 240117 add new operation: clear the resource for reset
-            print(f'the related resource we have \n {rm.list_resources()}')
-            self.mcu_com = rm.open_resource(uart_cmd_str)
-            self.mcu_com.clear()
-            # for the connection speed, at least use 115200, there
-            # are time out issue if the frequency is too slow
+            check_ID = ''
+            while 1 :
+                # 240117 add new operation: clear the resource for reset
+                list_dev = rm.list_resources()
+                print(f'the related resource we have \n {list_dev}')
+                try:
+                    # first use the default value
+                    self.mcu_com = rm.open_resource(uart_cmd_str,baud_rate=baud_rate0)
+                    check_ID = self.p_query(cmd_str0="*IDN?")
+                    print(f'MCU ID_check finished, pico and {check_ID}')
+                    # 240128: use try to check if the resource open ok
+
+                    # for the connection speed, at least use 115200, there
+                    # are time out issue if the frequency is too slow
+                    if check_ID == 'Grace':
+                        print(f'correct and break')
+                        break
+                    else:
+                        print(f'ID not correct')
+                        raise Exception("ID not correct")  # 使用 raise 引发异常
+
+                except Exception as e:
+                    # search from all USB device
+                    available_devices = rm.list_resources()
+
+                    for device in available_devices:
+                        print(f'now test: {device} ')
+                        try:
+                            # to check what is pico
+                            self.mcu_com = rm.open_resource(str(device))
+                            self.mcu_com.clear()
+                            self.mcu_com.write("*IDN?")
+                            # the first of read in pico after write is to get command
+                            cmd_write = self.mcu_com.read()
+                            # the second read is the return item (if there are return)
+                            item_back = self.mcu_com.read()
+                            check_ID = item_back.strip()
+                            print(item_back)
+                            print(
+                                f"what we got on usb is: first the command {cmd_write},second the item_back {item_back}"
+                            )
+                            if check_ID == 'Grace':
+                                print(f'correct and break')
+                                # this break if active for the for loop
+
+                                break
+
+                        except Exception as e:
+                            # may not have or wrong device
+                            print(f"exception: {e}, please check pico connection")
+                            pass
+
+
+
+                        # end of check device for loop
+                        pass
+
+                    if check_ID == 'Grace':
+                        print(f'correct and break')
+                        break
+                    # end of the external exception
+                    pass
+
+                if check_ID != 'Grace' :
+                    self.message_box(content_str=f'the ID: "{check_ID}" is wrong, check PCIO MCU connection', title_str='MCU not found')
+                # end of while
+                pass
+
+
+
         else:
             print('open COM port but bypass the real operation')
 
         pass
 
-    def p_query(self, cmd_str0='t;usb;2', time_out_s0 =3):
+    def message_box(self, content_str, title_str, box_type=0):
+        '''
+        message box function
+        auto_exception is for waveform capture, will bypass fully auto setting in global setting \n
+        boxtype(mpaaed with return value): 0-only confirm\n
+        1-confirm: 1, cancel: 2
+        2-stop: 3, re-try: 4, skip: 5
+        3-yes: 6, no: 7, cancel: 2
+        4-yes: 6, no: 7
+        '''
+        content_str = str(content_str)
+        title_str = str(title_str)
+        msg_res = 7
+        # won't skip if not enter the result update
+        msg_res = win32api.MessageBox(0, content_str, title_str, box_type)
+        # 0 to 3 is different type of message box and can sen different return value
+        # detail check on the internet
+        print('msg box call~~ ')
+        print('P.S Grace is cute! ~ ')
+
+        return msg_res
+
+    def p_query(self, cmd_str0='t;usb;2', time_out_s0 =5):
         '''
         command send and looking for feedback => used for
         data return of checking the feedback of command
@@ -119,7 +205,7 @@ class PICO_obj ():
 
         if self.sim_mcu == 1 :
             try:
-                # try to read out alll the stuff first
+                # try to read out all the stuff first
                 tmp_r = self.mcu_com.read()
                 print(f'first to clear FIFO: {tmp_r}')
 
@@ -128,7 +214,11 @@ class PICO_obj ():
 
             try:
                 # then start query
-                tmp_r = self.mcu_com.query(cmd_str0, time_out_s0)
+                tmp_cmd = self.mcu_com.query(cmd_str0, time_out_s0)
+                # 240128 add one more offset for the read offset
+                tmp_r = self.mcu_com.read()
+                tmp_r = tmp_r.strip()
+                print(f'pico repeat item send: {tmp_cmd}, result back: {tmp_r}')
                 return tmp_r
                 pass
             except Exception as e :
@@ -379,8 +469,8 @@ if __name__ == '__main__':
     sim_pcio = 1
     # 230117: for the COM port selection => based on the
     # hardware manager, or the NI_MAX
-    com_addr = 6
-    baud_rate = 115200
+    com_addr = 1
+    baud_rate0 = 115200
 
     g_pico = PICO_obj(sim_mcu0=sim_pcio, com_addr0=com_addr)
 
