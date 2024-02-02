@@ -83,8 +83,6 @@ class PICO_obj ():
 
         pass
 
-
-
     def com_open(self):
         '''
         231112: no need to change the baud rate, default should be enough
@@ -103,7 +101,7 @@ class PICO_obj ():
                 print(f'the related resource we have \n {list_dev}')
                 try:
                     # first use the default value
-                    self.mcu_com = rm.open_resource(uart_cmd_str,baud_rate=baud_rate0)
+                    self.mcu_com = rm.open_resource(uart_cmd_str)
                     check_ID = self.p_query(cmd_str0="*IDN?")
                     print(f'MCU ID_check finished, pico and {check_ID}')
                     # 240128: use try to check if the resource open ok
@@ -111,7 +109,7 @@ class PICO_obj ():
                     # for the connection speed, at least use 115200, there
                     # are time out issue if the frequency is too slow
                     if check_ID == 'Grace':
-                        print(f'correct and break')
+                        print(f'ID from file correct and break')
                         break
                     else:
                         print(f'ID not correct')
@@ -133,12 +131,12 @@ class PICO_obj ():
                             # the second read is the return item (if there are return)
                             item_back = self.mcu_com.read()
                             check_ID = item_back.strip()
-                            print(item_back)
+                            print(f'read from MCU {item_back}')
                             print(
                                 f"what we got on usb is: first the command {cmd_write},second the item_back {item_back}"
                             )
                             if check_ID == 'Grace':
-                                print(f'correct and break')
+                                print(f'finded device ')
                                 # this break if active for the for loop
 
                                 break
@@ -148,27 +146,23 @@ class PICO_obj ():
                             print(f"exception: {e}, please check pico connection")
                             pass
 
-
-
                         # end of check device for loop
                         pass
 
                     if check_ID == 'Grace':
-                        print(f'correct and break')
+                        print(f'correct and break infinite checking while loop')
+                        # break the while loop
                         break
                     # end of the external exception
                     pass
 
                 if check_ID != 'Grace' :
-                    self.message_box(content_str=f'the ID: "{check_ID}" is wrong, check PCIO MCU connection', title_str='MCU not found')
+                    self.message_box(content_str=f'the ID: "{check_ID}" is wrong, check PCIO MCU connection or re-connect', title_str='MCU not found')
                 # end of while
                 pass
 
-
-
         else:
             print('open COM port but bypass the real operation')
-
         pass
 
     def message_box(self, content_str, title_str, box_type=0):
@@ -220,7 +214,7 @@ class PICO_obj ():
                 tmp_r = tmp_r.strip()
                 print(f'pico repeat item send: {tmp_cmd}, result back: {tmp_r}')
                 return tmp_r
-                pass
+
             except Exception as e :
                 print(f'query error, need to check command with error: {e}')
                 pass
@@ -291,6 +285,10 @@ class PICO_obj ():
             # turn off if error occur
         self.mode_set = mode_index
         # not done yet.. decide after knowing what is the final decision of PICO side
+        cmd_str = f'en_mode;{int(mode_index)}'
+        res_return = self.p_query(cmd_str0=cmd_str)
+
+        return res_return
         pass
 
     def i2c_read(self):
@@ -308,7 +306,12 @@ class PICO_obj ():
         pass
 
     def relay_ctrl(self, channel_index=0, relay_mode0=1, t_dly_s=0):
-
+        '''
+        only channel_index used for PICO,
+        relay_mode0 and t_dly_s only for JIGM3, left for space
+        '''
+        res_return = self.p_query(cmd_str0=f'rly;{int(channel_index)}')
+        return res_return
         pass
 
     def pico_gio(self, num0=0, status0=0):
@@ -317,9 +320,12 @@ class PICO_obj ():
         But it should be ok if going to have same function call by main
         it can be implement in another function, this should be ok
         now just use the own function
+        240201:
+        num0 refere to the define of ppt, status0 only 0-low and 1-high
         '''
 
-
+        res_return = self.p_query(cmd_str0=f'gio;{int(num0)};{int(status0)}')
+        return res_return
 
         pass
 
@@ -333,8 +339,11 @@ class PICO_obj ():
         """
         """
         first to use pulse gen, for the PIO, will be in
-        future plan
+        future plan, not is just normal IO with 10us
         """
+
+
+
 
         pass
 
@@ -469,7 +478,7 @@ if __name__ == '__main__':
     sim_pcio = 1
     # 230117: for the COM port selection => based on the
     # hardware manager, or the NI_MAX
-    com_addr = 1
+    com_addr = 9
     baud_rate0 = 115200
 
     g_pico = PICO_obj(sim_mcu0=sim_pcio, com_addr0=com_addr)
