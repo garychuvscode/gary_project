@@ -187,7 +187,7 @@ class PICO_obj ():
 
         return msg_res
 
-    def p_query(self, cmd_str0='t;usb;2', time_out_s0 =5):
+    def p_query(self, cmd_str0='t;usb;2', time_out_s0 =0.1, extra_read=0):
         '''
         command send and looking for feedback => used for
         data return of checking the feedback of command
@@ -198,13 +198,14 @@ class PICO_obj ():
         '''
 
         if self.sim_mcu == 1 :
-            try:
-                # try to read out all the stuff first
-                tmp_r = self.mcu_com.read()
-                print(f'first to clear FIFO: {tmp_r}')
+            if extra_read == 1:
+                try:
+                    # try to read out all the stuff first
+                    tmp_r = self.mcu_com.read()
+                    print(f'first to clear FIFO: {tmp_r}')
 
-            except Exception as e :
-                print(f'FIFO is empty or other error: {e}')
+                except Exception as e :
+                    print(f'FIFO is empty or other error: {e}')
 
             try:
                 # then start query
@@ -274,6 +275,16 @@ class PICO_obj ():
         print('command accept to reset the MCU_PICO_grace')
         pass
 
+    def special_function(self, cmd_1='', cmd_2='', mode0='grace'):
+        '''
+        this is the function for special adjustment or test mode operation
+        mode0 can be 'grace' or 't'
+        '''
+
+        res_return = self.p_query(cmd_str0=f'{mode0};{cmd_1};{cmd_2}')
+
+        return res_return
+
     def pmic_mode(self, mode_index):
         '''
         (EN,SW) or (EN2, EN1) \n
@@ -329,23 +340,87 @@ class PICO_obj ():
 
         pass
 
-    def pulse_out(self, pulse_1=1, pulse_2=1):
+    def pulse_out(self, pulse_1=0, pulse_2=0, SW_swel0='SW'):
         """
         PICO mapped with MSP430
         pulse need to be less then 255
         can choose pulse at GP6(EN), default is at GP7(SW)
 
         PICO duration is 10 us fixed
+        SW_swel0 can be EN, SW or other IO pin, but only low pulse (240205)
         """
         """
         first to use pulse gen, for the PIO, will be in
         future plan, not is just normal IO with 10us
         """
 
+        if SW_swel0 == 'SW' :
+            # default setting for toggle SWIRE, also mapped with JIGM3
+            # SW togle or EN toggle
+            num0 = 7
+        elif SW_swel0 == 'EN' :
+            num0 = 6
+        else:
+            # this is the pulse send to other IO use the input transfer to int
+            num0 = int(SW_swel0)
 
+        if pulse_1 != 0 :
+            res_return = self.p_query(cmd_str0=f'pio;{int(num0)};{int(pulse_1)}')
 
+        if pulse_2 != 0 :
+            res_return = self.p_query(cmd_str0=f'pio;{int(num0)};{int(pulse_2)}')
+
+        # here only return the second input
+        return res_return
 
         pass
+
+    def universal_terminal(self):
+        """
+        (function: Universal terminal with different functions)
+        """
+        try:
+            while True:
+                print("Universal Terminal, cmd refer to pico")
+                print('''
+deifnition of command
+fromat:
+i2c;{device-XX};{register-XX};{r_read/w_write};{length-x or data-[1,2,3,4,5]}
+pwm;{frequency-kHz};{duty-%};{type-0(duty) or 1(ns)};{channel 0(PWM0) or 1(PWM1)}
+pio;{number- 6(EN), 7(SW)};{pulse_count(<255)}
+gio;{number- 0 to 9};{status- 0_off, 1_on}
+en_mode;{(EN,SW) or (EN2, EN1) => 1:(0,0); 2:(0,1); 3:(1,0); 4:(1,1)}
+rly;{channel_active- 0 to 9}
+grace;XXX => reserve for speical function
+                      ''')
+
+                user_input = input(
+                    "Enter command (i2c, pwm, pio, gio, en_mode, rly, exit): "
+                )
+
+                if user_input.startswith("exit"):
+                    print(f"Grace took the tool and doesn't return, say goodbye to the tool" )
+                    if user_input == "exit":
+                        break
+
+                    pass
+
+                else:
+                    # process the command if not input 'exit'
+                    terminal_res = self.p_query(cmd_str0=user_input)
+                    print(f'what we got from the terminal: {terminal_res}')
+
+                    pass
+
+                # end of while
+                pass
+
+            # end of try
+            pass
+
+        except Exception as e:
+            print(f"\nUniversal terminal aborted. with {e}")
+
 
     def hex_to_num(self, data_in0=0):
         '''
@@ -485,7 +560,7 @@ if __name__ == '__main__':
 
     g_pico.com_open()
 
-    testing_index = 2
+    testing_index = 3
 
     if testing_index == 0 :
         '''
@@ -569,4 +644,9 @@ if __name__ == '__main__':
             g_pico.p_write()
             time.sleep(3)
             x = x + 1
+            pass
         pass
+
+    elif testing_index == 3 :
+
+        g_pico.universal_terminal()

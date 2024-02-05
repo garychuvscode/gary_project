@@ -763,7 +763,7 @@ class JIGM3:
     add function to match MSP430
     """
 
-    def pulse_out(self, pulse_1=1, pulse_2=1):
+    def pulse_out(self, pulse_1=0, pulse_2=0, SW_swel0='SW'):
         """
         GPL MCU mapped with MSP430
         pulse need to be less then 255
@@ -782,7 +782,7 @@ class JIGM3:
         # since this function is used to mapped with MSP430, fixed the extra
         # parameter of pattern gen
         duration_ns = 1000
-        en_sw = "SW"
+        en_sw = SW_swel0
 
         cmd_str = "'3$10"
         cmd_str_end = "`'"
@@ -796,33 +796,36 @@ class JIGM3:
             single_cell = "`2$10`3$10"
 
         # cmd_str_end = "`3$10`'"
+        if pulse_1 != 0 :
+            # 240205 add the pulse 0 configuration
+            cmd_str = "'3$10"
+            x = 0
+            while x < pulse_1:
+                cmd_str = cmd_str + single_cell
+                x = x + 1
+                pass
+            # after finished the pulse count, add the final element
+            cmd_str = cmd_str + cmd_str_end
+            self.pattern_gen(pattern0=cmd_str, unit_time_ns0=duration_ns)
 
-        cmd_str = "'3$10"
-        x = 0
-        while x < pulse_1:
-            cmd_str = cmd_str + single_cell
-            x = x + 1
-            pass
-        # after finished the pulse count, add the final element
-        cmd_str = cmd_str + cmd_str_end
-        self.pattern_gen(pattern0=cmd_str, unit_time_ns0=duration_ns)
-
-        print("pulse1 finished, Grace ask: if she's cute?")
+        print(f"pulse1 finished with {pulse_1}, Grace ask: if she's cute?")
 
         # delay 50ms between two pulse
         time.sleep(0.05)
 
-        cmd_str = "'3$10"
-        x = 0
-        while x < pulse_2:
-            cmd_str = cmd_str + single_cell
-            x = x + 1
-            pass
-        # after finished the pulse count, add the final element
-        cmd_str = cmd_str + cmd_str_end
-        self.pattern_gen(pattern0=cmd_str, unit_time_ns0=duration_ns)
+        if pulse_2 != 0 :
+            # 240205 add the pulse 0 configuration
+            cmd_str = "'3$10"
+            x = 0
+            while x < pulse_2:
+                cmd_str = cmd_str + single_cell
+                x = x + 1
+                pass
+            # after finished the pulse count, add the final element
+            cmd_str = cmd_str + cmd_str_end
+            self.pattern_gen(pattern0=cmd_str, unit_time_ns0=duration_ns)
 
-        print("pulse2 finished, Grace is not cute when cute to everyone XD")
+        print(f"pulse2 finished with {pulse_2}, Grace is not cute when cute to everyone XD")
 
         pass
 
