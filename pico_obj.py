@@ -103,7 +103,10 @@ class PICO_obj ():
                 print(f'the related resource we have \n {list_dev}')
                 try:
                     # first use the default value
-                    self.mcu_com = rm.open_resource(uart_cmd_str,baud_rate=baud_rate0)
+                    # 240310: no need to use baudrate0, and should not be 
+                    # parameter define in testing program  
+                    # self.mcu_com = rm.open_resource(uart_cmd_str,baud_rate=baud_rate0)
+                    self.mcu_com = rm.open_resource(uart_cmd_str)
                     check_ID = self.p_query(cmd_str0="*IDN?")
                     print(f'MCU ID_check finished, pico and {check_ID}')
                     # 240128: use try to check if the resource open ok
@@ -119,6 +122,7 @@ class PICO_obj ():
 
                 except Exception as e:
                     # search from all USB device
+                    print(f'input ID not found, enter univeral search')
                     available_devices = rm.list_resources()
 
                     for device in available_devices:
@@ -141,6 +145,8 @@ class PICO_obj ():
                                 print(f'correct and break')
                                 # this break if active for the for loop
 
+                                # also assign the correct COM address for reference 
+                                self.com_addr = str(device)
                                 break
 
                         except Exception as e:
@@ -252,7 +258,7 @@ class PICO_obj ():
                 ret_from_pico = f'sim_mode_{command}'
             print(f'Grace is about 30y, and she say: {ret_from_pico}')
         except Exception as e :
-            print(f'write error "{e}" at COM{com_addr}')
+            print(f'write error "{e}" at address {self.com_addr}')
 
         pass
 
@@ -476,7 +482,7 @@ if __name__ == '__main__':
 
     g_pico.com_open()
 
-    testing_index = 2
+    testing_index = 3
 
     if testing_index == 0 :
         '''
@@ -561,3 +567,10 @@ if __name__ == '__main__':
             time.sleep(3)
             x = x + 1
         pass
+
+    elif testing_index == 3 :
+        '''
+        check the com scan for pico device
+
+        '''
+        g_pico.com_open()
