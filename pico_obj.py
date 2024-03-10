@@ -83,8 +83,6 @@ class PICO_obj ():
 
         pass
 
-
-
     def com_open(self):
         '''
         231112: no need to change the baud rate, default should be enough
@@ -114,7 +112,7 @@ class PICO_obj ():
                     # for the connection speed, at least use 115200, there
                     # are time out issue if the frequency is too slow
                     if check_ID == 'Grace':
-                        print(f'correct and break')
+                        print(f'ID from file correct and break')
                         break
                     else:
                         print(f'ID not correct')
@@ -137,12 +135,12 @@ class PICO_obj ():
                             # the second read is the return item (if there are return)
                             item_back = self.mcu_com.read()
                             check_ID = item_back.strip()
-                            print(item_back)
+                            print(f'read from MCU {item_back}')
                             print(
                                 f"what we got on usb is: first the command {cmd_write},second the item_back {item_back}"
                             )
                             if check_ID == 'Grace':
-                                print(f'correct and break')
+                                print(f'finded device ')
                                 # this break if active for the for loop
 
                                 # also assign the correct COM address for reference 
@@ -154,27 +152,23 @@ class PICO_obj ():
                             print(f"exception: {e}, please check pico connection")
                             pass
 
-
-
                         # end of check device for loop
                         pass
 
                     if check_ID == 'Grace':
-                        print(f'correct and break')
+                        print(f'correct and break infinite checking while loop')
+                        # break the while loop
                         break
                     # end of the external exception
                     pass
 
                 if check_ID != 'Grace' :
-                    self.message_box(content_str=f'the ID: "{check_ID}" is wrong, check PCIO MCU connection', title_str='MCU not found')
+                    self.message_box(content_str=f'the ID: "{check_ID}" is wrong, check PCIO MCU connection or re-connect', title_str='MCU not found')
                 # end of while
                 pass
 
-
-
         else:
             print('open COM port but bypass the real operation')
-
         pass
 
     def message_box(self, content_str, title_str, box_type=0):
@@ -199,7 +193,7 @@ class PICO_obj ():
 
         return msg_res
 
-    def p_query(self, cmd_str0='t;usb;2', time_out_s0 =5):
+    def p_query(self, cmd_str0='t;usb;2', time_out_s0 =0.1, extra_read=0):
         '''
         command send and looking for feedback => used for
         data return of checking the feedback of command
@@ -210,13 +204,14 @@ class PICO_obj ():
         '''
 
         if self.sim_mcu == 1 :
-            try:
-                # try to read out all the stuff first
-                tmp_r = self.mcu_com.read()
-                print(f'first to clear FIFO: {tmp_r}')
+            if extra_read == 1:
+                try:
+                    # try to read out all the stuff first
+                    tmp_r = self.mcu_com.read()
+                    print(f'first to clear FIFO: {tmp_r}')
 
-            except Exception as e :
-                print(f'FIFO is empty or other error: {e}')
+                except Exception as e :
+                    print(f'FIFO is empty or other error: {e}')
 
             try:
                 # then start query
@@ -226,7 +221,7 @@ class PICO_obj ():
                 tmp_r = tmp_r.strip()
                 print(f'pico repeat item send: {tmp_cmd}, result back: {tmp_r}')
                 return tmp_r
-                pass
+
             except Exception as e :
                 print(f'query error, need to check command with error: {e}')
                 pass
@@ -286,6 +281,16 @@ class PICO_obj ():
         print('command accept to reset the MCU_PICO_grace')
         pass
 
+    def special_function(self, cmd_1='', cmd_2='', mode0='grace'):
+        '''
+        this is the function for special adjustment or test mode operation
+        mode0 can be 'grace' or 't'
+        '''
+
+        res_return = self.p_query(cmd_str0=f'{mode0};{cmd_1};{cmd_2}')
+
+        return res_return
+
     def pmic_mode(self, mode_index):
         '''
         (EN,SW) or (EN2, EN1) \n
@@ -297,6 +302,10 @@ class PICO_obj ():
             # turn off if error occur
         self.mode_set = mode_index
         # not done yet.. decide after knowing what is the final decision of PICO side
+        cmd_str = f'en_mode;{int(mode_index)}'
+        res_return = self.p_query(cmd_str0=cmd_str)
+
+        return res_return
         pass
 
     def i2c_read(self):
@@ -314,7 +323,12 @@ class PICO_obj ():
         pass
 
     def relay_ctrl(self, channel_index=0, relay_mode0=1, t_dly_s=0):
-
+        '''
+        only channel_index used for PICO,
+        relay_mode0 and t_dly_s only for JIGM3, left for space
+        '''
+        res_return = self.p_query(cmd_str0=f'rly;{int(channel_index)}')
+        return res_return
         pass
 
     def pico_gio(self, num0=0, status0=0):
@@ -323,26 +337,96 @@ class PICO_obj ():
         But it should be ok if going to have same function call by main
         it can be implement in another function, this should be ok
         now just use the own function
+        240201:
+        num0 refere to the define of ppt, status0 only 0-low and 1-high
         '''
 
-
+        res_return = self.p_query(cmd_str0=f'gio;{int(num0)};{int(status0)}')
+        return res_return
 
         pass
 
-    def pulse_out(self, pulse_1=1, pulse_2=1):
+    def pulse_out(self, pulse_1=0, pulse_2=0, SW_swel0='SW'):
         """
         PICO mapped with MSP430
         pulse need to be less then 255
         can choose pulse at GP6(EN), default is at GP7(SW)
 
         PICO duration is 10 us fixed
+        SW_swel0 can be EN, SW or other IO pin, but only low pulse (240205)
         """
         """
         first to use pulse gen, for the PIO, will be in
-        future plan
+        future plan, not is just normal IO with 10us
         """
 
+        if SW_swel0 == 'SW' :
+            # default setting for toggle SWIRE, also mapped with JIGM3
+            # SW togle or EN toggle
+            num0 = 7
+        elif SW_swel0 == 'EN' :
+            num0 = 6
+        else:
+            # this is the pulse send to other IO use the input transfer to int
+            num0 = int(SW_swel0)
+
+        if pulse_1 != 0 :
+            res_return = self.p_query(cmd_str0=f'pio;{int(num0)};{int(pulse_1)}')
+
+        if pulse_2 != 0 :
+            res_return = self.p_query(cmd_str0=f'pio;{int(num0)};{int(pulse_2)}')
+
+        # here only return the second input
+        return res_return
+
         pass
+
+    def universal_terminal(self):
+        """
+        (function: Universal terminal with different functions)
+        """
+        try:
+            while True:
+                print("Universal Terminal, cmd refer to pico")
+                print('''
+deifnition of command
+fromat:
+i2c;{device-XX};{register-XX};{r_read/w_write};{length-x or data-[1,2,3,4,5]}
+pwm;{frequency-kHz};{duty-%};{type-0(duty) or 1(ns)};{channel 0(PWM0) or 1(PWM1)}
+pio;{number- 6(EN), 7(SW)};{pulse_count(<255)}
+gio;{number- 0 to 9};{status- 0_off, 1_on}
+en_mode;{(EN,SW) or (EN2, EN1) => 1:(0,0); 2:(0,1); 3:(1,0); 4:(1,1)}
+rly;{channel_active- 0 to 9}
+grace;XXX => reserve for speical function
+                      ''')
+
+                user_input = input(
+                    "Enter command (i2c, pwm, pio, gio, en_mode, rly, exit): "
+                )
+
+                if user_input.startswith("exit"):
+                    print(f"Grace took the tool and doesn't return, say goodbye to the tool" )
+                    if user_input == "exit":
+                        break
+
+                    pass
+
+                else:
+                    # process the command if not input 'exit'
+                    terminal_res = self.p_query(cmd_str0=user_input)
+                    print(f'what we got from the terminal: {terminal_res}')
+
+                    pass
+
+                # end of while
+                pass
+
+            # end of try
+            pass
+
+        except Exception as e:
+            print(f"\nUniversal terminal aborted. with {e}")
+
 
     def hex_to_num(self, data_in0=0):
         '''
@@ -475,7 +559,7 @@ if __name__ == '__main__':
     sim_pcio = 1
     # 230117: for the COM port selection => based on the
     # hardware manager, or the NI_MAX
-    com_addr = 1
+    com_addr = 9
     baud_rate0 = 115200
 
     g_pico = PICO_obj(sim_mcu0=sim_pcio, com_addr0=com_addr)
@@ -566,11 +650,9 @@ if __name__ == '__main__':
             g_pico.p_write()
             time.sleep(3)
             x = x + 1
+            pass
         pass
 
     elif testing_index == 3 :
-        '''
-        check the com scan for pico device
 
-        '''
-        g_pico.com_open()
+        g_pico.universal_terminal()
